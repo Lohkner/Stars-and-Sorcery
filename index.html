@@ -736,14 +736,15 @@
     <div>
       <div class="dvdr">Retrato</div>
       <!-- Confirm portrait button -->
-      <button class="bcnf" id="confirm_portrait_btn" data-action="confirmPortraitSettings" style="margin-top:0;margin-bottom:12px">✓ Aplicar al Personaje</button>
+      <button class="bcnf" id="confirm_portrait_btn" data-action="confirmPortraitSettings" style="margin-top:0;margin-bottom:4px">✓ Aplicar al Personaje</button>
+      <div style="font-family:var(--fm);font-size:.58rem;color:var(--border);margin-bottom:12px;line-height:1.5">Los cambios de abajo son vista previa: solo se aplican al personaje abierto al pulsar este botón. Si cierras sin aplicar, se descartan. Desde Inicio (sin personaje) fijan el predeterminado de nuevos personajes.</div>
       <!-- Per-char prefs notice -->
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
         <div>
           <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Guardar ajustes con personaje</span>
-          <div style="font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px">Tamaño, forma y fuente se restauran al cargar este personaje</div>
+          <div style="font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px">Activado: cada personaje conserva su propio retrato (tamaño, forma, borde y fuente). Desactivado: todos usan el predeterminado global.</div>
         </div>
-        <button id="per_char_prefs_btn" class="toggle-btn" data-action="togglePerCharPrefs" aria-pressed="false" aria-label="Guardar ajustes visuales por personaje"></button>
+        <button id="per_char_prefs_btn" class="toggle-btn" data-action="togglePerCharPrefs" aria-pressed="true" aria-label="Guardar ajustes visuales por personaje"></button>
       </div>
       <!-- Border toggle -->
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
