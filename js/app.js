@@ -3395,8 +3395,11 @@ const app = {
       apt_tricks: [...(this._aptSel?.tricks||[])],
       apt_spells: [...(this._aptSel?.spells||[])],
       _prefs: {
-        portSize:  this._portSize  || 'm',
-        portShape: this._portShape || 'rect',
+        // Se serializa lo CONFIRMADO con "✓ Aplicar al Personaje"
+        // (_charPrefs), nunca una vista previa sin aplicar.
+        portSize:   this._charPrefs?.portSize   || this._portSize        || 'm',
+        portShape:  this._charPrefs?.portShape  || this._portShape       || 'rect',
+        portBorder: this._charPrefs?.portBorder || this._portBorderMode  || 'premium',
         fontSize:  localStorage.getItem(STORAGE.KEYS.font) || 'normal'
       }
     };
@@ -3425,11 +3428,21 @@ const app = {
     for (const id in data.inputs) { const el=document.getElementById(id); if(el)el.value=data.inputs[id]; }
     // Portrait
     if (data.portrait) this._syncPortrait(data.portrait);
-    // Per-character visual preferences
-    if (this._perCharPrefs && data._prefs) {
-      if (data._prefs.portSize)  this.setPortraitSize(data._prefs.portSize);
-      if (data._prefs.portShape) this.setPortraitShape(data._prefs.portShape);
-      if (data._prefs.fontSize)  this.setFontSize(data._prefs.fontSize);
+    // Per-character visual preferences.
+    // _charPrefs es el estado CONFIRMADO del personaje: ausencias caen al
+    // predeterminado global, sin que cargar este personaje lo modifique.
+    const prefs = (data._prefs && typeof data._prefs === 'object') ? data._prefs : {};
+    this._charPrefs = {
+      portSize:   prefs.portSize   || localStorage.getItem(STORAGE.KEYS.portSize)  || 'm',
+      portShape:  prefs.portShape  || localStorage.getItem(STORAGE.KEYS.portShape) || 'rect',
+      portBorder: prefs.portBorder || localStorage.getItem('ss_port_border')        || 'premium',
+    };
+    if (this._perCharPrefs) {
+      this.setPortraitSize(this._charPrefs.portSize);     // _charOpen() ⇒ no persiste global
+      this.setPortraitShape(this._charPrefs.portShape);
+      this._portBorderMode = this._charPrefs.portBorder;
+      this._applyPortraitBorder();
+      if (prefs.fontSize) this.setFontSize(prefs.fontSize, false); // no contaminar el global
     }
     if (data.concept) document.getElementById('char_concept').value = data.concept;
     if (data.notes) document.getElementById('char_notes').value = data.notes;
@@ -3599,6 +3612,8 @@ const app = {
     this.setLethality(1);
     // Reset active talent category so next open starts fresh
     this.activeTalentCat = null;
+    // El nuevo personaje arranca con los predeterminados globales de retrato
+    this._resetCharPrefsToDefaults();
   },
 
   /* ─────────────────────────────────────────
@@ -3607,14 +3622,16 @@ const app = {
   /* ── FONT SIZE ──
      Todos los tamaños del CSS usan rem, que escalan desde el font-size de <html>.
      Cambiando document.documentElement.style.fontSize toda la interfaz responde. */
-  setFontSize(size) {
+  setFontSize(size, persist = true) {
     // Normal = 16px (1rem base estándar del navegador).
     // Las opciones desplazan ±2px desde esa base.
     const map = {small:'13px', normal:'16px', large:'18px', xlarge:'20px'};
     const px = map[size] || '16px';
     // Cambiar el font-size del <html> escala todos los rem de la UI de golpe
     document.documentElement.style.fontSize = px;
-    localStorage.setItem(STORAGE.KEYS.font, size);
+    // persist=false al restaurar la preferencia de UN personaje, para no
+    // convertirla en el predeterminado global de todos.
+    if (persist) localStorage.setItem(STORAGE.KEYS.font, size);
     ['small','normal','large','xlarge'].forEach(s=>{
       const el = document.getElementById('fs_'+s);
       if (el) el.classList.toggle('active', s===size);
@@ -3650,7 +3667,11 @@ const app = {
     document.querySelectorAll('.ps-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.size === size)
     );
-    localStorage.setItem(STORAGE.KEYS.portSize, size);
+    // Con un personaje abierto esto es solo VISTA PREVIA: el valor se
+    // confirma con "✓ Aplicar al Personaje" y viaja en _prefs del
+    // personaje. Solo sin personaje abierto (ajustes desde Inicio) se
+    // persiste como predeterminado global de la app.
+    if (!this._charOpen()) localStorage.setItem(STORAGE.KEYS.portSize, size);
   },
 
   /* ── PORTRAIT SHAPE ── */
@@ -3679,7 +3700,8 @@ const app = {
     document.querySelectorAll('.psh-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.shape === shape)
     );
-    localStorage.setItem(STORAGE.KEYS.portShape, shape);
+    // Vista previa con personaje abierto; global solo desde Inicio.
+    if (!this._charOpen()) localStorage.setItem(STORAGE.KEYS.portShape, shape);
   },
 
   /** Syncs crop frame appearance to the current portrait shape */
@@ -3713,11 +3735,51 @@ const app = {
     const shape = localStorage.getItem(STORAGE.KEYS.portShape) || 'rect';
     this._portBorderMode = localStorage.getItem('ss_port_border') || 'premium';
     this._applyPortraitBorder();
-    this._perCharPrefs = localStorage.getItem('ss_per_char_prefs') === '1';
+    // Activado por defecto: los ajustes de retrato son por personaje
+    // salvo que el usuario lo desactive explícitamente.
+    this._perCharPrefs = localStorage.getItem('ss_per_char_prefs') !== '0';
     this.setPortraitSize(size);
     this.setPortraitShape(shape);
+    this._charPrefs = { portSize: size, portShape: shape, portBorder: this._portBorderMode };
     const btn = document.getElementById('per_char_prefs_btn');
     if (btn) btn.setAttribute('aria-pressed', String(this._perCharPrefs));
+    // Al cerrar Ajustes sin pulsar "✓ Aplicar al Personaje", descartar la
+    // vista previa y volver a los valores confirmados del personaje.
+    document.getElementById('settings_modal')
+      ?.addEventListener('close', () => this._revertPortraitPreview());
+  },
+
+  /** ¿Hay un personaje abierto (pantalla de hoja visible)? */
+  _charOpen() {
+    const s = document.getElementById('app-screen');
+    return !!s && !s.classList.contains('hidden');
+  },
+
+  /** Restaura los predeterminados globales (al crear/limpiar personaje). */
+  _resetCharPrefsToDefaults() {
+    const size   = localStorage.getItem(STORAGE.KEYS.portSize)  || 'm';
+    const shape  = localStorage.getItem(STORAGE.KEYS.portShape) || 'rect';
+    const border = localStorage.getItem('ss_port_border')        || 'premium';
+    this._charPrefs = { portSize: size, portShape: shape, portBorder: border };
+    this.setPortraitSize(size);
+    this.setPortraitShape(shape);
+    this._portBorderMode = border;
+    this._applyPortraitBorder();
+  },
+
+  /** Descarta una vista previa de retrato no confirmada. */
+  _revertPortraitPreview() {
+    if (!this._charOpen() || !this._charPrefs) return;
+    const c = this._charPrefs;
+    const dirty = this._portSize !== c.portSize ||
+                  this._portShape !== c.portShape ||
+                  this._portBorderMode !== c.portBorder;
+    if (!dirty) return;
+    this.setPortraitSize(c.portSize);
+    this.setPortraitShape(c.portShape);
+    this._portBorderMode = c.portBorder;
+    this._applyPortraitBorder();
+    this.toast('Vista previa descartada — usa "✓ Aplicar al Personaje"', 'info');
   },
 
   setTheme(id) {
@@ -3793,15 +3855,39 @@ const app = {
     if (app)  this.setBgImage('app',  app);
   },
 
-  /** Applies staged portrait settings to current character (marks unsaved) */
+  /** Confirma la vista previa de retrato SOLO para el personaje abierto. */
   confirmPortraitSettings() {
-    // Portrait settings are already live on the CSS vars — just mark char as changed
-    // so they get persisted on next save
-    this._markUnsaved();
-    this.toast('Ajustes de retrato aplicados al personaje', 'ok');
-    // Flash the button
-    const btn = document.getElementById('confirm_portrait_btn');
-    if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
+    const flash = () => {
+      const btn = document.getElementById('confirm_portrait_btn');
+      if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
+    };
+    if (!this._charOpen()) {
+      // Sin personaje abierto los botones ya fijaron el predeterminado global.
+      this.toast('Guardado como predeterminado para nuevos personajes', 'ok');
+      flash();
+      return;
+    }
+    // 1) Confirmar la vista previa como estado del personaje actual.
+    this._charPrefs = {
+      portSize:   this._portSize        || 'm',
+      portShape:  this._portShape       || 'rect',
+      portBorder: this._portBorderMode  || 'premium',
+    };
+    // 2) Persistir _prefs directamente en SU entrada del roster (solo la
+    //    suya: ningún otro personaje ni el predeterminado global se tocan).
+    //    Así "Aplicar" sobrevive aunque luego no pulsen "Guardar".
+    const name = document.getElementById('char_name')?.value.trim();
+    let persisted = false;
+    if (name) {
+      const roster = STORAGE.loadRoster();
+      if (roster[name]) {
+        roster[name]._prefs = { ...(roster[name]._prefs || {}), ...this._charPrefs };
+        persisted = STORAGE.saveRoster(roster);
+      }
+    }
+    if (!persisted) this._markUnsaved();  // personaje aún no guardado: viajará en _prefs al guardar
+    this.toast(`Retrato aplicado solo a ${name ? `"${this._esc(name)}"` : 'este personaje'}`, 'ok');
+    flash();
   },
 
   togglePortraitBorder() {
@@ -3809,7 +3895,8 @@ const app = {
     // _portBorderMode: 'premium' | 'subtle'
     this._portBorderMode = (this._portBorderMode === 'premium') ? 'subtle' : 'premium';
     this._applyPortraitBorder();
-    localStorage.setItem('ss_port_border', this._portBorderMode);
+    // Vista previa con personaje abierto; global solo desde Inicio.
+    if (!this._charOpen()) localStorage.setItem('ss_port_border', this._portBorderMode);
   },
 
   _applyPortraitBorder() {
