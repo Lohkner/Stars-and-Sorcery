@@ -55,7 +55,7 @@ Cubre: arranque, render del roster, creación de hoja, cálculo, generador aleat
 
 ## Despliegue
 
-Copia la carpeta a cualquier hosting estático (GitHub Pages, Netlify, un servidor propio). Requiere **HTTPS** (o `localhost`) para que el Service Worker se registre. Coloca tu icono `Bind_Pact_Weapon.webp` en la raíz junto a `index.html`.
+Copia la carpeta a cualquier hosting estático (GitHub Pages, Netlify, un servidor propio). Requiere **HTTPS** (o `localhost`) para que el Service Worker se registre.
 
 Para desarrollo local:
 
