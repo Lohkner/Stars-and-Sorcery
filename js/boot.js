@@ -46,8 +46,14 @@
     }).catch(() => {});
 
     // When the controlling worker changes, reload once to pick up new assets.
+    // BUT only for genuine UPDATES: on the very first visit the page starts
+    // uncontrolled and the SW's clients.claim() fires controllerchange once —
+    // reloading there just replays the loading screen (doble pantalla de carga).
+    // Capturing whether a controller already existed lets us skip that case.
+    const hadController = !!navigator.serviceWorker.controller;
     let _reloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) return;            // first-install claim → no reload
       if (_reloaded) return; _reloaded = true; location.reload();
     });
   }
