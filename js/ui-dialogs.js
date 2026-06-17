@@ -175,15 +175,31 @@ const UI = (() => {
     // pointerup con preventDefault suprime el click sintetizado en la
     // mayoría de motores; el listener de click queda como respaldo para
     // teclado/escritorio y está protegido por `settled`.
+    //
+    // GUARDIA DE ARMADO (capa 4): si el toque que ABRIÓ el diálogo
+    // genera su click fantasma ~300 ms después y este aterriza SOBRE
+    // un botón del diálogo recién pintado, el escudo no lo bloquea
+    // (nace "dentro de la tarjeta"). Para activarse, cada botón exige
+    // un pointerdown propio POSTERIOR a la apertura. Los clicks de
+    // teclado (Enter/Espacio, e.detail === 0) se aceptan siempre.
+    const armed = new WeakSet();
+    card.addEventListener('pointerdown', (e) => {
+      const b = e.target.closest('.ui-confirm-btn');
+      if (b) armed.add(b);
+    }, true);
+
     const arm = (btn, confirmed) => {
       btn.addEventListener('pointerup', (e) => {
         e.stopPropagation();
         if (e.cancelable) e.preventDefault();
+        if (!armed.has(btn)) return;        // pointerup huérfano → ignorar
         close(confirmed);
       }, { passive: false });
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
+        // detail === 0 → activación por teclado (sin pointerdown previo).
+        if (e.detail !== 0 && !armed.has(btn)) return;   // click fantasma
         close(confirmed);
       });
     };
@@ -210,5 +226,35 @@ const UI = (() => {
     requestAnimationFrame(() => cancelBtn.focus({ preventScroll: true }));
   }
 
-  return { confirm, GHOST_CLICK_WINDOW };
+  /**
+   * Escudo independiente reutilizable: absorbe TODOS los eventos de
+   * puntero/táctiles/click a nivel de documento durante `ms` milisegundos.
+   *
+   * Úsalo al cerrar programáticamente un modal/diálogo en respuesta a un
+   * toque (p. ej. "💾 Guardar" dentro de Ajustes): el click fantasma que
+   * el navegador sintetiza ~300 ms después del touchend muere aquí en
+   * lugar de aterrizar sobre la hoja que quedó al descubierto.
+   *
+   * @param {number} [ms]  Duración; por defecto GHOST_CLICK_WINDOW (450 ms).
+   * @returns {Function}   Liberación anticipada (idempotente).
+   */
+  function ghostShield(ms = GHOST_CLICK_WINDOW) {
+    const absorb = (e) => {
+      e.stopPropagation();
+      if (e.cancelable) e.preventDefault();
+    };
+    SHIELD_EVENTS.forEach(evt =>
+      document.addEventListener(evt, absorb, { capture: true, passive: false }));
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      SHIELD_EVENTS.forEach(evt =>
+        document.removeEventListener(evt, absorb, { capture: true }));
+    };
+    setTimeout(release, ms);
+    return release;
+  }
+
+  return { confirm, ghostShield, GHOST_CLICK_WINDOW };
 })();

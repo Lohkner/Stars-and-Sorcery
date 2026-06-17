@@ -11,6 +11,18 @@ const app = {
   _pageScrolls: {},             // in-memory scroll positions per page index
   cropState: {img:null, x:0, y:0, zoom:1, rot:0, minZoom:.05, isDragging:false, lastX:0, lastY:0, pinch:null, velX:0, velY:0},
   _weaponDmgData: [{formula:'1',name:'Desarmado'},{formula:'1',name:'Desarmado'}],
+
+  /** Estado único del resumen de Equipo de Combate. calc() lo escribe y
+      _buildCombatSummary() SOLO lee de aquí — nunca del DOM de otras vistas.
+      (La versión anterior raspaba textContent de la vista de edición, y si
+      el orden de carga cambiaba, el resumen quedaba rancio.) */
+  _combat: {
+    ca: 10, armorName: 'Sin Armadura', armorType: 'none', shieldName: 'Sin Escudo',
+    w: [
+      { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
+      { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
+    ],
+  },
   _weaponAtkData: [0, 0],
   _editingCustomItem: null,
   _charLoading: false,   // suppresses _markUnsaved during load/clear
@@ -777,33 +789,61 @@ const app = {
     });
   },
 
+  /** Modo lectura de Equipo de Combate — reconstruido desde cero.
+      Regenera la vista COMPLETA desde el estado _combat que calc() acaba de
+      escribir. Cero lecturas del DOM de otras vistas ⇒ cero posibilidad de
+      quedar desincronizado por el orden de carga o renderizado. */
   _buildCombatSummary() {
-    const ca       = this._el('res_ca')?.textContent || '10';
-    const armorKey = this._el('sel_armor')?.value    || 'none';
-    const shieldKey= this._el('sel_shield')?.value   || 'none';
-    this._tc('sum_ac', ca);
-    const armor  = this._getInventoryItem(armorKey)  || this.DB.armors?.[armorKey];
-    const shield = this._getInventoryItem(shieldKey) || this.DB.shields?.[shieldKey];
-    this._tc('sum_armor_name', armor?.name || 'Sin Armadura');
-    this._tc('sum_armor_type', armor?.type ? ({none:'Sin armadura',light:'Ligera',medium:'Media',heavy:'Pesada'}[armor.type]||armor.type) : 'Sin armadura');
-    this._tc('sum_shield', shield?.name || 'Sin Escudo');
-    // Weapon summaries — read from calc-generated spans
-    const w1atk = this._el('w1_atk_val')?.textContent || '—';
-    const w1dmg = this._el('w1_dmg_val')?.textContent || '—';
-    const w2atk = this._el('w2_atk_val')?.textContent || '—';
-    const w2dmg = this._el('w2_dmg_val')?.textContent || '—';
-    this._tc('sum_wep1_name', this._el('atk_name_1')?.textContent || '—');
-    this._tc('sum_wep1_stats', `Ataque: ${w1atk} / Daño: ${w1dmg}`);
-    this._tc('sum_atk1_bonus', w1atk.replace(/[^+\-\d]/g,'') || '+0');
-    this._tc('sum_atk1_dmg', w1dmg);
-    this._tc('sum_wep2_name', this._el('atk_name_2')?.textContent || '—');
-    this._tc('sum_wep2_stats', `Ataque: ${w2atk} / Daño: ${w2dmg}`);
-    this._tc('sum_atk2_bonus', w2atk.replace(/[^+\-\d]/g,'') || '+0');
-    this._tc('sum_atk2_dmg', w2dmg);
+    const view = this._el('combat_summary_view');
+    if (!view) return;
+    const c = this._combat;
+    const typeLbl = {none:'Sin restricción', light:'Ligera', medium:'Media', heavy:'Pesada'}[c.armorType] || c.armorType;
+    const card = (n, role, extraCls) => {
+      const w = c.w[n-1] || { name:'Desarmado', atk:'+0', dmg:'1d4', alert:'' };
+      return `
+      <div class="atk-card${extraCls}">
+        <div class="atk-hdr">
+          <span class="atk-nm" id="sum_wep${n}_name">${this._esc(w.name)}</span>
+          <span class="atk-role-badge">${role}</span>
+        </div>
+        <div class="atk-stats-line" id="sum_wep${n}_stats">Ataque: ${this._esc(w.atk)} / Daño: ${this._esc(w.dmg)}</div>
+        ${w.alert ? `<div class="calert" style="display:block">${this._esc(w.alert)}</div>` : ''}
+        <div class="atk-btns">
+          <button class="abtn abtn-a" onclick="app.rollWeaponAtk(${n})" aria-label="Tirar ataque arma ${role.toLowerCase()}">
+            <span class="abtn-icon">ATK</span>
+            <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="sum_atk${n}_bonus">${this._esc(w.atk)}</span></span>
+          </button>
+          <div class="atk-btn-sep"></div>
+          <button class="abtn abtn-d" onclick="app.rollWeaponDmg(${n})" aria-label="Tirar daño arma ${role.toLowerCase()}">
+            <span class="abtn-icon">DMG</span>
+            <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="sum_atk${n}_dmg">${this._esc(w.dmg)}</span></span>
+          </button>
+        </div>
+      </div>`;
+    };
+    view.innerHTML = `
+      <div class="g3" style="margin-bottom:6px">
+        <div class="fbox"><div class="flbl g">CA</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_ac">${this._esc(String(c.ca))}</span></div></div>
+        <div class="fbox"><div class="flbl">Armadura</div><div class="fval" style="font-size:.74rem;flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:.55rem;color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
+        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:.74rem"><span id="sum_shield">${this._esc(c.shieldName)}</span></div></div>
+      </div>
+      ${card(1, 'Principal', '')}
+      ${card(2, 'Secundaria', ' secondary')}
+      <button class="bedit" onclick="app.editSection('combat')">✏ Editar</button>`;
   },
 
   _getInventoryItem(uid) {
     return this.inventory.find(i => String(i.uid) === String(uid));
+  },
+
+  /** uid monotónico para items de inventario. Date.now() a secas colisiona
+      cuando se añaden varios items en el mismo milisegundo (randomize,
+      toques rápidos) y un uid duplicado hace que _getInventoryItem y los
+      <select> de combate resuelvan al item EQUIVOCADO. */
+  _uidSeq: 0,
+  _nextUid() {
+    this._uidSeq = Math.max(this._uidSeq + 1, Date.now());
+    return String(this._uidSeq);
   },
 
   /** Single source of truth for portrait sync — keeps both img elements in step. */
@@ -1102,6 +1142,11 @@ const app = {
     let armorData = armorItem ? (armorItem.dbData || this.DB.armors?.[armorItem.dbKey]) : this.DB.armors?.[armorUID];
     const shieldItem = this._getInventoryItem(shieldUID);
     let shieldData = shieldItem ? (shieldItem.dbData || this.DB.shields?.[shieldItem.dbKey]) : this.DB.shields?.[shieldUID];
+    // Items sin datos de juego: conservar el NOMBRE elegido por el jugador
+    // (con los mismos números que antes: CA 10 / bono 0) en lugar de mostrar
+    // "Sin Armadura/Escudo" mientras el select dice otra cosa.
+    if (!armorData && armorItem)   armorData  = { name: armorItem.name + ' (sin datos)',  ca: 10, type: 'none' };
+    if (!shieldData && shieldItem) shieldData = { name: shieldItem.name + ' (sin datos)', bonus: 0 };
 
     let caBase = armorData?.ca || 10;
     const armorType = armorData?.type || 'none';
@@ -1130,7 +1175,11 @@ const app = {
     }
     $('res_ca').textContent = caFinal;
     $('armor_base_val').textContent = caBase;
-    $('sum_ac').textContent = caFinal;
+    // Estado para el resumen de combate (lo renderiza _buildCombatSummary)
+    this._combat.ca = caFinal;
+    this._combat.armorName  = armorData?.name  || 'Sin Armadura';
+    this._combat.armorType  = armorType;
+    this._combat.shieldName = shieldData?.name || 'Sin Escudo';
     const caArmorEl = $('res_ca_armor');
     if (caArmorEl) caArmorEl.textContent = armorData?.name || 'Sin armadura';
 
@@ -1144,16 +1193,11 @@ const app = {
 
     // Attack panel (page 0) sync
     ['1','2'].forEach(n => {
-      const atkEl     = document.getElementById(`atk_bonus_${n}`);
-      const dmgEl     = document.getElementById(`atk_dmg_${n}`);
-      const sumBonusEl= document.getElementById(`sum_atk${n}_bonus`);
-      const sumDmgEl  = document.getElementById(`sum_atk${n}_dmg`);
-      const srcAtk    = document.getElementById(`w${n}_atk_val`);
-      const srcDmg    = document.getElementById(`w${n}_dmg_val`);
-      if (atkEl    && srcAtk) atkEl.textContent = srcAtk.textContent;
-      if (dmgEl    && srcDmg) dmgEl.textContent = srcDmg.textContent;
-      if (sumBonusEl && srcAtk) sumBonusEl.textContent = srcAtk.textContent.replace(/[^+\-\d]/g,'')||'+0';
-      if (sumDmgEl && srcDmg) sumDmgEl.textContent = srcDmg.textContent;
+      const atkEl = document.getElementById(`atk_bonus_${n}`);
+      const dmgEl = document.getElementById(`atk_dmg_${n}`);
+      const st    = this._combat.w[n-1];
+      if (atkEl && st) atkEl.textContent = st.atk;
+      if (dmgEl && st) dmgEl.textContent = st.dmg;
     });
 
     // Encumbrance
@@ -1178,23 +1222,47 @@ const app = {
     this._buildSavesSummary();
     // Stats live display
     this._buildStatsSummary();
+    // Resumen de Equipo de Combate (nombres y texto de ataque/daño).
+    // Sin esto, applyCharData lo construía vía confirmSection ANTES del
+    // recálculo final y quedaba rancio: el chip de tirada (sum_atk*) sí se
+    // actualizaba arriba, pero sum_wep*_name decía "Desarmado" y
+    // sum_wep*_stats mostraba los valores de desarmado tras cargar.
+    this._buildCombatSummary();
   },
 
   _calcWeapon(wid, uid, attr, dmgAttr, mods, prof, arq) {
     const n = wid === 'w1' ? 1 : 2;
     const weapon = this._getInventoryItem(uid);
-    const wData = weapon ? (weapon.dbData || this.DB.weapons?.[weapon.dbKey]) : this.DB.weapons?.[uid];
+    let wData = weapon ? (weapon.dbData || this.DB.weapons?.[weapon.dbKey]) : this.DB.weapons?.[uid];
     const nameEl  = document.getElementById(`atk_name_${n}`);
     const atkEl   = document.getElementById(`${wid}_atk_val`);
     const dmgEl   = document.getElementById(`${wid}_dmg_val`);
     const alertEl = document.getElementById(`${wid}_alert`);
+
+    // Arma del inventario SIN datos de juego (personalizada antigua, o item
+    // que perdió dbData en un guardado anterior): respetar la selección del
+    // jugador — mostrar SU nombre y atacar como arma genérica 1d4 — en vez
+    // de degradar silenciosamente a "Desarmado" mientras el select muestra
+    // otra cosa. El aviso guía a definir el daño con el editor ✎.
+    let missingData = false;
+    if (!wData && weapon && weapon.type === 'weapons') {
+      missingData = true;
+      wData = { name: weapon.name, dmg: weapon.dmg || '1d4', atk_bonus: 0 };
+    }
 
     if (!wData || uid === 'unarmed') {
       if (nameEl) nameEl.textContent = 'Desarmado';
       if (atkEl)  atkEl.textContent = (mods[attr]>=0?'+':'')+mods[attr];
       if (dmgEl)  dmgEl.textContent = '1d4';
       if (alertEl) alertEl.textContent = '';
+      // Mantener la caché de tiradas coherente con lo mostrado: antes este
+      // return dejaba el bono del arma ANTERIOR en _weaponAtkData y el botón
+      // de ataque tiraba con valores rancios que no coincidían con el texto.
+      if (!this._weaponAtkData) this._weaponAtkData = [0, 0];
+      this._weaponAtkData[n-1] = mods[attr] || 0;
       this._weaponDmgData[n-1] = {formula:'1d4', name:'Desarmado', dmgMod:0, dmgModStr:''};
+      this._combat.w[n-1] = { name: 'Desarmado',
+        atk: (mods[attr]>=0?'+':'')+(mods[attr]||0), dmg: '1d4', alert: '' };
       return;
     }
 
@@ -1222,9 +1290,12 @@ const app = {
     const fueFinal = this._finalStats?.FUE ?? (parseInt(document.getElementById('base_FUE')?.value)||8);
     const desFinal = this._finalStats?.DES ?? (parseInt(document.getElementById('base_DES')?.value)||8);
     let alert = '';
-    if (wData.req_FUE > 0 && fueFinal < wData.req_FUE) alert = `⚠ Requiere FUE ${wData.req_FUE}`;
+    if (missingData) alert = '⚠ Sin datos de arma — daño 1d4 genérico. Edítala (✎) en Equipo para definirlos';
+    if (wData.req_FUE > 0 && fueFinal < wData.req_FUE) alert += `${alert?' · ':''}⚠ Requiere FUE ${wData.req_FUE}`;
     if (wData.req_DES > 0 && desFinal < wData.req_DES) alert += `${alert?' · ':''}⚠ Requiere DES ${wData.req_DES}`;
     if (alertEl) alertEl.textContent = alert;
+    this._combat.w[n-1] = { name: wData.name,
+      atk: (atkBonus>=0?'+':'')+atkBonus, dmg: baseDmg + dmgModStr, alert };
   },
 
   onWeaponChange(wid) {
@@ -1261,7 +1332,7 @@ const app = {
     const data = this.DB[cat]?.[key];
     if (!data) return;
     const item = {
-      uid: Date.now(),
+      uid: this._nextUid(),
       name: data.name,
       slots: data.slots || 1,
       type: cat === 'shields' ? 'shields' : cat,
@@ -1282,6 +1353,10 @@ const app = {
   _openCustomItemForm(idx) {
     this._editingCustomItem = idx;
     const existing = idx !== null ? this.inventory[idx] : null;
+    // Datos de juego actuales del item (dbData propio, o su entrada de la DB)
+    const gd = existing
+      ? (existing.dbData || this.DB[existing.type]?.[existing.dbKey] || {})
+      : {};
     const overlay = document.createElement('div');
     overlay.id = 'custom_item_overlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -1291,12 +1366,27 @@ const app = {
         <div style="margin-bottom:8px"><span class="fl">Nombre</span><input type="text" id="ci_name" value="${this._esc(existing?.name||'')}" placeholder="Nombre del objeto"></div>
         <div class="g2" style="gap:6px;margin-bottom:8px">
           <div><span class="fl">Slots</span><input type="number" id="ci_slots" value="${existing?.slots||1}" min="0" max="20"></div>
-          <div><span class="fl">Tipo</span><select id="ci_type">
+          <div><span class="fl">Tipo</span><select id="ci_type" onchange="app._syncCustomItemFields()">
             <option value="misc"${(!existing||existing.type==='misc')?' selected':''}>Miscelánea</option>
             <option value="weapons"${existing?.type==='weapons'?' selected':''}>Arma</option>
             <option value="armors"${existing?.type==='armors'?' selected':''}>Armadura</option>
             <option value="shields"${existing?.type==='shields'?' selected':''}>Escudo</option>
           </select></div>
+        </div>
+        <div id="ci_weapon_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
+          <div><span class="fl">Daño (ej. 1d8)</span><input type="text" id="ci_dmg" value="${this._esc(gd.dmg||'1d4')}" placeholder="1d4" inputmode="text" autocapitalize="off"></div>
+          <div><span class="fl">Bono ataque</span><input type="number" id="ci_atkb" value="${gd.atk_bonus||0}" min="-5" max="10"></div>
+        </div>
+        <div id="ci_armor_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
+          <div><span class="fl">CA base</span><input type="number" id="ci_ca" value="${gd.ca||11}" min="8" max="20"></div>
+          <div><span class="fl">Categoría</span><select id="ci_armor_type">
+            <option value="light"${(!gd.type||gd.type==='light')?' selected':''}>Ligera</option>
+            <option value="medium"${gd.type==='medium'?' selected':''}>Media</option>
+            <option value="heavy"${gd.type==='heavy'?' selected':''}>Pesada</option>
+          </select></div>
+        </div>
+        <div id="ci_shield_fields" style="margin-bottom:8px;display:none">
+          <span class="fl">Bono de CA</span><input type="number" id="ci_shield_bonus" value="${gd.bonus??1}" min="0" max="5">
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-g" style="flex:1" onclick="document.getElementById('custom_item_overlay').remove()">Cancelar</button>
@@ -1305,6 +1395,16 @@ const app = {
       </div>`;
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     document.body.appendChild(overlay);
+    this._syncCustomItemFields();
+  },
+
+  /** Muestra los campos de datos de juego que correspondan al tipo elegido. */
+  _syncCustomItemFields() {
+    const type = document.getElementById('ci_type')?.value;
+    const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
+    show('ci_weapon_fields', type === 'weapons');
+    show('ci_armor_fields',  type === 'armors');
+    show('ci_shield_fields', type === 'shields');
   },
 
   saveCustomItem() {
@@ -1313,7 +1413,34 @@ const app = {
     const slots = parseInt(document.getElementById('ci_slots')?.value)||1;
     const type = document.getElementById('ci_type')?.value||'misc';
     const isEdit = this._editingCustomItem !== null;
-    const item = {uid: isEdit?this.inventory[this._editingCustomItem].uid:Date.now(), name, slots, type};
+    const existing = isEdit ? this.inventory[this._editingCustomItem] : null;
+    // PRESERVAR la identidad y los datos del item al editar. La versión
+    // anterior reconstruía {uid,name,slots,type} y DESTRUÍA dbKey/dbData:
+    // un arma equipada que se editaba (aunque solo fuera el nombre) perdía
+    // sus datos de juego y pasaba a calcularse como "Desarmado" pese a
+    // seguir seleccionada como Principal/Secundaria.
+    const item = { ...(existing || {}), uid: existing?.uid ?? this._nextUid(), name, slots, type };
+    // Datos de juego según tipo, partiendo de los previos (conserva extras
+    // de la DB como req_FUE) y aplicando lo editado en el formulario.
+    const prevData = existing ? (existing.dbData || this.DB[existing.type]?.[existing.dbKey] || {}) : {};
+    if (type === 'weapons') {
+      const dmgRaw = document.getElementById('ci_dmg')?.value?.trim() || '1d4';
+      const dmg = /^\d{1,2}d\d{1,3}([+-]\d{1,3})?$/i.test(dmgRaw) ? dmgRaw.toLowerCase() : '1d4';
+      if (dmg !== dmgRaw.toLowerCase()) this.toast('Daño inválido — usa el formato 1d8 o 2d6+1. Aplicado 1d4','err');
+      item.dbData = { ...prevData, name, dmg, atk_bonus: parseInt(document.getElementById('ci_atkb')?.value)||0 };
+    } else if (type === 'armors') {
+      item.dbData = { ...prevData, name,
+        ca:   parseInt(document.getElementById('ci_ca')?.value)||11,
+        type: document.getElementById('ci_armor_type')?.value||'light' };
+    } else if (type === 'shields') {
+      const sb = parseInt(document.getElementById('ci_shield_bonus')?.value);
+      item.dbData = { ...prevData, name, bonus: Number.isNaN(sb) ? 1 : sb };
+    } else if (item.dbData) {
+      // Cambió a miscelánea: el dbData previo ya no aplica al cálculo.
+      item.dbData = { ...prevData, name };
+    }
+    // El dbKey deja de ser fiable si los datos ya no son los de la DB.
+    if (item.dbData && existing?.dbKey && existing.dbData !== item.dbData) delete item.dbKey;
     if (isEdit) this.inventory[this._editingCustomItem] = item;
     else this.inventory.push(item);
     document.getElementById('custom_item_overlay')?.remove();
@@ -3415,11 +3542,20 @@ const app = {
     // Normalize inventory: ensure uid is always a string, name always a string
     this.inventory = (data.inventory || []).map(item => ({
       ...item,
-      uid:   String(item.uid   ?? Date.now()),
+      uid:   String(item.uid   ?? this._nextUid()),
       name:  String(item.name  ?? ''),
       slots: Number(item.slots ?? 1),
       type:  String(item.type  ?? 'misc'),
     }));
+    // Migración: personajes guardados por versiones con uid = Date.now()
+    // pueden traer uids DUPLICADOS (items creados en el mismo ms). El
+    // primero conserva el uid (igual que resolvía _getInventoryItem, así
+    // que las selecciones guardadas no cambian); los demás se reasignan.
+    const seenUids = new Set();
+    this.inventory.forEach(it => {
+      while (seenUids.has(it.uid)) it.uid = this._nextUid();
+      seenUids.add(it.uid);
+    });
     this.gold = data.gold||0;
     this.alignment = data.alignment||'';
     this._aptSel = { tricks: new Set(data.apt_tricks||[]), spells: new Set(data.apt_spells||[]) };
@@ -3743,6 +3879,7 @@ const app = {
     this._charPrefs = { portSize: size, portShape: shape, portBorder: this._portBorderMode };
     const btn = document.getElementById('per_char_prefs_btn');
     if (btn) btn.setAttribute('aria-pressed', String(this._perCharPrefs));
+    this._syncPortraitScopeUI();
     // Al cerrar Ajustes sin pulsar "✓ Aplicar al Personaje", descartar la
     // vista previa y volver a los valores confirmados del personaje.
     document.getElementById('settings_modal')
@@ -3779,7 +3916,7 @@ const app = {
     this.setPortraitShape(c.portShape);
     this._portBorderMode = c.portBorder;
     this._applyPortraitBorder();
-    this.toast('Vista previa descartada — usa "✓ Aplicar al Personaje"', 'info');
+    this.toast('Vista previa descartada — el personaje conserva sus ajustes', 'info');
   },
 
   setTheme(id) {
@@ -3855,6 +3992,117 @@ const app = {
     if (app)  this.setBgImage('app',  app);
   },
 
+  /* ══════════════════════════════════════════
+     AJUSTES & DATOS — apertura/cierre seguros
+  ══════════════════════════════════════════ */
+
+  /** Abre el modal de Ajustes sincronizando antes el estado de la UI. */
+  openSettings() {
+    // Ámbito por defecto contextual en cada apertura: con personaje abierto
+    // (y prefs individuales activas) → "Este personaje"; si no → "Global".
+    this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
+    this._syncPortraitScopeUI();
+    const dlg = document.getElementById('settings_modal');
+    if (!dlg) return;
+    if (!dlg.open) {
+      if (typeof dlg.showModal === 'function') {
+        try { dlg.showModal(); } catch (_) { dlg.setAttribute('open', ''); }
+      } else dlg.setAttribute('open', '');       // fallback (entornos sin <dialog>)
+    }
+  },
+
+  /** Cierra el <dialog> de Ajustes tolerando entornos sin close(). */
+  _closeSettingsDlg() {
+    const dlg = document.getElementById('settings_modal');
+    if (!dlg) return;
+    if (typeof dlg.close === 'function') { try { dlg.close(); return; } catch (_) {} }
+    dlg.removeAttribute('open');
+  },
+
+  /** Cierra Ajustes con escudo: el toque de cierre no traspasa a la hoja. */
+  closeSettings() {
+    if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
+    this._closeSettingsDlg();
+  },
+
+  /** "💾 Guardar" desde Ajustes: cierra el modal BAJO escudo y luego guarda.
+      Sin el escudo, el click fantasma del toque (~300 ms después) aterriza
+      sobre la hoja recién descubierta o sobre el diálogo de confirmación. */
+  saveFromSettings() {
+    if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
+    this._closeSettingsDlg();
+    // Siguiente tick: el confirm de sobreescritura ya no compite con el
+    // top-layer del <dialog> y se renderiza por encima de la hoja.
+    setTimeout(() => this.saveChar(), 0);
+  },
+
+  /* ══════════════════════════════════════════
+     RETRATO — ámbito de aplicación
+     'char'   → solo el personaje abierto (_prefs en su entrada del roster)
+     'global' → predeterminado de la app (localStorage)
+  ══════════════════════════════════════════ */
+
+  setPortraitScope(scope) {
+    this._portScope = (scope === 'global') ? 'global' : 'char';
+    this._syncPortraitScopeUI();
+  },
+
+  /** Mantiene coherente el segmento de ámbito, el botón Aplicar y la ayuda. */
+  _syncPortraitScopeUI() {
+    const charOpen = this._charOpen();
+    const canChar  = charOpen && this._perCharPrefs;
+    if (!canChar) this._portScope = 'global';
+    else if (!this._portScope) this._portScope = 'char';
+
+    const segC = document.getElementById('port_scope_char');
+    const segG = document.getElementById('port_scope_global');
+    const btn  = document.getElementById('confirm_portrait_btn');
+    const hint = document.getElementById('port_scope_hint');
+    const isChar = this._portScope === 'char';
+
+    if (segC) {
+      segC.disabled = !canChar;
+      segC.classList.toggle('active', isChar);
+      segC.setAttribute('aria-pressed', String(isChar));
+      segC.title = canChar ? 'Aplicar solo al personaje abierto'
+        : (charOpen ? 'Activa "Ajustes individuales por personaje" para usar este ámbito'
+                    : 'Abre un personaje para usar este ámbito');
+    }
+    if (segG) {
+      segG.classList.toggle('active', !isChar);
+      segG.setAttribute('aria-pressed', String(!isChar));
+    }
+    if (btn) btn.textContent = isChar ? '✓ Aplicar a este personaje' : '✓ Guardar como global';
+    if (hint) hint.textContent = isChar
+      ? 'Vista previa en vivo: se aplica solo al personaje abierto al pulsar el botón. Si cierras sin aplicar, se descarta.'
+      : (charOpen
+          ? 'Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios. El personaje abierto conserva los suyos al cerrar.'
+          : 'Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.');
+  },
+
+  /** Aplica la vista previa del retrato según el ámbito seleccionado. */
+  applyPortraitSettings() {
+    if (this._portScope !== 'global' && this._charOpen()) {
+      this.confirmPortraitSettings();              // flujo por-personaje existente
+      return;
+    }
+    // GLOBAL: persistir la vista previa actual como predeterminado de la app.
+    const size   = this._portSize        || 'm';
+    const shape  = this._portShape       || 'rect';
+    const border = this._portBorderMode  || 'premium';
+    localStorage.setItem(STORAGE.KEYS.portSize,  size);
+    localStorage.setItem(STORAGE.KEYS.portShape, shape);
+    localStorage.setItem('ss_port_border',       border);
+    if (!this._charOpen()) {
+      // Sin personaje abierto el global ES el estado visible: confirmarlo
+      // evita que el cierre del modal lo revierta como "vista previa".
+      this._charPrefs = { portSize: size, portShape: shape, portBorder: border };
+    }
+    const btn = document.getElementById('confirm_portrait_btn');
+    if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
+    this.toast('Guardado como predeterminado global', 'ok');
+  },
+
   /** Confirma la vista previa de retrato SOLO para el personaje abierto. */
   confirmPortraitSettings() {
     const flash = () => {
@@ -3903,8 +4151,9 @@ const app = {
     const mode = this._portBorderMode || 'premium';
     document.body.classList.remove('port-border-subtle', 'port-border-none');
     if (mode === 'subtle') document.body.classList.add('port-border-subtle');
+    // Fraseo positivo en la UI: pressed=true ⇒ "Borde Premium" ACTIVO.
     const btn = document.getElementById('port_border_btn');
-    if (btn) btn.setAttribute('aria-pressed', mode === 'subtle' ? 'true' : 'false');
+    if (btn) btn.setAttribute('aria-pressed', mode === 'premium' ? 'true' : 'false');
   },
 
   togglePerCharPrefs() {
@@ -3912,6 +4161,8 @@ const app = {
     const btn = document.getElementById('per_char_prefs_btn');
     if (btn) btn.setAttribute('aria-pressed', String(this._perCharPrefs));
     localStorage.setItem('ss_per_char_prefs', this._perCharPrefs ? '1' : '0');
+    // Desactivado ⇒ el ámbito "Este personaje" deja de tener sentido.
+    this._syncPortraitScopeUI();
   },
 
   toggleScrollPreserve() {
@@ -4133,11 +4384,11 @@ const app = {
     // 11. Inventario básico
     const weapons = Object.entries(this.DB.weapons||{});
     const armors = Object.entries(this.DB.armors||{}).filter(([k])=>k!=='laminar');
-    if (armors.length) { const [k,v]=armors[Math.floor(Math.random()*armors.length)]; this.inventory.push({uid:Date.now()+1,name:v.name,slots:v.slots||1,type:'armors',dbKey:k,dbData:v}); }
-    if (weapons.length) { const [k,v]=weapons[Math.floor(Math.random()*weapons.length)]; this.inventory.push({uid:Date.now()+2,name:v.name,slots:v.slots||1,type:'weapons',dbKey:k,dbData:v}); }
-    this.inventory.push({uid:Date.now()+3,name:'Raciones (×5) · Ud8',slots:1,type:'misc'});
-    this.inventory.push({uid:Date.now()+4,name:'Antorchas (×5) · Ud6',slots:1,type:'misc'});
-    this.inventory.push({uid:Date.now()+5,name:'Morral / Mochila (+5 slots)',slots:1,type:'misc'});
+    if (armors.length) { const [k,v]=armors[Math.floor(Math.random()*armors.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'armors',dbKey:k,dbData:v}); }
+    if (weapons.length) { const [k,v]=weapons[Math.floor(Math.random()*weapons.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'weapons',dbKey:k,dbData:v}); }
+    this.inventory.push({uid:this._nextUid(),name:'Raciones (×5) · Ud8',slots:1,type:'misc'});
+    this.inventory.push({uid:this._nextUid(),name:'Antorchas (×5) · Ud6',slots:1,type:'misc'});
+    this.inventory.push({uid:this._nextUid(),name:'Morral / Mochila (+5 slots)',slots:1,type:'misc'});
     // Monedas iniciales por Arquetipo (v5.2): Audaz 5d6, Sutil 4d6, Sagaz 3d6 — ×10 pp
     const arqKeyRand = document.getElementById('sel_arq')?.value || 'sutil';
     const coinDice = { audaz:5, sutil:4, sagaz:3 }[arqKeyRand] || 4;

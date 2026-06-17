@@ -1,6 +1,96 @@
-# S&S Companion — Reconstrucción v31
+# S&S Companion — v36
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
+
+
+
+
+
+## Novedades v36 — Sincronización con las reglas **v5.3 / v5.3.1**
+
+La base de datos de reglas (`js/data.js`) se actualizó de **v5.2.2 a v5.3.1**, sincronizada con los tres documentos canónicos: el *Manual Básico v5.3*, el *Compendio Maestro de Talentos v5.3.1* y el *Catálogo de Axiomas v5.3*. Ninguna funcionalidad de la app cambió — solo los datos. `STORAGE.RULES_DATA_VERSION` se incrementó a `5.3.1-app-r1`, así que los usuarios que regresan adoptan automáticamente las reglas nuevas **sin tocar sus personajes guardados**.
+
+**Axiomas (Catálogo v5.3) — 327 → 330 entradas:**
+
+- Nuevos: **Explosión Sobrenatural** (Truco), **Armadura Gélida** y **Espurio** (Erudición Nv1).
+- Rebalanceo de PA: *Palabra de Poder: Aturdir*, *Palabra de Poder: Matar* y *Palabra Sagrada* pasan de 1 PA a **2 PA**.
+- Reetiquetado de versión interno (`[v5.2.2]` → `[v5.2.3]`) y normalización de comillas en los efectos.
+- Las 327 entradas previas se conservan con su mismo `id` (compatibilidad con personajes guardados).
+
+**Talentos (Compendio v5.3.1) — 175 → 191 talentos, 15 → 16 catálogos:**
+
+- Nueva categoría **Rompejuramentos** (7 capacidades-espejo de La Caída): *Tormento, Aura de Odio, Aspecto Pavoroso, Mando sobre los Muertos, Sentencia de Condena, Voluntad Corrupta, Armadura Profana*.
+- **Los Seis Juramentos** con su Talento-firma en la categoría *Juramento*: *Luz de Refugio* (Faro), *Marca de la Deuda* (Ceniza), *Sello del Umbral* (Umbral), *Luz Imperecedera* (Antiguo), *Voto de Enemistad* (Promesa), *Presencia del Trono* (Trono).
+- Nuevos talentos sueltos: *Estallido agonizante* (Pacto), *Sangre de Veterano* y *Maestría de la Materia* (General).
+
+**Datos del Manual (Apéndice A + Cap. II):**
+
+- **Sintético**: bono de atributo ahora **+1 CON, +1 INT** (antes solo +1 CON) — afecta el cálculo automático de atributos.
+- **Armadura de Placas**: CA base **17 → 18**.
+- Nueva arma magitec: **Lanzagranadas** (3d6, área 15 pies).
+- **Soldado**: habilidad *Perspicacia* corregida a *Percepción* (según la tabla del manual).
+- **Elfo**: Visión Élfica ajustada a 60 pies (texto del manual).
+
+> El módulo de extracción y los textos fuente intermedios se conservan fuera del despliegue; la app sigue siendo cero *build step*.
+
+## Novedades v35 — Modo lectura de "Equipo de Combate" reconstruido desde cero
+
+La vista resumen de Equipo de Combate cambió de arquitectura. La versión anterior era markup estático en `index.html` cuyo contenido se actualizaba "raspando" el `textContent` de la vista de edición — un acoplamiento al DOM que dependía del orden de ejecución y que originó toda la familia de bugs de "Desarmado fantasma".
+
+Ahora:
+
+- `calc()` deposita su resultado en un **estado único** (`app._combat`: CA, armadura, escudo, y nombre/ataque/daño/avisos de ambas armas).
+- `_buildCombatSummary()` **regenera la vista completa** desde ese estado en cada cálculo. Cero lecturas del DOM de otras vistas ⇒ es estructuralmente imposible que el modo lectura diverja de los valores calculados, sin importar el orden de carga o renderizado.
+- En `index.html` el contenedor `#combat_summary_view` queda como cascarón vacío que el renderer llena (misma apariencia: se reutilizan las clases `atk-card`, `fbox`, `abtn`…).
+- Mejora: los avisos del arma (p. ej. "⚠ Sin datos de arma" o requisitos de FUE/DES no cumplidos) ahora también se ven en el modo lectura.
+- Los nombres se escapan con `_esc` (los items personalizados son entrada del usuario).
+
+Suite de humo: **28 pruebas**, todas en verde.
+
+## Novedades v34 — Fix: resumen de "Equipo de Combate" rancio al cargar
+
+**Síntoma.** Tras abrir un personaje, la página *Ataques* y la vista de edición eran correctas, pero el resumen colapsado de **Equipo → Equipo de Combate** mostraba "Desarmado" en Principal y Secundaria, con el texto de ataque/daño de desarmado — mientras el chip de tirada de ese mismo resumen sí tenía los valores correctos.
+
+**Causa raíz (orden de carga en `applyCharData`).** `updateOptions()` ejecuta un `calc()` *antes* de restaurar los `<select>` (calcula "Desarmado"); luego se restauran los selects; luego `confirmSection('combat')` construye el resumen **con esos valores rancios**; y el `calc()` final corregía la edición, la página Ataques y los chips `sum_atk*` — pero `sum_wep*_name` y `sum_wep*_stats` solo se reescribían en `_buildCombatSummary`, que ya no volvía a ejecutarse.
+
+**Fix.** `calc()` ahora refresca también el resumen de combate (mismo patrón que ya usaba con Stats y Salvaciones): el resumen no puede volver a quedar desincronizado, sin importar el orden de carga. De paso esto corrige el mismo desfase en la armadura/escudo del resumen.
+
+Suite de humo: **27 pruebas**, todas en verde.
+
+## Novedades v33 — Fix: arma equipada que decía "Desarmado"
+
+**Síntoma reportado.** Al abrir un personaje, Principal/Secundaria parecían "resetearse": el botón de ataque mostraba valores correctos pero el texto decía *Desarmado* y las tiradas calculaban ataque/daño de desarmado.
+
+**Causas raíz (tres, encadenadas):**
+
+1. **El editor ✎ destruía los datos del item.** `saveCustomItem` reconstruía el objeto como `{uid, name, slots, type}`, eliminando `dbKey`/`dbData`. Editar un arma equipada (aunque solo el nombre) la dejaba sin datos de juego → `_calcWeapon` no encontraba `wData` y degradaba a "Desarmado" pese a seguir seleccionada. **Fix:** la edición ahora preserva la identidad del item (`{...existing}`) y sus datos.
+2. **Caché de tiradas rancia.** La rama "desarmado" de `_calcWeapon` retornaba sin actualizar `_weaponAtkData`, así que el botón de tirada conservaba el bono del arma anterior — el estado mixto "botón correcto / texto desarmado". **Fix:** la caché se actualiza en todas las ramas.
+3. **uids colisionables.** `Date.now()` a secas genera uids duplicados al añadir varios items en el mismo milisegundo; con duplicados, los selects y `_getInventoryItem` podían resolver al item equivocado. **Fix:** generador monotónico `_nextUid()` + migración automática al cargar personajes antiguos (el primer item conserva el uid, así las selecciones guardadas no cambian).
+
+**Mejoras asociadas:**
+
+- El editor de items ahora permite definir **datos de juego por tipo**: daño y bono de ataque (armas), CA base y categoría (armaduras), bono de CA (escudos). Los objetos personalizados ya combaten de verdad.
+- Arma sin datos (heredada de guardados antiguos): se respeta la selección — muestra **su nombre**, ataca como arma genérica 1d4 y avisa *"⚠ Sin datos de arma — edítala (✎) para definirlos"* en lugar de fingir "Desarmado".
+- Armadura/escudo sin datos: mismos números que antes (CA 10 / bono 0) pero mostrando el nombre real con "(sin datos)" en vez de "Sin Armadura".
+
+Suite de humo: **26 pruebas**, todas en verde.
+
+## Novedades v32 — Ajustes & Datos rediseñado
+
+**Menú reordenado** (frecuencia de uso → acciones de datos al final): *Retrato → Interfaz → Apariencia (Tema + Fondo) → Datos (Personaje + Reglas)*. Se eliminó el botón redundante de cierre superior duplicado en lógica; el botón inferior "✓ Listo" se conserva por ergonomía de pulgar en móvil.
+
+**Retrato con ámbito explícito.** Un control segmentado *"Aplicar a: Este personaje | Global (todos)"* hace visible lo que antes era implícito:
+
+- **Este personaje** (por defecto con una hoja abierta): tamaño, forma y borde son vista previa en vivo; *"✓ Aplicar a este personaje"* los persiste en `_prefs` de SU entrada del roster sin tocar el global ni a otros personajes.
+- **Global (todos)**: *"✓ Guardar como global"* fija el predeterminado de la app (nuevos personajes y los que no tengan ajustes propios). Único ámbito disponible desde Inicio o con "Ajustes individuales por personaje" desactivado (el segmento se deshabilita solo).
+- El toggle **"Ajustes individuales por personaje"** (antes "Guardar ajustes con personaje") sigue siendo el interruptor maestro; **"Borde Premium"** pasó a fraseo positivo (activado = borde dorado), eliminando el doble negativo "Desactivar Borde Premium".
+
+**Blindaje anti ghost-click ampliado** (`js/ui-dialogs.js`):
+
+- **Capa 4 — guardia de armado**: el click sintetizado (~300 ms tras el `touchend`) que aterrice *sobre los propios botones* del diálogo recién abierto ya no puede activarlos: cada botón exige un `pointerdown` propio posterior a la apertura (las activaciones de teclado, `detail === 0`, se aceptan siempre). Antes, tocar "Guardar" justo donde luego aparece "✓ Sobreescribir" podía auto-confirmar.
+- **`UI.ghostShield(ms)`**: escudo independiente reutilizable. `app.saveFromSettings()` y `app.closeSettings()` lo usan al cerrar el modal de Ajustes, de modo que el toque sobre "💾 Guardar"/"✓ Listo"/"✕" no traspasa a la hoja que queda al descubierto ni al diálogo de confirmación que aparece después.
+
+La suite de humo creció a 22 pruebas en esta versión, incluyendo: ámbito global vs por-personaje sin contaminación cruzada, cierre de Ajustes bajo escudo, liberación anticipada del escudo y la guardia de armado contra clicks fantasma sobre el botón OK.
 
 ## Estructura del proyecto
 
@@ -12,7 +102,7 @@ ss-companion/
 ├── css/
 │   └── main.css        Tokens de diseño + toda la hoja de estilos
 ├── js/
-│   ├── data.js         Base de datos de reglas por defecto (v5.2.2)
+│   ├── data.js         Base de datos de reglas por defecto (v5.3.1)
 │   ├── constants.js    Constantes del sistema y temporizadores de UI
 │   ├── storage.js      Persistencia versionada con migraciones (localStorage)
 │   ├── ui-dialogs.js   Diálogos modales con escudo anti ghost-click  ← NUEVO
@@ -48,7 +138,7 @@ Extras del nuevo diálogo: ejecución única garantizada de `onConfirm`/`onCance
 
 ```bash
 npm install jsdom
-node smoke.test.cjs
+node smoke_test.cjs
 ```
 
 Cubre: arranque, render del roster, creación de hoja, cálculo, generador aleatorio, guardado, **apertura del diálogo de confirmación, bloqueo de clicks externos, ejecución única al confirmar, absorción del click fantasma post-cierre y recuperación de la interactividad**, tirada de dados, inventario y exportación JSON.

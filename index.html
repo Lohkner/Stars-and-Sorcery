@@ -170,7 +170,7 @@
     </div>
 
     <!-- Settings button -->
-    <button class="home-settings-btn" onclick="document.getElementById('settings_modal').showModal()" aria-label="Abrir ajustes y datos">
+    <button class="home-settings-btn" onclick="app.openSettings()" aria-label="Abrir ajustes y datos">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Ajustes &amp; Datos
     </button>
@@ -216,7 +216,7 @@
           <button class="sdial-item" onclick="app.randomize();app.toggleDial()" title="Personaje aleatorio" aria-label="Generar personaje aleatorio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
           <button class="sdial-item sdial-danger" onclick="app.confirmClear();app.toggleDial()" title="Resetear hoja" aria-label="Resetear hoja de personaje"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
           <button class="sdial-item sdial-danger" onclick="app.deleteCurrentChar();app.toggleDial()" title="Eliminar personaje" aria-label="Eliminar personaje guardado"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-          <button class="sdial-item" onclick="document.getElementById('settings_modal').showModal();app.toggleDial()" title="Ajustes y datos" aria-label="Abrir ajustes y datos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <button class="sdial-item" onclick="app.openSettings();app.toggleDial()" title="Ajustes y datos" aria-label="Abrir ajustes y datos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         </div>
       </div>
     </header>
@@ -567,48 +567,9 @@
               <button class="bcnf" onclick="app.confirmSection('combat')">✓ Confirmar</button>
             </div>
             <div id="combat_summary_view" style="display:none">
-              <div class="g3" style="margin-bottom:6px">
-                <div class="fbox"><div class="flbl g">CA</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_ac">10</span></div></div>
-                <div class="fbox"><div class="flbl">Armadura</div><div class="fval" style="font-size:.74rem;flex-direction:column;gap:1px"><span id="sum_armor_name">—</span><span style="font-size:.55rem;color:var(--muted)" id="sum_armor_type">Normal</span></div></div>
-                <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:.74rem"><span id="sum_shield">—</span></div></div>
-              </div>
-              <div class="atk-card">
-                <div class="atk-hdr">
-                  <span class="atk-nm" id="sum_wep1_name">—</span>
-                  <span class="atk-role-badge">Principal</span>
-                </div>
-                <div class="atk-stats-line" id="sum_wep1_stats">—</div>
-                <div class="atk-btns">
-                  <button class="abtn abtn-a" onclick="app.rollWeaponAtk(1)" aria-label="Tirar ataque arma principal">
-                    <span class="abtn-icon">ATK</span>
-                    <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="sum_atk1_bonus">+0</span></span>
-                  </button>
-                  <div class="atk-btn-sep"></div>
-                  <button class="abtn abtn-d" onclick="app.rollWeaponDmg(1)" aria-label="Tirar daño arma principal">
-                    <span class="abtn-icon">DMG</span>
-                    <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="sum_atk1_dmg">1</span></span>
-                  </button>
-                </div>
-              </div>
-              <div class="atk-card secondary">
-                <div class="atk-hdr">
-                  <span class="atk-nm" id="sum_wep2_name">—</span>
-                  <span class="atk-role-badge">Secundaria</span>
-                </div>
-                <div class="atk-stats-line" id="sum_wep2_stats">—</div>
-                <div class="atk-btns">
-                  <button class="abtn abtn-a" onclick="app.rollWeaponAtk(2)" aria-label="Tirar ataque arma secundaria">
-                    <span class="abtn-icon">ATK</span>
-                    <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="sum_atk2_bonus">+0</span></span>
-                  </button>
-                  <div class="atk-btn-sep"></div>
-                  <button class="abtn abtn-d" onclick="app.rollWeaponDmg(2)" aria-label="Tirar daño arma secundaria">
-                    <span class="abtn-icon">DMG</span>
-                    <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="sum_atk2_dmg">1</span></span>
-                  </button>
-                </div>
-              </div>
-              <button class="bedit" onclick="app.editSection('combat')">✏ Editar</button>
+              <!-- Contenido generado por app._buildCombatSummary() desde app._combat
+                   en cada calc(). Render completo desde estado: no puede divergir
+                   de los valores calculados. -->
             </div>
           </div>
 
@@ -708,14 +669,74 @@
         <span class="mttl-sub">Configuración del personaje y la app</span>
       </div>
     </div>
-    <button class="bcls" onclick="document.getElementById('settings_modal').close()" aria-label="Cerrar ajustes">✕</button>
+    <button class="bcls" data-action="closeSettings" aria-label="Cerrar ajustes">✕</button>
   </div>
   <div class="mbd" style="display:flex;flex-direction:column;gap:14px">
-    <div>
-      <div class="dvdr">Interfaz</div>
-      <!-- Font size -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Tamaño de Fuente</span>
+
+    <!-- ── RETRATO ─────────────────────────────────────────────── -->
+    <section aria-labelledby="dvdr_port">
+      <div class="dvdr" id="dvdr_port">Retrato</div>
+
+      <!-- Master: prefs individuales por personaje -->
+      <div class="set-row">
+        <div class="set-row-txt">
+          <span class="set-lbl">Ajustes individuales por personaje</span>
+          <span class="set-hint">Activado: cada personaje conserva su propio retrato (tamaño, forma y borde). Desactivado: todos usan el predeterminado global.</span>
+        </div>
+        <button id="per_char_prefs_btn" class="toggle-btn" data-action="togglePerCharPrefs" aria-pressed="true" aria-label="Guardar ajustes de retrato por personaje"></button>
+      </div>
+
+      <!-- Ámbito de aplicación -->
+      <div style="margin-bottom:12px">
+        <span class="set-lbl" style="display:block;margin-bottom:7px">Aplicar a</span>
+        <div class="seg" role="group" aria-label="Ámbito de los ajustes de retrato">
+          <button type="button" class="seg-btn" id="port_scope_char" onclick="app.setPortraitScope('char')" aria-pressed="false">Este personaje</button>
+          <button type="button" class="seg-btn active" id="port_scope_global" onclick="app.setPortraitScope('global')" aria-pressed="true">Global (todos)</button>
+        </div>
+      </div>
+
+      <!-- Tamaño -->
+      <div style="margin-bottom:10px">
+        <span class="set-lbl" style="display:block;margin-bottom:7px">Tamaño</span>
+        <div style="display:flex;gap:5px">
+          <button class="fs-btn ps-btn" data-size="xs" onclick="app.setPortraitSize('xs')" title="Muy pequeño" style="font-size:.6rem;flex:1;padding:5px 2px">XS</button>
+          <button class="fs-btn ps-btn" data-size="s"  onclick="app.setPortraitSize('s')"  title="Pequeño"     style="font-size:.6rem;flex:1;padding:5px 2px">S</button>
+          <button class="fs-btn ps-btn active" data-size="m" onclick="app.setPortraitSize('m')" title="Mediano" style="font-size:.6rem;flex:1;padding:5px 2px">M</button>
+          <button class="fs-btn ps-btn" data-size="l"  onclick="app.setPortraitSize('l')"  title="Grande"      style="font-size:.6rem;flex:1;padding:5px 2px">L</button>
+          <button class="fs-btn ps-btn" data-size="xl" onclick="app.setPortraitSize('xl')" title="Muy grande"  style="font-size:.6rem;flex:1;padding:5px 2px">XL</button>
+        </div>
+      </div>
+
+      <!-- Forma -->
+      <div style="margin-bottom:10px">
+        <span class="set-lbl" style="display:block;margin-bottom:7px">Forma</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+          <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular"  style="font-size:.6rem;padding:5px 2px">Rect</button>
+          <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado"   style="font-size:.6rem;padding:5px 2px">Suave</button>
+          <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior" style="font-size:.6rem;padding:5px 2px">Arco</button>
+          <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo"      style="font-size:.6rem;padding:5px 2px">Círculo</button>
+        </div>
+      </div>
+
+      <!-- Borde premium (fraseo positivo) -->
+      <div class="set-row">
+        <div class="set-row-txt">
+          <span class="set-lbl">Borde Premium</span>
+          <span class="set-hint">Marco dorado ornamentado del retrato. Desactívalo para un borde sutil.</span>
+        </div>
+        <button id="port_border_btn" class="toggle-btn" data-action="togglePortraitBorder" aria-pressed="true" aria-label="Activar o desactivar el borde premium del retrato"></button>
+      </div>
+
+      <!-- Aplicar (al final: configurar → confirmar) -->
+      <div class="set-hint" id="port_scope_hint" style="margin-bottom:8px;line-height:1.5">Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.</div>
+      <button class="bcnf" id="confirm_portrait_btn" data-action="applyPortraitSettings" style="margin:0;width:100%">✓ Guardar como global</button>
+    </section>
+
+    <!-- ── INTERFAZ ────────────────────────────────────────────── -->
+    <section aria-labelledby="dvdr_ui">
+      <div class="dvdr" id="dvdr_ui">Interfaz</div>
+      <div class="set-row" style="margin-bottom:10px">
+        <span class="set-lbl">Tamaño de Fuente</span>
         <div style="display:flex;gap:5px;align-items:center">
           <button class="fs-btn" id="fs_small"  onclick="app.setFontSize('small')"  title="Pequeño"    style="font-size:11px">A</button>
           <button class="fs-btn" id="fs_normal" onclick="app.setFontSize('normal')" title="Normal"     style="font-size:14px">A</button>
@@ -723,88 +744,61 @@
           <button class="fs-btn" id="fs_xlarge" onclick="app.setFontSize('xlarge')" title="Muy Grande" style="font-size:20px">A</button>
         </div>
       </div>
-      <!-- Scroll preserve -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px">
-        <div>
-          <span id="scroll_preserve_lbl" style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Recordar posición al volver</span>
-          <div style="font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px">Mantiene el scroll de cada sección al cambiar de pestaña</div>
+      <div class="set-row">
+        <div class="set-row-txt">
+          <span class="set-lbl" id="scroll_preserve_lbl">Recordar posición al volver</span>
+          <span class="set-hint">Mantiene el scroll de cada sección al cambiar de pestaña</span>
         </div>
         <button id="scroll_preserve_btn" class="toggle-btn" data-action="toggleScrollPreserve" aria-pressed="false" title="Activar/desactivar recordar posición de scroll" aria-label="Activar recordar posición al volver"></button>
       </div>
-    </div>
-    <!-- ── RETRATO ── -->
-    <div>
-      <div class="dvdr">Retrato</div>
-      <!-- Confirm portrait button -->
-      <button class="bcnf" id="confirm_portrait_btn" data-action="confirmPortraitSettings" style="margin-top:0;margin-bottom:4px">✓ Aplicar al Personaje</button>
-      <div style="font-family:var(--fm);font-size:.58rem;color:var(--border);margin-bottom:12px;line-height:1.5">Los cambios de abajo son vista previa: solo se aplican al personaje abierto al pulsar este botón. Si cierras sin aplicar, se descartan. Desde Inicio (sin personaje) fijan el predeterminado de nuevos personajes.</div>
-      <!-- Per-char prefs notice -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
-        <div>
-          <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Guardar ajustes con personaje</span>
-          <div style="font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px">Activado: cada personaje conserva su propio retrato (tamaño, forma, borde y fuente). Desactivado: todos usan el predeterminado global.</div>
-        </div>
-        <button id="per_char_prefs_btn" class="toggle-btn" data-action="togglePerCharPrefs" aria-pressed="true" aria-label="Guardar ajustes visuales por personaje"></button>
-      </div>
-      <!-- Border toggle -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
-        <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Desactivar Borde Premium</span>
-        <button id="port_border_btn" class="toggle-btn" data-action="togglePortraitBorder" aria-pressed="true" aria-label="Cambiar entre borde premium y borde sutil del retrato"></button>
-      </div>
-      <!-- Size -->
-      <div style="margin-bottom:10px">
-        <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:7px">Tamaño</span>
-        <div style="display:flex;gap:5px">
-          <button class="fs-btn ps-btn" data-size="xs" onclick="app.setPortraitSize('xs')" title="Muy pequeño"  style="font-size:.6rem;flex:1;padding:5px 2px">XS</button>
-          <button class="fs-btn ps-btn" data-size="s"  onclick="app.setPortraitSize('s')"  title="Pequeño"      style="font-size:.6rem;flex:1;padding:5px 2px">S</button>
-          <button class="fs-btn ps-btn active" data-size="m"  onclick="app.setPortraitSize('m')"  title="Mediano"      style="font-size:.6rem;flex:1;padding:5px 2px">M</button>
-          <button class="fs-btn ps-btn" data-size="l"  onclick="app.setPortraitSize('l')"  title="Grande"       style="font-size:.6rem;flex:1;padding:5px 2px">L</button>
-          <button class="fs-btn ps-btn" data-size="xl" onclick="app.setPortraitSize('xl')" title="Muy grande"   style="font-size:.6rem;flex:1;padding:5px 2px">XL</button>
-        </div>
-      </div>
-      <!-- Shape -->
-      <div>
-        <span style="font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:7px">Forma</span>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
-          <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular">Rect</button>
-          <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado">Suave</button>
-          <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior">Arco</button>
-          <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo">Círculo</button>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="dvdr">Fondo de Pantalla</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <div style="font-family:var(--fd);font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Inicio</div>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_home_input').click()">↑ Subir</button>
-            <button id="bg_home_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('home','')">✕</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-family:var(--fd);font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Personaje</div>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_app_input').click()">↑ Subir</button>
-            <button id="bg_app_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('app','')">✕</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="dvdr">Tema Visual</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">
+    </section>
+
+    <!-- ── APARIENCIA ──────────────────────────────────────────── -->
+    <section aria-labelledby="dvdr_look">
+      <div class="dvdr" id="dvdr_look">Apariencia</div>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Tema Visual</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
         <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')" title="Art Déco" style="flex:1;padding:6px 2px;font-size:.58rem">Art Déco</button>
         <button class="fs-btn theme-btn" data-theme="blood" onclick="app.setTheme('blood')" title="Sangre" style="flex:1;padding:6px 2px;font-size:.58rem">Sangre</button>
         <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')" title="Vacío" style="flex:1;padding:6px 2px;font-size:.58rem">Vacío</button>
         <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')" title="Arcano" style="flex:1;padding:6px 2px;font-size:.58rem">Arcano</button>
         <button class="fs-btn theme-btn" data-theme="parchment" onclick="app.setTheme('parchment')" title="Pergamino" style="flex:1;padding:6px 2px;font-size:.58rem">Pergamino</button>
       </div>
-    </div>
-    <div><div class="dvdr">Reglas del Juego</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()">↑ Importar Reglas (JSON)</button><button class="btn btn-gold" style="width:100%" data-action="openDatabaseEditor">⚙ Editor de Base de Datos</button></div></div>
-    <div><div class="dvdr">Personaje</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="btn btn-g" onclick="app.saveChar();document.getElementById('settings_modal').close()">💾 Guardar</button><button class="btn btn-g" data-action="exportJSON">↓ Exportar JSON</button></div></div>
-    <button class="bcnf" style="width:100%;margin-top:4px" onclick="document.getElementById('settings_modal').close()">✓ Confirmar</button>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Fondo de Pantalla</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Inicio</div>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_home_input').click()">↑ Subir</button>
+            <button id="bg_home_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio">✕</button>
+          </div>
+        </div>
+        <div>
+          <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Personaje</div>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_app_input').click()">↑ Subir</button>
+            <button id="bg_app_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje">✕</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DATOS ───────────────────────────────────────────────── -->
+    <section aria-labelledby="dvdr_data">
+      <div class="dvdr" id="dvdr_data">Datos</div>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Personaje</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+        <button class="btn btn-g" data-action="saveFromSettings">💾 Guardar</button>
+        <button class="btn btn-g" data-action="exportJSON">↓ Exportar JSON</button>
+      </div>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Reglas del Juego</span>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()">↑ Importar Reglas (JSON)</button>
+        <button class="btn btn-gold" style="width:100%" data-action="openDatabaseEditor">⚙ Editor de Base de Datos</button>
+      </div>
+    </section>
+
+    <button class="bcnf" style="width:100%;margin-top:4px" data-action="closeSettings">✓ Listo</button>
   </div>
 </dialog>
 <div id="db_panel" class="fs-panel" role="region" aria-label="Editor de reglas">

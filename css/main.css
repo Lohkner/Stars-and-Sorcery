@@ -1322,6 +1322,31 @@ input[type=radio]:checked::after{transform:scale(1)}
 .toggle-btn[aria-pressed="true"]{background:rgba(200,169,110,.15);border-color:rgba(200,169,110,.4)}
 .toggle-btn[aria-pressed="true"]::after{transform:translateX(20px);background:var(--gold)}
 
+/* ── AJUSTES: filas y textos reutilizables ── */
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.set-row-txt{min-width:0}
+.set-lbl{font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.set-hint{display:block;font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px;line-height:1.45}
+
+/* ── AJUSTES: selector de ámbito (segmented control) ── */
+.seg{
+  display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--rim);border-radius:var(--r);
+  overflow:hidden;background:var(--raised);
+}
+.seg-btn{
+  appearance:none;border:0;background:transparent;color:var(--dim);
+  font-family:var(--fd);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:9px 4px;min-height:40px;cursor:pointer;
+  transition:background .15s,color .15s;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+.seg-btn + .seg-btn{border-left:1px solid var(--rim)}
+.seg-btn.active{background:rgba(200,169,110,.12);color:var(--gold)}
+.seg-btn:disabled{opacity:.35;cursor:not-allowed}
+@media(hover:hover){.seg-btn:hover:not(.active):not(:disabled){color:var(--text)}}
+.seg-btn:active:not(:disabled){background:rgba(200,169,110,.18)}
+
 /* LETHALITY CARDS */
 .leth-card{
   display:flex;flex-direction:column;align-items:center;gap:6px;
