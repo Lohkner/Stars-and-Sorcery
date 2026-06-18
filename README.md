@@ -1,10 +1,21 @@
-# S&S Companion — v37
+# S&S Companion — v38
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v38 — Fuente de Poder, Grado activo, Audaz y editor de talentos
+
+- **Fuente de Poder** (pestaña Aptitudes): al abrir el Canal (Iniciado Místico, Sagaz o Afinidad racial) eliges la Fuente y queda **registrada**, de modo que los talentos/axiomas que piden "Iniciado Místico (Pacto/Juramento/…)" se marcan como requisito **cumplido solo con la Fuente correcta** (antes se ignoraba el paréntesis).
+- **Rompejuramentos**: sus 7 talentos ahora requieren **Iniciado Místico (Juramento)** en lugar del texto de Ruptura.
+- **Audaz ignora los requisitos de equipo**: con Audaz, armas/armaduras/escudos ya **no muestran la alerta "Requiere FUE/DES…"** (flag `ignoresGearReq`).
+- **Grado activo de talentos**: cada talento elegido tiene un **selector de Grado (G1/G2/G3)** en la página Detalle; el Grado activo se resalta, aparece como insignia en el resumen y **se guarda con el personaje**.
+- **Editor de reglas — talentos**: el formulario ahora edita **Requisitos** y **Grado 1/2/3** (además de nombre y leyenda), preservando el `id`; antes descartaba grados y requisitos al guardar.
+- **Sin emojis**: se retiraron los emojis pictográficos de la interfaz (💾, 📂, 📈, ⚔), sustituidos por texto o el glifo monocromo ✦.
+
+Todo verificado en navegador: emparejamiento de Fuente, supresión de alertas del Audaz, selector y persistencia del Grado activo, y el editor de talentos guardando requisitos + grados.
 
 ## Novedades v37 — Habilidades jugables, Ventaja/Desventaja y fix de doble carga
 

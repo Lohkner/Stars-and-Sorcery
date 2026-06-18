@@ -1670,6 +1670,20 @@ details[open] > summary::before { content: '▾'; }
 .js-badge-gold    { font-family: var(--fm); font-size: .7rem; color: var(--gold); background: rgba(200,169,110,.08); border: 1px solid rgba(200,169,110,.25); border-radius: 2px; padding: 2px 10px; }
 .js-tag-neutral   { font-family: var(--fm); font-size: .68rem; background: var(--raised); border: 1px solid var(--border); border-radius: 2px; padding: 2px 8px; color: var(--text); }
 .js-grade-block   { font-family: var(--fm); font-size: .64rem; color: #e7a7ae; display: block; margin-top: 3px; padding: 3px 6px; background: rgba(110,21,37,.18); border-radius: 2px; }
+/* Grado activo de un talento elegido (resaltado vs atenuado) */
+.js-grade-block.grade-on{color:var(--goldb);background:rgba(200,169,110,.14);border-left:2px solid var(--gold);padding-left:7px}
+.js-grade-block.grade-off{opacity:.5}
+.dc-gbadge,.tsum-gbadge{display:inline-flex;align-items:center;justify-content:center;font-family:var(--fm);font-weight:700;
+  font-size:.58rem;color:var(--goldb);background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.3);
+  border-radius:10px;padding:1px 7px;margin-left:7px;letter-spacing:.04em}
+.dc-gsel{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 6px}
+.dc-gsel-lbl{font-family:var(--fd);font-size:.54rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-right:2px}
+.dc-gbtn{min-width:34px;min-height:30px;border:1px solid var(--rim);background:var(--deep);color:var(--dim);
+  font-family:var(--fm);font-weight:700;font-size:.64rem;border-radius:var(--r);cursor:pointer;
+  transition:border-color .12s,color .12s,background .12s}
+@media(hover:hover){.dc-gbtn:hover{border-color:rgba(200,169,110,.45);color:var(--gold)}}
+.dc-gbtn.active{border-color:var(--gold);color:var(--void);background:linear-gradient(135deg,rgba(200,169,110,.9),rgba(224,194,126,.95));font-weight:700}
+.dc-gbtn:active{transform:scale(.9)}
 .js-talent-title  { font-family: var(--fd); font-size: .76rem; color: var(--gold); margin-bottom: 2px; }
 .js-talent-desc   { font-size: .72rem; color: var(--text); }
 .js-res-formula   { text-align: center; border-radius: var(--r); padding: 6px; }

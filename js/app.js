@@ -210,7 +210,7 @@ const app = {
     if (!keys.length) {
       el.innerHTML = `
         <div class="home-empty">
-          <div class="home-empty-icon">⚔</div>
+          <div class="home-empty-icon">✦</div>
           <div class="home-empty-title">Sin personajes guardados</div>
           <div class="home-empty-sub">Crea uno nuevo o importa<br>un archivo JSON para comenzar.</div>
         </div>`;
@@ -231,7 +231,7 @@ const app = {
       const hasPortrait = data.portrait && data.portrait !== DEFAULT_PORTRAIT && !data.portrait.includes('fill=');
       const portHtml = hasPortrait
         ? `<img class="char-port" src="${data.portrait}" alt="">`
-        : `<div class="char-port-ph">⚔</div>`;
+        : `<div class="char-port-ph">✦</div>`;
 
       // ── DOM ──────────────────────────────────────────────────────
       const wrap = document.createElement('div');
@@ -1387,9 +1387,11 @@ const app = {
     const fueFinal = this._finalStats?.FUE ?? (parseInt(document.getElementById('base_FUE')?.value)||8);
     const desFinal = this._finalStats?.DES ?? (parseInt(document.getElementById('base_DES')?.value)||8);
     let alert = '';
-    if (missingData) alert = '⚠ Sin datos de arma — daño 1d4 genérico. Edítala (✎) en Equipo para definirlos';
-    if (wData.req_FUE > 0 && fueFinal < wData.req_FUE) alert += `${alert?' · ':''}⚠ Requiere FUE ${wData.req_FUE}`;
-    if (wData.req_DES > 0 && desFinal < wData.req_DES) alert += `${alert?' · ':''}⚠ Requiere DES ${wData.req_DES}`;
+    // El Audaz ignora los requisitos de FUE/DES de todo el equipo (Manual Cap.III).
+    const ignoreReq = !!arq?.ignoresGearReq;
+    if (missingData) alert = 'Sin datos de arma — daño 1d4 genérico. Edítala en Equipo para definirlos';
+    if (!ignoreReq && wData.req_FUE > 0 && fueFinal < wData.req_FUE) alert += `${alert?' · ':''}Requiere FUE ${wData.req_FUE}`;
+    if (!ignoreReq && wData.req_DES > 0 && desFinal < wData.req_DES) alert += `${alert?' · ':''}Requiere DES ${wData.req_DES}`;
     if (alertEl) alertEl.textContent = alert;
     this._combat.w[n-1] = { name: wData.name,
       atk: (atkBonus>=0?'+':'')+atkBonus, dmg: baseDmg + dmgModStr, alert };
@@ -2297,10 +2299,23 @@ const app = {
         const isSagaz = (document.getElementById('sel_arq')?.value === 'sagaz');
         const desc = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
         const innate = !!desc?.innate_optional;
-        const met = isSagaz || innate
-          || haveNames.has('iniciado m\u00edstico') || haveIds.has('iniciado_mistico');
+        const chosen = this._normSource(document.getElementById('sel_power_source')?.value || '');
+        const hasTalent = haveNames.has('iniciado m\u00edstico') || haveIds.has('iniciado_mistico');
+        const channelOpen = !!chosen || isSagaz || innate || hasTalent;
+        // \u00bfEl requisito pide una Fuente concreta? p. ej. "Iniciado M\u00edstico (Pacto)".
+        const KNOWN = ['eruricion','erudicion','pacto','herencia','divinidad','juramento','naturaleza','psionica'];
+        const m = part.match(/\(([^)]+)\)/);
+        const reqSources = m ? m[1].split(/\s+(?:o|y)\s+|\s*[\/,]\s*/i).map(x => this._normSource(x)).filter(x => KNOWN.includes(x)) : [];
+        let met, miss;
+        if (reqSources.length) {
+          met = !!chosen && reqSources.includes(chosen);
+          miss = `Iniciado M\u00edstico \u2014 elige la Fuente ${m[1].trim()} (pesta\u00f1a Aptitudes)`;
+        } else {
+          met = channelOpen;
+          miss = part.replace(/\s+/g,' ').trim() + ' (o Canal abierto por otra v\u00eda)';
+        }
         out.atoms.push({ kind:'talent', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim() + ' (o Canal abierto por otra v\u00eda)'); }
+        if (!met) { out.met = false; out.unmet.push(miss); }
       }
       // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
@@ -2328,6 +2343,18 @@ const app = {
     return (s||'').toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  },
+
+  /** Normaliza el nombre de una Fuente de Poder (sin acentos, min\u00fasculas). */
+  _normSource(s) {
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  },
+
+  /** La Fuente de Poder elegida cambi\u00f3: marca sin guardar y refresca talentos. */
+  onPowerSourceChange() {
+    this._markUnsaved();
+    this.calc();
+    if (document.getElementById('talent_panel')?.classList.contains('fs-open')) this._renderTalentList();
   },
 
   /** Is a talent available to the currently selected Arquetipo?
@@ -2526,14 +2553,23 @@ const app = {
     if (items.length) {
       view.style.display='block';
       items.forEach(h => {
+        const name = String(h.value || '');
+        const tid = h.getAttribute('data-id');
+        let grades = [];
+        if (this.DB.talents) Object.values(this.DB.talents).forEach(arr=>{const f=arr.find(t=>t.name===name||(tid&&t.id===tid));if(f?.grades)grades=f.grades});
+        const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
+        const activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade'))||1, 1), maxG);
         const d = document.createElement('div');
         d.style.cssText='background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:6px 10px';
         const title = document.createElement('div');
         title.className = 'js-talent-title';
-        title.textContent = String(h.value || '');
+        title.textContent = name;
+        if (grades.length) { const b=document.createElement('span'); b.className='tsum-gbadge'; b.textContent='G'+activeG; title.appendChild(b); }
         const desc = document.createElement('div');
         desc.className = 'js-talent-desc';
-        desc.textContent = String(h.getAttribute('data-desc') || '');
+        // Mostrar el efecto del Grado activo (no solo la leyenda) si existe.
+        const activeText = grades.find(g=>g.g===activeG)?.d;
+        desc.textContent = activeText ? `G${activeG}: ${activeText}` : String(h.getAttribute('data-desc') || '');
         d.appendChild(title); d.appendChild(desc);
         list.appendChild(d);
       });
@@ -2562,7 +2598,7 @@ const app = {
         const bw = document.createElement('div'); bw.style.marginBottom='8px';
         const bs = document.createElement('span');
         bs.className = 'js-badge-gold';
-        bs.textContent = '📈 '+this._sanitize(desc.bonus); bw.appendChild(bs); db.appendChild(bw);
+        bs.textContent = this._sanitize(desc.bonus); bw.appendChild(bs); db.appendChild(bw);
       }
       if (desc.grant?.length) {
         const gl = document.createElement('div');
@@ -2614,7 +2650,7 @@ const app = {
       ab.appendChild(rg);
       if (filoVal) {
         const fl=document.createElement('div'); fl.className='js-section-lbl'; fl.textContent='Filo Seleccionado'; ab.appendChild(fl);
-        const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent='⚔ '+this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
+        const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent=this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
       }
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {
@@ -2631,28 +2667,58 @@ const app = {
     if (!talents.length) { tl.innerHTML='<p class="txt-it-c">Sin talentos.</p>'; return; }
     tl.innerHTML = '';
     talents.forEach(h => {
+      const name = String(h.value||'');
+      const tid  = h.getAttribute('data-id');
       let grades = [];
-      if (this.DB.talents) Object.values(this.DB.talents).forEach(arr=>{const f=arr.find(t=>t.name===h.value);if(f?.grades)grades=f.grades});
+      if (this.DB.talents) Object.values(this.DB.talents).forEach(arr=>{const f=arr.find(t=>t.name===name||(tid&&t.id===tid));if(f?.grades)grades=f.grades});
+      const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
+      let activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade'))||1, 1), maxG);
       const card = document.createElement('div'); card.className='dc';
       // Header
       const dch = document.createElement('div'); dch.className='dch';
       dch.addEventListener('click', () => card.classList.toggle('open'));
-      const dct = document.createElement('span'); dct.className='dct'; dct.textContent='✦ '+this._sanitize(String(h.value||''));
+      const dct = document.createElement('span'); dct.className='dct'; dct.textContent=this._sanitize(name);
+      if (grades.length) { const gb=document.createElement('span'); gb.className='dc-gbadge'; gb.textContent='G'+activeG; dch.appendChild(dct); dch.appendChild(gb); }
+      else dch.appendChild(dct);
       const dca = document.createElement('span'); dca.className='dca'; dca.textContent='▾';
-      dch.appendChild(dct); dch.appendChild(dca);
+      dch.appendChild(dca);
       // Body
       const dcb = document.createElement('div'); dcb.className='dcb';
-      dcb.textContent = this._sanitize(h.getAttribute('data-desc')||'Sin descripción.');
-      // Grades (from DB — sanitized)
+      const desc = document.createElement('div'); desc.style.marginBottom='6px';
+      desc.textContent = this._sanitize(h.getAttribute('data-desc')||'Sin descripción.');
+      dcb.appendChild(desc);
+      // Grade selector (only when there is more than one grade)
+      if (grades.length > 1) {
+        const gsel = document.createElement('div'); gsel.className='dc-gsel';
+        const lbl = document.createElement('span'); lbl.className='dc-gsel-lbl'; lbl.textContent='Grado activo'; gsel.appendChild(lbl);
+        grades.forEach(g => {
+          const b=document.createElement('button'); b.type='button';
+          b.className='dc-gbtn'+(g.g===activeG?' active':''); b.textContent='G'+g.g;
+          b.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(name, g.g); });
+          gsel.appendChild(b);
+        });
+        dcb.appendChild(gsel);
+      }
+      // Grades (from DB — el activo resaltado, los demás atenuados)
       grades.forEach(g => {
         const gd=document.createElement('div');
-        gd.className = 'js-grade-block';
+        gd.className = 'js-grade-block ' + (g.g===activeG ? 'grade-on' : 'grade-off');
         gd.textContent='G'+Number(g.g)+': '+this._sanitize(String(g.d||''));
         dcb.appendChild(gd);
       });
       card.appendChild(dch); card.appendChild(dcb);
       tl.appendChild(card);
     });
+  },
+
+  /** Fija el Grado activo de un talento elegido y refresca las vistas. */
+  setTalentGrade(name, g) {
+    const hidden = [...document.querySelectorAll('input[name="chk_talents_hidden"]')].find(el => el.value === name);
+    if (!hidden) return;
+    hidden.setAttribute('data-grade', String(g));
+    this._markUnsaved();
+    this.buildDetailPage();
+    this.showTalentSummary();
   },
 
   // selectedApt stores { tricks: Set of keys, spells: Set of keys }
@@ -3022,7 +3088,7 @@ const app = {
     if (!count) {
       const empty = document.createElement('div');
       empty.className = 'db-empty';
-      empty.innerHTML = `<div class="db-empty-icon">📂</div><p>Sin entradas en <strong>${catLabel}</strong>.<br>Crea la primera con "+ Nuevo".</p>`;
+      empty.innerHTML = `<p>Sin entradas en <strong>${catLabel}</strong>.<br>Crea la primera con "+ Nuevo".</p>`;
       lc.appendChild(empty);
       return;
     }
@@ -3185,9 +3251,15 @@ const app = {
         <div><span class="dfl">Coste</span><input type="text" id="db_cost" value="${_e(existing?.cost)}" placeholder="ej: 2 Ing"></div>
       </div>`;
     } else if (isTalent) {
-      formHtml += `<div style="margin-bottom:6px"><span class="dfl">Categoría (existente)</span><input type="text" id="db_tcat" value="${_e(talentSub)}" placeholder="ej: acero"></div>
+      const grds = existing?.grades || [];
+      const gd = n => _e((grds.find(g=>Number(g.g)===n) || grds[n-1] || {}).d || '');
+      formHtml += `<div style="margin-bottom:6px"><span class="dfl">Categoría (existente)</span><input type="text" id="db_tcat" value="${_e(talentSub)}" placeholder="ej: combate"></div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.desc)}</textarea></div>`;
+      <div style="margin-bottom:6px"><span class="dfl">Requisitos</span><input type="text" id="db_req" value="${_e(existing?.req)}" placeholder="ej: FUE 13+ · Nivel 1 · Iniciado Místico (Pacto)"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Leyenda / Descripción</span><textarea id="db_txt" style="min-height:48px">${_e(existing?.desc)}</textarea></div>
+      <div style="margin-bottom:6px"><span class="dfl">Grado 1 <span class="is-field-note">— efecto base</span></span><textarea id="db_g1" style="min-height:46px">${gd(1)}</textarea></div>
+      <div style="margin-bottom:6px"><span class="dfl">Grado 2 <span class="is-field-note">— opcional</span></span><textarea id="db_g2" style="min-height:46px">${gd(2)}</textarea></div>
+      <div style="margin-bottom:6px"><span class="dfl">Grado 3 <span class="is-field-note">— opcional</span></span><textarea id="db_g3" style="min-height:46px">${gd(3)}</textarea></div>`;
     }
 
     formHtml += `<div style="display:flex;gap:8px;margin-top:14px">
@@ -3240,13 +3312,17 @@ const app = {
       const tcat = document.getElementById('db_tcat')?.value?.trim() || (isTalent?oldKey.split('|')[0]:'general');
       const name = document.getElementById('db_name')?.value?.trim();
       const desc = document.getElementById('db_txt')?.value?.trim();
+      const req  = document.getElementById('db_req')?.value?.trim() || '';
       if (!name) { this.toast('Nombre requerido','err'); return; }
+      const grades = [];
+      [1,2,3].forEach(n => { const d = document.getElementById('db_g'+n)?.value?.trim(); if (d) grades.push({g:n, d}); });
       if (!this.DB.talents[tcat]) this.DB.talents[tcat] = [];
       if (isTalent) {
         const idx = parseInt(oldKey.split('|')[1]);
-        this.DB.talents[tcat][idx] = {...this.DB.talents[tcat][idx], name, desc};
+        const prev = this.DB.talents[tcat][idx] || {};
+        this.DB.talents[tcat][idx] = {...prev, id: prev.id || this._slugify(name), name, desc, req, grades};
       } else {
-        this.DB.talents[tcat].push({name, desc});
+        this.DB.talents[tcat].push({id: this._slugify(name), name, desc, req, grades});
       }
     } else {
       const key = (document.getElementById('db_key')?.value||'').trim().toLowerCase().replace(/\s+/g,'_');
@@ -3807,7 +3883,7 @@ const app = {
     document.querySelectorAll('input[type=text]:not(.inm),input[type=number]:not(.isl):not(#gold_coins_edit)').forEach(el=>{if(el.id)data.inputs[el.id]=el.value});
     document.querySelectorAll('select:not(#inv_db_category):not(#inv_db_item):not(.ityp)').forEach(el=>{if(el.id)data.selects[el.id]=el.value});
     document.querySelectorAll('input[type=checkbox]:not([type=hidden]):checked,input[type=radio]:checked').forEach(el=>data.checks.push({name:el.name,value:el.value,id:el.id}));
-    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>data.hidden_talents.push({value:el.value,id:el.getAttribute('data-id'),desc:el.getAttribute('data-desc')}));
+    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>data.hidden_talents.push({value:el.value,id:el.getAttribute('data-id'),desc:el.getAttribute('data-desc'),grade:el.getAttribute('data-grade')||'1'}));
     return data;
   },
 
@@ -3876,7 +3952,7 @@ const app = {
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     data.checks?.forEach(item=>{let el=document.getElementById(item.id)||document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);if(el)el.checked=true});
-    data.hidden_talents?.forEach(t=>{const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';h.value=t.value;h.setAttribute('data-desc',t.desc||'');if(t.id)h.setAttribute('data-id',t.id);document.body.appendChild(h)});
+    data.hidden_talents?.forEach(t=>{const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';h.value=t.value;h.setAttribute('data-desc',t.desc||'');h.setAttribute('data-grade',t.grade||'1');if(t.id)h.setAttribute('data-id',t.id);document.body.appendChild(h)});
     this.showTalentSummary(); this.updateTalentCount();
     // Close all sections to summary mode
     this.confirmPersonal();

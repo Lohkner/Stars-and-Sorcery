@@ -497,6 +497,21 @@
           </div>
         </div><!-- /page 1 -->
         <div class="page" id="page_2">
+          <!-- Fuente de Poder -->
+          <div class="panel">
+            <div class="ph"><span class="pt">Fuente de Poder</span></div>
+            <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);line-height:1.5;margin:0 0 8px">La Fuente que eliges al abrir el Canal Arcano (Iniciado Místico, Misticismo Innato del Sagaz o Afinidad Mística racial). Marca el requisito de los talentos y axiomas vinculados a esa Fuente.</p>
+            <select id="sel_power_source" aria-label="Fuente de Poder" onchange="app.onPowerSourceChange()" style="width:100%">
+              <option value="">— Sin Fuente —</option>
+              <option value="Erudición">Erudición (INT)</option>
+              <option value="Pacto">Pacto (CAR)</option>
+              <option value="Herencia">Herencia (CAR)</option>
+              <option value="Divinidad">Divinidad (SAB/CAR)</option>
+              <option value="Juramento">Juramento (SAB/CAR)</option>
+              <option value="Naturaleza">Naturaleza (SAB)</option>
+              <option value="Psiónica">Psiónica (INT/SAB)</option>
+            </select>
+          </div>
           <!-- Trucos panel -->
           <div class="panel">
             <div class="ph">
@@ -797,7 +812,7 @@
       <div class="dvdr" id="dvdr_data">Datos</div>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Personaje</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
-        <button class="btn btn-g" data-action="saveFromSettings">💾 Guardar</button>
+        <button class="btn btn-g" data-action="saveFromSettings">Guardar</button>
         <button class="btn btn-g" data-action="exportJSON">↓ Exportar JSON</button>
       </div>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Reglas del Juego</span>
