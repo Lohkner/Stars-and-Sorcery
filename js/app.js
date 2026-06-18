@@ -4065,12 +4065,15 @@ const app = {
   /* ── PORTRAIT SIZE ── */
   setPortraitSize(size) {
     // size: 'xs'|'s'|'m'|'l'|'xl'
+    // Escala con pasos suaves y parejos (~+26 px) para que M/L/XL no se
+    // disparen respecto a XS/S; mantiene el aspecto ~0.70 (w/h) y XL cabe en
+    // el ancho de móvil. (XS/S sin cambios como referencia.)
     const map = {
       xs: {w:'218px', h:'310px'},
-      s:  {w:'250px', h:'356px'},
-      m:  {w:'288px', h:'410px'},
-      l:  {w:'330px', h:'472px'},
-      xl: {w:'380px', h:'542px'}
+      s:  {w:'248px', h:'353px'},
+      m:  {w:'276px', h:'393px'},
+      l:  {w:'302px', h:'430px'},
+      xl: {w:'328px', h:'467px'}
     };
     const d = map[size] || map['m'];
     const root = document.documentElement;

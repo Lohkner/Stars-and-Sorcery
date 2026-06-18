@@ -1399,6 +1399,34 @@ input[type=radio]:checked::after{transform:scale(1)}
 .set-lbl{font-family:var(--fd);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .set-hint{display:block;font-family:var(--fm);font-size:.6rem;color:var(--border);margin-top:2px;line-height:1.45}
 
+/* ── Settings & Data — agrupación, legibilidad y controles ── */
+/* Cada sección se vuelve una tarjeta sutil: agrupa sus controles y da ritmo. */
+.mbd > section{
+  background:linear-gradient(180deg,rgba(200,169,110,.022),transparent 65%);
+  border:1px solid rgba(61,50,84,.4);
+  border-radius:var(--rl);
+  padding:11px 14px 14px;
+}
+/* Título de sección: de divisor centrado a encabezado a la izquierda con regla. */
+.mbd > section > .dvdr{
+  margin:0 0 11px;justify-content:flex-start;gap:9px;
+  color:var(--goldb);font-size:.62rem;letter-spacing:.16em;
+}
+.mbd > section > .dvdr::before{display:none}
+.mbd > section > .dvdr::after{background:linear-gradient(90deg,rgba(200,169,110,.28),transparent)}
+/* Legibilidad: la pista era var(--border) (#3d3254), casi invisible. */
+.mbd .set-hint{color:var(--muted)}
+.mbd .set-lbl{color:var(--dim)}
+/* Fila de tamaños del retrato: la tipografía crece de XS a XL para
+   comunicar la escala de un vistazo (la inline-style se elimina en el HTML). */
+.ps-row{display:flex;gap:6px}
+.ps-row .ps-btn{flex:1;padding:8px 2px;line-height:1;font-weight:600}
+.ps-btn[data-size="xs"]{font-size:.54rem}
+.ps-btn[data-size="s"] {font-size:.62rem}
+.ps-btn[data-size="m"] {font-size:.72rem}
+.ps-btn[data-size="l"] {font-size:.82rem}
+.ps-btn[data-size="xl"]{font-size:.94rem}
+
 /* ── AJUSTES: selector de ámbito (segmented control) ── */
 .seg{
   display:grid;grid-template-columns:1fr 1fr;
