@@ -1681,11 +1681,43 @@ const app = {
       -1 Desventaja · 0 Normal · +1 Ventaja. */
   setAdvantage(v) {
     this._advantage = (v === 1 || v === -1) ? v : 0;
-    document.querySelectorAll('#adv_toggle .adv-btn').forEach(b => {
+    document.querySelectorAll('#adv_fab .adv-opt').forEach(b => {
       const on = String(this._advantage) === b.dataset.adv;
       b.classList.toggle('active', on);
       b.setAttribute('aria-pressed', String(on));
     });
+    const fab = document.getElementById('adv_fab');
+    const main = document.getElementById('adv_fab_main');
+    if (fab) fab.dataset.state = String(this._advantage);
+    if (main) {
+      main.textContent = this._advantage > 0 ? '▲' : this._advantage < 0 ? '▼' : '=';
+      const lbl = this._advantage > 0 ? 'Ventaja' : this._advantage < 0 ? 'Desventaja' : 'Normal';
+      main.setAttribute('aria-label', `Tirada: ${lbl}. Tocar para cambiar Ventaja/Desventaja`);
+    }
+    this._closeAdvFab();
+  },
+
+  /** Despliega/colapsa el menú flotante de Ventaja/Desventaja. */
+  toggleAdvFab() {
+    const fab = document.getElementById('adv_fab');
+    if (!fab) return;
+    const open = fab.classList.toggle('open');
+    document.getElementById('adv_fab_main')?.setAttribute('aria-expanded', String(open));
+    if (open) {
+      // Cerrar al tocar fuera (una sola vez).
+      this._advFabOutside = (e) => { if (!fab.contains(e.target)) this._closeAdvFab(); };
+      setTimeout(() => document.addEventListener('pointerdown', this._advFabOutside, true), 0);
+    }
+  },
+
+  _closeAdvFab() {
+    const fab = document.getElementById('adv_fab');
+    if (fab) fab.classList.remove('open');
+    document.getElementById('adv_fab_main')?.setAttribute('aria-expanded', 'false');
+    if (this._advFabOutside) {
+      document.removeEventListener('pointerdown', this._advFabOutside, true);
+      this._advFabOutside = null;
+    }
   },
 
   rollCheck(label, mod) {

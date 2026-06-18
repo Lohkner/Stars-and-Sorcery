@@ -16,11 +16,13 @@ Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión rees
 
 **Grados sembrados desde el linaje.** Los `descriptors` declaran `skillGrants`; p. ej. el **Elfo** otorga *Proeza Física* a Grado 1, que aparece como botón incluso sin seleccionarla y se apila con las selecciones (linaje G1 + 1 selección = G2). Los grants de linaje *a elección* (Humano Legado, Medio Elfo) se dejan a la selección manual.
 
-**Toggle Ventaja / Normal / Desventaja** (fijo, sobre la barra de navegación) aplicado a **todas las tiradas**: 2d10 → 3d10 conservando los 2 más altos/bajos; 1d20 (salvaciones y ataques) → 2d20 con el mejor/peor. Si ambas aplicaran, se cancelan (regla del Glosario).
+**Ventaja / Normal / Desventaja** aplicado a **todas las tiradas**: 2d10 → 3d10 conservando los 2 más altos/bajos; 1d20 (salvaciones y ataques) → 2d20 con el mejor/peor. Si ambas aplicaran, se cancelan (regla del Glosario). Se controla con un **botón flotante pequeño** en la esquina (sobre la barra inferior) que despliega las tres opciones al tocarlo y se colapsa al elegir o al tocar fuera — sin estorbar la navegación en móvil.
 
 **Fix: la pantalla de carga aparecía dos veces** en la primera visita. El `controllerchange` del Service Worker (por `clients.claim()`) provocaba una recarga incluso en la instalación inicial; ahora solo recarga en **actualizaciones reales** (cuando la página ya estaba controlada).
 
-Todo verificado en navegador: fórmulas, suelo de grado, override de atributo, ventaja/desventaja en ambos tipos de dado, persistencia (grados extra y atributo elegido viajan con el personaje) y arranque único.
+**Densidad de la hoja**: el espacio entre secciones (paneles) se redujo a la mitad (14→7 px) para ver más en una pantalla.
+
+Todo verificado en navegador (incl. móvil 375 px): fórmulas, suelo de grado, override de atributo, ventaja/desventaja en ambos tipos de dado, persistencia (grados extra y atributo elegido viajan con el personaje), arranque único y el FAB sin solaparse con la nav.
 
 ## Novedades v36 — Sincronización con las reglas **v5.3 / v5.3.1**
 
