@@ -7,6 +7,31 @@ const STATS = ['FUE','DES','CON','INT','SAB','CAR'];
 /** Proficiency bonus thresholds by level */
 const PROF_THRESHOLDS = [[9,4],[5,3],[1,2]]; // S&S: Nv1-4→+2, Nv5-8→+3, Nv9-10→+4 (PB solo en Salvaciones elegidas y ataques; NO en tiradas de habilidad)
 
+/* ── Habilidades — Manual Cap.VI §2 ──────────────────────────
+   Tirada: 2d10 + MOD del Atributo asociado + Grado de Maestría vs CD.
+   El PB NO se suma. Cuando hay dos atributos posibles se usa el de
+   mayor modificador. Las Especializadas sin Grado 0 sufren Desventaja
+   Técnica (3d10, suma los 2 más bajos) — no aplica a habilidades ya
+   adquiridas (Grado ≥ 0), que es lo único que se muestra como botón. */
+const SKILL_ATTR = {
+  // Generales
+  'Sigilo':['DES'], 'Proeza Física':['FUE','DES'], 'Percepción':['SAB'],
+  'Perspicacia':['SAB'], 'Influencia':['CAR'], 'Engaño':['CAR'],
+  'Supervivencia':['SAB'], 'Intimidación':['CAR','FUE'],
+  // Especializadas
+  'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'], 'Historia':['INT'],
+  'Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
+  'Herramientas de Ladrón':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
+  'Artesanía':['INT','DES'], 'Conocimiento':['INT'],
+};
+const SKILL_SPECIALIZED = new Set([
+  'Arcano','Medicina','Tecnología','Historia','Religión','Naturaleza',
+  'Investigación','Herramientas de Ladrón','Conocimiento de la Calle',
+  'Artesanía','Conocimiento',
+]);
+/** Nombre del Grado de Maestría (Manual Cap.VI §1) */
+const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro'];
+
 /** XP required to reach each level (index = current level) */
 const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
 

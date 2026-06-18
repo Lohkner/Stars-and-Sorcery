@@ -1,10 +1,26 @@
-# S&S Companion — v36
+# S&S Companion — v37
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v37 — Habilidades jugables, Ventaja/Desventaja y fix de doble carga
+
+**Habilidades como botones de tirada.** Cada habilidad seleccionada se tira según el manual (Cap. VI §1): **2d10 + MOD del Atributo + Grado de Maestría** (el PB no se aplica). Incluye Dobles del Destino (doble 10 = éxito crítico, doble 1 = Ojos de Serpiente), el mínimo de 7 en los dados a partir de Grado 3, y muestra el Grado y el atributo en el modo lectura.
+
+**Sistema de Grados con suelo automático.** El modo *lectura* solo tira (no es editable). En modo *edición*, bajo los selectores, una caja **Grado y Atributo** permite por cada habilidad:
+- Un **stepper de Grado** cuyo mínimo se calcula solo (modelo de adquisiciones del manual): elegir la misma habilidad dos veces sube a G1, el linaje aporta su grado, etc. No se puede bajar por debajo de ese mínimo sin quitar selecciones.
+- Un **selector de Atributo** con el sugerido por el manual por defecto (`Auto`, el de mayor modificador entre los candidatos), con opción de fijar otro.
+
+**Grados sembrados desde el linaje.** Los `descriptors` declaran `skillGrants`; p. ej. el **Elfo** otorga *Proeza Física* a Grado 1, que aparece como botón incluso sin seleccionarla y se apila con las selecciones (linaje G1 + 1 selección = G2). Los grants de linaje *a elección* (Humano Legado, Medio Elfo) se dejan a la selección manual.
+
+**Toggle Ventaja / Normal / Desventaja** (fijo, sobre la barra de navegación) aplicado a **todas las tiradas**: 2d10 → 3d10 conservando los 2 más altos/bajos; 1d20 (salvaciones y ataques) → 2d20 con el mejor/peor. Si ambas aplicaran, se cancelan (regla del Glosario).
+
+**Fix: la pantalla de carga aparecía dos veces** en la primera visita. El `controllerchange` del Service Worker (por `clients.claim()`) provocaba una recarga incluso en la instalación inicial; ahora solo recarga en **actualizaciones reales** (cuando la página ya estaba controlada).
+
+Todo verificado en navegador: fórmulas, suelo de grado, override de atributo, ventaja/desventaja en ambos tipos de dado, persistencia (grados extra y atributo elegido viajan con el personaje) y arranque único.
 
 ## Novedades v36 — Sincronización con las reglas **v5.3 / v5.3.1**
 

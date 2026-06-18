@@ -1052,6 +1052,65 @@ input[type=radio]:checked::after{transform:scale(1)}
 @media(hover:hover){.stag:hover{border-color:rgba(200,169,110,.4);color:var(--goldb)}}
 .stag.g1{border-color:rgba(168,42,58,.4);color:#c06070;background:rgba(110,21,37,.15)}
 
+/* ── Habilidades como botones de tirada (2d10 + atributo + grado) ── */
+#final_skills_list{display:flex;flex-direction:column;gap:6px}
+.skill-roll{display:flex;align-items:stretch;gap:6px}
+.skill-roll-main{
+  flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  padding:7px 12px;border:1px solid var(--rim);border-radius:var(--r);
+  background:var(--raised);cursor:pointer;text-align:left;
+  transition:border-color .15s,background .12s,transform 0s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+@media(hover:hover){.skill-roll-main:hover{border-color:rgba(200,169,110,.4);background:rgba(200,169,110,.05)}}
+.skill-roll-main:active{transform:scale(.97);border-color:rgba(200,169,110,.5);background:rgba(200,169,110,.08)}
+.sk-name{font-family:var(--fd);font-size:.78rem;color:var(--goldb);font-weight:600;letter-spacing:.04em;line-height:1.1}
+.sk-spec{color:var(--gold);font-size:.62rem}
+.sk-meta{font-family:var(--fm);font-size:.56rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.sk-grade{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.sk-g-btn{
+  width:30px;min-height:30px;align-self:stretch;border:1px solid var(--rim);
+  background:var(--deep);color:var(--dim);font-family:var(--fm);font-size:1rem;line-height:1;
+  cursor:pointer;border-radius:var(--r);transition:border-color .12s,color .12s,background .1s;
+}
+@media(hover:hover){.sk-g-btn:hover{border-color:rgba(200,169,110,.45);color:var(--gold)}}
+.sk-g-btn:active{transform:scale(.9);background:rgba(200,169,110,.08)}
+.sk-g-badge{
+  display:inline-flex;align-items:center;justify-content:center;min-width:34px;align-self:stretch;
+  font-family:var(--fm);font-weight:700;font-size:.72rem;color:var(--goldb);
+  background:rgba(200,169,110,.08);border:1px solid rgba(200,169,110,.28);border-radius:var(--r);
+  box-shadow:inset 0 1px 0 rgba(200,169,110,.05);
+}
+.sk-g-badge.read{min-width:30px;font-size:.68rem}
+.sk-g-btn:disabled{opacity:.35;cursor:default}
+@media(hover:hover){.sk-g-btn:disabled:hover{border-color:var(--rim);color:var(--dim)}}
+
+/* ── Caja de Grado/Atributo de habilidades (modo edición) ── */
+.skg-box{margin-top:10px;padding-top:8px;border-top:1px solid var(--rim);display:flex;flex-direction:column;gap:6px}
+.skg-title{font-family:var(--fd);font-size:.56rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1px}
+.skg-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:6px 9px}
+.skg-head{display:flex;flex-direction:column;min-width:0;flex:1}
+.skg-name{font-family:var(--fd);font-size:.74rem;color:var(--goldb);font-weight:600;letter-spacing:.03em}
+.skg-src{font-family:var(--fm);font-size:.52rem;color:var(--muted);letter-spacing:.04em;margin-top:1px}
+.skg-controls{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.skg-attr{background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);color:var(--gold);
+  font-family:var(--fm);font-size:.62rem;padding:5px 6px;min-height:30px;cursor:pointer;appearance:none}
+.skg-attr:focus{outline:none;border-color:var(--gold)}
+
+/* ── Toggle Ventaja / Normal / Desventaja (fijo, sobre la nav) ── */
+.adv-toggle{position:fixed;right:10px;bottom:64px;z-index:40;display:flex;align-items:center;gap:3px;
+  background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:3px 5px 3px 9px;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+.adv-cap{font-family:var(--fd);font-size:.48rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-right:2px}
+.adv-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--rim);background:var(--deep);
+  color:var(--muted);font-size:.7rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color .12s,color .12s,background .12s}
+.adv-btn.active.adv-adv{border-color:var(--sage);color:var(--sage);background:rgba(122,158,110,.14)}
+.adv-btn.active.adv-norm{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.14)}
+.adv-btn.active.adv-dis{border-color:var(--blood);color:#d06070;background:rgba(110,21,37,.2)}
+.adv-btn:active{transform:scale(.88)}
+
 /* SAVES */
 .saves-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:6px;border-top:1px solid var(--rim);padding-top:6px}
 .svsbox{

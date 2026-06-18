@@ -5,7 +5,7 @@
 const STORAGE = {
   SCHEMA_VERSION: 2,
   /** Bump when DEFAULT_DB rules data changes so cached rules refresh automatically. */
-  RULES_DATA_VERSION: '5.3.1-app-r1',
+  RULES_DATA_VERSION: '5.3.1-app-r2',
   KEYS: {
     rules:          'sands_rules',
     rulesVer:       'sands_rules_ver',

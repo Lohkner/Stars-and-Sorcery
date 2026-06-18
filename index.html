@@ -487,6 +487,7 @@
                 <div><h3 class="sub">Por Arquetipo (Elige <span id="limit_arq">2</span>)</h3><div id="skills_arq" class="skill-area"></div></div>
                 <div><h3 class="sub">Por Trasfondo (Elige 2)</h3><div id="skills_bg" class="skill-area"></div></div>
               </div>
+              <div id="skills_grade_box" class="skg-box" style="display:none"></div>
               <button class="bcnf" onclick="app.confirmSection('skills')">✓ Confirmar</button>
             </div>
             <div id="skills_summary_view" style="display:none;text-align:center">
@@ -651,6 +652,12 @@
       </div><!-- /pages-track -->
     </div><!-- /pages-wrapper -->
 
+    <div id="adv_toggle" class="adv-toggle" role="group" aria-label="Ventaja o Desventaja en las tiradas">
+      <span class="adv-cap">Tirada</span>
+      <button type="button" class="adv-btn adv-dis" data-adv="-1" aria-pressed="false" onclick="app.setAdvantage(-1)" title="Desventaja">▼</button>
+      <button type="button" class="adv-btn adv-norm active" data-adv="0" aria-pressed="true" onclick="app.setAdvantage(0)" title="Normal">=</button>
+      <button type="button" class="adv-btn adv-adv" data-adv="1" aria-pressed="false" onclick="app.setAdvantage(1)" title="Ventaja">▲</button>
+    </div>
     <nav class="bnav">
       <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Perfil"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg></span><span class="nlbl">Perfil</span></button>
       <button class="nbtn" onclick="app.goToPage(1)" aria-label="Ir a Stats"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="4" height="8" rx="1"/><rect x="9" y="8" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="17" rx="1"/></svg></span><span class="nlbl">Stats</span></button>

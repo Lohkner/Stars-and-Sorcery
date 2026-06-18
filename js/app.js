@@ -646,6 +646,7 @@ const app = {
       if (sv) sv.style.display = 'none';
       // Show panel header only while in edit mode for identity
       if (sec === 'identity') ev?.closest('.panel')?.classList.add('identity-editing');
+      if (sec === 'skills') this._buildSkillsEditControls();
       if (sec === 'equipment') { this.updateDbSelect(); this.renderInventory(); }
       // Scroll al panel en page_3 para que sea visible al expandirse.
       // Omitido durante resets en masa (_bulkEditing) para evitar que el RAF
@@ -775,17 +776,108 @@ const app = {
     });
   },
 
+  /** Modo LECTURA: botones de tirada con su Grado y atributo. No editable. */
   _buildSkillsSummary() {
-    const selected = Array.from(document.querySelectorAll('input[name="chk_arq"]:checked, input[name="chk_bg"]:checked')).map(el => el.value);
-    const unique = [...new Set(selected)];
     const c = this._el('final_skills_list');
+    if (!c) return;
     c.innerHTML = '';
-    if (!unique.length) { c.innerHTML = '<span style="color:var(--muted);font-size:.8rem;font-style:italic">Sin habilidades.</span>'; return; }
-    unique.forEach(sk => {
-      const t = document.createElement('span');
-      t.className = 'stag';
-      t.textContent = sk;
-      c.appendChild(t);
+    const counts = this._skillCounts(), grants = this._lineageGrants();
+    const present = this._presentSkills().sort((a,b)=>a.localeCompare(b,'es'));
+    if (!present.length) { c.innerHTML = '<span style="color:var(--muted);font-size:.8rem;font-style:italic">Sin habilidades.</span>'; return; }
+    present.forEach(sk => {
+      const grade = this._skillGrade(sk, counts, grants);
+      const attr  = this._skillAttrEffective(sk);
+      const spec  = SKILL_SPECIALIZED.has(sk);
+
+      const row = document.createElement('div');
+      row.className = 'skill-roll';
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'skill-roll-main';
+      btn.setAttribute('aria-label', `Tirar ${sk}: 2d10 + modificador de ${attr} + Grado ${grade}`);
+      btn.innerHTML = `<span class="sk-name">${this._esc(sk)}${spec ? ' <span class="sk-spec" title="Especializada">✦</span>' : ''}</span>`
+                    + `<span class="sk-meta">2d10 · ${attr}</span>`;
+      btn.addEventListener('click', () => this.rollSkill(sk));
+
+      const badge = document.createElement('span');
+      badge.className = 'sk-g-badge read';
+      badge.textContent = 'G' + grade;
+      badge.title = SKILL_GRADE_NAMES[grade] || '';
+
+      row.append(btn, badge);
+      c.appendChild(row);
+    });
+  },
+
+  /** Modo EDICIÓN: caja bajo los selectores con, por habilidad, el stepper de
+      Grado (con suelo automático) y el selector de atributo. */
+  _buildSkillsEditControls() {
+    const box = document.getElementById('skills_grade_box');
+    if (!box) return;
+    const counts = this._skillCounts(), grants = this._lineageGrants();
+    const present = this._presentSkills().sort((a,b)=>a.localeCompare(b,'es'));
+    box.innerHTML = '';
+    if (!present.length) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'skg-title';
+    lbl.textContent = 'Grado y Atributo';
+    box.appendChild(lbl);
+
+    present.forEach(sk => {
+      const min     = this._skillMinGrade(sk, counts, grants);
+      const grade   = this._skillGrade(sk, counts, grants);
+      const auto    = this._skillAttrAuto(sk);
+      const spec    = SKILL_SPECIALIZED.has(sk);
+      const lin     = grants[sk];
+
+      const row = document.createElement('div');
+      row.className = 'skg-row';
+
+      const head = document.createElement('div');
+      head.className = 'skg-head';
+      const src = [];
+      if (lin != null) src.push(`linaje G${lin}`);
+      if (counts[sk]) src.push(`${counts[sk]}× sel.`);
+      head.innerHTML = `<span class="skg-name">${this._esc(sk)}${spec ? ' <span class="sk-spec">✦</span>' : ''}</span>`
+                     + `<span class="skg-src">${src.join(' · ') || '—'} · mín G${min}</span>`;
+
+      const ctr = document.createElement('div');
+      ctr.className = 'skg-controls';
+
+      const gc = document.createElement('div');
+      gc.className = 'sk-grade';
+      const dn = document.createElement('button');
+      dn.type='button'; dn.className='sk-g-btn'; dn.textContent='−';
+      dn.disabled = grade <= min;
+      dn.setAttribute('aria-label', `Bajar Grado de ${sk}`);
+      dn.addEventListener('click', () => this.adjustSkillBonus(sk, -1));
+      const badge = document.createElement('span');
+      badge.className='sk-g-badge'; badge.textContent='G'+grade;
+      badge.title = SKILL_GRADE_NAMES[grade] || '';
+      const up = document.createElement('button');
+      up.type='button'; up.className='sk-g-btn'; up.textContent='+';
+      up.disabled = grade >= 4;
+      up.setAttribute('aria-label', `Subir Grado de ${sk}`);
+      up.addEventListener('click', () => this.adjustSkillBonus(sk, 1));
+      gc.append(dn, badge, up);
+
+      const sel = document.createElement('select');
+      sel.className = 'skg-attr';
+      sel.setAttribute('aria-label', `Atributo de ${sk}`);
+      const autoOpt = document.createElement('option');
+      autoOpt.value=''; autoOpt.textContent=`Auto · ${auto}`;
+      sel.appendChild(autoOpt);
+      STATS.forEach(a => { const o=document.createElement('option'); o.value=a; o.textContent=a; sel.appendChild(o); });
+      const pick = this._skillAttrPick?.[sk];
+      sel.value = (pick && STATS.includes(pick)) ? pick : '';
+      sel.addEventListener('change', () => this.setSkillAttr(sk, sel.value));
+
+      ctr.append(gc, sel);
+      row.append(head, ctr);
+      box.appendChild(row);
     });
   },
 
@@ -1017,6 +1109,8 @@ const app = {
           const set = name === 'chk_arq' ? this._skillsSel.arq : this._skillsSel.bg;
           if (chk.checked) set.add(s); else set.delete(s);
           app.calc();
+          app._buildSkillsEditControls();
+          app._buildSkillsSummary();
         });
         if (saved.has(s)) chk.checked = true;
         lbl.appendChild(chk);
@@ -1028,6 +1122,9 @@ const app = {
     const limitEl = document.getElementById('limit_arq'); if(limitEl) limitEl.textContent = arqLimit;
     buildSkills('skills_arq', arq?.skills, 'chk_arq', arqLimit);
     buildSkills('skills_bg', bg?.skills, 'chk_bg', 2);
+    // Reflejar grados/atributos (incluye grants de linaje, que dependen del Descriptor)
+    this._buildSkillsEditControls();
+    this._buildSkillsSummary();
 
     // Traits
     const tl = document.getElementById('traits_list');
@@ -1579,20 +1676,163 @@ const app = {
     restore('sel_weapon',prev.w1); restore('sel_weapon_sec',prev.w2);
   },
 
+  /** Ventaja/Desventaja global aplicada a las tiradas (Manual, Glosario):
+      Ventaja = un dado extra del mismo tipo, usa el mejor; Desventaja, el peor.
+      -1 Desventaja · 0 Normal · +1 Ventaja. */
+  setAdvantage(v) {
+    this._advantage = (v === 1 || v === -1) ? v : 0;
+    document.querySelectorAll('#adv_toggle .adv-btn').forEach(b => {
+      const on = String(this._advantage) === b.dataset.adv;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  },
+
   rollCheck(label, mod) {
-    const d20 = Math.floor(Math.random()*20)+1;
-    const total = d20 + mod;
-    const isCrit = d20===20, isFail = d20===1;
+    const adv = this._advantage || 0;
+    const r20 = () => Math.floor(Math.random()*20)+1;
+    let used, faces;
+    if (adv === 0) { used = r20(); faces = [used]; }
+    else { const a = r20(), b = r20(); used = adv > 0 ? Math.max(a,b) : Math.min(a,b); faces = [a, b]; }
+    const total = used + mod;
+    const isCrit = used===20, isFail = used===1;
     const modStr = (mod>=0?'+':'')+mod;
-    const detailTxt = `d20: ${d20}  ${modStr !== '+0' ? `(${modStr})` : ''}`;
+    const advTxt = adv>0?' · Ventaja':adv<0?' · Desventaja':'';
+    const facesTxt = adv===0 ? `d20: ${used}` : `2d20: [${faces.join(', ')}] → ${used}`;
+    const detailTxt = `${facesTxt}${modStr !== '+0' ? `  (${modStr})` : ''}${advTxt}`;
     this.showDiceRoll({
-      label,
-      die: 20,
-      finalFaces: [d20],   // single d20 as array for consistency
+      label, die: 20, finalFaces: faces, isCrit, isFail,
+      detail: detailTxt, total, totalLabel: 'Total'
+    });
+  },
+
+  /* ── Habilidades: grados, atributo y tirada ─────────────────────── */
+
+  /** Veces que cada habilidad está seleccionada (Arquetipo + Trasfondo). */
+  _skillCounts() {
+    const c = {};
+    document.querySelectorAll('input[name="chk_arq"]:checked, input[name="chk_bg"]:checked')
+      .forEach(el => { c[el.value] = (c[el.value] || 0) + 1; });
+    return c;
+  },
+
+  /** Grados de habilidad concedidos por el linaje activo (descriptors.skillGrants). */
+  _lineageGrants() {
+    const key = document.getElementById('sel_desc')?.value || '';
+    const m = {};
+    (this.DB.descriptors?.[key]?.skillGrants || []).forEach(g => {
+      m[g.skill] = Math.max(m[g.skill] || 0, g.grade || 0);
+    });
+    return m;
+  },
+
+  /** Habilidades presentes: seleccionadas o concedidas por linaje. */
+  _presentSkills() {
+    const counts = this._skillCounts(), grants = this._lineageGrants();
+    return [...new Set([...Object.keys(counts), ...Object.keys(grants)])];
+  },
+
+  /** Grado mínimo automático (no editable a la baja). Modelo de adquisiciones
+      (Manual Cap.II): la primera adquisición da Grado 0 y cada adquisición
+      adicional sube un grado. Un grant de linaje de grado G equivale a G+1
+      adquisiciones; cada selección en la ficha, a 1. */
+  _skillMinGrade(skill, counts, grants) {
+    counts = counts || this._skillCounts();
+    grants = grants || this._lineageGrants();
+    const lin = grants[skill];
+    const acq = (lin != null ? lin + 1 : 0) + (counts[skill] || 0);
+    return acq > 0 ? Math.max(0, Math.min(4, acq - 1)) : 0;
+  },
+
+  /** Grado efectivo = mínimo automático + puntos extra manuales (clamp 0–4). */
+  _skillGrade(skill, counts, grants) {
+    const min = this._skillMinGrade(skill, counts, grants);
+    const bonus = Math.max(0, this._skillBonus?.[skill] || 0);
+    return Math.max(0, Math.min(4, min + bonus));
+  },
+
+  /** Atributo sugerido: el de mayor modificador entre los candidatos del manual. */
+  _skillAttrAuto(skill) {
+    const mods = this._finalMods || {};
+    const cands = SKILL_ATTR[skill] || STATS;
+    let best = cands[0];
+    cands.forEach(a => { if ((mods[a] ?? 0) > (mods[best] ?? 0)) best = a; });
+    return best;
+  },
+
+  /** Atributo efectivo: override del jugador, o el sugerido por defecto. */
+  _skillAttrEffective(skill) {
+    const pick = this._skillAttrPick?.[skill];
+    return (pick && STATS.includes(pick)) ? pick : this._skillAttrAuto(skill);
+  },
+
+  /** Suma/resta puntos extra de Grado (en modo edición). Nunca baja del
+      mínimo automático ni pasa de 4. */
+  adjustSkillBonus(skill, delta) {
+    if (!this._skillBonus) this._skillBonus = {};
+    const cur = Math.max(0, this._skillBonus[skill] || 0);
+    const maxBonus = 4 - this._skillMinGrade(skill);
+    const next = Math.max(0, Math.min(maxBonus, cur + delta));
+    if (next === cur) return;
+    this._skillBonus[skill] = next;
+    this._markUnsaved();
+    this._buildSkillsEditControls();
+    this._buildSkillsSummary();
+  },
+
+  /** Fija el atributo de una habilidad ('' = auto/sugerido). */
+  setSkillAttr(skill, attrKey) {
+    if (!this._skillAttrPick) this._skillAttrPick = {};
+    if (attrKey && STATS.includes(attrKey)) this._skillAttrPick[skill] = attrKey;
+    else delete this._skillAttrPick[skill];
+    this._markUnsaved();
+    this._buildSkillsEditControls();
+    this._buildSkillsSummary();
+  },
+
+  /** Tirada de habilidad — Manual Cap.VI §1: 2d10 + MOD Atributo + Grado.
+      Ventaja/Desventaja: 3d10 conservando los 2 más altos / más bajos.
+      Dobles del Destino (solo en 2d10 limpio): doble 10 = éxito auto, doble 1 =
+      fallo auto. Grado 3+: los dados nunca suman menos de 7. El PB no se aplica. */
+  rollSkill(skill) {
+    if (!this._finalMods) this.calc();
+    const grade   = this._skillGrade(skill);
+    const attrKey = this._skillAttrEffective(skill);
+    const attrMod = (this._finalMods?.[attrKey]) || 0;
+    const adv     = this._advantage || 0;
+    const r10 = () => Math.floor(Math.random()*10)+1;
+
+    let rolled, kept, diceSum;
+    if (adv === 0) {
+      const d1=r10(), d2=r10(); rolled=[d1,d2]; kept=[d1,d2]; diceSum=d1+d2;
+    } else {
+      const t=[r10(),r10(),r10()]; rolled=t;
+      const s=[...t].sort((a,b)=>a-b);
+      kept = adv>0 ? [s[1],s[2]] : [s[0],s[1]];   // 2 más altos / 2 más bajos
+      diceSum = kept[0]+kept[1];
+    }
+    const floored = grade >= 3 && diceSum < 7;     // Grado 3+: mínimo 7 en los dados
+    if (floored) diceSum = 7;
+
+    const isCrit = adv===0 && rolled[0]===10 && rolled[1]===10;  // Doble 10
+    const isFail = adv===0 && rolled[0]===1  && rolled[1]===1;   // Doble 1
+    const total  = diceSum + attrMod + grade;
+
+    const modStr  = (attrMod>=0?'+':'')+attrMod;
+    const advTxt  = adv>0?' · Ventaja':adv<0?' · Desventaja':'';
+    const diceTxt = adv===0
+      ? `2d10: [${rolled.join(' + ')}]`
+      : `3d10: [${rolled.join(', ')}] → ${kept.join('+')}`;
+    let detail = `${diceTxt}${floored?' →7 (mín. G3)':''}  ${modStr} ${attrKey}  +${grade} G${grade}${advTxt}`;
+    if (isCrit) detail = '¡Doble 10! Éxito crítico · ' + detail;
+    if (isFail) detail = '¡Doble 1! Ojos de Serpiente · ' + detail;
+
+    this.showDiceRoll({
+      label: `${skill} · G${grade} (${attrKey})`,
+      die: 10,
+      finalFaces: rolled,
       isCrit, isFail,
-      detail: detailTxt,
-      total: total,
-      totalLabel: 'Total'
+      detail, total, totalLabel: 'Total'
     });
   },
 
@@ -3521,6 +3761,8 @@ const app = {
       lethality: this.lethality||1,
       apt_tricks: [...(this._aptSel?.tricks||[])],
       apt_spells: [...(this._aptSel?.spells||[])],
+      skillBonus: { ...(this._skillBonus || {}) },
+      skillAttr:  { ...(this._skillAttrPick || {}) },
       _prefs: {
         // Se serializa lo CONFIRMADO con "✓ Aplicar al Personaje"
         // (_charPrefs), nunca una vista previa sin aplicar.
@@ -3591,6 +3833,9 @@ const app = {
       arq: new Set(skillChecks.filter(c=>c.name==='chk_arq').map(c=>c.value)),
       bg:  new Set(skillChecks.filter(c=>c.name==='chk_bg').map(c=>c.value))
     };
+    // Grados extra y atributo elegido por habilidad (el mínimo se recalcula solo).
+    this._skillBonus    = (data.skillBonus && typeof data.skillBonus === 'object') ? { ...data.skillBonus } : {};
+    this._skillAttrPick = (data.skillAttr  && typeof data.skillAttr  === 'object') ? { ...data.skillAttr  } : {};
     // Apply identity selects FIRST so updateOptions can read them and build sel_filo options
     ['sel_desc','sel_arq','sel_bg'].forEach(id=>{const el=document.getElementById(id);if(el&&data.selects[id])el.value=data.selects[id];});
     this.updateOptions(false);
@@ -3728,6 +3973,7 @@ const app = {
     ['char_xp','cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0});
     this.inventory=[]; this.gold=0; this.alignment=''; this._aptSel={tricks:new Set(),spells:new Set()};
     this._skillsSel = { arq: new Set(), bg: new Set() };
+    this._skillBonus = {}; this._skillAttrPick = {};
     this._syncAlignmentUI();
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(c=>c.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
