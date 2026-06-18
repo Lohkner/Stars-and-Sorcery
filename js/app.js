@@ -2140,7 +2140,7 @@ const app = {
     toast.appendChild(wrap);
     // Optional action: make the toast tappable and keep it on screen longer.
     if (typeof action === 'function') {
-      toast.style.cursor = 'pointer';
+      toast.classList.add('t-action');   // pointer-events:auto + estilo pulsable (CSS)
       toast.setAttribute('role', 'button');
       toast.setAttribute('tabindex', '0');
       const fire = () => { try { action(); } catch(e){} toast.remove(); };
