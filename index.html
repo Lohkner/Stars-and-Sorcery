@@ -372,7 +372,7 @@
                 <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:.7rem">0/0</span>
               </div>
               <div class="lbar"><div id="carga_bar" class="lfill"></div></div>
-              <p id="carga_warn" style="display:none;color:var(--ember);font-size:.6rem;text-align:center;margin-top:2px;font-family:var(--fm)">⚠ SOBRECARGADO</p>
+              <p id="carga_warn" style="display:none;color:var(--ember);font-size:.6rem;text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
             </div>
             <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:.8rem" placeholder="Notas…"></textarea></details>
           </div>
@@ -497,21 +497,6 @@
           </div>
         </div><!-- /page 1 -->
         <div class="page" id="page_2">
-          <!-- Fuente de Poder -->
-          <div class="panel">
-            <div class="ph"><span class="pt">Fuente de Poder</span></div>
-            <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);line-height:1.5;margin:0 0 8px">La Fuente que eliges al abrir el Canal Arcano (Iniciado Místico, Misticismo Innato del Sagaz o Afinidad Mística racial). Marca el requisito de los talentos y axiomas vinculados a esa Fuente.</p>
-            <select id="sel_power_source" aria-label="Fuente de Poder" onchange="app.onPowerSourceChange()" style="width:100%">
-              <option value="">— Sin Fuente —</option>
-              <option value="Erudición">Erudición (INT)</option>
-              <option value="Pacto">Pacto (CAR)</option>
-              <option value="Herencia">Herencia (CAR)</option>
-              <option value="Divinidad">Divinidad (SAB/CAR)</option>
-              <option value="Juramento">Juramento (SAB/CAR)</option>
-              <option value="Naturaleza">Naturaleza (SAB)</option>
-              <option value="Psiónica">Psiónica (INT/SAB)</option>
-            </select>
-          </div>
           <!-- Trucos panel -->
           <div class="panel">
             <div class="ph">

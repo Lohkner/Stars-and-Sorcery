@@ -2299,7 +2299,7 @@ const app = {
         const isSagaz = (document.getElementById('sel_arq')?.value === 'sagaz');
         const desc = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
         const innate = !!desc?.innate_optional;
-        const chosen = this._normSource(document.getElementById('sel_power_source')?.value || '');
+        const chosen = this._normSource(this._powerSource || '');
         const hasTalent = haveNames.has('iniciado m\u00edstico') || haveIds.has('iniciado_mistico');
         const channelOpen = !!chosen || isSagaz || innate || hasTalent;
         // \u00bfEl requisito pide una Fuente concreta? p. ej. "Iniciado M\u00edstico (Pacto)".
@@ -2350,10 +2350,22 @@ const app = {
     return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
   },
 
-  /** La Fuente de Poder elegida cambi\u00f3: marca sin guardar y refresca talentos. */
-  onPowerSourceChange() {
+  /** \u00bfEl Canal Arcano est\u00e1 abierto? (Iniciado M\u00edstico, Sagaz o Afinidad racial). */
+  _channelOpen() {
+    const hasIniciado = !![...document.querySelectorAll('input[name="chk_talents_hidden"]')]
+      .find(h => (h.value||'').toLowerCase() === 'iniciado m\u00edstico' || h.getAttribute('data-id') === 'iniciado_mistico');
+    const isSagaz = document.getElementById('sel_arq')?.value === 'sagaz';
+    const innate = !!this.DB.descriptors?.[document.getElementById('sel_desc')?.value]?.innate_optional;
+    return hasIniciado || isSagaz || innate;
+  },
+
+  /** Fija la Fuente de Poder elegida y refresca talentos/res\u00famenes. */
+  setPowerSource(v) {
+    this._powerSource = v || '';
     this._markUnsaved();
     this.calc();
+    this.showTalentSummary();
+    this.buildDetailPage();
     if (document.getElementById('talent_panel')?.classList.contains('fs-open')) this._renderTalentList();
   },
 
@@ -2416,16 +2428,37 @@ const app = {
       (this.DB.talents[cat] || []).forEach(t => entries.push([cat, t]));
     }
 
-    // Apply text + filter chips
-    const matchText = t => {
-      if (!searching) return true;
-      const hay = `${t.name} ${t.desc||''} ${(t.grades||[]).map(g=>g.d).join(' ')}`.toLowerCase();
-      return hay.includes(q);
+    // Búsqueda con relevancia: el NOMBRE manda. Se exige que cada palabra de la
+    // consulta aparezca en algún campo (búsqueda AND), y se puntúa fuerte el
+    // nombre (exacto > prefijo > contiene) para que al teclear un nombre salga
+    // ese talento primero y no otros por coincidencias en su descripción.
+    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const qn = norm(q);
+    const tokens = qn.split(/\s+/).filter(Boolean);
+    const matchScore = t => {
+      if (!searching) return 1;
+      const name = norm(t.name), desc = norm(t.desc), grds = norm((t.grades||[]).map(g=>g.d).join(' '));
+      if (!tokens.every(tok => name.includes(tok) || desc.includes(tok) || grds.includes(tok))) return 0;
+      let score = 0;
+      if (name === qn) score += 1000;
+      else if (name.startsWith(qn)) score += 500;
+      else if (name.includes(qn)) score += 220;
+      tokens.forEach(tok => {
+        if (name.startsWith(tok)) score += 60;
+        else if (name.includes(tok)) score += 40;
+        else if (desc.includes(tok)) score += 8;
+        else if (grds.includes(tok)) score += 3;
+      });
+      return score;
     };
-    let rows = entries.filter(([,t]) => matchText(t));
+    let rows = entries.map(e => [e, matchScore(e[1])]).filter(([,s]) => s > 0);
+    rows.sort((a,b) => b[1] - a[1]);
+    rows = rows.map(([e]) => e);
     if (this._talentFilters.arq) rows = rows.filter(([,t]) => this._talentMatchesArq(t));
     if (this._talentFilters.eligible) rows = rows.filter(([,t]) => this._parseTalentReq(t.req).met);
 
+    // Selector EDITABLE de Fuente de Poder (solo dentro del gestor, si el Canal está abierto).
+    if (this._channelOpen()) list.appendChild(this._fuentePickerEl());
     if (!rows.length) {
       const p = document.createElement('p'); p.className = 'tm-empty';
       p.textContent = searching ? 'Ningún talento coincide con la búsqueda.' :
@@ -2458,18 +2491,37 @@ const app = {
         infoDiv.appendChild(tag);
       }
       const p = document.createElement('p'); p.textContent = t.desc||''; infoDiv.appendChild(p);
-      (t.grades||[]).forEach(g => {
+      const grades = t.grades || [];
+      const hiddenSel = sel ? [...document.querySelectorAll('input[name="chk_talents_hidden"]')].find(el=>el.value===t.name) : null;
+      const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
+      const activeG = hiddenSel ? Math.min(Math.max(parseInt(hiddenSel.getAttribute('data-grade'))||1,1),maxG) : 0;
+      // Stepper de Grado para talentos ya elegidos (subir/bajar de grado en el gestor)
+      if (sel && grades.length > 1) {
+        const gsel = document.createElement('div'); gsel.className = 'dc-gsel gsel-stepper';
+        const lbl = document.createElement('span'); lbl.className = 'dc-gsel-lbl'; lbl.textContent = 'Grado';
+        const dn = document.createElement('button'); dn.type='button'; dn.className='dc-gstep'; dn.textContent='−';
+        dn.disabled = activeG <= 1; dn.setAttribute('aria-label', `Bajar grado de ${t.name}`);
+        dn.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(t.name, activeG-1); });
+        const cur = document.createElement('span'); cur.className='dc-gcur'; cur.textContent = `G${activeG} / ${maxG}`;
+        const up = document.createElement('button'); up.type='button'; up.className='dc-gstep'; up.textContent='+';
+        up.disabled = activeG >= maxG; up.setAttribute('aria-label', `Subir grado de ${t.name}`);
+        up.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(t.name, activeG+1); });
+        gsel.append(lbl, dn, cur, up);
+        infoDiv.appendChild(gsel);
+      }
+      grades.forEach(g => {
         const sp = document.createElement('span');
-        sp.className = 'js-grade-block';
-        sp.textContent = `G${g.g}: ${g.d}`;
+        let cls = 'js-grade-block';
+        if (sel) cls += (g.g<=activeG ? ' grade-on' : ' grade-off') + (g.g===activeG ? ' grade-active' : '');
+        sp.className = cls;
+        sp.textContent = `G${g.g}: ${g.d}` + (sel && g.g>activeG ? '  (aún no adquirido)' : '');
         infoDiv.appendChild(sp);
       });
       // Requirement line
       if (t.req) {
         const rq = document.createElement('span');
         rq.className = 'tc-req' + (reqInfo.met ? ' tc-req-ok' : '');
-        rq.textContent = (reqInfo.met ? '✓ ' : '⚠ ') +
-          (reqInfo.met ? `Requisitos: ${t.req}` : `Te falta: ${reqInfo.unmet.join(' · ')}`);
+        rq.textContent = reqInfo.met ? `✓ Requisitos: ${t.req}` : `Te falta: ${reqInfo.unmet.join(' · ')}`;
         infoDiv.appendChild(rq);
       }
       card.appendChild(chkEl); card.appendChild(infoDiv);
@@ -2546,34 +2598,100 @@ const app = {
     }
   },
 
+  /** Localiza un talento en la DB por nombre o id. */
+  _findTalent(name, tid) {
+    if (!this.DB.talents) return null;
+    for (const arr of Object.values(this.DB.talents)) {
+      const f = arr.find(t => t.name === name || (tid && t.id === tid));
+      if (f) return f;
+    }
+    return null;
+  },
+
+  /** Tarjeta de talento rica (colapsable): nombre + Grado activo + selector de
+      Grado (editable) + grados con realce ACUMULATIVO (los de Grado ≤ activo se
+      muestran "adquiridos"; los superiores, atenuados). Reutilizada en el
+      resumen de Talentos y en la página de Detalle. */
+  _talentRichCard(h, opts = {}) {
+    const editable = opts.editable !== false;
+    const name = String(h.value || '');
+    const tid  = h.getAttribute('data-id');
+    const tal  = this._findTalent(name, tid);
+    const grades = tal?.grades || [];
+    const maxG = grades.length ? Math.max(...grades.map(g => g.g)) : 1;
+    const activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade')) || 1, 1), maxG);
+
+    const card = document.createElement('div'); card.className = 'dc';
+    const dch = document.createElement('div'); dch.className = 'dch';
+    dch.addEventListener('click', () => card.classList.toggle('open'));
+    const dct = document.createElement('span'); dct.className = 'dct'; dct.textContent = this._sanitize(name);
+    dch.appendChild(dct);
+    if (grades.length) { const gb = document.createElement('span'); gb.className = 'dc-gbadge'; gb.textContent = 'G' + activeG; dch.appendChild(gb); }
+    const dca = document.createElement('span'); dca.className = 'dca'; dca.textContent = '▾'; dch.appendChild(dca);
+
+    const dcb = document.createElement('div'); dcb.className = 'dcb';
+    const desc = document.createElement('div'); desc.style.marginBottom = '6px';
+    desc.textContent = this._sanitize(tal?.desc || h.getAttribute('data-desc') || 'Sin descripción.');
+    dcb.appendChild(desc);
+
+    if (editable && grades.length > 1) {
+      const gsel = document.createElement('div'); gsel.className = 'dc-gsel';
+      const lbl = document.createElement('span'); lbl.className = 'dc-gsel-lbl'; lbl.textContent = 'Grado'; gsel.appendChild(lbl);
+      grades.forEach(g => {
+        const b = document.createElement('button'); b.type = 'button';
+        b.className = 'dc-gbtn' + (g.g === activeG ? ' active' : ''); b.textContent = 'G' + g.g;
+        b.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(name, g.g); });
+        gsel.appendChild(b);
+      });
+      dcb.appendChild(gsel);
+    }
+    grades.forEach(g => {
+      const owned = g.g <= activeG;
+      const gd = document.createElement('div');
+      gd.className = 'js-grade-block ' + (owned ? 'grade-on' : 'grade-off') + (g.g === activeG ? ' grade-active' : '');
+      gd.textContent = 'G' + Number(g.g) + ': ' + this._sanitize(String(g.d || '')) + (owned ? '' : '  (aún no adquirido)');
+      dcb.appendChild(gd);
+    });
+    card.appendChild(dch); card.appendChild(dcb);
+    return card;
+  },
+
+  /** Selector EDITABLE de Fuente de Poder (solo dentro del Gestor de Talentos). */
+  _fuentePickerEl() {
+    const wrap = document.createElement('div'); wrap.className = 'fuente-row';
+    const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
+    const sel = document.createElement('select'); sel.className = 'fuente-sel'; sel.setAttribute('aria-label', 'Fuente de Poder');
+    const opts = [['', '— Elige Fuente —'], ['Erudición', 'Erudición (INT)'], ['Pacto', 'Pacto (CAR)'],
+      ['Herencia', 'Herencia (CAR)'], ['Divinidad', 'Divinidad (SAB)'], ['Juramento', 'Juramento (CAR)'],
+      ['Naturaleza', 'Naturaleza (SAB)'], ['Psiónica', 'Psiónica (INT/SAB/CAR)']];
+    opts.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+    sel.value = this._powerSource || '';
+    sel.addEventListener('change', () => this.setPowerSource(sel.value));
+    wrap.appendChild(lbl); wrap.appendChild(sel);
+    return wrap;
+  },
+
+  /** Vista de SOLO LECTURA de la Fuente elegida (resumen/detalle). */
+  _fuenteReadonlyEl() {
+    const wrap = document.createElement('div'); wrap.className = 'fuente-row readonly';
+    const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
+    const val = document.createElement('span'); val.className = 'fuente-val';
+    val.textContent = this._powerSource ? this._powerSource : '— elígela en el Gestor —';
+    wrap.appendChild(lbl); wrap.appendChild(val);
+    return wrap;
+  },
+
   showTalentSummary() {
     const items = Array.from(document.querySelectorAll('input[name="chk_talents_hidden"]'));
-    const list = document.getElementById('talents_summary_list'); list.innerHTML='';
+    const list = document.getElementById('talents_summary_list'); if (!list) return;
+    list.innerHTML = '';
     const view = document.getElementById('talents_summary_view');
-    if (items.length) {
-      view.style.display='block';
-      items.forEach(h => {
-        const name = String(h.value || '');
-        const tid = h.getAttribute('data-id');
-        let grades = [];
-        if (this.DB.talents) Object.values(this.DB.talents).forEach(arr=>{const f=arr.find(t=>t.name===name||(tid&&t.id===tid));if(f?.grades)grades=f.grades});
-        const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
-        const activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade'))||1, 1), maxG);
-        const d = document.createElement('div');
-        d.style.cssText='background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:6px 10px';
-        const title = document.createElement('div');
-        title.className = 'js-talent-title';
-        title.textContent = name;
-        if (grades.length) { const b=document.createElement('span'); b.className='tsum-gbadge'; b.textContent='G'+activeG; title.appendChild(b); }
-        const desc = document.createElement('div');
-        desc.className = 'js-talent-desc';
-        // Mostrar el efecto del Grado activo (no solo la leyenda) si existe.
-        const activeText = grades.find(g=>g.g===activeG)?.d;
-        desc.textContent = activeText ? `G${activeG}: ${activeText}` : String(h.getAttribute('data-desc') || '');
-        d.appendChild(title); d.appendChild(desc);
-        list.appendChild(d);
-      });
-    } else view.style.display='none';
+    const channel = this._channelOpen();
+    const show = items.length > 0 || channel;
+    if (view) view.style.display = show ? 'block' : 'none';
+    if (!show) return;
+    if (channel) list.appendChild(this._fuenteReadonlyEl());
+    items.forEach(h => list.appendChild(this._talentRichCard(h, { editable: false })));
   },
 
   buildDetailPage() {
@@ -2664,51 +2782,10 @@ const app = {
     // Talents
     const tl = document.getElementById('detail_talents_list');
     const talents = Array.from(document.querySelectorAll('input[name="chk_talents_hidden"]'));
-    if (!talents.length) { tl.innerHTML='<p class="txt-it-c">Sin talentos.</p>'; return; }
+    if (!talents.length && !this._channelOpen()) { tl.innerHTML='<p class="txt-it-c">Sin talentos.</p>'; return; }
     tl.innerHTML = '';
-    talents.forEach(h => {
-      const name = String(h.value||'');
-      const tid  = h.getAttribute('data-id');
-      let grades = [];
-      if (this.DB.talents) Object.values(this.DB.talents).forEach(arr=>{const f=arr.find(t=>t.name===name||(tid&&t.id===tid));if(f?.grades)grades=f.grades});
-      const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
-      let activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade'))||1, 1), maxG);
-      const card = document.createElement('div'); card.className='dc';
-      // Header
-      const dch = document.createElement('div'); dch.className='dch';
-      dch.addEventListener('click', () => card.classList.toggle('open'));
-      const dct = document.createElement('span'); dct.className='dct'; dct.textContent=this._sanitize(name);
-      if (grades.length) { const gb=document.createElement('span'); gb.className='dc-gbadge'; gb.textContent='G'+activeG; dch.appendChild(dct); dch.appendChild(gb); }
-      else dch.appendChild(dct);
-      const dca = document.createElement('span'); dca.className='dca'; dca.textContent='▾';
-      dch.appendChild(dca);
-      // Body
-      const dcb = document.createElement('div'); dcb.className='dcb';
-      const desc = document.createElement('div'); desc.style.marginBottom='6px';
-      desc.textContent = this._sanitize(h.getAttribute('data-desc')||'Sin descripción.');
-      dcb.appendChild(desc);
-      // Grade selector (only when there is more than one grade)
-      if (grades.length > 1) {
-        const gsel = document.createElement('div'); gsel.className='dc-gsel';
-        const lbl = document.createElement('span'); lbl.className='dc-gsel-lbl'; lbl.textContent='Grado activo'; gsel.appendChild(lbl);
-        grades.forEach(g => {
-          const b=document.createElement('button'); b.type='button';
-          b.className='dc-gbtn'+(g.g===activeG?' active':''); b.textContent='G'+g.g;
-          b.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(name, g.g); });
-          gsel.appendChild(b);
-        });
-        dcb.appendChild(gsel);
-      }
-      // Grades (from DB — el activo resaltado, los demás atenuados)
-      grades.forEach(g => {
-        const gd=document.createElement('div');
-        gd.className = 'js-grade-block ' + (g.g===activeG ? 'grade-on' : 'grade-off');
-        gd.textContent='G'+Number(g.g)+': '+this._sanitize(String(g.d||''));
-        dcb.appendChild(gd);
-      });
-      card.appendChild(dch); card.appendChild(dcb);
-      tl.appendChild(card);
-    });
+    if (this._channelOpen()) tl.appendChild(this._fuenteReadonlyEl());
+    talents.forEach(h => tl.appendChild(this._talentRichCard(h, { editable: false })));
   },
 
   /** Fija el Grado activo de un talento elegido y refresca las vistas. */
@@ -2719,6 +2796,7 @@ const app = {
     this._markUnsaved();
     this.buildDetailPage();
     this.showTalentSummary();
+    if (document.getElementById('talent_panel')?.classList.contains('fs-open')) this._renderTalentList();
   },
 
   // selectedApt stores { tricks: Set of keys, spells: Set of keys }
@@ -3871,6 +3949,7 @@ const app = {
       apt_spells: [...(this._aptSel?.spells||[])],
       skillBonus: { ...(this._skillBonus || {}) },
       skillAttr:  { ...(this._skillAttrPick || {}) },
+      powerSource: this._powerSource || '',
       _prefs: {
         // Se serializa lo CONFIRMADO con "✓ Aplicar al Personaje"
         // (_charPrefs), nunca una vista previa sin aplicar.
@@ -3944,6 +4023,7 @@ const app = {
     // Grados extra y atributo elegido por habilidad (el mínimo se recalcula solo).
     this._skillBonus    = (data.skillBonus && typeof data.skillBonus === 'object') ? { ...data.skillBonus } : {};
     this._skillAttrPick = (data.skillAttr  && typeof data.skillAttr  === 'object') ? { ...data.skillAttr  } : {};
+    this._powerSource   = typeof data.powerSource === 'string' ? data.powerSource : '';
     // Apply identity selects FIRST so updateOptions can read them and build sel_filo options
     ['sel_desc','sel_arq','sel_bg'].forEach(id=>{const el=document.getElementById(id);if(el&&data.selects[id])el.value=data.selects[id];});
     this.updateOptions(false);
@@ -4081,7 +4161,7 @@ const app = {
     ['char_xp','cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0});
     this.inventory=[]; this.gold=0; this.alignment=''; this._aptSel={tricks:new Set(),spells:new Set()};
     this._skillsSel = { arq: new Set(), bg: new Set() };
-    this._skillBonus = {}; this._skillAttrPick = {};
+    this._skillBonus = {}; this._skillAttrPick = {}; this._powerSource = '';
     this._syncAlignmentUI();
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(c=>c.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());

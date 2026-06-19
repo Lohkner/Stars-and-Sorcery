@@ -1671,8 +1671,29 @@ details[open] > summary::before { content: '▾'; }
 .js-tag-neutral   { font-family: var(--fm); font-size: .68rem; background: var(--raised); border: 1px solid var(--border); border-radius: 2px; padding: 2px 8px; color: var(--text); }
 .js-grade-block   { font-family: var(--fm); font-size: .64rem; color: #e7a7ae; display: block; margin-top: 3px; padding: 3px 6px; background: rgba(110,21,37,.18); border-radius: 2px; }
 /* Grado activo de un talento elegido (resaltado vs atenuado) */
-.js-grade-block.grade-on{color:var(--goldb);background:rgba(200,169,110,.14);border-left:2px solid var(--gold);padding-left:7px}
-.js-grade-block.grade-off{opacity:.5}
+.js-grade-block.grade-on{color:#e7c98a;background:rgba(200,169,110,.10);border-left:2px solid rgba(200,169,110,.55);padding-left:7px}
+.js-grade-block.grade-active{color:var(--goldb);background:rgba(200,169,110,.18);border-left:3px solid var(--gold);font-weight:600}
+.js-grade-block.grade-off{opacity:.45;font-style:italic}
+
+/* Selector de Fuente de Poder (en el resumen de Talentos, cuando el Canal está abierto) */
+.fuente-row{display:flex;align-items:center;gap:8px;background:rgba(74,158,202,.06);
+  border:1px solid rgba(74,158,202,.28);border-radius:var(--r);padding:7px 10px;margin-bottom:2px}
+.fuente-lbl{font-family:var(--fd);font-size:.6rem;color:var(--ice);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+.fuente-sel{flex:1;min-width:0;background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);
+  color:var(--bright);font-family:var(--fm);font-size:.66rem;padding:6px 8px;min-height:34px;cursor:pointer}
+.fuente-sel:focus{outline:none;border-color:var(--ice)}
+/* Fuente en solo lectura (resumen/detalle) */
+.fuente-row.readonly{background:rgba(74,158,202,.05);border-style:dashed}
+.fuente-val{flex:1;min-width:0;font-family:var(--fd);font-size:.78rem;color:var(--ice);font-weight:600;letter-spacing:.03em}
+/* Stepper de Grado en el gestor (− G2 / 3 +) */
+.dc-gsel.gsel-stepper{align-items:center;gap:8px}
+.dc-gstep{width:30px;min-height:30px;border:1px solid var(--rim);background:var(--deep);color:var(--gold);
+  font-family:var(--fm);font-size:1rem;line-height:1;border-radius:var(--r);cursor:pointer;
+  transition:border-color .12s,color .12s,background .1s}
+@media(hover:hover){.dc-gstep:hover:not(:disabled){border-color:rgba(200,169,110,.5);background:rgba(200,169,110,.08)}}
+.dc-gstep:active:not(:disabled){transform:scale(.9)}
+.dc-gstep:disabled{opacity:.35;cursor:default}
+.dc-gcur{font-family:var(--fm);font-weight:700;font-size:.74rem;color:var(--goldb);min-width:48px;text-align:center}
 .dc-gbadge,.tsum-gbadge{display:inline-flex;align-items:center;justify-content:center;font-family:var(--fm);font-weight:700;
   font-size:.58rem;color:var(--goldb);background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.3);
   border-radius:10px;padding:1px 7px;margin-left:7px;letter-spacing:.04em}

@@ -1,10 +1,27 @@
-# S&S Companion — v38
+# S&S Companion — v40
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v40 — Edición de grado solo en el Gestor, Fuente de solo lectura y fix de talentos
+
+- **Fix de talentos corruptos**: *Facultades de Percepción* tenía texto erróneo (había absorbido toda la cola del documento, 10 600 caracteres) — ahora muestra su requisito, leyenda y las cuatro opciones correctas. Se limpió también la "prosa de sección" que se había colado en *Red de Contactos* y *Políglota*.
+- **Grados editables solo en el Gestor**: el resumen (sección Stats) y Detalle son ahora de **solo lectura** — muestran el Grado activo y los efectos con realce acumulativo, pero **no** permiten cambiar el grado. El cambio de grado se hace **dentro del Gestor**, con un **stepper claro** (`− G2 / 3 +`) en el talento ya elegido.
+- **Fuente de Poder**: el selector editable vive **solo en el Gestor** (aparece arriba cuando el Canal está abierto). En el resumen y Detalle la Fuente elegida se muestra en **solo lectura**, sin selector dentro de la tarjeta del talento.
+
+Verificado en navegador: el talento corregido, stepper de grado con topes (G1↔G3), resumen/detalle sin edición de grado, Fuente editable solo en el gestor y de lectura en el resumen.
+
+## Novedades v39 — Búsqueda de talentos, Fuente en contexto, atributos de Fuente y tarjetas de talento
+
+- **Búsqueda de talentos por relevancia**: al teclear un nombre, el talento sale **primero** (puntúa nombre exacto > prefijo > contiene, por encima de coincidencias en descripción/grados; búsqueda AND sin acentos). Antes mostraba otros talentos de forma torpe.
+- **Fuente de Poder en contexto**: se retiró el recuadro suelto de Aptitudes; ahora, al elegir **Iniciado Místico** (o Sagaz / Afinidad racial), aparece el **selector de Fuente dentro del resumen de Talentos**, y la elegida se ve también en Detalle. Sigue marcando los requisitos de Fuente.
+- **Atributos representativos de Fuente**: **Divinidad → SAB**, **Juramento → CAR**, **Psiónica → INT/SAB/CAR**. Se actualizaron los requisitos de los talentos de esas Fuentes en consecuencia (los talentos compartidos Divinidad/Juramento mantienen "SAB o CAR").
+- **Tarjetas de talento enriquecidas**: el recuadro de Talentos (sección Stats) ahora usa las mismas tarjetas colapsables que Detalle. En el gestor puedes **subir el Grado** del talento ya elegido; en lectura se muestra el **Grado activo** y los efectos con realce **acumulativo**: con Grado 2, los efectos de **G1 y G2** aparecen como adquiridos y **G3 atenuado** ("aún no adquirido").
+
+Verificado en navegador: orden de búsqueda, aparición del selector de Fuente con Iniciado Místico, emparejamiento por atributo de cada Fuente, realce acumulativo de grados y persistencia (Fuente + Grado viajan con el personaje).
 
 ## Novedades v38 — Fuente de Poder, Grado activo, Audaz y editor de talentos
 
