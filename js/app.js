@@ -2097,7 +2097,7 @@ const app = {
   },
 
   toast(msg, type = 'info', action = null) {
-    const t = { '💾':'ok','ok':'ok','OK':'ok','✦':'ok','Error':'err','error':'err','⚠':'err' }[type] ?? 'info';
+    const t = { 'ok':'ok','OK':'ok','✦':'ok','Error':'err','error':'err' }[type] ?? 'info';
 
     // ── Deduplication: if an identical message is already visible, skip ──
     const containerId = (t === 'err') ? 'toast-ct-err' : 'toast-ct';
@@ -2309,13 +2309,29 @@ const app = {
         let met, miss;
         if (reqSources.length) {
           met = !!chosen && reqSources.includes(chosen);
-          miss = `Iniciado M\u00edstico \u2014 elige la Fuente ${m[1].trim()} (pesta\u00f1a Aptitudes)`;
+          miss = `Iniciado M\u00edstico \u2014 elige la Fuente ${m[1].trim()} (en el Gestor de Talentos)`;
         } else {
           met = channelOpen;
           miss = part.replace(/\s+/g,' ').trim() + ' (o Canal abierto por otra v\u00eda)';
         }
         out.atoms.push({ kind:'talent', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(miss); }
+      }
+      // Despertar Sobrenatural / Poder\u00edo Arcano: requieren tener el talento Y,
+      // si el requisito nombra una Fuente, que coincida con la elegida.
+      else if (/^(Despertar Sobrenatural|Poder\u00edo Arcano)/i.test(part)) {
+        const tname = /^Despertar/i.test(part) ? 'despertar sobrenatural' : 'poder\u00edo arcano';
+        const tid   = /^Despertar/i.test(part) ? 'despertar_sobrenatural' : 'poderio_arcano';
+        const hasIt = haveNames.has(tname) || haveIds.has(tid);
+        const chosen = this._normSource(this._powerSource || '');
+        const KNOWN = ['eruricion','erudicion','pacto','herencia','divinidad','juramento','naturaleza','psionica'];
+        const m = part.match(/\(([^)]+)\)/);
+        const reqSources = m ? m[1].split(/\s+(?:o|y)\s+|\s*[\/,]\s*/i).map(x => this._normSource(x)).filter(x => KNOWN.includes(x)) : [];
+        let met;
+        if (reqSources.length) met = hasIt && !!chosen && reqSources.includes(chosen);
+        else met = hasIt;
+        out.atoms.push({ kind:'talent', raw: part, met });
+        if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
       }
       // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
@@ -4816,6 +4832,16 @@ const app = {
       document.body.appendChild(h);
     });
     this.updateTalentCount();
+
+    // 10b. Fuente de Poder aleatoria SOLO si el Canal queda abierto (Iniciado
+    // Místico salió en la tirada, el Arquetipo es Sagaz, o el Linaje ofrece
+    // Afinidad Mística Innata). Si no, queda sin Fuente.
+    if (this._channelOpen()) {
+      const FUENTES = ['Erudición','Pacto','Herencia','Divinidad','Juramento','Naturaleza','Psiónica'];
+      this._powerSource = FUENTES[Math.floor(Math.random()*FUENTES.length)];
+    } else {
+      this._powerSource = '';
+    }
     this.showTalentSummary();
 
     // 11. Inventario básico

@@ -1,10 +1,17 @@
-# S&S Companion — v40
+# S&S Companion — v41
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v41 — Fuente aleatoria y revisión de consistencia
+
+- **Generación aleatoria + Fuente**: al generar un personaje al azar, si la tirada deja el **Canal Arcano abierto** (sale Iniciado Místico, el Arquetipo es Sagaz o el Linaje ofrece Afinidad Mística), ahora también se asigna una **Fuente de Poder aleatoria**; si no, queda sin Fuente. Verificado: 25/25 personajes consistentes.
+- **Limpieza de textos**: se eliminó el **markdown literal** (`**negritas**`, 98 marcas) que se mostraba como asteriscos en los efectos de talentos, y las **etiquetas internas de versión** (`[v5.2.2]` / `[v5.2.3]`, 30 en total) que ensuciaban descripciones de axiomas y trasfondos.
+- **Consistencia de requisitos**: "Despertar Sobrenatural (Fuente)" y "Poderío Arcano (Fuente)" ahora también **comprueban la Fuente elegida** (como Iniciado Místico), no solo que tengas el talento. Se corrigió el aviso obsoleto que remitía a la "pestaña Aptitudes" (ahora "en el Gestor de Talentos").
+- Sin nombres/ids de talento duplicados; se retiró el último resto de emoji en código.
 
 ## Novedades v40 — Edición de grado solo en el Gestor, Fuente de solo lectura y fix de talentos
 
