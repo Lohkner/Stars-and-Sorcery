@@ -1,10 +1,20 @@
-# S&S Companion — v41
+# S&S Companion — v42
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v42 — Reglas v5.3.3 y fix de saltos de grado
+
+- **Actualización a las reglas v5.3.3** desde los tres documentos canónicos (Manual, Compendio de Talentos, Catálogo de Axiomas):
+  - **Talentos**: 191 → **192** (nuevo *Bendición Oscura*); se sincronizaron grados, leyendas y requisitos (187 talentos actualizados).
+  - **Axiomas**: 330 → **332** (nuevos *Bola de Fuego Mayor* y *Rayo Relámpago Mayor*); rebalanceos de v5.3.3 (p. ej. *Chispa Arcana* y *Descarga* ahora escalan por nivel; *Rayo Relámpago* 8d6→4d6; *Bola de Fuego* reescrita).
+  - **Manual** (linajes, arquetipos, trasfondos, equipo): sin cambios respecto a v5.3.1 — ya estaba al día.
+- **Fix de saltos de grado**: 12 talentos saltaban de **Grado 1 a Grado 3** (les faltaba el Grado 2 por un error de parseo previo) — p. ej. *Maestría de Armas*, *Mente Arcana*, *Sentidos Primales*. Ahora todos tienen **G1 / G2 / G3** correlativos.
+- **Personalizaciones conservadas** (a elección del usuario): Rompejuramentos mantiene el requisito *Iniciado Místico (Juramento)* y los talentos de Juramento usan solo **CAR**, aunque el doc no lo incluya.
+- Se re-aplicó la limpieza de textos: sin etiquetas `[v5.x.x]` ni markdown `**` en la interfaz.
 
 ## Novedades v41 — Fuente aleatoria y revisión de consistencia
 
