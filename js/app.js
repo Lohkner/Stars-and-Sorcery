@@ -1213,8 +1213,15 @@ const app = {
     const filoVal = $('sel_filo').value;
     $('res_filo_val').textContent = filoVal || '—';
 
-    // Iniciativa
+    // Iniciativa — DES por defecto. Conducción Arcana (rasgo del Sagaz, v5.3.x):
+    // si es Sagaz con una Fuente elegida, su Iniciativa usa el MOD del atributo de
+    // su Fuente (INT/SAB/CAR) en lugar de DES. Aplicamos el mejor de ambos para no
+    // penalizar fichas que sí invirtieron en DES ("aplica solo la más alta").
     let ini = mods.DES;
+    if (arqKey === 'sagaz') {
+      const srcMod = this._sourceAttrMod(mods);
+      if (srcMod !== null) ini = Math.max(ini, srcMod);
+    }
     if (hasTalent('alerta')) ini += 5;
     $('res_ini').textContent = (ini>=0?'+':'')+ini;
 
@@ -2364,6 +2371,23 @@ const app = {
   /** Normaliza el nombre de una Fuente de Poder (sin acentos, min\u00fasculas). */
   _normSource(s) {
     return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  },
+
+  /** MOD del atributo gobernante de la Fuente de Poder elegida. Devuelve el mejor
+      MOD entre los atributos de esa Fuente, o null si no hay Fuente seleccionada.
+      Erudici\u00f3n\u2192INT \u00b7 Pacto/Herencia/Juramento\u2192CAR \u00b7 Divinidad/Naturaleza\u2192SAB \u00b7
+      Psi\u00f3nica\u2192mejor de INT/SAB/CAR. Lo usa la Conducci\u00f3n Arcana del Sagaz. */
+  _sourceAttrMod(mods) {
+    const src = this._normSource(this._powerSource || '');
+    if (!src) return null;
+    const MAP = {
+      erudicion:['INT'], pacto:['CAR'], herencia:['CAR'],
+      divinidad:['SAB'], juramento:['CAR'], naturaleza:['SAB'],
+      psionica:['INT','SAB','CAR'],
+    };
+    const attrs = MAP[src];
+    if (!attrs) return null;
+    return Math.max(...attrs.map(a => mods[a] || 0));
   },
 
   /** \u00bfEl Canal Arcano est\u00e1 abierto? (Iniciado M\u00edstico, Sagaz o Afinidad racial). */

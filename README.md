@@ -1,10 +1,19 @@
-# S&S Companion — v42
+# S&S Companion — v43
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v43 — Reglas v5.3.4 (parche de balance)
+
+- **Actualización a las reglas v5.3.4** desde los tres documentos canónicos (Manual Básico v5.3.4, Compendio de Talentos y Catálogo de Axiomas). `STORAGE.RULES_DATA_VERSION` sube a `5.3.4-app-r1`, así que los usuarios que regresan adoptan las reglas nuevas automáticamente **sin tocar sus personajes guardados**.
+- **Nuevo Talento General — *Resonancia del Canal*** (Talentos 192 → **193**): Modificador, REQ *Iniciado Místico · atributo de tu Fuente 13+ · Nivel 3+*. Al inicio de cada turno en combate recuperas Ingenio según el Grado (G1→1 · G2→2 · G3→3). Lo puede tomar cualquier lanzador con el Canal abierto (el Sagaz no: su Resonancia es innata).
+- **Rasgos del Sagaz al día**: el texto del arquetipo aún mencionaba *Dominio de Axiomas* y *Paso Arcano* (retirados desde v5.3.2). Ahora refleja sus rasgos actuales: **Sentido de la Fuente · Conducción Arcana · Misticismo Innato · Retroalimentación Arcana**.
+- **Conducción Arcana en el cálculo de Iniciativa**: para un Sagaz con una Fuente elegida, la Iniciativa usa el MOD de su atributo de Fuente (INT/SAB/CAR) en lugar de DES. Se aplica el **mejor de ambos** para no penalizar fichas que invirtieron en DES (regla "aplica solo la más alta"); el resto de Arquetipos siguen usando DES.
+- **Veterano de Guerra (Audaz) build-agnóstico**: con armadura +1 CA; sin armadura, +1 a tiradas de combate. *Inercia de Guerra* ahora reconoce abatimientos por Axioma además de cuerpo a cuerpo y a distancia.
+- Cambios del parche que son reglas de Manual (no cálculos de la app): coste de Esfuerzo +1 en toda la escala de Filo, fusión de la antigua Sobrecarga en el Esfuerzo, umbral de muerte (golpe letal deja a 1 PV en vez de matar), Regla del Profesional acotada en Grado 1 y la inversión de PD *Esfuerzo Profundo*. La app no computa esos valores, así que solo se reflejan en los textos de reglas correspondientes.
 
 ## Novedades v42 — Reglas v5.3.3 y fix de saltos de grado
 

@@ -10,7 +10,7 @@
    ══════════════════════════════════════════════════════════════════ */
 'use strict';
 
-const CACHE_VERSION = 'ss-companion-v16';
+const CACHE_VERSION = 'ss-companion-v17';
 const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
