@@ -5,7 +5,7 @@
 const STORAGE = {
   SCHEMA_VERSION: 2,
   /** Bump when DEFAULT_DB rules data changes so cached rules refresh automatically. */
-  RULES_DATA_VERSION: '5.3.4-app-r1',
+  RULES_DATA_VERSION: '5.3.5-app-r1',
   KEYS: {
     rules:          'sands_rules',
     rulesVer:       'sands_rules_ver',
@@ -64,19 +64,6 @@ const STORAGE = {
   saveRoster(roster) {
     try { localStorage.setItem(this.KEYS.roster, JSON.stringify(roster)); return true; }
     catch (err) { return false; }
-  },
-
-  /** Load a single character from roster */
-  loadChar(name) {
-    const roster = this.loadRoster();
-    return roster[String(name)] || null;
-  },
-
-  /** Save a single character into roster */
-  saveCharData(name, data) {
-    const roster = this.loadRoster();
-    roster[String(name)] = data;
-    return this.saveRoster(roster);
   },
 
   /** Delete a single character */

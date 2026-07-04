@@ -951,7 +951,6 @@ const app = {
   _el(id) { return document.getElementById(id); },
 
   /** Set textContent of element by id, safely no-ops if element is missing. */
-  _tc(id, val) { const el = this._el(id); if (el) el.textContent = val; },
 
   fillSelect(id, data) {
     const s = document.getElementById(id);
@@ -2296,8 +2295,13 @@ const app = {
       else if (/^Filo\s+(F\u00edsico|Flexible|Mental)\s*\d/i.test(part)) {
         out.atoms.push({ kind:'info', raw: part, met:true });
       }
-      // Competencia de Kit [v5.2.2]: "Competencia en Herramientas de Alquimia (…)" — informativo
-      else if (/^Competencia\s+en\s+/i.test(part)) {
+      // Competencia de Kit [v5.2.2] / de armas [v5.3.5]: "Competencia en Herramientas…",
+      // "Competencia con armas ligeras" — informativo
+      else if (/^Competencia\s+(en|con)\s+/i.test(part)) {
+        out.atoms.push({ kind:'info', raw: part, met:true });
+      }
+      // Origen de Herencia [v5.3.5]: "Origen: Llama Interior" — elección narrativa, informativo
+      else if (/^Origen\s*:/i.test(part)) {
         out.atoms.push({ kind:'info', raw: part, met:true });
       }
       // Canal abierto — tres v\u00edas [v5.2.2]: Iniciado M\u00edstico se satisface por el talento,
@@ -2349,8 +2353,12 @@ const app = {
         if (informational || baseName.length < 4) {
           out.atoms.push({ kind:'info', raw: part, met:true });
         } else {
-          const tid = this._slugify ? this._slugify(baseName) : baseName.replace(/[^a-z0-9]+/g,'_');
-          const met = haveNames.has(baseName) || haveIds.has(tid);
+          // Alternativas [v5.3.5]: "Armadura Arcana G1 o Armadura de Poder G1" — basta una.
+          const candidates = baseName.split(/\s+o\s+/i).map(s => s.trim()).filter(s => s.length >= 4);
+          const met = candidates.some(nm => {
+            const tid = this._slugify ? this._slugify(nm) : nm.replace(/[^a-z0-9]+/g,'_');
+            return haveNames.has(nm) || haveIds.has(tid);
+          });
           out.atoms.push({ kind:'talent', raw: part, met });
           if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
         }

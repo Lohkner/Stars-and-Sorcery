@@ -1,10 +1,29 @@
-# S&S Companion — v43
+# S&S Companion — v44
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+
+## Novedades v44 — Reglas v5.3.5 y limpieza de código zombie
+
+- **Actualización a las reglas v5.3.5** desde los tres documentos canónicos. El Manual Básico y el Catálogo de Axiomas declaran la revisión como *congelación editorial* (ninguna regla, coste ni fórmula cambia); el grueso vive en el **Compendio Maestro de Talentos v5.3.5**. `STORAGE.RULES_DATA_VERSION` sube a `5.3.5-app-r1` — los usuarios que regresan adoptan las reglas nuevas sin tocar sus personajes guardados.
+- **Talentos: 193 → 225 (+32)**, sincronizados con la reorganización por catálogos del Compendio (el antiguo Apéndice de Expansión se disuelve y sus líneas —nunca importadas hasta ahora— entran en sus catálogos naturales):
+  - **Juramento (+6)**: los dos Juramentos nuevos con mecánica de Aura (*Juramento de Venganza*, *Juramento del Poder Antiguo*) y La Senda del Sepulcro (*Llamada del Sepulcro, Cosecha de Almas, Manto Necrótico, Corona de los Caídos*).
+  - **Psiónica (+5)**: *Clarisenciencia, Psicocinesis, Psicometabolismo, Psicoportación, Dominio Telepático*.
+  - **Herencia (+9)**: Orígenes *Llama Interior* (*Sangre del Elemento, Voluntad Pura, Forma del Elemento*), *Convergencia Primordial* (*Núcleo Plural, Confluencia, Resonancia Primordial*) y *Carne Maleable* (*Carne Reescrita, Forma de Guerra, Cuerpo Sin Forma*).
+  - **Letalidad (+3)** — armas arrojadizas: *Filo que Vuelve, Ojo Certero, Cuchilla que No Erra Dos Veces*.
+  - **General (+3)** — La Senda del Jinete: *Jinete de Guerra, Maestro de la Justa, Vínculo del Jinete Dracónico*.
+  - **Exploración (+4)**: *Superviviente de Climas Extremos, Memoria del Terreno* (renombrado desde *Cartógrafo Instintivo*), *Trepador Imposible, Forrajero Experto*.
+  - **Combate (+1)**: *Danza de Hojas* (con la Regla de Combate con Dos Armas). **Invención (+1)**: *Armadura de Poder*.
+- **Invención reconstruida**: *Armadura Arcana*, *Guardián de Acero*, *Cañón Arcano* y *Armadura de Artillero* tenían entradas degeneradas (solo el prerrequisito de ficción, sin grados) — ahora tienen sus G1/G2/G3 completos del doc. *Armadura Arcana* pasa a requerir *Iniciado Místico + Mente de Inventor G1* (su versión no-mágica es la nueva *Armadura de Poder*), y sus dependientes aceptan **"Armadura Arcana G1 o Armadura de Poder G1"**.
+- **Pacto de la Hoja revisado**: cláusula de **Desafío** (0 PA, 1/encuentro) en G1 y recuperación de Ingenio al abatir al desafiado en G3; leyenda nueva. *Iniciado Místico* añade **Juramento** a la lista de Fuentes.
+- **Parser de requisitos ampliado** (`_parseTalentReq`): alternativas de talento con "o" (basta cumplir una), "Competencia con…" y "Origen: …" se tratan como informativos (antes habrían bloqueado como requisito imposible).
+- **Importar JSON reconectado**: la función `loadJSON`/`triggerLoadJSON` existía pero no tenía botón en Ajustes (solo en la pantalla de inicio). Ahora *Ajustes → Datos* tiene **"↑ Importar JSON"** junto a Exportar.
+- **Código zombie eliminado**: helper `app._tc` sin usos, wrappers `STORAGE.loadChar`/`saveCharData` nunca llamados, y ~2,2 KB de CSS muerto (19 clases sin referencia: `tc-check`, `js-talent-*`, `talent-count-badge`, `db-section-sep`, utilidades `u-*` huérfanas, etc. — verificado también contra construcción dinámica de nombres de clase).
+
+Verificado en navegador: arranque, generador aleatorio, cálculo, tiradas, guardado, búsqueda y render de los 32 talentos nuevos en el Gestor, emparejamiento del requisito OR, y el botón de importar. (La suite de humo Node no pudo ejecutarse en esta máquina: no hay Node.js instalado.)
 
 ## Novedades v43 — Reglas v5.3.4 (parche de balance)
 
@@ -174,13 +193,13 @@ ss-companion/
 ├── css/
 │   └── main.css        Tokens de diseño + toda la hoja de estilos
 ├── js/
-│   ├── data.js         Base de datos de reglas por defecto (v5.3.1)
+│   ├── data.js         Base de datos de reglas por defecto (v5.3.5)
 │   ├── constants.js    Constantes del sistema y temporizadores de UI
 │   ├── storage.js      Persistencia versionada con migraciones (localStorage)
 │   ├── ui-dialogs.js   Diálogos modales con escudo anti ghost-click  ← NUEVO
 │   ├── app.js          Lógica principal (hoja, cálculo, dados, editores…)
 │   └── boot.js         Arranque + registro/actualización del Service Worker
-└── smoke.test.cjs      Suite de humo (Node + jsdom): 15 pruebas, todas en verde
+└── smoke_test.cjs      Suite de humo (Node + jsdom)
 ```
 
 Los scripts se cargan con `defer` en orden de dependencia y comparten el ámbito global del documento (patrón deliberado: cero *build step*, compatible con los manejadores declarativos del markup y con despliegue por simple copia de archivos).
