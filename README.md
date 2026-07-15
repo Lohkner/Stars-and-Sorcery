@@ -22,6 +22,17 @@ Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión rees
 - `CACHE_VERSION` del service worker sube a `ss-companion-v19` para que los clientes instalados reciban los datos nuevos.
 - La *Bitácora de Exploración v1.1* (módulo de juego en solitario, compatible con la línea v5.3.7/v5.3.8) no altera reglas: no requiere cambios de datos en la app.
 
+### Pasada UX móvil (v45)
+
+Auditoría de objetivos táctiles y entrada en viewport de 375 px; el criterio fue el mínimo de 44 px para controles frecuentes en partida:
+
+- **Objetivos táctiles**: opciones de Ventaja/Desventaja del FAB 38→44 px y FAB principal 40→48 px (control de combate más frecuente); *speed dial* del encabezado 40→44 px; **✕ Cerrar** del resultado de dados 23→44 px de alto (era el peor objetivo de la app); botón *✏ Editar* de sección 34→40 px; chips de filtro del Gestor de Talentos 25→36 px; *✕ Limpiar* del gestor 30→38 px.
+- **Buscadores**: los `input[type=search]` no estaban cubiertos por el selector base de inputs — el buscador del Gestor de Trucos/Conjuros se renderizaba sin estilo y con 19 px de alto. Ahora ambos buscadores miden ≥40 px y usan fuente de 16 px (evita el auto-zoom de iOS y mejora la legibilidad del campo que más se teclea).
+- **Entrada numérica**: al enfocar cualquier campo numérico se selecciona su contenido (teclear reemplaza el valor en vez de producir "010"), y la tecla Intro del teclado en pantalla confirma y cierra el teclado.
+- **Viewport**: se retira `user-scalable=no` (accesibilidad WCAG 1.4.4 — el pellizco para ampliar vuelve a funcionar en Android; `maximum-scale=1` se conserva para evitar el auto-zoom de iOS al enfocar), y se añade `interactive-widget=resizes-content` para que el teclado de Android encoja el layout en vez de tapar los controles.
+
+Lo que ya estaba bien y se conserva: zonas táctiles extendidas a 44 px vía pseudo-elemento en los steppers de recursos, toasts con `aria-live`, trampa de foco y Escape en diálogos, `overscroll-behavior` contenido, `prefers-reduced-motion`, hover solo bajo `@media(hover:hover)` y fuente de 16 px en los inputs de recursos.
+
 ## Novedades v44 — Reglas v5.3.5 y limpieza de código zombie
 
 - **Actualización a las reglas v5.3.5** desde los tres documentos canónicos. El Manual Básico y el Catálogo de Axiomas declaran la revisión como *congelación editorial* (ninguna regla, coste ni fórmula cambia); el grueso vive en el **Compendio Maestro de Talentos v5.3.5**. `STORAGE.RULES_DATA_VERSION` sube a `5.3.5-app-r1` — los usuarios que regresan adoptan las reglas nuevas sin tocar sus personajes guardados.

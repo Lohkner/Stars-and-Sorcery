@@ -585,7 +585,7 @@ body{
 }
 .sdial-menu.open{opacity:1;pointer-events:auto;transform:translateY(0)}
 .sdial-item{
-  width:40px;height:40px;border-radius:var(--r);
+  width:44px;height:44px;border-radius:var(--r);
   background:var(--panel);border:1px solid var(--border);
   color:var(--dim);font-size:.88rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -726,7 +726,7 @@ body{
   color:var(--muted);letter-spacing:.14em;
   text-transform:uppercase;display:block;margin-bottom:4px;
 }
-input[type=text],input[type=number],select,textarea{
+input[type=text],input[type=number],input[type=search],select,textarea{
   background:var(--deep);
   border:1px solid rgba(61,50,84,.7);
   border-radius:var(--r);
@@ -1101,8 +1101,8 @@ input[type=radio]:checked::after{transform:scale(1)}
    las tres opciones hacia arriba; ocupa mínimo espacio en reposo. */
 .adv-fab{position:fixed;right:12px;bottom:calc(var(--nav) + var(--safe-b) + 12px);z-index:35;
   display:flex;flex-direction:column;align-items:center;gap:7px}
-.adv-fab-main{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);
-  background:var(--panel);color:var(--gold);font-size:.95rem;line-height:1;cursor:pointer;
+.adv-fab-main{width:48px;height:48px;border-radius:50%;border:1px solid var(--border);
+  background:var(--panel);color:var(--gold);font-size:1.05rem;line-height:1;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 16px rgba(0,0,0,.5);transition:transform .12s,border-color .15s,color .15s}
 .adv-fab-main:active{transform:scale(.9)}
@@ -1112,8 +1112,8 @@ input[type=radio]:checked::after{transform:scale(1)}
   opacity:0;transform:translateY(10px) scale(.85);pointer-events:none;
   transition:opacity .15s,transform .15s}
 .adv-fab.open .adv-fab-opts{opacity:1;transform:none;pointer-events:auto}
-.adv-opt{width:38px;height:38px;border-radius:50%;border:1px solid var(--rim);background:var(--deep);
-  color:var(--muted);font-size:.82rem;line-height:1;cursor:pointer;
+.adv-opt{width:44px;height:44px;border-radius:50%;border:1px solid var(--rim);background:var(--deep);
+  color:var(--muted);font-size:.9rem;line-height:1;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 3px 12px rgba(0,0,0,.45);transition:border-color .12s,color .12s,background .12s,transform .1s}
 .adv-opt:active{transform:scale(.88)}
@@ -1342,7 +1342,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   border-radius:var(--r);margin:7px auto 0;
   transition:border-color .14s,color .14s,background .14s;
   text-transform:uppercase;letter-spacing:.12em;
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:34px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:40px;
   box-shadow:0 1px 4px rgba(0,0,0,.25);
 }
 @media(hover:hover){.bedit:hover{border-color:rgba(200,169,110,.4);color:var(--gold);background:rgba(200,169,110,.05)}}
@@ -1812,7 +1812,7 @@ details[open] > summary::before { content: '▾'; }
 .dice-badge{font-family:var(--fd);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;padding:2px 12px;border-radius:2px;margin-top:2px}
 .dice-badge.crit{background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.35);color:var(--goldb)}
 .dice-badge.fail{background:rgba(168,42,58,.1);border:1px solid rgba(168,42,58,.35);color:var(--blood)}
-.dice-close-btn{font-family:var(--fd);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 20px;border-radius:2px;cursor:pointer;margin-top:4px;transition:all .18s;opacity:0;pointer-events:none}
+.dice-close-btn{font-family:var(--fd);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:12px 28px;min-height:44px;border-radius:2px;cursor:pointer;margin-top:6px;transition:all .18s;opacity:0;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 @media(hover:hover){.dice-close-btn:hover{border-color:var(--gold);color:var(--gold)}}
 #dice-overlay.active .dice-close-btn.show{opacity:1;pointer-events:auto}
@@ -2101,7 +2101,7 @@ body.port-border-none .port-card-edit{
   border-bottom:1px solid rgba(61,50,84,.3);
 }
 #talent_panel .tm-search{
-  width:100%;font-family:var(--fb);font-size:.82rem;
+  width:100%;font-family:var(--fb);font-size:16px;
   background:var(--raised);color:var(--text);
   border:1px solid rgba(61,50,84,.55);border-radius:var(--r);
   padding:8px 10px;outline:none;
@@ -2114,7 +2114,7 @@ body.port-border-none .port-card-edit{
   font-family:var(--fd);font-size:.6rem;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);
   background:rgba(61,50,84,.18);border:1px solid rgba(61,50,84,.4);
-  border-radius:2px;padding:5px 10px;cursor:pointer;
+  border-radius:2px;padding:8px 12px;min-height:36px;cursor:pointer;
   display:inline-flex;align-items:center;gap:5px;
   transition:background .14s,border-color .14s,color .14s;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;
@@ -2179,6 +2179,13 @@ body.port-border-none .port-card-edit{
   padding:6px 8px;background:var(--void);
   border-bottom:1px solid rgba(61,50,84,.25);flex-shrink:0;
 }
+/* Búsqueda del gestor: 16px evita el auto-zoom de iOS al enfocar y da un
+   objetivo táctil cómodo (≥44px) al campo que más se teclea en el panel. */
+input.apt-search{
+  font-size:16px;padding:10px 12px;min-height:44px;
+  background:var(--raised);border-color:rgba(61,50,84,.55);
+}
+input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
 .apt-col-body{
   flex:1;overflow-y:auto;padding:6px;
   min-height:0;

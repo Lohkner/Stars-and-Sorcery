@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <!-- CRITICAL: this inline style fires before any stylesheet and kills the iOS white flash -->
 <style>html,body{background:#07060a!important}*{box-sizing:border-box}</style>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- maximum-scale=1 evita el auto-zoom de iOS al enfocar inputs pequeños sin
+     bloquear el pellizco (iOS lo permite siempre); user-scalable=no se retira
+     por accesibilidad (WCAG 1.4.4). interactive-widget hace que el teclado en
+     pantalla de Android encoja el layout en vez de tapar los controles. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#07060a">
 <meta name="background-color" content="#07060a">
 <title>S&amp;S Companion</title>
@@ -121,7 +125,7 @@
             <span class="apt-col-title active-col">Seleccionados</span>
             <span class="mft-count" id="apt_sel_count">0</span>
           </div>
-          <button class="bmini br" style="font-size:.56rem;padding:3px 8px;min-height:30px"
+          <button class="bmini br" style="font-size:.6rem;padding:6px 12px;min-height:38px"
             data-action="_aptClearAll">✕ Limpiar</button>
         </div>
         <div class="apt-col-body" id="apt_selected_list">

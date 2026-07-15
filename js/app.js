@@ -45,6 +45,24 @@ const app = {
       if (fn && typeof this[fn] === 'function') this[fn]();
     });
 
+    // ── UX numérica móvil ──
+    // Al enfocar un campo numérico se selecciona su contenido: teclear
+    // reemplaza el valor en vez de concatenarlo (evita el clásico "010").
+    // rAF porque iOS anula select() si se llama dentro del propio focus.
+    document.addEventListener('focusin', e => {
+      const el = e.target;
+      if (el.tagName !== 'INPUT') return;
+      if (el.type !== 'number' && el.getAttribute('inputmode') !== 'numeric') return;
+      requestAnimationFrame(() => { try { el.select(); } catch(_) {} });
+    });
+    // Enter/Intro del teclado en pantalla confirma y cierra el teclado
+    // (blur dispara los handlers de change/recalculo ya existentes).
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const el = e.target;
+      if (el.tagName === 'INPUT' && (el.type === 'number' || el.getAttribute('inputmode') === 'numeric')) el.blur();
+    });
+
     // Load rules — fallback to DEFAULT_DB if storage is corrupt
     try {
       this.DB = STORAGE.loadRules();
