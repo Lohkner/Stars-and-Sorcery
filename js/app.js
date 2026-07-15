@@ -2383,15 +2383,16 @@ const app = {
 
   /** MOD del atributo gobernante de la Fuente de Poder elegida. Devuelve el mejor
       MOD entre los atributos de esa Fuente, o null si no hay Fuente seleccionada.
-      Erudici\u00f3n\u2192INT \u00b7 Pacto/Herencia/Juramento\u2192CAR \u00b7 Divinidad/Naturaleza\u2192SAB \u00b7
-      Psi\u00f3nica\u2192mejor de INT/SAB/CAR. Lo usa la Conducci\u00f3n Arcana del Sagaz. */
+      Erudici\u00f3n\u2192INT \u00b7 Pacto/Herencia/Juramento\u2192CAR \u00b7 Divinidad\u2192mejor de SAB/CAR \u00b7
+      Naturaleza\u2192SAB \u00b7 Psi\u00f3nica\u2192mejor de INT/SAB (tabla de Fuentes v5.3.6).
+      Lo usa la Conducci\u00f3n Arcana del Sagaz. */
   _sourceAttrMod(mods) {
     const src = this._normSource(this._powerSource || '');
     if (!src) return null;
     const MAP = {
       erudicion:['INT'], pacto:['CAR'], herencia:['CAR'],
-      divinidad:['SAB'], juramento:['CAR'], naturaleza:['SAB'],
-      psionica:['INT','SAB','CAR'],
+      divinidad:['SAB','CAR'], juramento:['CAR'], naturaleza:['SAB'],
+      psionica:['INT','SAB'],
     };
     const attrs = MAP[src];
     if (!attrs) return null;
@@ -4035,7 +4036,17 @@ const app = {
     });
     this.gold = data.gold||0;
     this.alignment = data.alignment||'';
-    this._aptSel = { tricks: new Set(data.apt_tricks||[]), spells: new Set(data.apt_spells||[]) };
+    // Migración: cuatro Axiomas cambiaron de id con las reglas v5.3.7/v5.3.8
+    // (unidades en el nombre y el estado canónico Ensordecido). Los personajes
+    // guardados bajo v5.3.5 conservan sus selecciones con el id nuevo.
+    const AXIOM_ID_RENAMES = {
+      silencio_9_m:           'silencio_30_pies',
+      invisibilidad_9_m:      'invisibilidad_30_pies',
+      proteccion_del_mal_9_m: 'proteccion_del_mal_30_pies',
+      sordera:                'ensordecido',
+    };
+    const migrateIds = arr => (arr||[]).map(k => AXIOM_ID_RENAMES[k] || k);
+    this._aptSel = { tricks: new Set(migrateIds(data.apt_tricks)), spells: new Set(migrateIds(data.apt_spells)) };
     if(data.lethality) this.setLethality(data.lethality);
     this.syncCombatOptions();
     for (const id in data.inputs) { const el=document.getElementById(id); if(el)el.value=data.inputs[id]; }

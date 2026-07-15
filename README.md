@@ -1,10 +1,26 @@
-# S&S Companion — v44
+# S&S Companion — v45
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
 
+## Novedades v45 — Reglas v5.3.7 / v5.3.8 (línea completa)
+
+- **Actualización a la línea v5.3.7/v5.3.8** desde los documentos canónicos: Manual Básico v5.3.7, Compendio Maestro de Talentos v5.3.7 y **Catálogo de Axiomas v5.3.8**. `STORAGE.RULES_DATA_VERSION` sube a `5.3.8-app-r1` — los usuarios que regresan adoptan las reglas nuevas **sin tocar sus personajes guardados**.
+- **Axiomas: 332 → 364 (+32)**, sección regenerada íntegramente desde las tablas del Catálogo v5.3.8:
+  - **Trucos: 18 → 24 [v5.3.6/v5.3.8]**: entran *Prestidigitación*, *Empuje*, *Guía*, *Remendar*, *Toque Silvestre* y *Llama Sagrada* (el primer Truco de daño Radiante). Los 18 existentes adoptan su entrada canónica del Catálogo de Trucos (dado base unificado: 1d8 con Salvación · 1d6 impacto automático, escalado por escalón de nivel).
+  - **La cola alta [v5.3.8] (+24)**: los Niveles 8–9 de **Divinidad** (*Aura Sagrada, Santuario Consagrado, Juicio Flamígero, Vínculo Vital, Resurrección Verdadera, Palabra de Poder: Sanar, Tormenta de la Ira, Intervención Divina*), **Naturaleza** (*Despertar del Bosque, Muro de Espinas, Estallido Solar, Forma Primordial, Cambiaformas, Maremoto, Invocar al Primordial, Anillo de las Estaciones*) y **Psiónica** (*Dominación Absoluta, Aplastamiento Psíquico, Sondeo Profundo, Bastión de la Mente, Presciencia, Pesadilla Colectiva, Cárcel Mental, Sincronía Total*). Pacto conserva su techo de Nv4 por diseño.
+  - **Dominio del Engaño [v5.3.7] (+2)**: *Reflejo Falaz* y *Velo de Identidad*; la tabla de Dominios pasa de 16 a 18 entradas y adopta los nombres canónicos **Muerte, Conocimiento y Naturaleza** (antes Umbral, Saber y Tierra y Mar).
+  - **Unificación de unidades [v5.3.7]** en los 127 textos que aún usaban métrico: distancias y paneles en **pies**, pesos en **libras**, distancias climáticas en **millas**, alcances redondeados a la rejilla de 5 pies. Cuatro Axiomas cambian de id por ello (`silencio_30_pies`, `invisibilidad_30_pies`, `proteccion_del_mal_30_pies`, `ensordecido`) — **migración automática al cargar el personaje**, las selecciones guardadas se conservan.
+  - **Estados canónicos [v5.3.6]**: *Atrapado* → **Apresado**, *Sordera* → **Ensordecido** en todos los textos. Vocabulario de criaturas: los «DG» heredados pasan a **NA** en las nueve entradas que los usaban (*Nube Mortal, Hechizo de Muerte, Palabra Sagrada, Dedo de la Muerte, Hechizar Serpientes, Patrón Hipnótico, Espray de Colores, Crecimiento Animal, Convocar Animales II*). *Espurio* corrige su redacción (7 PV temporales, +7 por Nivel de Esfuerzo).
+- **Talentos al día con el Compendio v5.3.7** (ningún coste ni Grado cambia):
+  - *Jinete de Guerra* (G2) y *Maestro de la Justa* (G2) adoptan la **CD escalable de la regla R3** (8 + PB + ½ Nivel + MOD) en lugar de la CD 12 plana [v5.3.6].
+  - La opción **«Sobrecargar» pasa a llamarse «Intensificar»** (*Escultor de Hechizos* G2), para no colisionar con el subsistema de Sobrecarga eliminado en v5.3.4 [v5.3.6].
+  - Pesos psiónicos en libras: *Telequinesis* (200 lb / 1.000 lb) y *Proyección Astral* (200 lb) [v5.3.7].
+- **Tabla de Fuentes v5.3.6** en la Conducción Arcana del Sagaz (`_sourceAttrMod`): **Divinidad recupera «SAB o CAR»** y **Psiónica queda en «INT o SAB»** (antes INT/SAB/CAR).
+- `CACHE_VERSION` del service worker sube a `ss-companion-v19` para que los clientes instalados reciban los datos nuevos.
+- La *Bitácora de Exploración v1.1* (módulo de juego en solitario, compatible con la línea v5.3.7/v5.3.8) no altera reglas: no requiere cambios de datos en la app.
 
 ## Novedades v44 — Reglas v5.3.5 y limpieza de código zombie
 
