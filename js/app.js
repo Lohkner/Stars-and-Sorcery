@@ -441,9 +441,8 @@ const app = {
     const V_BIAS      = 2.2;   // H/V ratio for axis lock (high = vertical wins)
     const MIN_DIST    = 38;    // px minimum travel to count a slow drag
     const FLICK_DIST  = 22;    // px minimum travel to count a fast flick
-    const FLICK_VEL   = 0.28;  // px/ms velocity threshold for flick
+    const FLICK_VEL   = 0.25;  // px/ms velocity threshold for flick
     const DRAG_RATIO  = 0.30;  // fraction of page width for slow drag commit
-    const RUBBER      = 0.12;  // edge resistance (higher = softer bounce)
     const SNAP_MS     = 320;   // ms for snap animation
     const SNAP_EASE   = 'cubic-bezier(.25,.46,.45,.94)'; // iOS ease-out
     const SCROLL_SEL  = '.skill-area,.tms,.dbs,.tmct,.dbct,.mbd,[data-scroll]';
@@ -481,13 +480,32 @@ const app = {
 
     const pageW = () => w.clientWidth || window.innerWidth;
 
+    // ── Continuación desde snap en vuelo ──
+    // Si el dedo atrapa la pista a mitad de una animación, el arrastre debe
+    // continuar desde donde ESTÁ, no saltar a la posición de reposo.
+    // originOffset = desplazamiento congelado respecto al reposo de la página.
+    let originOffset = 0;
+    const currentTx = () => {
+      try { return new DOMMatrixReadOnly(getComputedStyle(track).transform).m41 || 0; }
+      catch (e) { return -this.currentPage * pageW(); }
+    };
+
+    // ── Rubber-band asintótico (curva iOS) ──
+    // Resistencia progresiva: cuanto más arrastras más cuesta, con límite
+    // suave en ~40% del ancho. Mucho más natural que un factor lineal.
+    const rubber = (x, w2) => {
+      const d = w2 * 0.4;
+      return (1 - 1 / ((Math.abs(x) * 0.55 / d) + 1)) * d * Math.sign(x);
+    };
+
     // ── Live drag with rubber-band ──
     const setLive = rawDx => {
       const base   = -this.currentPage * pageW();
-      const atEdge = (this.currentPage === 0 && rawDx > 0) ||
-                     (this.currentPage === this.totalPages-1 && rawDx < 0);
+      const dx     = originOffset + rawDx;
+      const atEdge = (this.currentPage === 0 && dx > 0) ||
+                     (this.currentPage === this.totalPages-1 && dx < 0);
       track.style.transition = 'none';
-      track.style.transform  = `translateX(${base + (atEdge ? rawDx*RUBBER : rawDx)}px)`;
+      track.style.transform  = `translateX(${base + (atEdge ? rubber(dx, pageW()) : dx)}px)`;
     };
 
     // ── Snap decision ──
@@ -513,10 +531,14 @@ const app = {
     };
 
     // ── Snap to target ──
-    const snapTo = target => {
+    // Duración proporcional a lo que queda por recorrer y a la velocidad de
+    // soltado: un flick rápido asienta antes; un soltado lento, con más peso.
+    const snapTo = (target, vel = 0) => {
       suppressFor();
       setTimeout(() => track.classList.remove('is-dragging'), TIMING.SWIPE_SUPPRESS);
-      this.goToPage(target);
+      const remaining = Math.abs((-target * pageW()) - currentTx());
+      const ms = Math.round(Math.max(160, Math.min(320, remaining / Math.max(Math.abs(vel), 0.9))));
+      this.goToPage(target, ms);
     };
 
     // ══ TOUCH ══
@@ -530,10 +552,12 @@ const app = {
       startT = lastT = Date.now();
       dragging = false; locked = false;
       totalDist = 0; velSamples = [];
-      // Freeze any in-progress snap immediately
+      // Freeze any in-progress snap immediately and remember the offset so
+      // the drag continues from the frozen position (no jump on catch)
       const cur = getComputedStyle(track).transform;
       track.style.transition = 'none';
       track.style.transform  = cur;
+      originOffset = currentTx() - (-this.currentPage * pageW());
       // Only steal focus away from non-text elements (never blur inputs/textareas)
       const focused = w.querySelector(':focus');
       if (focused && !focused.matches('input,textarea,select')) focused.blur();
@@ -571,11 +595,19 @@ const app = {
 
     w.addEventListener('touchend', e => {
       track.classList.remove('is-dragging');
-      if (!dragging) { dragging=false; locked=false; velSamples=[]; return; }
-      const dx = e.changedTouches[0].clientX - startX;
+      if (!dragging) {
+        dragging=false; locked=false; velSamples=[];
+        // Un tap que atrapó una animación en vuelo la dejó congelada entre
+        // páginas: re-asentar en la página actual.
+        if (Math.abs(originOffset) > 1) this.goToPage(this.currentPage);
+        return;
+      }
+      // La decisión usa el desplazamiento EFECTIVO (incluye el offset de una
+      // animación atrapada en vuelo), igual que lo que se ve en pantalla.
+      const dx = originOffset + (e.changedTouches[0].clientX - startX);
       const vel = peakVel();
       dragging = false; locked = false;
-      snapTo(decide(dx, vel));
+      snapTo(decide(dx, vel), vel);
     }, {passive:true});
 
     w.addEventListener('touchcancel', () => {
@@ -590,6 +622,7 @@ const app = {
       if (e.target.closest('input,select,textarea,button,label')) return;
       ms = {x:e.clientX, lx:e.clientX, lt:Date.now(), samples:[], drag:false, dist:0};
       track.style.transition = 'none';
+      originOffset = currentTx() - (-this.currentPage * pageW());
     });
     w.addEventListener('mousemove', e => {
       if (!ms) return;
@@ -611,7 +644,7 @@ const app = {
       const {x,drag,samples,dist} = ms; ms=null;
       if (!drag) return;
       const vel = samples.reduce((a,b)=>Math.abs(a)>Math.abs(b)?a:b, 0);
-      snapTo(decide(cx-x, vel));
+      snapTo(decide(originOffset + (cx-x), vel), vel);
     };
     w.addEventListener('mouseup',    e=>endMouse(e.clientX));
     w.addEventListener('mouseleave', e=>endMouse(e.clientX));
@@ -625,7 +658,7 @@ const app = {
     window.addEventListener('resize',            _reSnap, {passive:true});
     window.addEventListener('orientationchange', _reSnap, {passive:true});
   },
-  goToPage(n) {
+  goToPage(n, snapMs) {
     if (n !== this.currentPage && navigator.vibrate) navigator.vibrate(4);
 
     // Save current page's scroll position if preserve mode is on
@@ -638,9 +671,9 @@ const app = {
     const w = document.getElementById('pages_wrapper');
     const track = document.getElementById('pages_track');
     const pageW = w ? w.clientWidth : window.innerWidth;
-    // Easing: cubic-bezier(.1,.9,.25,1) — snap rápido con deceleration suave
-    // Duración 280ms — más ágil sin perder sensación de peso
-    track.style.transition = 'transform .22s cubic-bezier(.25,.46,.45,.94)';
+    // Duración: fija (220ms) desde la navegación; proporcional a distancia y
+    // velocidad de soltado cuando viene de un swipe (snapTo la calcula).
+    track.style.transition = `transform ${snapMs || 220}ms cubic-bezier(.25,.46,.45,.94)`;
     track.style.transform  = `translateX(-${n * pageW}px)`;
     document.querySelectorAll('.nbtn').forEach((b,i) => b.classList.toggle('active', i===n));
     if (n === 4) this.buildDetailPage();

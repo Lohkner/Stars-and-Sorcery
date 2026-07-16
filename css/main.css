@@ -1340,8 +1340,14 @@ input[type=radio]:checked::after{transform:scale(1)}
   border-radius:var(--r);margin:7px auto 0;
   transition:border-color .14s,color .14s,background .14s;
   text-transform:uppercase;letter-spacing:.12em;
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:40px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:34px;
   box-shadow:0 1px 4px rgba(0,0,0,.25);
+  position:relative;
+}
+/* Zona táctil de 44px sin cambiar el tamaño visual (mismo patrón que .res-btn) */
+.bedit::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  min-width:100%;width:100%;min-height:44px;
 }
 @media(hover:hover){.bedit:hover{border-color:var(--edge-gold);color:var(--gold);background:rgba(200,169,110,.05)}}
 .bedit:active{transform:scale(.95);background:rgba(200,169,110,.08)}
@@ -1694,17 +1700,17 @@ details[open] > summary::before { content: '▾'; }
   pointer-events:none;align-items:center;
 }
 .toast{
-  background:linear-gradient(135deg,rgba(22,18,34,.96) 0%,rgba(16,14,24,.98) 100%);
+  background:rgba(19,16,29,.96);
   color:var(--bright);
-  padding:10px 18px 10px 14px;border-radius:var(--rl);
-  border:1px solid var(--edge-strong);
-  border-top-color:rgba(255,255,255,.06);
+  padding:12px 16px;border-radius:12px;
+  border:1px solid var(--edge);
   font-family:var(--fm);font-size:var(--fs-lg);
-  box-shadow:0 12px 40px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.03),0 1px 0 rgba(255,255,255,.04) inset;
+  box-shadow:0 8px 28px rgba(0,0,0,.6);
   display:flex;align-items:center;gap:10px;
   animation:toastIn .3s cubic-bezier(.21,1.02,.73,1) forwards;
-  min-width:170px;max-width:310px;
-  backdrop-filter:blur(32px) saturate(1.4);-webkit-backdrop-filter:blur(32px) saturate(1.4);
+  /* Ancho FIJO: todos los toasts miden lo mismo, dispare quien dispare */
+  width:min(92vw,340px);min-height:44px;
+  backdrop-filter:blur(24px) saturate(1.3);-webkit-backdrop-filter:blur(24px) saturate(1.3);
   position:relative;overflow:hidden;
   white-space:normal;overflow-wrap:break-word;
 }
@@ -1758,20 +1764,14 @@ details[open] > summary::before { content: '▾'; }
 .dice-card{
   position:relative;
   background:var(--panel);
-  border:1px solid var(--edge-strong);border-radius:var(--rl);
-  padding:32px 44px 28px;min-width:240px;max-width:88vw;
+  border:1px solid var(--edge);border-radius:16px;
+  /* Ancho FIJO: la tarjeta mide lo mismo con 1 dado que con 5 */
+  padding:26px 22px 22px;width:min(88vw,340px);
   display:flex;flex-direction:column;align-items:center;gap:12px;
   box-shadow:0 32px 100px rgba(0,0,0,.9),0 0 0 1px rgba(200,169,110,.05);
   opacity:0;transform:scale(.9) translateY(10px);
   transition:opacity .22s cubic-bezier(.18,.89,.32,1.28),transform .22s cubic-bezier(.18,.89,.32,1.28);
 }
-/* Corner ornaments on dice card */
-.dice-card::before,.dice-card::after{
-  content:'';position:absolute;width:18px;height:18px;
-  border-color:rgba(200,169,110,.2);border-style:solid;
-}
-.dice-card::before{top:10px;left:10px;border-width:1px 0 0 1px}
-.dice-card::after{bottom:10px;right:10px;border-width:0 1px 1px 0}
 #dice-overlay.active .dice-card{opacity:1;transform:scale(1) translateY(0)}
 #dice-overlay.closing .dice-card{opacity:0;transform:scale(.92) translateY(-8px);transition:opacity .22s ease,transform .22s ease}
 #dice-overlay.closing .dice-backdrop{opacity:0}
@@ -1806,7 +1806,7 @@ details[open] > summary::before { content: '▾'; }
 .dice-total{font-family:var(--fd);font-size:1.5rem;font-weight:700;color:var(--goldb);text-shadow:0 0 12px rgba(200,169,110,.35)}
 .dice-total.crit{color:var(--goldb);text-shadow:0 0 20px rgba(224,194,126,.8)}
 .dice-total.fail{color:var(--blood)}
-.dice-deco-line{width:60%;height:1px;background:var(--line-dim);margin:2px 0}
+.dice-deco-line{width:100%;height:1px;background:var(--edge-soft);margin:2px 0;border-radius:1px}
 .dice-badge{font-family:var(--fd);font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;padding:2px 12px;border-radius:2px;margin-top:2px}
 .dice-badge.crit{background:rgba(200,169,110,.1);border:1px solid var(--edge-gold);color:var(--goldb)}
 .dice-badge.fail{background:rgba(168,42,58,.1);border:1px solid rgba(168,42,58,.35);color:var(--blood)}

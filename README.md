@@ -13,6 +13,17 @@ Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión rees
 - **Código zombie eliminado**: `.stat-in` (huérfana tras los pilares consolidados), `.stag` + variantes (sin uso ni construcción dinámica; el único "stag" en JS era la palabra *staggered* en un comentario), y `TIMING.SAVE_GUARD` / `TIMING.SWIPE_SNAP` (sin referencias). Barrido automatizado de métodos de `app`, funciones de los módulos y clases CSS contra HTML+JS.
 - `CACHE_VERSION` sube a **v21** (el sw.js cambió con el fix de precache).
 
+### Swipe con física nativa, toasts uniformes y dados modernos (v45.1)
+
+- **Swipe entre páginas** (sensación tipo Fight Club 5e / paginador nativo):
+  - **Continuación desde animación en vuelo**: si el dedo atrapa la pista a mitad de un snap, el arrastre continúa desde donde está (`originOffset`) en vez de saltar a la posición de reposo; la decisión de página usa el desplazamiento *efectivo*, igual al que se ve en pantalla.
+  - **Rubber-band asintótico** (curva iOS): la resistencia en los bordes crece progresivamente con límite suave en ~40% del ancho — sustituye al factor lineal 0.12, que se sentía rígido.
+  - **Snap proporcional a la velocidad**: la duración de asentado se calcula de lo que queda por recorrer y la velocidad de soltado (160–320 ms); un flick rápido asienta antes, un soltado lento cae con más peso. La navegación por botones mantiene 220 ms fijos.
+  - Umbral de flick ligeramente más accesible (0.28 → 0.25 px/ms) y arreglo del caso límite: un *tap* que atrapaba una animación en vuelo dejaba la pista congelada entre páginas; ahora re-asienta.
+  - Verificado con gestos táctiles sintéticos: flick avanza (320 ms), arrastre corto de 20 px no cambia de página, arrastre lento >30% sí.
+- **Toasts uniformes**: ancho fijo `min(92vw, 340px)` para todos — antes cada botón producía un toast de tamaño distinto (min/max-width variables). Look moderno: superficie plana, borde hairline, radio 12 px, sombra suave (fuera el degradado y el triple box-shadow). Se mantiene la posición inferior sobre la navegación (estándar snackbar, zona del pulgar).
+- **Tarjeta de dados moderna y de tamaño constante**: ancho fijo `min(88vw, 340px)` — mide lo mismo con 1 dado que con 5 (verificado: 340 px en ambos). Fuera las esquinas art déco (`::before`/`::after`) y la línea decorativa al 60%; ahora borde hairline, radio 16 px y separador de ancho completo. Los halos de crítico/pifia y la posición en zona del pulgar (≤480 px) se conservan.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:
