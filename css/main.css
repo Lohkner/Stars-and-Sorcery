@@ -2600,3 +2600,107 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   font-size:var(--fs-md);padding:18px 8px;display:none;
 }
 
+
+/* ══════════════════════════════════════════
+   REVAMP v45 — Acabado premium
+   Púrpura profundo + grano dorado (feTurbulence) en las tres zonas
+   estándar: superficie héroe (home), momento firma (dados) y CTA
+   primario. Con moderación: el grano vive al 6% de opacidad.
+══════════════════════════════════════════ */
+:root{
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* 1 · Héroe del home: bloom dorado desde arriba, velo púrpura profundo y
+      grano. El fondo personalizado del usuario (--bg-home) es la capa
+      superior: si existe, cubre el tratamiento; si no, el premium luce. */
+#home-screen{
+  background-image:
+    var(--bg-home,none),
+    radial-gradient(120% 55% at 50% -8%, rgba(200,169,110,.10), transparent 60%),
+    var(--grain),
+    radial-gradient(90% 60% at 110% 108%, rgba(108,74,182,.12), transparent 62%),
+    linear-gradient(180deg, rgba(40,26,70,.50) 0%, rgba(18,12,34,.22) 42%, rgba(0,0,0,0) 78%);
+  background-size:cover, auto, 160px 160px, auto, auto;
+  background-position:center top, center, 0 0, center, center;
+}
+
+/* 2 · Momento firma: la tarjeta de dados sobre púrpura profundo con
+      bloom dorado en el borde superior y grano. El color base sigue
+      siendo var(--panel), así los temas alternativos solo se tiñen. */
+.dice-card{
+  background-color:var(--panel);
+  background-image:
+    radial-gradient(130% 85% at 50% -5%, rgba(200,169,110,.11), transparent 55%),
+    var(--grain),
+    linear-gradient(168deg, rgba(88,58,148,.20) 0%, rgba(26,16,48,.34) 100%);
+  background-size:auto, 160px 160px, auto;
+}
+
+/* 3 · CTA primario del home: grano sobre el degradado dorado — el
+      "gold grain" que da la textura premium al botón principal. */
+.home-btn-new{
+  background-image:
+    var(--grain),
+    linear-gradient(135deg, rgba(214,180,118,.98) 0%, rgba(232,204,140,1) 48%, rgba(196,160,96,.96) 100%);
+  background-size:160px 160px, auto;
+}
+
+/* Guardar (CTA del encabezado de hoja): mismo grano, carácter sutil. */
+.app-hdr-save{
+  background-image:
+    var(--grain),
+    linear-gradient(135deg, rgba(200,169,110,.10) 0%, rgba(200,169,110,.05) 100%);
+  background-size:160px 160px, auto;
+}
+
+/* ══════════════════════════════════════════
+   REVAMP v45 — Premium en la hoja + home fijo + orden del roster
+══════════════════════════════════════════ */
+/* Tono premium de los paneles: velo púrpura sutilísimo (mismos matices) */
+.panel{background-image:linear-gradient(172deg, rgba(96,64,160,.05) 0%, rgba(0,0,0,0) 52%)}
+/* Retrato/identidad: el héroe de la hoja — bloom dorado + grano */
+.panel-accent{
+  background-color:var(--surface);
+  background-image:
+    radial-gradient(130% 70% at 50% -6%, rgba(200,169,110,.10), transparent 55%),
+    var(--grain),
+    linear-gradient(168deg, rgba(88,58,148,.14) 0%, rgba(20,13,38,.20) 100%);
+  background-size:auto, 160px 160px, auto;
+}
+/* Tarjetas de ataque: la firma de combate, en versión sutil */
+.atk-card{
+  background-image:
+    var(--grain),
+    linear-gradient(170deg, rgba(88,58,148,.10) 0%, rgba(0,0,0,0) 60%);
+  background-size:160px 160px, auto;
+}
+
+/* ── Home fijo: título y botones anclados; solo el roster se desplaza ── */
+#home-screen{overflow:hidden;display:flex;flex-direction:column}
+.home-body{flex:1;min-height:0;display:flex;flex-direction:column}
+.home-roster-wrap{flex:1;min-height:0;display:flex;flex-direction:column}
+.home-roster-body{
+  flex:1;min-height:0;overflow-y:auto;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.home-roster-body::-webkit-scrollbar{display:none}
+/* Pantallas muy bajas (apaisado): vuelve el scroll general como respaldo */
+@media (max-height:560px){#home-screen{overflow-y:auto;display:block}}
+
+/* ── Reordenar personajes en el roster ── */
+.char-order{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.char-ord-btn{
+  width:34px;height:33px;display:flex;align-items:center;justify-content:center;
+  background:rgba(61,50,84,.15);border:1px solid var(--edge);border-radius:var(--r);
+  color:var(--muted);cursor:pointer;padding:0;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  transition:color .15s,border-color .15s,background .15s;
+}
+.char-ord-btn:active{color:var(--gold);border-color:var(--edge-gold);background:rgba(200,169,110,.08);transform:scale(.92)}
+.char-ord-btn:disabled{opacity:.22;pointer-events:none}
+.char-ord-btn svg{width:14px;height:14px}
+
+/* ── Escudo anti-traspaso de toques (se autodestruye en ~320ms) ── */
+.tap-shield{position:fixed;inset:0;z-index:6000;background:transparent}
