@@ -138,7 +138,7 @@ const app = {
     const lbl  = document.getElementById('last_saved_lbl');
     const hasUnsaved = lbl?.classList.contains('unsaved');
     if (name && hasUnsaved) {
-      this._confirm('¿Salir sin guardar?', `"${this._esc(name)}" tiene cambios sin guardar. Se perderán.`, '✓ Salir', () => {
+      this._confirm('¿Salir sin guardar?', `"${this._esc(name)}" tiene cambios sin guardar. Se perderán.`, 'Salir', () => {
         this.renderHome(); this.showScreen('home');
       });
     } else {
@@ -372,7 +372,7 @@ const app = {
     this._confirm(
       '¿Eliminar personaje?',
       `"${this._esc(name)}" será eliminado permanentemente.`,
-      '✓ Eliminar',
+      'Eliminar',
       () => {
         STORAGE.deleteChar(name);
         this.renderHome();
@@ -737,15 +737,24 @@ const app = {
     }
   },
 
-  _buildStatsSummary() {
+  /** MOD final de un atributo (base + bonos de linaje) y su valor final. */
+  _statFinal(s) {
     const descKey  = document.getElementById('sel_desc')?.value || '';
     const descMods = this.DB.descriptors?.[descKey]?.mods || {};
+    const base  = parseInt(this._el('base_'+s)?.value) || 8;
+    const final = base + (descMods[s] || 0);
+    return { final, mod: this.getMod(final) };
+  },
 
+  /** Tirada de chequeo de atributo desde la tarjeta de pilar. */
+  rollStat(s) {
+    const { mod } = this._statFinal(s);
+    this.rollCheck(s, mod);
+  },
+
+  _buildStatsSummary() {
     const makeBox = s => {
-      const base   = parseInt(this._el('base_'+s)?.value) || 8;
-      const dm     = descMods[s] || 0;
-      const final  = base + dm;
-      const mod    = this.getMod(final);
+      const { final, mod } = this._statFinal(s);
       const modStr = (mod >= 0 ? '+' : '') + mod;
       const box = document.createElement('div');
       box.className = 'sbox';
@@ -754,12 +763,19 @@ const app = {
       return box;
     };
 
-    // Render to both the edit-section summary and the live stats display
-    ['stats_summary_boxes', 'stats_boxes_display'].forEach(id => {
-      const c = this._el(id);
-      if (!c) return;
+    const c = this._el('stats_summary_boxes');
+    if (c) {
       c.innerHTML = '';
       STATS.forEach(s => c.appendChild(makeBox(s)));
+    }
+
+    // Tarjetas de pilar (vista de edición): modificador y valor final en vivo
+    STATS.forEach(s => {
+      const { final, mod } = this._statFinal(s);
+      const mv = this._el('pmod_'+s);
+      const fv = this._el('pfinal_'+s);
+      if (mv) mv.textContent = (mod >= 0 ? '+' : '') + mod;
+      if (fv) fv.textContent = final;
     });
   },
 
@@ -801,7 +817,7 @@ const app = {
     c.innerHTML = '';
     const counts = this._skillCounts(), grants = this._lineageGrants();
     const present = this._presentSkills().sort((a,b)=>a.localeCompare(b,'es'));
-    if (!present.length) { c.innerHTML = '<span style="color:var(--muted);font-size:.8rem;font-style:italic">Sin habilidades.</span>'; return; }
+    if (!present.length) { c.innerHTML = '<span style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Sin habilidades.</span>'; return; }
     present.forEach(sk => {
       const grade = this._skillGrade(sk, counts, grants);
       const attr  = this._skillAttrEffective(sk);
@@ -934,12 +950,12 @@ const app = {
     view.innerHTML = `
       <div class="g3" style="margin-bottom:6px">
         <div class="fbox"><div class="flbl g">CA</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_ac">${this._esc(String(c.ca))}</span></div></div>
-        <div class="fbox"><div class="flbl">Armadura</div><div class="fval" style="font-size:.74rem;flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:.55rem;color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
-        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:.74rem"><span id="sum_shield">${this._esc(c.shieldName)}</span></div></div>
+        <div class="fbox"><div class="flbl">Armadura</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
+        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_shield">${this._esc(c.shieldName)}</span></div></div>
       </div>
       ${card(1, 'Principal', '')}
       ${card(2, 'Secundaria', ' secondary')}
-      <button class="bedit" onclick="app.editSection('combat')">✏ Editar</button>`;
+      <button class="bedit" onclick="app.editSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
   },
 
   _getInventoryItem(uid) {
@@ -1485,7 +1501,7 @@ const app = {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
     overlay.innerHTML = `
       <div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--rl);width:100%;max-width:340px;padding:16px">
-        <div style="font-family:var(--fd);color:var(--gold);font-size:.82rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">${idx!==null?'Editar':'Nuevo'} Objeto</div>
+        <div style="font-family:var(--fd);color:var(--gold);font-size:var(--fs-xl);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">${idx!==null?'Editar':'Nuevo'} Objeto</div>
         <div style="margin-bottom:8px"><span class="fl">Nombre</span><input type="text" id="ci_name" value="${this._esc(existing?.name||'')}" placeholder="Nombre del objeto"></div>
         <div class="g2" style="gap:6px;margin-bottom:8px">
           <div><span class="fl">Slots</span><input type="number" id="ci_slots" value="${existing?.slots||1}" min="0" max="20"></div>
@@ -1513,7 +1529,7 @@ const app = {
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-g" style="flex:1" onclick="document.getElementById('custom_item_overlay').remove()">Cancelar</button>
-          <button class="btn btn-p" style="flex:1" data-action="saveCustomItem">✓ Guardar</button>
+          <button class="btn btn-p" style="flex:1" data-action="saveCustomItem"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
         </div>
       </div>`;
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
@@ -1623,16 +1639,16 @@ const app = {
         const mkBtn = (txt, label, fn, style = '') => {
           const b = document.createElement('button');
           b.className = 'idel';
-          b.textContent = txt;
+          if (String(txt).startsWith('<')) b.innerHTML = txt; else b.textContent = txt;
           b.setAttribute('aria-label', label);
           if (style) b.style.cssText = style;
           b.addEventListener('click', fn);
           return b;
         };
-        const upBtn   = mkBtn('↑','Mover arriba', () => this.moveInvItem(i,-1), `color:var(--muted);font-size:.7rem;opacity:${isFirst?'0.2':'1'}`);
-        const dnBtn   = mkBtn('↓','Mover abajo',  () => this.moveInvItem(i, 1), `color:var(--muted);font-size:.7rem;opacity:${isLast?'0.2':'1'}`);
-        const editBtn = mkBtn('✎','Editar ítem',  () => this._openCustomItemForm(i), 'color:var(--dim);font-size:.78rem');
-        const delBtn  = mkBtn('×','Eliminar ítem', () => this.removeInvItem(i));
+        const upBtn   = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-up"/></svg>','Mover arriba', () => this.moveInvItem(i,-1), `color:var(--muted);font-size:var(--fs-md);opacity:${isFirst?'0.2':'1'}`);
+        const dnBtn   = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-down"/></svg>','Mover abajo',  () => this.moveInvItem(i, 1), `color:var(--muted);font-size:var(--fs-md);opacity:${isLast?'0.2':'1'}`);
+        const editBtn = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-quill"/></svg>','Editar ítem',  () => this._openCustomItemForm(i), 'color:var(--dim);font-size:var(--fs-lg)');
+        const delBtn  = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg>','Eliminar ítem', () => this.removeInvItem(i));
         if (isFirst) upBtn.disabled = true;
         if (isLast)  dnBtn.disabled = true;
         row.appendChild(selEl); row.appendChild(nameIn); row.appendChild(slotsIn);
@@ -1646,7 +1662,7 @@ const app = {
       this.inventory.forEach(item => {
         const row = document.createElement('div'); row.className = 'irow';
         const nm = document.createElement('span'); nm.textContent = String(item.name||'');
-        const sl = document.createElement('span'); sl.style.cssText = 'font-family:var(--fm);font-size:.82rem;color:var(--gold)'; sl.textContent = String(item.slots||0);
+        const sl = document.createElement('span'); sl.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xl);color:var(--gold)'; sl.textContent = String(item.slots||0);
         row.appendChild(nm); row.appendChild(sl);
         sumList.appendChild(row);
       });
@@ -1716,7 +1732,7 @@ const app = {
     const main = document.getElementById('adv_fab_main');
     if (fab) fab.dataset.state = String(this._advantage);
     if (main) {
-      main.textContent = this._advantage > 0 ? '▲' : this._advantage < 0 ? '▼' : '=';
+      main.innerHTML = this._advantage > 0 ? '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-up"/></svg>' : this._advantage < 0 ? '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-down"/></svg>' : '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg>';
       const lbl = this._advantage > 0 ? 'Ventaja' : this._advantage < 0 ? 'Desventaja' : 'Normal';
       main.setAttribute('aria-label', `Tirada: ${lbl}. Tocar para cambiar Ventaja/Desventaja`);
     }
@@ -1945,9 +1961,11 @@ const app = {
     const totalEl   = document.getElementById('dice-total');
     const badgeEl   = document.getElementById('dice-badge');
     const hintEl    = document.getElementById('dice-close-btn');
+    const cardEl    = document.getElementById('dice-card');
 
     // ── Reset ──
     overlay.classList.remove('closing');
+    cardEl.classList.remove('crit', 'fail');
     detailEl.className  = 'dice-detail';
     totalRow.className  = 'dice-total-row';
     totalEl.className   = 'dice-total';
@@ -2014,8 +2032,8 @@ const app = {
               if (isCrit) totalEl.classList.add('crit');
               if (isFail) totalEl.classList.add('fail');
               totalRow.classList.add('show');
-              if (isCrit) { badgeEl.textContent = '✦ Crítico ✦'; badgeEl.className = 'dice-badge crit'; badgeEl.style.display = ''; }
-              if (isFail) { badgeEl.textContent = '☠ Fallo Total ☠'; badgeEl.className = 'dice-badge fail'; badgeEl.style.display = ''; }
+              if (isCrit) { badgeEl.textContent = '✦ Crítico ✦'; badgeEl.className = 'dice-badge crit'; badgeEl.style.display = ''; cardEl.classList.add('crit'); }
+              if (isFail) { badgeEl.textContent = '☠ Fallo Total ☠'; badgeEl.className = 'dice-badge fail'; badgeEl.style.display = ''; cardEl.classList.add('fail'); }
               hintEl.classList.add('show');
             }, 160);
           }
@@ -2626,7 +2644,7 @@ const app = {
   clearTalents() {
     const panel = document.getElementById('talent_panel');
     const container = panel?.classList.contains('fs-open') ? panel : document.body;
-    this._confirmInContainer(container, '¿Limpiar talentos?', 'Se eliminarán todos los talentos seleccionados.', '✓ Limpiar', () => this._doCleanTalents());
+    this._confirmInContainer(container, '¿Limpiar talentos?', 'Se eliminarán todos los talentos seleccionados.', 'Limpiar', () => this._doCleanTalents());
   },
 
   _confirmInContainer(container, title, body, confirmLabel, onConfirm) {
@@ -2800,12 +2818,12 @@ const app = {
         const mw = document.createElement('div'); mw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
         Object.entries(desc.mods).forEach(([k,v]) => {
           const s=document.createElement('span');
-          s.style.cssText=`font-family:var(--fm);font-size:.8rem;color:${Number(v)>0?'var(--sage)':'var(--blood)'};background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:3px 8px`;
+          s.style.cssText=`font-family:var(--fm);font-size:var(--fs-xl);color:${Number(v)>0?'var(--sage)':'var(--blood)'};background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:3px 8px`;
           s.textContent=String(k)+' '+(Number(v)>0?'+':'')+Number(v); mw.appendChild(s);
         });
         db.appendChild(mw);
       }
-    } else { dt.textContent='Linaje: —'; db.innerHTML='<p style="color:var(--muted);font-size:.8rem;font-style:italic">Selecciona un Linaje.</p>'; }
+    } else { dt.textContent='Linaje: —'; db.innerHTML='<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p>'; }
 
     // Archetype
     const at = document.getElementById('detail_arq_title');
@@ -2844,7 +2862,7 @@ const app = {
         selSkills.forEach(s => { const sp=document.createElement('span'); sp.className='js-tag-neutral'; sp.textContent=this._sanitize(String(s)); sw.appendChild(sp); });
         ab.appendChild(sw);
       }
-    } else { at.textContent='Arquetipo: —'; ab.innerHTML='<p style="color:var(--muted);font-size:.8rem;font-style:italic">Selecciona un Arquetipo.</p>'; }
+    } else { at.textContent='Arquetipo: —'; ab.innerHTML='<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p>'; }
 
     // Talents
     const tl = document.getElementById('detail_talents_list');
@@ -2910,7 +2928,7 @@ const app = {
       const card = document.createElement('div'); card.className='pc';
       const pch=document.createElement('div'); pch.className='pch';
       const pcn=document.createElement('span'); pcn.className='pcn'; pcn.textContent=this._sanitize(String(s.name||k));
-      const pcarr=document.createElement('span'); pcarr.style.cssText='font-size:.62rem;font-family:var(--fm);color:var(--muted)'; pcarr.textContent='▾';
+      const pcarr=document.createElement('span'); pcarr.style.cssText='font-size:var(--fs-sm);font-family:var(--fm);color:var(--muted)'; pcarr.textContent='▾';
       pch.appendChild(pcn); pch.appendChild(pcarr);
       const pcb=document.createElement('div'); pcb.className='pcb'; pcb.textContent=this._sanitize(String(s.txt||'Sin descripción.'));
       card.appendChild(pch); card.appendChild(pcb);
@@ -3045,7 +3063,7 @@ const app = {
 
     if (!allItems.length) {
       const label = sec === 'tricks' ? 'trucos' : 'conjuros';
-      availList.innerHTML = `<div class="apt-empty"><p>No hay ${label} en la base de datos.<br>Añádelos en el Editor de Reglas.</p><button class="btn btn-g" style="font-size:.68rem" onclick="app.closeAptManager();setTimeout(()=>app.openDatabaseEditor(),260)">Editor de Reglas</button></div>`;
+      availList.innerHTML = `<div class="apt-empty"><p>No hay ${label} en la base de datos.<br>Añádelos en el Editor de Reglas.</p><button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.closeAptManager();setTimeout(()=>app.openDatabaseEditor(),260)">Editor de Reglas</button></div>`;
     } else {
       notSel.forEach(k => availList.appendChild(makeCard(k, false)));
       if (!notSel.length) {
@@ -3226,7 +3244,7 @@ const app = {
     hcount.textContent = count + ' entrada' + (count !== 1 ? 's' : '');
     htitle.appendChild(hlbl); htitle.appendChild(hcount);
     const hnew = document.createElement('button');
-    hnew.className = 'btn btn-p'; hnew.style.cssText = 'font-size:.66rem;padding:6px 11px;min-height:34px';
+    hnew.className = 'btn btn-p'; hnew.style.cssText = 'font-size:var(--fs-sm);padding:6px 11px;min-height:34px';
     hnew.textContent = '+ Nuevo'; hnew.onclick = () => app.dbEditEntry('new');
     hdr.appendChild(htitle); hdr.appendChild(hnew);
     lc.appendChild(hdr);
@@ -3240,9 +3258,9 @@ const app = {
     if (cat === 'talents') {
       Object.keys(src).forEach(sub => {
         const h = document.createElement('div');
-        h.style.cssText = 'font-family:var(--fm);font-size:.58rem;color:rgba(200,169,110,.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
+        h.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xs);color:rgba(200,169,110,.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
         const hl = document.createElement('span'); hl.textContent = sub;
-        const hc = document.createElement('span'); hc.style.cssText = 'color:var(--muted);font-size:.55rem'; hc.textContent = (src[sub]||[]).length + ' talentos';
+        const hc = document.createElement('span'); hc.style.cssText = 'color:var(--muted);font-size:var(--fs-2xs)'; hc.textContent = (src[sub]||[]).length + ' talentos';
         h.appendChild(hl); h.appendChild(hc);
         lc.appendChild(h);
         (src[sub]||[]).forEach((item,i) => this._dbListItem(lc, item.name, `${sub}|${i}`));
@@ -3268,7 +3286,7 @@ const app = {
     nm.className = 'dbitem-name';
     nm.textContent = String(name||'—');
     const acts = document.createElement('div'); acts.className = 'dbitem-actions';
-    const editBtn = document.createElement('button'); editBtn.className='bmini bl'; editBtn.textContent='✎';
+    const editBtn = document.createElement('button'); editBtn.className='bmini bl'; editBtn.innerHTML='<svg class="ico ico-solo" aria-hidden="true"><use href="#i-quill"/></svg>';
     editBtn.title = 'Editar ' + String(name||'');
     editBtn.setAttribute('aria-label', 'Editar '+String(name||''));
     editBtn.addEventListener('click', () => {
@@ -3276,7 +3294,7 @@ const app = {
       row.classList.add('active');
       this.dbEditEntry(key);
     });
-    const delBtn = document.createElement('button'); delBtn.className='bmini br'; delBtn.textContent='✕';
+    const delBtn = document.createElement('button'); delBtn.className='bmini br'; delBtn.innerHTML='<svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg>';
     delBtn.title = 'Eliminar';
     delBtn.setAttribute('aria-label', 'Eliminar '+String(name||''));
     delBtn.addEventListener('click', () => this.dbDeleteEntry(key));
@@ -3302,13 +3320,13 @@ const app = {
     // Shorthand: escapes DB values interpolated into HTML attribute strings
     const _e = v => this._esc(String(v ?? ''));
 
-    let formHtml = `<h3 style="font-family:var(--fd);font-size:.78rem;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">${key==='new'?'Nuevo':'Editar'} Entrada</h3>`;
+    let formHtml = `<h3 style="font-family:var(--fd);font-size:var(--fs-lg);color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">${key==='new'?'Nuevo':'Editar'} Entrada</h3>`;
 
     if (cat === 'descriptors') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: elfo_oscuro" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Solo letras, números y guión bajo. Ej: <em>elfo_oscuro</em>, <em>humano_variante</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Solo letras, números y guión bajo. Ej: <em>elfo_oscuro</em>, <em>humano_variante</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
@@ -3316,14 +3334,14 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Rasgos (separados por coma)</span><input type="text" id="db_grant" value="${_e((existing?.grant||[]).join(', '))}" placeholder="ej: Visión en la oscuridad, Resistencia"></div>
       <div style="margin-bottom:6px"><span class="dfl">Modificadores de Atributo</span>
         <div class="g6" style="gap:4px">
-          ${['FUE','DES','CON','INT','SAB','CAR'].map(s=>`<div><span class="dfl">${s}</span><input type="number" id="db_mod_${s}" value="${existing?.mods?.[s]||0}" min="-5" max="5" style="font-family:var(--fm);font-size:.8rem;text-align:center;padding:3px"></div>`).join('')}
+          ${['FUE','DES','CON','INT','SAB','CAR'].map(s=>`<div><span class="dfl">${s}</span><input type="number" id="db_mod_${s}" value="${existing?.mods?.[s]||0}" min="-5" max="5" style="font-family:var(--fm);font-size:var(--fs-xl);text-align:center;padding:3px"></div>`).join('')}
         </div>
       </div>`;
     } else if (cat === 'archetypes') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: paladin" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>paladin</em>, <em>brujo_pacto</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>paladin</em>, <em>brujo_pacto</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
@@ -3338,7 +3356,7 @@ const app = {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: marinero" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>marinero</em>, <em>ex_soldado</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>marinero</em>, <em>ex_soldado</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
@@ -3348,7 +3366,7 @@ const app = {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: espada_larga" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>espada_larga</em>, <em>ballesta_mano</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>espada_larga</em>, <em>ballesta_mano</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div class="g2" style="gap:6px;margin-bottom:6px">
@@ -3364,7 +3382,7 @@ const app = {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: cota_malla" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>cota_malla</em>, <em>cuero_tachonado</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>cota_malla</em>, <em>cuero_tachonado</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div class="g3" style="gap:6px;margin-bottom:6px">
@@ -3376,7 +3394,7 @@ const app = {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: escudo_torre" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>escudo_madera</em>, <em>escudo_torre</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>escudo_madera</em>, <em>escudo_torre</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div class="g2" style="gap:6px;margin-bottom:6px">
@@ -3387,7 +3405,7 @@ const app = {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
         <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: bola_fuego" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:.66rem;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>bola_fuego</em>, <em>truco_luz</em>, <em>rayo_helado</em></div>
+        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>bola_fuego</em>, <em>truco_luz</em>, <em>rayo_helado</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:60px">${_e(existing?.txt)}</textarea></div>
@@ -3412,8 +3430,8 @@ const app = {
         const fc=document.getElementById('db_form_container');
         fc.style.display='none';
         document.querySelector('#db_panel .dbct')?.scrollTo({top:0,behavior:'smooth'})
-      ">✕ Cancelar</button>
-      <button class="btn btn-p" style="flex:1;min-height:44px" id="db_save_btn">✓ Guardar</button>
+      "><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Cancelar</button>
+      <button class="btn btn-p" style="flex:1;min-height:44px" id="db_save_btn"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
     </div>`;
     fc.innerHTML = formHtml;
     // Trigger slide-up animation only on open (not on every re-render)
@@ -3535,7 +3553,7 @@ const app = {
     const label = key.includes('|') ? key.split('|')[0]+' (talento)' : key;
     const panel = document.getElementById('db_panel');
     const container = panel?.classList.contains('fs-open') ? panel : document.body;
-    this._confirmInContainer(container, `¿Eliminar "${label}"?`, 'Esta entrada se eliminará de la base de datos.', '✓ Eliminar', () => {
+    this._confirmInContainer(container, `¿Eliminar "${label}"?`, 'Esta entrada se eliminará de la base de datos.', 'Eliminar', () => {
       if (cat === 'talents' && key.includes('|')) {
         const [sub,idx] = key.split('|');
         this.DB.talents[sub]?.splice(parseInt(idx),1);
@@ -4130,7 +4148,7 @@ const app = {
       this._confirm(
         '¿Sobreescribir personaje?',
         `El personaje "${this._esc(name)}" ya existe y será reemplazado.`,
-        '✓ Sobreescribir',
+        'Sobreescribir',
         () => { this._doSaveChar(name, roster); releaseSaving(); },
         document.body,
         releaseSaving  // onCancel — releases lock right away
@@ -4586,7 +4604,7 @@ const app = {
       segG.classList.toggle('active', !isChar);
       segG.setAttribute('aria-pressed', String(!isChar));
     }
-    if (btn) btn.textContent = isChar ? '✓ Aplicar a este personaje' : '✓ Guardar como global';
+    if (btn) btn.textContent = isChar ? 'Aplicar a este personaje' : 'Guardar como global';
     if (hint) hint.textContent = isChar
       ? 'Vista previa en vivo: se aplica solo al personaje abierto al pulsar el botón. Si cierras sin aplicar, se descarta.'
       : (charOpen
@@ -4786,7 +4804,7 @@ const app = {
   },
 
   confirmClear() {
-    this._confirm('¿Resetear hoja?', 'Se borrarán todos los datos del personaje actual.', '✓ Resetear', () => {
+    this._confirm('¿Resetear hoja?', 'Se borrarán todos los datos del personaje actual.', 'Resetear', () => {
       this.clearCharData();
       if (this.DB.descriptors) this.unlockApp();
       // Anclar la vista en página 0 ANTES de abrir secciones en masa.
@@ -4811,7 +4829,7 @@ const app = {
     this._confirm(
       '¿Eliminar personaje?',
       `"${this._esc(name)}" será eliminado permanentemente.`,
-      '✓ Eliminar',
+      'Eliminar',
       () => {
         STORAGE.deleteChar(name);
         this.renderHome();

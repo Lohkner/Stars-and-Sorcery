@@ -44,6 +44,20 @@
 </script>
 </head>
 <body>
+<!-- Sprite de iconos unificados (trazo 1.5px, hereda color). Uso: <svg class="ico"><use href="#i-nombre"/></svg> -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5.5L19.5 6"/></symbol>
+  <symbol id="i-quill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-4.5-.5-9 1.8-11.2 5.8L5.5 16 8 18.5l6.2-3.3C18.2 13 20.5 8.5 20 4z"/><path d="M3.5 20.5L10 14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-rot-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-rot-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-adv-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 5.5l7.5 13h-15z"/></symbol>
+  <symbol id="i-adv-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 18.5l-7.5-13h15z"/></symbol>
+  <symbol id="i-adv-eq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 9.5h12M6 14.5h12"/></symbol>
+</svg>
 <div id="ss-loader" aria-hidden="true">
 
   <!-- Floating particles -->
@@ -87,8 +101,8 @@
       <span class="dice-total" id="dice-total">—</span>
     </div>
     <span class="dice-badge" id="dice-badge" style="display:none"></span>
-    <button class="dice-close-btn" id="dice-close-btn" data-action="closeDiceOverlay" aria-label="Cerrar resultado de dados">✕ Cerrar</button>
-    <div style="font-family:var(--fm);font-size:.5rem;color:var(--border);letter-spacing:.08em;margin-top:2px">↓ desliza para cerrar</div>
+    <button class="dice-close-btn" id="dice-close-btn" data-action="closeDiceOverlay" aria-label="Cerrar resultado de dados"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Cerrar</button>
+    <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--border);letter-spacing:.08em;margin-top:2px">↓ desliza para cerrar</div>
   </div>
 </div>
 <input type="file" id="img_input" accept="image/*" style="display:none" onchange="app.startCrop(this)">
@@ -125,14 +139,14 @@
             <span class="apt-col-title active-col">Seleccionados</span>
             <span class="mft-count" id="apt_sel_count">0</span>
           </div>
-          <button class="bmini br" style="font-size:.6rem;padding:6px 12px;min-height:38px"
-            data-action="_aptClearAll">✕ Limpiar</button>
+          <button class="bmini br" style="font-size:var(--fs-xs);padding:6px 12px;min-height:38px"
+            data-action="_aptClearAll"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Limpiar</button>
         </div>
         <div class="apt-col-body" id="apt_selected_list">
           <p id="apt_selected_empty" style="display:none;text-align:center;color:var(--muted);
-            font-style:italic;font-size:.72rem;margin-top:20px;line-height:1.8;padding:0 12px">
+            font-style:italic;font-size:var(--fs-md);margin-top:20px;line-height:1.8;padding:0 12px">
             Sin selección.<br>
-            <span style="font-size:.62rem;color:var(--border)">Toca un ítem para añadir.</span>
+            <span style="font-size:var(--fs-sm);color:var(--border)">Toca un ítem para añadir.</span>
           </p>
         </div>
       </div>
@@ -143,7 +157,7 @@
     <div class="fs-footer-info">
       <span id="apt_type_label" style="color:var(--muted)">—</span>
     </div>
-    <button class="btn btn-gold" data-action="closeAptManager">✓ Confirmar</button>
+    <button class="btn btn-gold" data-action="closeAptManager"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
   </div>
 </div>
 <input type="file" id="bg_home_input" accept="image/*" style="display:none" onchange="app.loadBgImage('home',this)">
@@ -240,10 +254,10 @@
                 </div>
               </div>
               <div style="padding:10px 12px">
-                <div style="margin-bottom:6px"><span class="fl">Nombre</span><input type="text" id="char_name" placeholder="ej. Valerius el Audaz" style="font-family:var(--fd);font-size:.92rem;font-weight:600" autocomplete="off" spellcheck="false"></div>
+                <div style="margin-bottom:6px"><span class="fl">Nombre</span><input type="text" id="char_name" placeholder="ej. Valerius el Audaz" style="font-family:var(--fd);font-size:var(--fs-2xl);font-weight:600" autocomplete="off" spellcheck="false"></div>
                 <div class="g2" style="gap:5px;margin-bottom:6px">
                   <div><span class="fl">Nivel</span><input type="number" id="char_lvl" value="1" min="1" max="10" onchange="app.calc();app.updateXpHint()" inputmode="numeric" aria-label="Nivel del personaje"></div>
-                  <div><span class="fl">XP <span id="xp_next_lbl" style="font-size:.58rem;color:var(--muted);font-style:normal;letter-spacing:0;text-transform:none"></span></span><input type="number" id="char_xp" value="0" min="0" oninput="app.updateXpHint()" inputmode="numeric" aria-label="Puntos de experiencia"></div>
+                  <div><span class="fl">XP <span id="xp_next_lbl" style="font-size:var(--fs-xs);color:var(--muted);font-style:normal;letter-spacing:0;text-transform:none"></span></span><input type="number" id="char_xp" value="0" min="0" oninput="app.updateXpHint()" inputmode="numeric" aria-label="Puntos de experiencia"></div>
                 </div>
                 <div id="xp_bar_wrap" style="margin-bottom:6px;display:none">
                   <div class="lbar" style="margin-top:0"><div id="xp_bar_fill" class="lfill" style="background:linear-gradient(90deg,var(--ice),var(--gold))"></div></div>
@@ -251,13 +265,13 @@
                 <div style="margin-bottom:6px">
                   <span class="fl">Alineamiento</span>
                   <div class="asel" id="align_sel"></div>
-                  <div id="align_feedback" style="min-height:1.4em;margin-top:5px;font-family:var(--fd);font-size:.62rem;color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;gap:5px;padding:0 2px;opacity:0;transition:opacity .2s">
-                    <span style="font-size:.55rem;color:var(--goldb)">✦</span>
+                  <div id="align_feedback" style="min-height:1.4em;margin-top:5px;font-family:var(--fd);font-size:var(--fs-sm);color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;gap:5px;padding:0 2px;opacity:0;transition:opacity .2s">
+                    <span style="font-size:var(--fs-2xs);color:var(--goldb)">✦</span>
                     <span id="align_feedback_txt"></span>
                   </div>
                 </div>
-                <div style="margin-bottom:4px"><span class="fl">Biografía</span><textarea id="char_concept" placeholder="Bio del personaje…" style="min-height:44px;font-size:.8rem"></textarea></div>
-                <button class="bcnf" data-action="confirmPersonal">✓ Confirmar</button>
+                <div style="margin-bottom:4px"><span class="fl">Biografía</span><textarea id="char_concept" placeholder="Bio del personaje…" style="min-height:44px;font-size:var(--fs-xl)"></textarea></div>
+                <button class="bcnf" data-action="confirmPersonal"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
               </div>
             </div>
             <!-- SUMMARY MODE -->
@@ -273,9 +287,9 @@
                 </div>
               </div>
               <div style="padding:6px 4px 10px;text-align:center">
-                <div id="sum_align_ov" class="u-fm u-muted" style="font-size:.64rem;margin-bottom:5px"></div>
-                <div id="sum_bio_ov" class="u-pre-wrap" style="font-size:.8rem;font-style:italic;color:var(--text);margin-bottom:4px"></div>
-                <button class="bedit" onclick="app.editSection('personal')">✏ Editar</button>
+                <div id="sum_align_ov" class="u-fm u-muted" style="font-size:var(--fs-sm);margin-bottom:5px"></div>
+                <div id="sum_bio_ov" class="u-pre-wrap" style="font-size:var(--fs-xl);font-style:italic;color:var(--text);margin-bottom:4px"></div>
+                <button class="bedit" onclick="app.editSection('personal')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
               </div>
             </div>
           </div>
@@ -289,7 +303,7 @@
                 <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Filo</span><select id="sel_filo" aria-label="Filo del arquetipo" onchange="app.calc()"></select></div>
               </div>
               <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
-              <button class="bcnf" onclick="app.confirmSection('identity')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="identity_summary_view" style="display:none">
               <div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;padding:4px 0">
@@ -297,7 +311,7 @@
                 <span class="ibadge" id="sum_arq_badge">—</span><span style="color:var(--muted);align-self:center">·</span>
                 <span class="ibadge" id="sum_bg_badge">—</span>
               </div>
-              <button class="bedit" onclick="app.editSection('identity')">✏ Editar</button>
+              <button class="bedit" onclick="app.editSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
 
@@ -338,52 +352,52 @@
             <div class="g3c mb4">
               <div class="sc">
                 <div class="sc-lbl" style="color:var(--gold)">CA</div>
-                <div style="font-family:var(--fd);font-size:.95rem;color:var(--gold);font-weight:700"><span id="res_ca">10</span></div>
-                <div style="font-family:var(--fm);font-size:.42rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_ca_armor">—</div>
+                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_ca">10</span></div>
+                <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_ca_armor">—</div>
               </div>
               <div class="sc-clickable" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)">
                 <div class="sc-lbl" style="color:var(--muted)">Ini</div>
-                <div style="font-family:var(--fd);font-size:.95rem;color:var(--bright);font-weight:700"><span id="res_ini">+0</span></div>
+                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--bright);font-weight:700"><span id="res_ini">+0</span></div>
               </div>
               <div class="sc">
                 <div class="sc-lbl" style="color:var(--muted)">Vel</div>
-                <div style="font-family:var(--fm);font-size:.82rem;color:var(--bright);font-weight:600"><span id="res_vel">30 pies</span></div>
+                <div style="font-family:var(--fm);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_vel">30 pies</span></div>
               </div>
             </div>
             <!-- Stats secundarios row 2 -->
             <div class="g3c mb5">
               <div class="sc" style="padding:4px 3px">
                 <div class="sc-lbl" style="color:#a0683a">Carne</div>
-                <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--fm);font-weight:600;font-size:.92rem;">
+                <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--fm);font-weight:600;font-size:var(--fs-2xl);">
                   <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="-1" onclick="app.adjustRes('cur_carne','res_carne',-1)" aria-label="Reducir daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="color:var(--bright);width:5ch;max-width:5ch;text-align:center;font-size:.88rem">
+                  <input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="color:var(--bright);width:5ch;max-width:5ch;text-align:center;font-size:var(--fs-2xl)">
                   <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="1" onclick="app.adjustRes('cur_carne','res_carne',1)" aria-label="Aumentar daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
                 </div>
-                <div style="font-family:var(--fm);font-size:.58rem;color:rgba(160,104,58,.8);margin-top:1px">/ <span id="res_carne">0</span></div>
+                <div style="font-family:var(--fm);font-size:var(--fs-xs);color:rgba(160,104,58,.8);margin-top:1px">/ <span id="res_carne">0</span></div>
               </div>
               <div class="sc">
                 <div class="sc-lbl" style="color:var(--gold)">Comp</div>
-                <div style="font-family:var(--fd);font-size:.92rem;color:var(--gold);font-weight:700"><span id="res_prof">+2</span></div>
+                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_prof">+2</span></div>
               </div>
               <div class="sc">
                 <div class="sc-lbl" style="color:var(--muted)">Filo</div>
-                <div style="font-family:var(--fd);font-size:.82rem;color:var(--bright);font-weight:600"><span id="res_filo_val">—</span></div>
+                <div style="font-family:var(--fd);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_filo_val">—</span></div>
               </div>
             </div>
             <!-- Encumbramiento -->
             <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--fd);font-size:.53rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">
-                <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:.7rem">0/0</span>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">
+                <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:var(--fs-md)">0/0</span>
               </div>
               <div class="lbar"><div id="carga_bar" class="lfill"></div></div>
-              <p id="carga_warn" style="display:none;color:var(--ember);font-size:.6rem;text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
+              <p id="carga_warn" style="display:none;color:var(--ember);font-size:var(--fs-xs);text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
             </div>
-            <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:.8rem" placeholder="Notas…"></textarea></details>
+            <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
           </div>
 
           <!-- Ataques rápidos -->
           <div class="panel">
-            <div class="ph" style="margin-bottom:4px"><span class="pt">Ataques</span><span style="font-family:var(--fm);font-size:.58rem;color:var(--muted);margin-left:auto">desde equipo</span></div>
+            <div class="ph" style="margin-bottom:4px"><span class="pt">Ataques</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">desde equipo</span></div>
             <div class="atk-card">
               <div class="atk-hdr">
                 <span class="atk-nm" id="atk_name_1">Desarmado</span>
@@ -425,20 +439,23 @@
           <div class="panel">
             <div class="ph"><span class="pt">Los Seis Pilares</span></div>
             <div id="stats_edit_view">
-              <div class="g6" style="margin-bottom:8px">
-                <div><span class="fl">FUE</span><input type="number" id="base_FUE" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="FUE"></div>
-                <div><span class="fl">DES</span><input type="number" id="base_DES" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="DES"></div>
-                <div><span class="fl">CON</span><input type="number" id="base_CON" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="CON"></div>
-                <div><span class="fl">INT</span><input type="number" id="base_INT" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="INT"></div>
-                <div><span class="fl">SAB</span><input type="number" id="base_SAB" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="SAB"></div>
-                <div><span class="fl">CAR</span><input type="number" id="base_CAR" value="8" min="3" max="18" onchange="app.calc()" class="stat-in" inputmode="numeric" aria-label="CAR"></div>
+              <!-- Tarjeta consolidada por atributo: puntuación editable a la
+                   izquierda, modificador protagonista a la derecha (tocar el
+                   modificador tira el chequeo). El valor final con bonos de
+                   linaje se muestra bajo el modificador. -->
+              <div class="pillar-grid" style="margin-bottom:8px">
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">FUE</span><input type="number" id="base_FUE" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de FUE"></div><button type="button" class="pillar-mod" onclick="app.rollStat('FUE')" aria-label="Tirar chequeo de FUE"><span class="pillar-mod-val" id="pmod_FUE">+0</span><span class="pillar-final" id="pfinal_FUE">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">DES</span><input type="number" id="base_DES" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de DES"></div><button type="button" class="pillar-mod" onclick="app.rollStat('DES')" aria-label="Tirar chequeo de DES"><span class="pillar-mod-val" id="pmod_DES">+0</span><span class="pillar-final" id="pfinal_DES">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">CON</span><input type="number" id="base_CON" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de CON"></div><button type="button" class="pillar-mod" onclick="app.rollStat('CON')" aria-label="Tirar chequeo de CON"><span class="pillar-mod-val" id="pmod_CON">+0</span><span class="pillar-final" id="pfinal_CON">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">INT</span><input type="number" id="base_INT" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de INT"></div><button type="button" class="pillar-mod" onclick="app.rollStat('INT')" aria-label="Tirar chequeo de INT"><span class="pillar-mod-val" id="pmod_INT">+0</span><span class="pillar-final" id="pfinal_INT">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">SAB</span><input type="number" id="base_SAB" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de SAB"></div><button type="button" class="pillar-mod" onclick="app.rollStat('SAB')" aria-label="Tirar chequeo de SAB"><span class="pillar-mod-val" id="pmod_SAB">+0</span><span class="pillar-final" id="pfinal_SAB">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">CAR</span><input type="number" id="base_CAR" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de CAR"></div><button type="button" class="pillar-mod" onclick="app.rollStat('CAR')" aria-label="Tirar chequeo de CAR"><span class="pillar-mod-val" id="pmod_CAR">+0</span><span class="pillar-final" id="pfinal_CAR">8</span></button></div>
               </div>
-              <div id="stats_boxes_display" class="g6" style="margin-top:4px"></div>
-              <button class="bcnf" onclick="app.confirmSection('stats')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('stats')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="stats_summary_view" style="display:none">
               <div id="stats_summary_boxes" class="g6"></div>
-              <button class="bedit" onclick="app.editSection('stats')">✏ Editar</button>
+              <button class="bedit" onclick="app.editSection('stats')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
 
@@ -447,29 +464,29 @@
             <div id="saves_edit_view">
               <div class="g2">
                 <div>
-                  <h3 class="sub" style="font-size:.72rem">Comunes</h3>
+                  <h3 class="sub" style="font-size:var(--fs-md)">Comunes</h3>
                   <label class="skill-opt"><input type="radio" name="save_common" value="DES" onchange="app.calc()"> Destreza</label>
                   <label class="skill-opt"><input type="radio" name="save_common" value="CON" onchange="app.calc()"> Constitución</label>
                   <label class="skill-opt"><input type="radio" name="save_common" value="SAB" onchange="app.calc()"> Sabiduría</label>
                 </div>
                 <div>
-                  <h3 class="sub" style="font-size:.72rem">Infrecuentes</h3>
+                  <h3 class="sub" style="font-size:var(--fs-md)">Infrecuentes</h3>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="FUE" onchange="app.calc()"> Fuerza</label>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="INT" onchange="app.calc()"> Inteligencia</label>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="CAR" onchange="app.calc()"> Carisma</label>
                 </div>
               </div>
               <div id="saves_display" class="saves-grid"></div>
-              <button class="bcnf" onclick="app.confirmSection('saves')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="saves_summary_view" style="display:none">
               <div id="saves_summary_text" class="saves-grid" style="margin-top:0;border-top:none;padding-top:0"></div>
-              <button class="bedit" onclick="app.editSection('saves')">✏ Editar</button>
+              <button class="bedit" onclick="app.editSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
 
           <div class="panel">
-            <div class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:.58rem;color:var(--muted);margin-left:auto">por linaje &amp; origen</span></div>
+            <div class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">por linaje &amp; origen</span></div>
             <div id="traits_list" style="display:flex;flex-wrap:wrap;gap:3px;padding:2px 0"></div>
           </div>
 
@@ -492,11 +509,11 @@
                 <div><h3 class="sub">Por Trasfondo (Elige 2)</h3><div id="skills_bg" class="skill-area"></div></div>
               </div>
               <div id="skills_grade_box" class="skg-box" style="display:none"></div>
-              <button class="bcnf" onclick="app.confirmSection('skills')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="skills_summary_view" style="display:none;text-align:center">
               <div id="final_skills_list" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px 0"></div>
-              <button class="bedit" onclick="app.editSection('skills')">✏ Editar</button>
+              <button class="bedit" onclick="app.editSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
         </div><!-- /page 1 -->
@@ -513,7 +530,7 @@
             <div id="tricks_summary_view">
               <div id="tricks_summary_list"><p class="txt-it-c">Sin trucos seleccionados.</p></div>
               <div style="text-align:center;margin-top:8px">
-                <button class="btn btn-g" style="font-size:.7rem" onclick="app.openAptManager('tricks')">✎ Gestionar Trucos</button>
+                <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('tricks')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Trucos</button>
               </div>
             </div>
           </div>
@@ -529,7 +546,7 @@
             <div id="spells_summary_view">
               <div id="spells_summary_list"><p class="txt-it-c">Sin conjuros seleccionados.</p></div>
               <div style="text-align:center;margin-top:8px">
-                <button class="btn btn-g" style="font-size:.7rem" onclick="app.openAptManager('spells')">✎ Gestionar Conjuros</button>
+                <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('spells')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Conjuros</button>
               </div>
             </div>
           </div>
@@ -541,35 +558,35 @@
               <div class="g2">
                 <div><span class="fl">Armadura</span><select id="sel_armor" aria-label="Armadura equipada" onchange="app.calc()"></select>
                   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:5px">
-                    <div><span class="fl" style="font-size:.55rem">Mod. CA Prim.</span><select id="ca_mod1" aria-label="Modificador de CA principal" class="ap" onchange="app.calc()"><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
-                    <div><span class="fl" style="font-size:.55rem">Mod. Extra 1</span><select id="ca_mod2" aria-label="Modificador de CA extra 1" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
-                    <div><span class="fl" style="font-size:.55rem">Mod. Extra 2</span><select id="ca_mod3" aria-label="Modificador de CA extra 2" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. CA Prim.</span><select id="ca_mod1" aria-label="Modificador de CA principal" class="ap" onchange="app.calc()"><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. Extra 1</span><select id="ca_mod2" aria-label="Modificador de CA extra 1" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. Extra 2</span><select id="ca_mod3" aria-label="Modificador de CA extra 2" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
                   </div>
                   <div class="ccard"><span class="clbl">CA Base</span><span class="cval" id="armor_base_val">—</span></div>
                   <div id="armor_desc" class="infobox"></div>
                 </div>
                 <div><span class="fl">Escudo</span><select id="sel_shield" aria-label="Escudo equipado" onchange="app.calc()"></select>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                    <div><span class="fl" style="font-size:.55rem">Bono Mágico</span><select id="sel_magic_bonus" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                    <div><span class="fl" style="font-size:.55rem">Otro Bono</span><select id="sel_ca_other" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                    <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_magic_bonus" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                    <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_ca_other" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
                   </div>
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:end;margin-top:8px">
                 <div><span class="fl">Arma Principal</span><select id="sel_weapon" aria-label="Arma principal" onchange="app.onWeaponChange('w1')"></select></div>
-                <div><span class="fl" style="font-size:.58rem">Mod. Ataque</span><select id="w1_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
-                <div><span class="fl" style="font-size:.58rem">Mod. Daño</span><select id="w1_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Ataque</span><select id="w1_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Daño</span><select id="w1_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
               </div>
               <div class="ccard"><div><span class="clbl">Ataque</span><div class="cval" id="w1_atk_val">—</div></div><div style="text-align:right"><span class="clbl">Daño</span><div class="cval" id="w1_dmg_val">—</div></div></div>
               <div class="calert" id="w1_alert"></div>
               <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:end;margin-top:6px">
                 <div><span class="fl">Arma Secundaria</span><select id="sel_weapon_sec" aria-label="Arma secundaria" onchange="app.onWeaponChange('w2')"></select></div>
-                <div><span class="fl" style="font-size:.58rem">Mod. Ataque</span><select id="w2_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
-                <div><span class="fl" style="font-size:.58rem">Mod. Daño</span><select id="w2_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Ataque</span><select id="w2_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Daño</span><select id="w2_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
               </div>
               <div class="ccard"><div><span class="clbl">Ataque</span><div class="cval" id="w2_atk_val">—</div></div><div style="text-align:right"><span class="clbl">Daño</span><div class="cval" id="w2_dmg_val">—</div></div></div>
               <div class="calert" id="w2_alert"></div>
-              <button class="bcnf" onclick="app.confirmSection('combat')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="combat_summary_view" style="display:none">
               <!-- Contenido generado por app._buildCombatSummary() desde app._combat
@@ -583,28 +600,28 @@
             <div id="equipment_edit_view">
               <div style="background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:6px 8px;margin-bottom:8px">
                 <div style="display:grid;grid-template-columns:auto auto 1fr auto;gap:4px;align-items:end">
-                  <div><span class="fl">Categ.</span><select id="inv_db_category" aria-label="Categoría del objeto" onchange="app.updateDbSelect()" style="font-size:.75rem"><option value="weapons">Armas</option><option value="armors">Armaduras</option><option value="shields">Escudos</option><option value="misc">Misc.</option></select></div>
-                  <div><span class="fl">Objeto</span><select id="inv_db_item" aria-label="Objeto a añadir" style="font-size:.75rem"></select></div>
+                  <div><span class="fl">Categ.</span><select id="inv_db_category" aria-label="Categoría del objeto" onchange="app.updateDbSelect()" style="font-size:var(--fs-lg)"><option value="weapons">Armas</option><option value="armors">Armaduras</option><option value="shields">Escudos</option><option value="misc">Misc.</option></select></div>
+                  <div><span class="fl">Objeto</span><select id="inv_db_item" aria-label="Objeto a añadir" style="font-size:var(--fs-lg)"></select></div>
                   <div></div>
-                  <button class="btn btn-p" style="font-size:.67rem;padding:6px 9px;align-self:end" data-action="addFromDB">+ Añadir</button>
+                  <button class="btn btn-p" style="font-size:var(--fs-sm);padding:6px 9px;align-self:end" data-action="addFromDB">+ Añadir</button>
                 </div>
               </div>
               <div class="coin" style="margin-bottom:8px"><label>Oro (PO)</label><input type="number" id="gold_coins_edit" value="0" min="0" onchange="app.syncGold('edit')" inputmode="numeric" aria-label="Monedas de oro"></div>
               <div id="inv_backpack_list" style="display:flex;flex-direction:column;gap:4px"></div>
               <div style="text-align:center;margin-top:8px"><button class="bedit" data-action="addCustomItem">+ Objeto Personalizado</button></div>
-              <button class="bcnf" onclick="app.confirmSection('equipment')">✓ Confirmar</button>
+              <button class="bcnf" onclick="app.confirmSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
             <div id="equipment_summary_view" style="display:none">
               <div style="display:flex;justify-content:space-between;align-items:center;background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:5px 8px;margin-bottom:6px">
-                <span style="font-family:var(--fd);font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Tesoro</span>
+                <span style="font-family:var(--fd);font-size:var(--fs-sm);color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Tesoro</span>
                 <span style="font-family:var(--fm);color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> PO</span>
               </div>
               <div id="inv_summary_list" style="display:flex;flex-direction:column;gap:2px"></div>
               <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--rim);display:flex;justify-content:space-between">
-                <span style="font-family:var(--fd);font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Carga Total</span>
+                <span style="font-family:var(--fd);font-size:var(--fs-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Carga Total</span>
                 <span id="load_summary_display" style="font-family:var(--fm);font-weight:600;color:var(--gold)">0/0</span>
               </div>
-              <button class="bedit" onclick="app.editSection('equipment')">✏ Editar</button>
+              <button class="bedit" onclick="app.editSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
         </div><!-- /page 3 -->
@@ -619,7 +636,7 @@
               <span class="leth-summary-badge" id="campana_leth_badge" data-tier="1">
                 <span id="campana_leth_label">Letalidad 1 — +1 PV/nivel</span>
               </span>
-              <button class="bedit" id="campana_edit_btn" data-action="editCampana">✏ Editar</button>
+              <button class="bedit" id="campana_edit_btn" data-action="editCampana"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
             <!-- Edit view -->
             <div id="campana_edit" style="display:none;margin-top:8px">
@@ -627,29 +644,29 @@
               <div class="g3" style="gap:8px">
                 <button class="leth-card active" id="leth_1" data-tier="1"
                   onclick="app.setLethality(1)" onmousedown="this.blur()">
-                  <div class="leth-check">✓</div>
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 1</div>
                   <div class="leth-bonus">+1 PV/nivel</div>
                 </button>
                 <button class="leth-card" id="leth_2" data-tier="2"
                   onclick="app.setLethality(2)" onmousedown="this.blur()">
-                  <div class="leth-check">✓</div>
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 2</div>
                   <div class="leth-bonus">+2 PV/nivel</div>
                 </button>
                 <button class="leth-card" id="leth_3" data-tier="3"
                   onclick="app.setLethality(3)" onmousedown="this.blur()">
-                  <div class="leth-check">✓</div>
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 3</div>
                   <div class="leth-bonus">+3 PV/nivel</div>
                 </button>
               </div>
-              <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV adicionales a partir del Nivel 2. No afectan al Nivel 1.</p>
-              <button class="bcnf" data-action="confirmCampana">✓ Confirmar</button>
+              <p style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV adicionales a partir del Nivel 2. No afectan al Nivel 1.</p>
+              <button class="bcnf" data-action="confirmCampana"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
           </div>
-          <div class="panel"><div class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></div><div id="detail_desc_body"><p style="color:var(--muted);font-size:.8rem;font-style:italic">Selecciona un Linaje.</p></div></div>
-          <div class="panel"><div class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></div><div id="detail_arq_body"><p style="color:var(--muted);font-size:.8rem;font-style:italic">Selecciona un Arquetipo.</p></div></div>
+          <div class="panel"><div class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></div><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></div>
+          <div class="panel"><div class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></div><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></div>
           <div class="panel"><div class="ph"><span class="pt">Talentos Activos</span></div><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></div>
         </div><!-- /page 4 -->
 
@@ -658,11 +675,11 @@
 
     <div id="adv_fab" class="adv-fab" data-state="0">
       <div class="adv-fab-opts" id="adv_fab_opts" role="group" aria-label="Ventaja o Desventaja en las tiradas">
-        <button type="button" class="adv-opt adv-adv" data-adv="1" aria-pressed="false" onclick="app.setAdvantage(1)" title="Ventaja" aria-label="Ventaja">▲</button>
-        <button type="button" class="adv-opt adv-norm active" data-adv="0" aria-pressed="true" onclick="app.setAdvantage(0)" title="Normal" aria-label="Normal">=</button>
-        <button type="button" class="adv-opt adv-dis" data-adv="-1" aria-pressed="false" onclick="app.setAdvantage(-1)" title="Desventaja" aria-label="Desventaja">▼</button>
+        <button type="button" class="adv-opt adv-adv" data-adv="1" aria-pressed="false" onclick="app.setAdvantage(1)" title="Ventaja" aria-label="Ventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-up"/></svg></button>
+        <button type="button" class="adv-opt adv-norm active" data-adv="0" aria-pressed="true" onclick="app.setAdvantage(0)" title="Normal" aria-label="Normal"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg></button>
+        <button type="button" class="adv-opt adv-dis" data-adv="-1" aria-pressed="false" onclick="app.setAdvantage(-1)" title="Desventaja" aria-label="Desventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-down"/></svg></button>
       </div>
-      <button type="button" class="adv-fab-main" id="adv_fab_main" onclick="app.toggleAdvFab()" aria-haspopup="true" aria-expanded="false" aria-label="Tirada: Normal. Tocar para cambiar Ventaja/Desventaja" title="Ventaja / Desventaja">=</button>
+      <button type="button" class="adv-fab-main" id="adv_fab_main" onclick="app.toggleAdvFab()" aria-haspopup="true" aria-expanded="false" aria-label="Tirada: Normal. Tocar para cambiar Ventaja/Desventaja" title="Ventaja / Desventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg></button>
     </div>
     <nav class="bnav">
       <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Perfil"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg></span><span class="nlbl">Perfil</span></button>
@@ -682,7 +699,7 @@
         <span class="mttl-sub">Configuración del personaje y la app</span>
       </div>
     </div>
-    <button class="bcls" data-action="closeSettings" aria-label="Cerrar ajustes">✕</button>
+    <button class="bcls" data-action="closeSettings" aria-label="Cerrar ajustes"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
   </div>
   <div class="mbd" style="display:flex;flex-direction:column;gap:11px">
 
@@ -724,10 +741,10 @@
       <div style="margin-bottom:10px">
         <span class="set-lbl" style="display:block;margin-bottom:7px">Forma</span>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
-          <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular"  style="font-size:.6rem;padding:5px 2px">Rect</button>
-          <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado"   style="font-size:.6rem;padding:5px 2px">Suave</button>
-          <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior" style="font-size:.6rem;padding:5px 2px">Arco</button>
-          <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo"      style="font-size:.6rem;padding:5px 2px">Círculo</button>
+          <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular"  style="font-size:var(--fs-xs);padding:5px 2px">Rect</button>
+          <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado"   style="font-size:var(--fs-xs);padding:5px 2px">Suave</button>
+          <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior" style="font-size:var(--fs-xs);padding:5px 2px">Arco</button>
+          <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo"      style="font-size:var(--fs-xs);padding:5px 2px">Círculo</button>
         </div>
       </div>
 
@@ -742,7 +759,7 @@
 
       <!-- Aplicar (al final: configurar → confirmar) -->
       <div class="set-hint" id="port_scope_hint" style="margin-bottom:8px;line-height:1.5">Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.</div>
-      <button class="bcnf" id="confirm_portrait_btn" data-action="applyPortraitSettings" style="margin:0;width:100%">✓ Guardar como global</button>
+      <button class="bcnf" id="confirm_portrait_btn" data-action="applyPortraitSettings" style="margin:0;width:100%"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar como global</button>
     </section>
 
     <!-- ── INTERFAZ ────────────────────────────────────────────── -->
@@ -771,26 +788,26 @@
       <div class="dvdr" id="dvdr_look">Apariencia</div>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Tema Visual</span>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')" title="Art Déco" style="flex:1;padding:6px 2px;font-size:.58rem">Art Déco</button>
-        <button class="fs-btn theme-btn" data-theme="blood" onclick="app.setTheme('blood')" title="Sangre" style="flex:1;padding:6px 2px;font-size:.58rem">Sangre</button>
-        <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')" title="Vacío" style="flex:1;padding:6px 2px;font-size:.58rem">Vacío</button>
-        <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')" title="Arcano" style="flex:1;padding:6px 2px;font-size:.58rem">Arcano</button>
-        <button class="fs-btn theme-btn" data-theme="parchment" onclick="app.setTheme('parchment')" title="Pergamino" style="flex:1;padding:6px 2px;font-size:.58rem">Pergamino</button>
+        <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')" title="Art Déco" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Art Déco</button>
+        <button class="fs-btn theme-btn" data-theme="blood" onclick="app.setTheme('blood')" title="Sangre" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Sangre</button>
+        <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')" title="Vacío" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Vacío</button>
+        <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')" title="Arcano" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Arcano</button>
+        <button class="fs-btn theme-btn" data-theme="parchment" onclick="app.setTheme('parchment')" title="Pergamino" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Pergamino</button>
       </div>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Fondo de Pantalla</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div>
           <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Inicio</div>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_home_input').click()">↑ Subir</button>
-            <button id="bg_home_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio">✕</button>
+            <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_home_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
+            <button id="bg_home_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
           </div>
         </div>
         <div>
           <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Personaje</div>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:.6rem;padding:6px 4px" onclick="document.getElementById('bg_app_input').click()">↑ Subir</button>
-            <button id="bg_app_clear" class="btn btn-p" style="font-size:.6rem;padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje">✕</button>
+            <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_app_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
+            <button id="bg_app_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
           </div>
         </div>
       </div>
@@ -802,17 +819,17 @@
       <span class="set-lbl" style="display:block;margin-bottom:7px">Personaje</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
         <button class="btn btn-g" data-action="saveFromSettings">Guardar</button>
-        <button class="btn btn-g" data-action="exportJSON">↓ Exportar JSON</button>
-        <button class="btn btn-g" style="grid-column:1 / -1" data-action="triggerLoadJSON">↑ Importar JSON</button>
+        <button class="btn btn-g" data-action="exportJSON"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar JSON</button>
+        <button class="btn btn-g" style="grid-column:1 / -1" data-action="triggerLoadJSON"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar JSON</button>
       </div>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Reglas del Juego</span>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()">↑ Importar Reglas (JSON)</button>
-        <button class="btn btn-gold" style="width:100%" data-action="openDatabaseEditor">⚙ Editor de Base de Datos</button>
+        <button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar Reglas (JSON)</button>
+        <button class="btn btn-gold" style="width:100%" data-action="openDatabaseEditor"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Editor de Base de Datos</button>
       </div>
     </section>
 
-    <button class="bcnf" style="width:100%;margin-top:4px" data-action="closeSettings">✓ Listo</button>
+    <button class="bcnf" style="width:100%;margin-top:4px" data-action="closeSettings"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Listo</button>
   </div>
 </dialog>
 <div id="db_panel" class="fs-panel" role="region" aria-label="Editor de reglas">
@@ -823,7 +840,7 @@
       <span class="fs-hdr-sub">Base de datos del sistema de juego</span>
     </div>
     <div class="fs-hdr-actions">
-      <button class="btn btn-g" style="font-size:.58rem;padding:5px 10px;min-height:36px;color:var(--dim)" data-action="exportRulesDB" aria-label="Exportar reglas">↓ Exportar</button>
+      <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px;color:var(--dim)" data-action="exportRulesDB" aria-label="Exportar reglas"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar</button>
     </div>
   </div>
 
@@ -845,7 +862,7 @@
     <div class="dbct">
       <div id="db_list_container">
         <div class="db-empty">
-          <div class="db-empty-icon">⚙</div>
+          <div class="db-empty-icon"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-gear"/></svg></div>
           <p>Selecciona una categoría<br>en el panel izquierdo</p>
         </div>
       </div>
@@ -861,7 +878,7 @@
       <span class="fs-hdr-sub">Elige hasta 3 talentos para el personaje</span>
     </div>
     <div class="fs-hdr-actions">
-      <button class="btn btn-g" style="font-size:.6rem;padding:5px 10px;min-height:36px;color:var(--blood);border-color:rgba(168,42,58,.4)" data-action="clearTalents">✕ Limpiar</button>
+      <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px;color:var(--blood);border-color:rgba(168,42,58,.4)" data-action="clearTalents"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Limpiar</button>
     </div>
   </div>
 
@@ -893,14 +910,14 @@
     <div class="fs-footer-info">
       Talentos: <span class="mft-count" id="talent_count_modal">0</span><span style="color:var(--border)">/3</span>
     </div>
-    <button class="btn btn-gold" data-action="closeTalentManager">✓ Confirmar</button>
+    <button class="btn btn-gold" data-action="closeTalentManager"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
   </div>
 </div>
 <dialog id="crop_modal" class="modal" aria-labelledby="crop_modal_title">
   <div class="crl">
     <div class="mhd">
       <span class="mttl" id="crop_modal_title">✦ Ajustar Retrato</span>
-      <button class="bcls" data-action="cancelCrop" aria-label="Cancelar recorte de retrato">✕</button>
+      <button class="bcls" data-action="cancelCrop" aria-label="Cancelar recorte de retrato"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <div class="crws" id="crop_ws"
       onmousedown="app.cropDragStart(event)"
@@ -920,13 +937,13 @@
       </div>
       <div class="cr-ctrl-row">
         <div class="cr-actions">
-          <button class="cr-rot-btn" onclick="app.cropRotate(-90)">↺ −90°</button>
-          <button class="cr-rot-btn" onclick="app.cropRotate(90)">↻ +90°</button>
+          <button class="cr-rot-btn" onclick="app.cropRotate(-90)"><svg class="ico" aria-hidden="true"><use href="#i-rot-l"/></svg>−90°</button>
+          <button class="cr-rot-btn" onclick="app.cropRotate(90)"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>+90°</button>
           <button class="cr-fit-btn" data-action="cropFit">⊡ Fit</button>
         </div>
       </div>
       <div class="cr-apply-row">
-        <button class="bsave" data-action="applyCrop">✓ Aplicar Retrato</button>
+        <button class="bsave" data-action="applyCrop"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Aplicar Retrato</button>
       </div>
     </div>
   </div>
