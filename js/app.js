@@ -62,6 +62,11 @@ const app = {
       const el = e.target;
       if (el.tagName === 'INPUT' && (el.type === 'number' || el.getAttribute('inputmode') === 'numeric')) el.blur();
     });
+    // Las barras de Estado también reaccionan al tecleo directo en los recursos
+    ['cur_pv', 'cur_adr', 'cur_ing'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', () => this._updateResBars());
+    });
 
     // Load rules — fallback to DEFAULT_DB if storage is corrupt
     try {
@@ -246,7 +251,11 @@ const app = {
       const desc = data.selects?.sel_desc ? (this.DB.descriptors?.[data.selects.sel_desc]?.name || '') : '';
       const bg   = data.selects?.sel_bg   ? (this.DB.backgrounds?.[data.selects.sel_bg]?.name   || '') : '';
 
-      const hasPortrait = data.portrait && data.portrait !== DEFAULT_PORTRAIT && !data.portrait.includes('fill=');
+      // Seguridad: el retrato viene de JSON importado (dato no confiable) y se
+      // interpola en un atributo src — solo se admite un data-URL de imagen.
+      // Sin esta validación, un JSON manipulado inyectaría HTML en el roster.
+      const hasPortrait = data.portrait && data.portrait !== DEFAULT_PORTRAIT &&
+        /^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=]+$/.test(data.portrait);
       const portHtml = hasPortrait
         ? `<img class="char-port" src="${data.portrait}" alt="">`
         : `<div class="char-port-ph">✦</div>`;
@@ -1359,6 +1368,8 @@ const app = {
     this._buildSavesSummary();
     // Stats live display
     this._buildStatsSummary();
+    // Barras de fracción de Estado
+    this._updateResBars();
     // Resumen de Equipo de Combate (nombres y texto de ataque/daño).
     // Sin esto, applyCharData lo construía vía confirmSection ANTES del
     // recálculo final y quedaba rancio: el chip de tirada (sum_atk*) sí se
@@ -2071,12 +2082,33 @@ const app = {
   },
   rollWeaponDmg(n) { this.rollDice(this._weaponDmgData[n-1]?.formula||'1', `Daño: ${this._weaponDmgData[n-1]?.name||'Arma'}`); },
 
+  /** Barras de fracción de la sección Estado (PV/ADR/ING).
+      Se refrescan desde calc(), adjustRes() y el tecleo directo. */
+  _updateResBars() {
+    const pairs = [
+      ['res_fill_pv',  'cur_pv',  'max_pv'],
+      ['res_fill_adr', 'cur_adr', 'max_adr'],
+      ['res_fill_ing', 'cur_ing', 'max_ing'],
+    ];
+    pairs.forEach(([fillId, curId, maxId]) => {
+      const fill = document.getElementById(fillId);
+      if (!fill) return;
+      const cur = parseInt(document.getElementById(curId)?.value) || 0;
+      const max = parseInt(document.getElementById(maxId)?.textContent) || 0;
+      fill.style.width = (max > 0 ? Math.max(0, Math.min(100, cur / max * 100)) : 0) + '%';
+      if (fillId === 'res_fill_pv') fill.classList.toggle('res-low', max > 0 && cur / max <= .25);
+    });
+  },
+
   adjustRes(curId, maxId, delta) {
     const cur = document.getElementById(curId);
     const max = document.getElementById(maxId);
     if (!cur) return;
-    let val = parseInt(cur.value) || 0;
-    const maxVal = parseInt(max?.textContent) || 999;
+    let val = parseInt(cur.value, 10) || 0;
+    // Ojo con el truco «|| 999»: con máximo 0 (personaje recién creado) el
+    // fallback dejaba subir el recurso hasta 999. NaN → sin tope; 0 → tope 0.
+    const parsedMax = parseInt(max?.textContent, 10);
+    const maxVal = Number.isNaN(parsedMax) ? 999 : parsedMax;
     val = Math.max(0, Math.min(maxVal, val + delta));
     cur.value = val;
     // Flash feedback
@@ -2091,6 +2123,8 @@ const app = {
     if (navigator.vibrate) navigator.vibrate(8);
     // Mark unsaved
     this._markUnsaved();
+    // Barras de fracción de Estado
+    this._updateResBars();
   },
 
   /** Attach long-press repeat behavior to all .res-btn elements.
@@ -2138,7 +2172,7 @@ const app = {
     });
   },
 
-  toast(msg, type = 'info', action = null) {
+  toast(msg, type = 'info', action = null, opts = {}) {
     const t = { 'ok':'ok','OK':'ok','✦':'ok','Error':'err','error':'err' }[type] ?? 'info';
 
     // ── Deduplication: if an identical message is already visible, skip ──
@@ -2171,9 +2205,14 @@ const app = {
     wrap.appendChild(icon);
     wrap.appendChild(m);
 
-    // Cap visible toasts at 2 in the polite container; 1 in the assertive one
+    // Cap visible toasts at 2 in the polite container; 1 in the assertive one.
+    // Los toasts sticky (avisos que no deben perderse) no se expulsan por el
+    // tope: sin esto, dos toasts posteriores echaban el aviso de actualización.
     const cap = (t === 'err') ? 1 : 2;
-    while (c.children.length >= cap) c.removeChild(c.firstChild);
+    while (c.children.length >= cap) {
+      const victim = [...c.children].find(el => !el.classList.contains('t-sticky')) || c.firstChild;
+      c.removeChild(victim);
+    }
 
     const toast = document.createElement('div');
     toast.className = `toast${t === 'err' ? ' terror' : ''}`;
@@ -2193,15 +2232,20 @@ const app = {
     }
     c.appendChild(toast);
 
-    const visibleFor = (typeof action === 'function')
-      ? TIMING.TOAST_VISIBLE * 4   // give the user time to act on prompts
-      : TIMING.TOAST_VISIBLE;
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(8px)';
-      toast.style.transition = '.3s';
-      setTimeout(() => toast.remove(), TIMING.TOAST_FADE);
-    }, visibleFor);
+    // opts.sticky: el toast no se autodescarta — queda hasta que el usuario
+    // lo toque (avisos que no deben perderse, p. ej. "Nueva versión").
+    if (opts.sticky) toast.classList.add('t-sticky');
+    if (!opts.sticky) {
+      const visibleFor = (typeof action === 'function')
+        ? TIMING.TOAST_VISIBLE * 4   // give the user time to act on prompts
+        : TIMING.TOAST_VISIBLE;
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        toast.style.transition = '.3s';
+        setTimeout(() => toast.remove(), TIMING.TOAST_FADE);
+      }, visibleFor);
+    }
   },
 
   initTalentManager() {
@@ -3248,6 +3292,20 @@ const app = {
     hnew.textContent = '+ Nuevo'; hnew.onclick = () => app.dbEditEntry('new');
     hdr.appendChild(htitle); hdr.appendChild(hnew);
     lc.appendChild(hdr);
+    // Buscador: filtra las entradas de la categoría en vivo
+    if (count) {
+      const searchWrap = document.createElement('div');
+      searchWrap.className = 'db-search-wrap';
+      const search = document.createElement('input');
+      search.type = 'search';
+      search.className = 'db-search';
+      search.id = 'db_search';
+      search.placeholder = `Buscar en ${catLabel}…`;
+      search.setAttribute('aria-label', `Buscar en ${catLabel}`);
+      search.addEventListener('input', () => this._dbFilterList(search.value));
+      searchWrap.appendChild(search);
+      lc.appendChild(searchWrap);
+    }
     if (!count) {
       const empty = document.createElement('div');
       empty.className = 'db-empty';
@@ -3258,6 +3316,7 @@ const app = {
     if (cat === 'talents') {
       Object.keys(src).forEach(sub => {
         const h = document.createElement('div');
+        h.className = 'db-group-hdr';
         h.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xs);color:rgba(200,169,110,.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
         const hl = document.createElement('span'); hl.textContent = sub;
         const hc = document.createElement('span'); hc.style.cssText = 'color:var(--muted);font-size:var(--fs-2xs)'; hc.textContent = (src[sub]||[]).length + ' talentos';
@@ -3268,6 +3327,38 @@ const app = {
     } else {
       Object.entries(src).forEach(([k,v]) => this._dbListItem(lc, v.name||k, k));
     }
+    // Mensaje de "sin resultados" para el buscador
+    const noRes = document.createElement('div');
+    noRes.className = 'db-search-empty';
+    noRes.id = 'db_search_empty';
+    noRes.textContent = 'Sin resultados para esa búsqueda.';
+    lc.appendChild(noRes);
+  },
+
+  /** Filtra las entradas del Editor de Reglas por nombre (sin acentos). */
+  _dbFilterList(q) {
+    const lc = document.getElementById('db_list_container');
+    if (!lc) return;
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const query = norm(q.trim());
+    let visible = 0;
+    lc.querySelectorAll('.dbitem').forEach(row => {
+      const name = row.querySelector('.dbitem-name')?.textContent || '';
+      const hit = !query || norm(name).includes(query);
+      row.style.display = hit ? '' : 'none';
+      if (hit) visible++;
+    });
+    // Grupos de talentos: ocultar encabezados sin resultados visibles
+    lc.querySelectorAll('.db-group-hdr').forEach(h => {
+      let el = h.nextElementSibling, any = false;
+      while (el && !el.classList.contains('db-group-hdr')) {
+        if (el.classList.contains('dbitem') && el.style.display !== 'none') { any = true; break; }
+        el = el.nextElementSibling;
+      }
+      h.style.display = any ? '' : 'none';
+    });
+    const empty = document.getElementById('db_search_empty');
+    if (empty) empty.style.display = visible ? 'none' : 'block';
   },
 
   _dbListItem(container, name, key) {
@@ -4072,15 +4163,7 @@ const app = {
     });
     this.gold = data.gold||0;
     this.alignment = data.alignment||'';
-    // Migración: cuatro Axiomas cambiaron de id con las reglas v5.3.7/v5.3.8
-    // (unidades en el nombre y el estado canónico Ensordecido). Los personajes
-    // guardados bajo v5.3.5 conservan sus selecciones con el id nuevo.
-    const AXIOM_ID_RENAMES = {
-      silencio_9_m:           'silencio_30_pies',
-      invisibilidad_9_m:      'invisibilidad_30_pies',
-      proteccion_del_mal_9_m: 'proteccion_del_mal_30_pies',
-      sordera:                'ensordecido',
-    };
+    // Migración de ids de Axioma renombrados (mapa en constants.js)
     const migrateIds = arr => (arr||[]).map(k => AXIOM_ID_RENAMES[k] || k);
     this._aptSel = { tricks: new Set(migrateIds(data.apt_tricks)), spells: new Set(migrateIds(data.apt_spells)) };
     if(data.lethality) this.setLethality(data.lethality);
@@ -4222,7 +4305,8 @@ const app = {
           selects:      (typeof raw.selects === 'object' && !Array.isArray(raw.selects)) ? raw.selects : {},
           checks:       Array.isArray(raw.checks)         ? raw.checks         : [],
           hidden_talents: Array.isArray(raw.hidden_talents) ? raw.hidden_talents : [],
-          portrait:     typeof raw.portrait === 'string'  ? raw.portrait       : '',
+          // Solo data-URLs de imagen: el retrato se renderiza en atributos src
+          portrait:     (typeof raw.portrait === 'string' && /^data:image\//.test(raw.portrait)) ? raw.portrait : '',
           concept:      typeof raw.concept  === 'string'  ? raw.concept        : '',
           notes:        typeof raw.notes    === 'string'  ? raw.notes          : '',
           alignment:    typeof raw.alignment=== 'string'  ? raw.alignment      : '',
@@ -4529,11 +4613,51 @@ const app = {
   ══════════════════════════════════════════ */
 
   /** Abre el modal de Ajustes sincronizando antes el estado de la UI. */
+  /** Ajustes → "Buscar actualización": fuerza reg.update() y, si hay un SW
+      nuevo (instalándose o ya en espera), ofrece activarlo con el mismo
+      aviso persistente del arranque. */
+  async checkForUpdate() {
+    if (!('serviceWorker' in navigator)) {
+      this.toast('Este navegador no soporta actualizaciones automáticas', 'err');
+      return;
+    }
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      this.toast('Sin service worker (¿abriste la app por file:// o en modo incógnito?)', 'err');
+      return;
+    }
+    this.toast('Buscando actualización…');
+    try { await reg.update(); } catch (e) {
+      this.toast('No se pudo comprobar (¿sin conexión?)', 'err');
+      return;
+    }
+    // update() resuelve antes de que reg.installing se pueble: dar un margen
+    // a que el worker nuevo aparezca, o el «estás al día» sería un falso
+    // negativo justo cuando SÍ hay actualización.
+    for (let i = 0; i < 12 && !reg.installing && !reg.waiting; i++) {
+      await new Promise(r => setTimeout(r, 250));
+    }
+    // Esperar a que una instalación en curso termine (máx ~10 s)
+    for (let i = 0; i < 40 && reg.installing; i++) {
+      await new Promise(r => setTimeout(r, 250));
+    }
+    if (reg.waiting) {
+      this.toast('Nueva versión lista — toca para actualizar', 'info', () => {
+        reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }, { sticky: true });
+    } else {
+      this.toast('Ya tienes la última versión', 'ok');
+    }
+  },
+
   openSettings() {
     // Ámbito por defecto contextual en cada apertura: con personaje abierto
     // (y prefs individuales activas) → "Este personaje"; si no → "Global".
     this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
     this._syncPortraitScopeUI();
+    // Sello de versión de datos (verificable tras actualizar)
+    const rv = document.getElementById('set_rules_ver');
+    if (rv) rv.textContent = STORAGE.RULES_DATA_VERSION;
     const dlg = document.getElementById('settings_modal');
     if (!dlg) return;
     if (!dlg.open) {
@@ -4949,6 +5073,8 @@ const app = {
     const adr=document.getElementById('max_adr'); const cadr=document.getElementById('cur_adr'); if(adr&&cadr)cadr.value=adr.textContent;
     const ing=document.getElementById('max_ing'); const cing=document.getElementById('cur_ing'); if(ing&&cing)cing.value=ing.textContent;
     const carne=document.getElementById('res_carne'); const ccarne=document.getElementById('cur_carne'); if(carne&&ccarne)ccarne.value=carne.textContent;
+    // Los cur_* se escriben DESPUÉS de calc(): refrescar las barras de Estado
+    this._updateResBars();
     this.renderInventory();
 
     // 14. Cerrar TODAS las secciones en modo resumen

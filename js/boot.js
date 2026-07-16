@@ -25,20 +25,41 @@
   // they actually receive the latest version instead of a stale cache.
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      // A new worker is installing → watch it.
+      // Muestra el aviso de actualización. El reload NO se hace aquí: al
+      // aceptar, SKIP_WAITING activa el SW nuevo y es controllerchange
+      // (abajo) quien recarga — sin carrera con la activación.
+      const promptUpdate = (worker) => {
+        const show = () => {
+          try {
+            app.toast('Nueva versión disponible — toca para actualizar', 'info', () => {
+              worker.postMessage && worker.postMessage({ type: 'SKIP_WAITING' });
+            }, { sticky: true });
+          } catch(e) { /* toast may not support action; ignore */ }
+        };
+        // app.toast necesita el DOM listo (contenedores de toast)
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', show, { once: true });
+        } else show();
+      };
+      // Caso 1: el SW nuevo quedó EN ESPERA en una visita anterior.
+      // updatefound ya no se dispara para él, así que sin esta comprobación
+      // el aviso no vuelve a aparecer nunca y la app queda en la versión vieja.
+      // reg.waiting puede tardar en poblarse tras resolver register() (carrera
+      // observada en Chromium), así que se comprueba en tres momentos; el
+      // dedupe de app.toast evita avisos duplicados.
+      const checkWaiting = () => {
+        if (reg.waiting && navigator.serviceWorker.controller) promptUpdate(reg.waiting);
+      };
+      checkWaiting();
+      navigator.serviceWorker.ready.then(checkWaiting).catch(() => {});
+      setTimeout(checkWaiting, 3000);
+      // Caso 2: la actualización se encuentra durante esta visita.
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
         nw.addEventListener('statechange', () => {
           // Installed + an existing controller means this is an UPDATE, not first install.
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            try {
-              app.toast('Nueva versión disponible — toca para actualizar', 'info', () => {
-                nw.postMessage && nw.postMessage({ type: 'SKIP_WAITING' });
-                location.reload();
-              });
-            } catch(e) { /* toast may not support action; ignore */ }
-          }
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) promptUpdate(nw);
         });
       });
       // Check for updates each launch.

@@ -10,7 +10,7 @@
    ══════════════════════════════════════════════════════════════════ */
 'use strict';
 
-const CACHE_VERSION = 'ss-companion-v19';
+const CACHE_VERSION = 'ss-companion-v21';
 const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
@@ -33,8 +33,11 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_VERSION)
       // addAll falla en bloque si un recurso no existe (p. ej. el icono
       // aún no subido); cachear uno a uno tolera ausencias sin romper.
+      // cache:'reload' fuerza red real: sin él, el precache puede pinnear
+      // copias RANCIAS de la caché HTTP del navegador y el SW nuevo se
+      // instala con archivos viejos (la app "se actualiza" pero sigue vieja).
       .then((cache) => Promise.allSettled(
-        APP_SHELL.map((url) => cache.add(url))
+        APP_SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
       ))
   );
 });

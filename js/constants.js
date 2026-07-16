@@ -35,6 +35,17 @@ const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro
 /** XP required to reach each level (index = current level) */
 const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
 
+/* ── Migración de ids de Axioma (reglas v5.3.7/v5.3.8) ──────────
+   Cuatro Axiomas cambiaron de id (unidades en el nombre y el estado
+   canónico Ensordecido). Los personajes guardados bajo v5.3.5
+   conservan sus selecciones con el id nuevo al cargarse.            */
+const AXIOM_ID_RENAMES = {
+  silencio_9_m:           'silencio_30_pies',
+  invisibilidad_9_m:      'invisibilidad_30_pies',
+  proteccion_del_mal_9_m: 'proteccion_del_mal_30_pies',
+  sordera:                'ensordecido',
+};
+
 /** Inventory slots per card cap */
 const MAX_PORTRAIT_W = 600;
 
@@ -61,14 +72,10 @@ const TIMING = {
   DICE_CLOSE:        180,
   /** Resource colour-flash after adjust */
   RES_FLASH:         240,
-  /** Save-guard: max wait for confirm dialog */
-  SAVE_GUARD:      10000,
   /** Saved-label "fresh" highlight */
   SAVED_FRESH:      3500,
   /** Swipe ghost-click suppression window — shorter = less dead zone after swipe */
   SWIPE_SUPPRESS:    220,
-  /** Swipe snap transition */
-  SWIPE_SNAP:        240,
   /** Crop spring transition */
   CROP_SPRING:       280,
   /** Long-press initial threshold — shorter feels more responsive */
