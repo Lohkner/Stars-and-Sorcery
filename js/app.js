@@ -85,7 +85,6 @@ const app = {
     this.setupSwipe();
     this._initDiceSwipe();
     this._setupEscapeKey();
-    this._initGrainTexture();
     // Crop wheel zoom (registered once, guarded inside handler)
     const ws = document.getElementById('crop_ws');
     if (ws) ws.addEventListener('wheel', e => this._cropWheel(e), {passive:false});
@@ -482,35 +481,14 @@ const app = {
   /** Sustituye el grano SVG (feTurbulence) por un PNG generado en canvas.
       El filtro SVG se re-rasteriza en cada repintado — carísimo en móvil y
       una de las causas del lag del swipe; un PNG es un raster cacheado. */
-  _initGrainTexture() {
-    try {
-      const make = (alpha) => {
-        const c = document.createElement('canvas');
-        c.width = c.height = 160;
-        const ctx = c.getContext('2d');
-        const img = ctx.createImageData(160, 160);
-        const d = img.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const v = (Math.random() * 255) | 0;
-          d[i] = d[i + 1] = d[i + 2] = v;
-          d[i + 3] = (Math.random() * alpha * 2 * 255) | 0; // media ≈ alpha
-        }
-        ctx.putImageData(img, 0, 0);
-        return `url("${c.toDataURL('image/png')}")`;
-      };
-      const rs = document.documentElement.style;
-      rs.setProperty('--grain', make(0.06));
-      rs.setProperty('--grain-md', make(0.13));
-    } catch (e) { /* queda el SVG del CSS como respaldo */ }
-  },
 
   setupSwipe() {
     const w     = document.getElementById('pages_wrapper');
     const track = document.getElementById('pages_track');
 
     // ── Tuning — matches native iOS/Android feel ──
-    const DEAD_PX     = 8;     // px before ANY axis locks (iOS standard)
-    const V_BIAS      = 2.2;   // H/V ratio for axis lock (high = vertical wins)
+    const DEAD_PX     = 6;     // px before ANY axis locks
+    const V_BIAS      = 1.5;   // H/V ratio for axis lock (1.5 = diagonal amable)
     const MIN_DIST    = 38;    // px minimum travel to count a slow drag
     const FLICK_DIST  = 22;    // px minimum travel to count a fast flick
     const FLICK_VEL   = 0.25;  // px/ms velocity threshold for flick
@@ -580,20 +558,6 @@ const app = {
       track.style.transform  = `translateX(${base + (atEdge ? rubber(dx, pageW()) : dx)}px)`;
     };
 
-    // touchmove llega en ráfagas más rápidas que el refresco: aplicar como
-    // máximo UNA escritura de transform por frame. liveGen invalida el frame
-    // pendiente al soltar, para que no pise el snap.
-    let rafPending = false, pendingDx = 0, liveGen = 0;
-    const setLiveRaf = rawDx => {
-      pendingDx = rawDx;
-      if (rafPending) return;
-      rafPending = true;
-      const gen = liveGen;
-      requestAnimationFrame(() => {
-        rafPending = false;
-        if (gen === liveGen) setLive(pendingDx);
-      });
-    };
 
     // ── Snap decision ──
     const decide = (dx, vel) => {
@@ -639,12 +603,17 @@ const app = {
       startT = lastT = Date.now();
       dragging = false; locked = false;
       totalDist = 0; velSamples = [];
-      // Freeze any in-progress snap immediately and remember the offset so
-      // the drag continues from the frozen position (no jump on catch)
-      const cur = getComputedStyle(track).transform;
-      track.style.transition = 'none';
-      track.style.transform  = cur;
-      originOffset = currentTx() - (-this.currentPage * pageW());
+      // Congelar el snap SOLO si hay uno en vuelo: getComputedStyle fuerza
+      // un reflow y en touchstart eso congelaba el primer frame del gesto.
+      if (Date.now() < (this._snapUntil || 0)) {
+        const cur = getComputedStyle(track).transform;
+        track.style.transition = 'none';
+        track.style.transform  = cur;
+        originOffset = currentTx() - (-this.currentPage * pageW());
+      } else {
+        track.style.transition = 'none';
+        originOffset = 0;
+      }
       // Only steal focus away from non-text elements (never blur inputs/textareas)
       const focused = w.querySelector(':focus');
       if (focused && !focused.matches('input,textarea,select')) focused.blur();
@@ -677,7 +646,7 @@ const app = {
       addVelSample(iv);
       totalDist += Math.abs(t.clientX - lastX);
       lastX = t.clientX; lastT = now;
-      setLiveRaf(dx);
+      setLive(dx);
     }, {passive:false});
 
     w.addEventListener('touchend', e => {
@@ -694,14 +663,12 @@ const app = {
       const dx = originOffset + (e.changedTouches[0].clientX - startX);
       const vel = peakVel();
       dragging = false; locked = false;
-      liveGen++; // invalida cualquier frame de arrastre pendiente
       snapTo(decide(dx, vel), vel);
     }, {passive:true});
 
     w.addEventListener('touchcancel', () => {
       track.classList.remove('is-dragging');
       dragging=false; locked=false; velSamples=[];
-      liveGen++; // invalida cualquier frame de arrastre pendiente
       this.goToPage(this.currentPage);
     }, {passive:true});
 
@@ -711,7 +678,7 @@ const app = {
       if (e.target.closest('input,select,textarea,button,label')) return;
       ms = {x:e.clientX, lx:e.clientX, lt:Date.now(), samples:[], drag:false, dist:0};
       track.style.transition = 'none';
-      originOffset = currentTx() - (-this.currentPage * pageW());
+      originOffset = (Date.now() < (this._snapUntil || 0)) ? currentTx() - (-this.currentPage * pageW()) : 0;
     });
     w.addEventListener('mousemove', e => {
       if (!ms) return;
@@ -724,7 +691,7 @@ const app = {
         ms.samples.push(iv); if(ms.samples.length>VEL_SAMPLES) ms.samples.shift();
         ms.dist += Math.abs(e.clientX-ms.lx);
         ms.lx=e.clientX; ms.lt=Date.now();
-        setLiveRaf(e.clientX-ms.x);
+        setLive(e.clientX-ms.x);
       }
     });
     const endMouse = cx => {
@@ -733,7 +700,6 @@ const app = {
       const {x,drag,samples,dist} = ms; ms=null;
       if (!drag) return;
       const vel = samples.reduce((a,b)=>Math.abs(a)>Math.abs(b)?a:b, 0);
-      liveGen++; // invalida cualquier frame de arrastre pendiente
       snapTo(decide(originOffset + (cx-x), vel), vel);
     };
     w.addEventListener('mouseup',    e=>endMouse(e.clientX));
@@ -764,6 +730,7 @@ const app = {
     // Duración: fija (220ms) desde la navegación; proporcional a distancia y
     // velocidad de soltado cuando viene de un swipe (snapTo la calcula).
     track.style.transition = `transform ${snapMs || 220}ms cubic-bezier(.25,.46,.45,.94)`;
+    this._snapUntil = Date.now() + (snapMs || 220) + 60;
     track.style.transform  = `translateX(-${n * pageW}px)`;
     document.querySelectorAll('.nbtn').forEach((b,i) => b.classList.toggle('active', i===n));
     if (n === 4) this.buildDetailPage();

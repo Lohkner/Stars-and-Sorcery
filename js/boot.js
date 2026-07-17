@@ -24,7 +24,7 @@
   // Update-aware: when a new SW takes control, prompt the user to reload so
   // they actually receive the latest version instead of a stale cache.
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
       // Muestra el aviso de actualización. El reload NO se hace aquí: al
       // aceptar, SKIP_WAITING activa el SW nuevo y es controllerchange
       // (abajo) quien recarga — sin carrera con la activación.
@@ -64,8 +64,12 @@
           if (nw.state === 'installed' && navigator.serviceWorker.controller) promptUpdate(nw);
         });
       });
-      // Check for updates each launch.
+      // Check for updates each launch, al volver a la app y cada 30 min.
       reg.update && reg.update();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update && reg.update().catch(() => {});
+      });
+      setInterval(() => { reg.update && reg.update().catch(() => {}); }, 30 * 60 * 1000);
     }).catch(() => {});
 
     // When the controlling worker changes, reload once to pick up new assets.

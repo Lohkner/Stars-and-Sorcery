@@ -74,6 +74,14 @@ Tratamiento visual en las **tres zonas estándar de la industria** (superficie h
   3. **`touchmove` llega en ráfagas más rápidas que el refresco**: el transform del arrastre se aplica ahora como máximo una vez por frame vía `requestAnimationFrame`, con contador de generación (`liveGen`) que invalida el frame pendiente al soltar para que no pise el snap (también en la ruta de ratón y en `touchcancel`).
   (En el lote anterior ya se habían retirado los `backdrop-filter` del encabezado y la navegación, que se re-difuminaban en cada frame.)
 
+### Sin grano, Aptitudes reorganizada y actualizaciones fiables (v46)
+
+- **Fuera el grano por completo** (feedback: "se ve sucia"): eliminadas las variables `--grain`/`--grain-md`, todas las reglas con textura y `_initGrainTexture`. Las tarjetas vuelven a **sus colores originales** (`--surface`/`--raised`/`--panel` y el degradado original del roster) — verificado: panel `#100e18`, dados `--panel`.
+- **Home en morado profundo perceptible** (`#221540 → #170e2c → #0c0818 → --void`), conservando la iluminación del título (bloom dorado ancho + text-shadow) y **sin tocar la línea degradada horizontal** (`.home-deco`). El fondo personalizado del usuario sigue siendo la capa superior.
+- **Aptitudes reorganizada**: los paneles de **Talentos** y **Rasgos** se mudan de Stats a la página Aptitudes, en el orden **Talentos → Rasgos → Trucos → Conjuros** (los render por id — `traits_list`, `talents_summary_*` — funcionan igual desde su nueva casa).
+- **Swipe menos "torpe"**: (1) fuera la capa rAF del lote anterior — Chrome ya alinea `touchmove` al refresco, el doble buffer solo añadía un frame de latencia; (2) `V_BIAS` 2.2 → **1.5**: el bloqueo de eje exigía un gesto casi perfectamente horizontal, ahora acepta diagonales amables; (3) `DEAD_PX` 8 → 6; (4) `getComputedStyle` en `touchstart` forzaba un reflow que congelaba el primer frame del gesto — ahora solo se lee el transform si hay un snap en vuelo (`_snapUntil`).
+- **Actualizaciones por fin fiables — causa raíz**: el navegador solo detecta una actualización **si `sw.js` cambia en bytes**; al reutilizar la misma `CACHE_VERSION` entre despliegues, la app quedaba congelada (de ahí tener que borrar caché a mano). Ahora: **regla escrita en sw.js de subir versión en CADA despliegue** (→ `v23`), registro con `updateViaCache:'none'` (el fetch de sw.js nunca pasa por caché HTTP), y re-chequeo al volver a la app (`visibilitychange`) y cada 30 min además del arranque.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:
