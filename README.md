@@ -65,6 +65,15 @@ Tratamiento visual en las **tres zonas estándar de la industria** (superficie h
 - **Lag del swipe eliminado**: el encabezado de la hoja (`blur 24px`) y la navegación inferior (`blur 20px`) tienen `backdrop-filter` y viven **encima de la pista que se desliza** — el navegador re-difuminaba ambos en cada frame del gesto. Fuera de la cromo fija (sus fondos casi opacos compensan subiendo la opacidad); los blurs de capas transitorias (diálogos, dados, toasts) se conservan. También se retiró el del cajón del roster (ya es negro sólido).
 - **Entrada del roster perceptible de nuevo**: la animación de las tarjetas sube de .22s a **.38s** con curva con rebote suave y ahora entra desde abajo (`translateY(14px) + scale(.97)`), con el stagger de 50ms por tarjeta.
 
+### Tarjetas oscuras originales y cirugía de rendimiento del swipe (v45.2)
+
+- **Tarjetas de vuelta a la oscuridad original**: la tinta pasa de `#1d1426` a **`#100e18`** (el `--surface` con el que nacieron los paneles), conservando el grano dorado con su degradado mucho→cero.
+- **Swipe — tres causas de jank atacadas a la vez**:
+  1. **El grano era un filtro SVG (`feTurbulence`) que el navegador re-rasteriza en cada repintado** — carísimo en móvil con una docena de tarjetas visibles. Ahora `app._initGrainTexture()` genera la textura UNA vez en un canvas de 160px y la sirve como PNG data-URI en las mismas variables (`--grain`, `--grain-md`); el SVG del CSS queda como respaldo si canvas falla.
+  2. **Cada página promociona a capa de compositor propia** (`transform:translateZ(0)` en `.page`): el gesto mueve rasters ya pintados en GPU en vez de repintar.
+  3. **`touchmove` llega en ráfagas más rápidas que el refresco**: el transform del arrastre se aplica ahora como máximo una vez por frame vía `requestAnimationFrame`, con contador de generación (`liveGen`) que invalida el frame pendiente al soltar para que no pise el snap (también en la ruta de ratón y en `touchcancel`).
+  (En el lote anterior ya se habían retirado los `backdrop-filter` del encabezado y la navegación, que se re-difuminaban en cada frame.)
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:

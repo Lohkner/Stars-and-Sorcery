@@ -615,6 +615,8 @@ body{
 .pages-track{display:flex;height:100%;will-change:transform;-webkit-backface-visibility:hidden}
 .page{
   min-width:100%;width:100%;flex-shrink:0;height:100%;min-height:100%;
+  /* Capa de compositor propia: el swipe mueve rasters ya pintados */
+  transform:translateZ(0);backface-visibility:hidden;
   overflow-y:auto;overflow-x:hidden;
   padding:14px 16px 28px;
   display:flex;flex-direction:column;gap:7px;
@@ -2706,17 +2708,17 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 
 /* ══════════════════════════════════════════
    REVAMP v45 — Golden noise en todas las tarjetas
-   Base #1d1426; el grano (más intenso, 13%) se desvanece de arriba
+   Base #100e18; el grano (más intenso, 13%) se desvanece de arriba
    hacia abajo: mucho ruido → cero ruido, con bloom dorado sutil.
 ══════════════════════════════════════════ */
 :root{
   --grain-md: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E");
-  --card-ink: #1d1426;
+  --card-ink: #100e18;
 }
 .panel,.char-card,.atk-card,.dice-card,.pillar-card,.apt-card{
   background-color:var(--card-ink);
   background-image:
-    linear-gradient(180deg, rgba(29,20,38,0) 0%, rgba(29,20,38,.9) 55%, var(--card-ink) 82%),
+    linear-gradient(180deg, rgba(16,14,24,0) 0%, rgba(16,14,24,.9) 55%, var(--card-ink) 82%),
     var(--grain-md),
     radial-gradient(130% 55% at 50% -5%, rgba(200,169,110,.07), transparent 55%);
   background-size:auto, 160px 160px, auto;
@@ -2724,7 +2726,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* Héroe de la hoja (retrato/identidad): bloom dorado más presente */
 .panel-accent{
   background-image:
-    linear-gradient(180deg, rgba(29,20,38,0) 0%, rgba(29,20,38,.88) 58%, var(--card-ink) 85%),
+    linear-gradient(180deg, rgba(16,14,24,0) 0%, rgba(16,14,24,.88) 58%, var(--card-ink) 85%),
     var(--grain-md),
     radial-gradient(130% 65% at 50% -6%, rgba(200,169,110,.12), transparent 55%);
   background-size:auto, 160px 160px, auto;

@@ -85,6 +85,7 @@ const app = {
     this.setupSwipe();
     this._initDiceSwipe();
     this._setupEscapeKey();
+    this._initGrainTexture();
     // Crop wheel zoom (registered once, guarded inside handler)
     const ws = document.getElementById('crop_ws');
     if (ws) ws.addEventListener('wheel', e => this._cropWheel(e), {passive:false});
@@ -478,6 +479,31 @@ const app = {
     this.renderInventory();
   },
 
+  /** Sustituye el grano SVG (feTurbulence) por un PNG generado en canvas.
+      El filtro SVG se re-rasteriza en cada repintado — carísimo en móvil y
+      una de las causas del lag del swipe; un PNG es un raster cacheado. */
+  _initGrainTexture() {
+    try {
+      const make = (alpha) => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 160;
+        const ctx = c.getContext('2d');
+        const img = ctx.createImageData(160, 160);
+        const d = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const v = (Math.random() * 255) | 0;
+          d[i] = d[i + 1] = d[i + 2] = v;
+          d[i + 3] = (Math.random() * alpha * 2 * 255) | 0; // media ≈ alpha
+        }
+        ctx.putImageData(img, 0, 0);
+        return `url("${c.toDataURL('image/png')}")`;
+      };
+      const rs = document.documentElement.style;
+      rs.setProperty('--grain', make(0.06));
+      rs.setProperty('--grain-md', make(0.13));
+    } catch (e) { /* queda el SVG del CSS como respaldo */ }
+  },
+
   setupSwipe() {
     const w     = document.getElementById('pages_wrapper');
     const track = document.getElementById('pages_track');
@@ -552,6 +578,21 @@ const app = {
                      (this.currentPage === this.totalPages-1 && dx < 0);
       track.style.transition = 'none';
       track.style.transform  = `translateX(${base + (atEdge ? rubber(dx, pageW()) : dx)}px)`;
+    };
+
+    // touchmove llega en ráfagas más rápidas que el refresco: aplicar como
+    // máximo UNA escritura de transform por frame. liveGen invalida el frame
+    // pendiente al soltar, para que no pise el snap.
+    let rafPending = false, pendingDx = 0, liveGen = 0;
+    const setLiveRaf = rawDx => {
+      pendingDx = rawDx;
+      if (rafPending) return;
+      rafPending = true;
+      const gen = liveGen;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        if (gen === liveGen) setLive(pendingDx);
+      });
     };
 
     // ── Snap decision ──
@@ -636,7 +677,7 @@ const app = {
       addVelSample(iv);
       totalDist += Math.abs(t.clientX - lastX);
       lastX = t.clientX; lastT = now;
-      setLive(dx);
+      setLiveRaf(dx);
     }, {passive:false});
 
     w.addEventListener('touchend', e => {
@@ -653,12 +694,14 @@ const app = {
       const dx = originOffset + (e.changedTouches[0].clientX - startX);
       const vel = peakVel();
       dragging = false; locked = false;
+      liveGen++; // invalida cualquier frame de arrastre pendiente
       snapTo(decide(dx, vel), vel);
     }, {passive:true});
 
     w.addEventListener('touchcancel', () => {
       track.classList.remove('is-dragging');
       dragging=false; locked=false; velSamples=[];
+      liveGen++; // invalida cualquier frame de arrastre pendiente
       this.goToPage(this.currentPage);
     }, {passive:true});
 
@@ -681,7 +724,7 @@ const app = {
         ms.samples.push(iv); if(ms.samples.length>VEL_SAMPLES) ms.samples.shift();
         ms.dist += Math.abs(e.clientX-ms.lx);
         ms.lx=e.clientX; ms.lt=Date.now();
-        setLive(e.clientX-ms.x);
+        setLiveRaf(e.clientX-ms.x);
       }
     });
     const endMouse = cx => {
@@ -690,6 +733,7 @@ const app = {
       const {x,drag,samples,dist} = ms; ms=null;
       if (!drag) return;
       const vel = samples.reduce((a,b)=>Math.abs(a)>Math.abs(b)?a:b, 0);
+      liveGen++; // invalida cualquier frame de arrastre pendiente
       snapTo(decide(originOffset + (cx-x), vel), vel);
     };
     w.addEventListener('mouseup',    e=>endMouse(e.clientX));
