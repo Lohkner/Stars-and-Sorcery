@@ -24,6 +24,40 @@ Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión rees
 - **Toasts uniformes**: ancho fijo `min(92vw, 340px)` para todos — antes cada botón producía un toast de tamaño distinto (min/max-width variables). Look moderno: superficie plana, borde hairline, radio 12 px, sombra suave (fuera el degradado y el triple box-shadow). Se mantiene la posición inferior sobre la navegación (estándar snackbar, zona del pulgar).
 - **Tarjeta de dados moderna y de tamaño constante**: ancho fijo `min(88vw, 340px)` — mide lo mismo con 1 dado que con 5 (verificado: 340 px en ambos). Fuera las esquinas art déco (`::before`/`::after`) y la línea decorativa al 60%; ahora borde hairline, radio 16 px y separador de ancho completo. Los halos de crítico/pifia y la posición en zona del pulgar (≤480 px) se conservan.
 
+### Acabado premium: púrpura profundo + grano dorado (v45.1)
+
+Tratamiento visual en las **tres zonas estándar de la industria** (superficie héroe, momento firma, CTA primario), con moderación deliberada:
+
+- **Grano** generado por SVG `feTurbulence` como data-URI (`--grain`, tile de 160px, opacidad 6% horneada) — cero peticiones, cero assets.
+- **Héroe del home**: bloom dorado radial desde el borde superior + velo púrpura profundo + grano. El **fondo personalizado del usuario (`--bg-home`) es la capa superior**: si existe lo cubre todo; al quitarlo, el premium reaparece (verificado en los tres estados).
+- **Tarjeta de dados**: bloom dorado superior + velo púrpura + grano **sobre `background-color: var(--panel)`**, así los temas alternativos solo se tiñen en vez de romperse.
+- **CTA primarios**: grano sobre el degradado dorado de "Nuevo Personaje" (el *gold grain* literal) y, sutil, en "Guardar".
+- Donde NO se aplicó, a propósito: paneles, encabezados, navegación — el grano en todas partes deja de ser premium y pasa a ser ruido.
+
+### Premium en la hoja, home fijo con reordenación y actualización a prueba de modales (v45.2)
+
+- **Golden grain en la hoja de personaje**: la tarjeta del retrato/identidad (`.panel-accent`) recibe el tratamiento héroe (bloom dorado + velo púrpura + grano); las **tarjetas de ataque** la versión sutil; y todos los paneles un velo púrpura al 5% que enriquece el tono **sin cambiar la paleta** (los colores base siguen siendo las variables del tema).
+- **Reordenar personajes en el home**: chevrons ▲▼ en cada tarjeta del roster (`app.moveChar`) — el roster es un objeto y el orden de inserción de claves es el orden mostrado, así que se reconstruye y persiste. Deshabilitados en los extremos, con `stopPropagation` para no abrir la ficha, y **el borrado por swipe queda intacto** (verificado).
+- **Home con estructura fija**: título, botones y pie anclados; **solo el roster se desplaza** (`.home-roster-body` con `flex:1` + `overflow-y:auto`), **sin scrollbars visibles** (`scrollbar-width:none` + `::-webkit-scrollbar`). En pantallas de menos de 560px de alto vuelve el scroll general como respaldo.
+- **El popup de actualización por fin funciona desde Ajustes**: la causa era que los toasts se renderizan **debajo del top-layer del `<dialog>`** — el aviso aparecía invisible e intocable detrás del modal (los tests sintéticos con `.click()` lo enmascaraban). `checkForUpdate` ahora cierra Ajustes antes de mostrar cualquier resultado. Además, al aceptar el aviso hay una **recarga de respaldo a los 1.6s** por si `controllerchange` no dispara en navegadores raros (también en el aviso de arranque de boot.js).
+- **Escudo anti-traspaso de toques** (`app._tapShield`): un velo invisible de 320ms absorbe el toque fantasma que sigue a abrir o cerrar cualquier capa — aplicado a los 12 puntos de apertura/cierre (Ajustes, Editor de Reglas, gestores de Aptitudes y Talentos, FAB de Ventaja, overlay de dados). Los `<dialog>` quedan por encima del escudo (top-layer), así que sus propios controles nunca se bloquean.
+- `CACHE_VERSION` sube a **v22**.
+
+### Reordenar por swipe, esquinas limpias y golden noise universal (v45.2)
+
+- **Reordenar por swipe a la derecha**: los chevrons in-card no se veían en móvil; ahora el panel de ordenar (▲▼, fondo `#1d1230`, chevrons dorados) **se revela deslizando la tarjeta a la derecha**, simétrico al borrado por swipe a la izquierda (que queda intacto). Gesto de tres estados con clamp bidireccional (−80px borrar · +80px ordenar), cierre al tocar fuera unificado (`card._conceal`) y pista actualizada: "desliza · → ordenar · ← eliminar". Verificado con gestos sintéticos: → abre y reordena persistiendo, ← sigue abriendo borrar.
+- **Fuera la sombra junto al título**: eliminados los tres artefactos difusos de esa zona — el halo elíptico de `.home-hdr::before`, la sombra negra dura del `text-shadow` del título (queda solo el glow dorado) y el radial púrpura de la esquina del tratamiento premium del home.
+- **Golden noise en todas las tarjetas** (`--grain-md`, 13%): base **`#140921`** con el grano desvaneciéndose de arriba a abajo (**mucho ruido → cero ruido**, cubierta opaca al 82%) y bloom dorado sutil en el borde superior. Aplica a `.panel`, `.char-card`, `.atk-card`, `.dice-card`, `.pillar-card`, `.sbox`, `.svsbox`, `.sc`, `.apt-card` y el marco del roster; el retrato (`.panel-accent`) lleva el bloom más presente, y las cajas de recursos conservan su **tinte funcional** (sangre/salvia/hielo) como velo superior. De paso se retiraron los selectores `.panel-estado` zombis de la pasada revertida.
+
+### Pulido de feedback visual — lote 8 (v45.2)
+
+- **Tinta de tarjetas**: `#140921` → **`#1f142b`** (`--card-ink` + los 10 velos de desvanecido).
+- **Cajón del roster en negro** (`#07060a`), fuera del tratamiento de grano — las tarjetas resaltan sobre él; **retratos del roster con elevación real** (sombra 5/16 + anillo dorado, también el placeholder); la **pista de swipe ahora es legible** (era `var(--border)`, casi invisible → `var(--dim)`).
+- **Botones de tirada con la superficie de las tarjetas de talento** (`--raised` + borde `--edge` + brillo interior): modificadores de los Seis Pilares, Tiradas de Salvación y los botones Atacar/Daño.
+- **Identidad de recursos**: hairline de color de 2px en la parte superior de cada caja (sangre/salvia/hielo/cobre); **Carne asciende a caja de recurso completa** (`.res-box-carne`: tinte cobre + grano + borde propio + **barra de fracción** conectada a `_updateResBars` y al tecleo directo).
+- **Sombras del título restauradas y mejoradas** (grounding nítido 1px + profundidad 6/18 + glow dorado en dos radios). La "gradiente negra" de la esquina señalada en la captura era el **borde del bloom dorado central** (las esquinas quedaban fuera y se veían como manchas oscuras): el bloom pasa de 120% a **220% de ancho** y cubre uniformemente.
+- **Feedback del botón Buscar actualización**: estado `:active` con flash dorado + escala; el modal de Ajustes se cierra al lanzarlo (ya desde v45.2) y el toast de progreso queda visible.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:

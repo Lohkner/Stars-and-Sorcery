@@ -288,16 +288,10 @@ body{
 /* ── Header (title + deco unchanged) ── */
 .home-hdr{text-align:center;padding:clamp(36px,8vw,64px) 24px 24px;position:relative}
 /* Atmospheric glow behind title */
-.home-hdr::before{
-  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:320px;height:160px;border-radius:50%;
-  background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(200,169,110,.07) 0%,transparent 70%);
-  pointer-events:none;
-}
 .home-title{
   font-family:var(--ft);font-size:clamp(1.5rem,5.5vw,2.8rem);
   color:var(--gold);letter-spacing:.14em;line-height:1.15;
-  text-shadow:0 0 60px rgba(200,169,110,.5),0 0 120px rgba(200,169,110,.12),0 2px 6px rgba(0,0,0,.95);
+  text-shadow:0 1px 2px rgba(0,0,0,.85),0 6px 18px rgba(0,0,0,.55),0 0 46px rgba(200,169,110,.45),0 0 110px rgba(200,169,110,.14);
 }
 .home-sub{
   font-family:var(--fd);font-size:var(--fs-xs);
@@ -2617,12 +2611,11 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 #home-screen{
   background-image:
     var(--bg-home,none),
-    radial-gradient(120% 55% at 50% -8%, rgba(200,169,110,.10), transparent 60%),
+    radial-gradient(220% 62% at 50% -10%, rgba(200,169,110,.09), transparent 68%),
     var(--grain),
-    radial-gradient(90% 60% at 110% 108%, rgba(108,74,182,.12), transparent 62%),
     linear-gradient(180deg, rgba(40,26,70,.50) 0%, rgba(18,12,34,.22) 42%, rgba(0,0,0,0) 78%);
-  background-size:cover, auto, 160px 160px, auto, auto;
-  background-position:center top, center, 0 0, center, center;
+  background-size:cover, auto, 160px 160px, auto;
+  background-position:center top, center, 0 0, center;
 }
 
 /* 2 · Momento firma: la tarjeta de dados sobre púrpura profundo con
@@ -2690,17 +2683,120 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 @media (max-height:560px){#home-screen{overflow-y:auto;display:block}}
 
 /* ── Reordenar personajes en el roster ── */
-.char-order{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+/* Panel de reordenar: se revela con swipe a la DERECHA (borrar = izquierda) */
+.char-card-order{
+  position:absolute;left:0;top:0;bottom:0;width:80px;
+  display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:5px;
+  padding:7px;background:#1d1230;
+  transform:translateX(-100%);
+}
 .char-ord-btn{
-  width:34px;height:33px;display:flex;align-items:center;justify-content:center;
-  background:rgba(61,50,84,.15);border:1px solid var(--edge);border-radius:var(--r);
-  color:var(--muted);cursor:pointer;padding:0;
+  flex:1;display:flex;align-items:center;justify-content:center;
+  background:rgba(200,169,110,.06);border:1px solid var(--edge-gold);border-radius:var(--r);
+  color:var(--goldb);cursor:pointer;padding:0;min-height:0;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;
   transition:color .15s,border-color .15s,background .15s;
 }
-.char-ord-btn:active{color:var(--gold);border-color:var(--edge-gold);background:rgba(200,169,110,.08);transform:scale(.92)}
+.char-ord-btn:active{background:rgba(200,169,110,.16);transform:scale(.95)}
 .char-ord-btn:disabled{opacity:.22;pointer-events:none}
-.char-ord-btn svg{width:14px;height:14px}
+.char-ord-btn svg{width:16px;height:16px}
 
 /* ── Escudo anti-traspaso de toques (se autodestruye en ~320ms) ── */
 .tap-shield{position:fixed;inset:0;z-index:6000;background:transparent}
+
+/* ══════════════════════════════════════════
+   REVAMP v45 — Golden noise en todas las tarjetas
+   Base #1f142b; el grano (más intenso, 13%) se desvanece de arriba
+   hacia abajo: mucho ruido → cero ruido, con bloom dorado sutil.
+══════════════════════════════════════════ */
+:root{
+  --grain-md: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E");
+  --card-ink: #1f142b;
+}
+.panel,.char-card,.atk-card,.dice-card,.pillar-card,.sbox,.svsbox,
+.sc,.sc-clickable,.apt-card{
+  background-color:var(--card-ink);
+  background-image:
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 55%, var(--card-ink) 82%),
+    var(--grain-md),
+    radial-gradient(130% 55% at 50% -5%, rgba(200,169,110,.07), transparent 55%);
+  background-size:auto, 160px 160px, auto;
+}
+/* Héroe de la hoja (retrato/identidad): bloom dorado más presente */
+.panel-accent{
+  background-image:
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.88) 58%, var(--card-ink) 85%),
+    var(--grain-md),
+    radial-gradient(130% 65% at 50% -6%, rgba(200,169,110,.12), transparent 55%);
+  background-size:auto, 160px 160px, auto;
+}
+/* Recursos: el tinte funcional (sangre/salvia/hielo) como velo superior */
+.res-box{background-color:var(--card-ink)}
+.res-box-pv{
+  background-image:
+    linear-gradient(rgba(130,25,45,.15), rgba(130,25,45,.15)),
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
+    var(--grain-md);
+  background-size:auto, auto, 160px 160px;
+}
+.res-box-adr{
+  background-image:
+    linear-gradient(rgba(63,160,108,.12), rgba(63,160,108,.12)),
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
+    var(--grain-md);
+  background-size:auto, auto, 160px 160px;
+}
+.res-box-ing{
+  background-image:
+    linear-gradient(rgba(61,143,194,.12), rgba(61,143,194,.12)),
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
+    var(--grain-md);
+  background-size:auto, auto, 160px 160px;
+}
+
+/* ══════════════════════════════════════════
+   REVAMP v45 — Ajustes de feedback visual (lote 8)
+══════════════════════════════════════════ */
+/* 1 · Cajón del roster: negro sólido */
+.home-roster-wrap{background:#07060a}
+
+/* 2 · Retrato del roster: elevación real (también el placeholder) */
+.char-port,.char-port-ph{box-shadow:0 5px 16px rgba(0,0,0,.8),0 0 0 1px rgba(200,169,110,.16)}
+
+/* 3 · La pista de swipe era ilegible (color var(--border)) */
+.home-roster-hint{color:var(--dim)}
+
+/* 4 · Botones de tirada con la superficie de las tarjetas de talento
+       (.dc: raised + edge + brillo interior) — pilares, salvaciones,
+       Atacar y Daño */
+.pillar-mod{background:var(--raised)}
+.svsbox{background:var(--raised);border-color:var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.atk-btns{background:var(--raised);border-color:var(--edge)}
+.abtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+
+/* 5 · Identidad de los recursos: hairline de color arriba + etiqueta */
+.res-box{position:relative;overflow:hidden}
+.res-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.8}
+.res-box-pv::before{background:linear-gradient(90deg,var(--blood),transparent 75%)}
+.res-box-adr::before{background:linear-gradient(90deg,var(--sage),transparent 75%)}
+.res-box-ing::before{background:linear-gradient(90deg,var(--ice),transparent 75%)}
+.res-box-carne::before{background:linear-gradient(90deg,#a0683a,transparent 75%)}
+.res-box-carne{
+  border:1px solid rgba(160,104,58,.32);
+  box-shadow:inset 0 1px 0 rgba(160,104,58,.1),0 0 12px rgba(120,70,40,.1);
+  background-color:var(--card-ink);
+  background-image:
+    linear-gradient(rgba(160,104,58,.12), rgba(160,104,58,.12)),
+    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
+    var(--grain-md);
+  background-size:auto, auto, 160px 160px;
+}
+.res-lbl-carne{color:#c08a52}
+.res-fill-carne{background:#a0683a}
+
+/* 7 · Feedback del botón Buscar actualización */
+[data-action="checkForUpdate"]:active{
+  background:rgba(200,169,110,.18)!important;
+  border-color:var(--gold)!important;color:var(--goldb)!important;
+  transform:scale(.95);
+}

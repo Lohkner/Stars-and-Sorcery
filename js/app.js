@@ -63,7 +63,7 @@ const app = {
       if (el.tagName === 'INPUT' && (el.type === 'number' || el.getAttribute('inputmode') === 'numeric')) el.blur();
     });
     // Las barras de Estado también reaccionan al tecleo directo en los recursos
-    ['cur_pv', 'cur_adr', 'cur_ing'].forEach(id => {
+    ['cur_pv', 'cur_adr', 'cur_ing', 'cur_carne'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', () => this._updateResBars());
     });
@@ -218,6 +218,34 @@ const app = {
   },
 
   /** Renders the saved-character roster on the home screen. */
+  /** Mueve un personaje una posición arriba/abajo en el roster.
+      El roster es un objeto: el orden de inserción de claves ES el orden. */
+  moveChar(name, dir) {
+    const roster = STORAGE.loadRoster();
+    const keys = Object.keys(roster);
+    const i = keys.indexOf(name);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= keys.length) return;
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+    const reordered = {};
+    keys.forEach(k => { reordered[k] = roster[k]; });
+    STORAGE.saveRoster(reordered);
+    if (navigator.vibrate) navigator.vibrate(6);
+    this.renderHome();
+  },
+
+  /** Escudo anti-traspaso: absorbe el toque fantasma que sigue a abrir o
+      cerrar una capa (modal, panel, FAB). Invisible y se autodestruye. */
+  _tapShield(ms = 320) {
+    const s = document.createElement('div');
+    s.className = 'tap-shield';
+    const kill = e => { e.stopPropagation(); e.preventDefault(); };
+    ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(t =>
+      s.addEventListener(t, kill, { capture: true, passive: false }));
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), ms);
+  },
+
   renderHome() {
     const el = document.getElementById('home-roster');
 
@@ -286,18 +314,38 @@ const app = {
       el.appendChild(wrap);
 
       // ── Helpers ───────────────────────────────────────────────────
+      // ── Panel de reordenar (se revela con swipe a la DERECHA) ──────
+      const ORD_W = 80; // must match .char-card-order width
+      const ordPanel = document.createElement('div');
+      ordPanel.className = 'char-card-order';
+      [[-1, 'Subir', 'M6 15l6-6 6 6'], [1, 'Bajar', 'M6 9l6 6 6-6']].forEach(([dir, lbl]) => {
+        const b = document.createElement('button');
+        b.className = 'char-ord-btn';
+        b.type = 'button';
+        b.setAttribute('aria-label', `${lbl} a ${name}`);
+        b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir < 0 ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'}"/></svg>`;
+        b.disabled = (dir < 0 && i === 0) || (dir > 0 && i === keys.length - 1);
+        b.addEventListener('pointerup', ev => ev.stopPropagation());
+        b.addEventListener('click', ev => { ev.stopPropagation(); this.moveChar(name, dir); });
+        ordPanel.appendChild(b);
+      });
+      wrap.appendChild(ordPanel);
+
       const setPos = (x, animated) => {
         const t = animated ? SNAP : 'none';
-        card.style.transition   = t;
-        delBtn.style.transition = t;
-        card.style.transform    = `translateX(${x}px)`;
-        // delBtn slides in from the right: at x=0 it's at 100%, at x=-BTN_W it's at 0%
-        const pct = 100 + (x / BTN_W) * 100;
-        delBtn.style.transform  = `translateX(${pct}%)`;
+        card.style.transition     = t;
+        delBtn.style.transition   = t;
+        ordPanel.style.transition = t;
+        card.style.transform      = `translateX(${x}px)`;
+        // delBtn entra desde la derecha (x<0); el panel de orden desde la izquierda (x>0)
+        delBtn.style.transform    = `translateX(${100 + (Math.min(x, 0) / BTN_W) * 100}%)`;
+        ordPanel.style.transform  = `translateX(${-100 + (Math.max(x, 0) / ORD_W) * 100}%)`;
       };
 
-      const reveal  = () => { setPos(-BTN_W, true); card._swiped = true;  };
-      const conceal = () => { setPos(0,       true); card._swiped = false; };
+      const reveal  = () => { setPos(-BTN_W, true); card._swiped = true;  card._swipedR = false; };
+      const revealR = () => { setPos(ORD_W,  true); card._swipedR = true; card._swiped  = false; };
+      const conceal = () => { setPos(0,       true); card._swiped = false; card._swipedR = false; };
+      card._conceal = conceal;
 
       // ── Swipe gesture ─────────────────────────────────────────────
       let startX = 0, startY = 0, curX = 0;
@@ -326,10 +374,10 @@ const app = {
         e.preventDefault();
         curX = t.clientX;
 
-        // Clamp: open up to BTN_W, close at 0
-        const base = card._swiped ? -BTN_W : 0;
+        // Clamp bidireccional: borrar hasta -BTN_W · ordenar hasta +ORD_W
+        const base = card._swiped ? -BTN_W : card._swipedR ? ORD_W : 0;
         const raw  = base + (curX - startX);
-        const clamped = Math.max(-BTN_W, Math.min(0, raw));
+        const clamped = Math.max(-BTN_W, Math.min(ORD_W, raw));
         setPos(clamped, false);
       }, {passive:false});
 
@@ -337,11 +385,16 @@ const app = {
         if (!axisLocked || !isHoriz) return;
         const delta = curX - startX;
         if (card._swiped) {
-          // Was open: close if swiped right enough
+          // Borrado abierto: cerrar si desliza a la derecha lo bastante
           delta > 20 ? conceal() : reveal();
+        } else if (card._swipedR) {
+          // Orden abierto: cerrar si desliza a la izquierda lo bastante
+          delta < -20 ? conceal() : revealR();
         } else {
-          // Was closed: open if swiped left enough
-          delta < -30 ? reveal() : conceal();
+          // Cerrado: ← abre borrar · → abre ordenar
+          if (delta < -30) reveal();
+          else if (delta > 30) revealR();
+          else conceal();
         }
       }, {passive:true});
 
@@ -354,23 +407,16 @@ const app = {
 
       // ── Open char ─────────────────────────────────────────────────
       card.addEventListener('click', (e) => {
-        if (card._swiped) { conceal(); return; }
+        if (card._swiped || card._swipedR) { conceal(); return; }
         this.loadCharToApp(name);
       });
     });
 
-    // Close any open card when touching outside it
+    // Close any open card (borrar u ordenar) when touching outside it
     el._swipeCloseHandler = (e) => {
       el.querySelectorAll('.char-card').forEach(c => {
-        if (!c._swiped) return;
-        if (!c.closest('.char-card-wrap').contains(e.target)) {
-          const btn = c.closest('.char-card-wrap').querySelector('.char-card-delete');
-          c.style.transition   = SNAP;
-          if (btn) btn.style.transition = SNAP;
-          c.style.transform    = 'translateX(0)';
-          if (btn) btn.style.transform  = 'translateX(100%)';
-          c._swiped = false;
-        }
+        if (!c._swiped && !c._swipedR) return;
+        if (!c.closest('.char-card-wrap').contains(e.target) && c._conceal) c._conceal();
       });
     };
     document.addEventListener('touchstart', el._swipeCloseHandler, {passive:true});
@@ -1785,6 +1831,7 @@ const app = {
 
   /** Despliega/colapsa el menú flotante de Ventaja/Desventaja. */
   toggleAdvFab() {
+    this._tapShield();  // anti-traspaso de toques
     const fab = document.getElementById('adv_fab');
     if (!fab) return;
     const open = fab.classList.toggle('open');
@@ -1797,6 +1844,7 @@ const app = {
   },
 
   _closeAdvFab() {
+    this._tapShield();  // anti-traspaso de toques
     const fab = document.getElementById('adv_fab');
     if (fab) fab.classList.remove('open');
     document.getElementById('adv_fab_main')?.setAttribute('aria-expanded', 'false');
@@ -1993,6 +2041,7 @@ const app = {
    * @param {string}   opts.totalLabel
    */
   showDiceRoll({label, die, finalFaces, finalFace, isCrit, isFail, detail, total, totalLabel}) {
+    this._tapShield();  // anti-traspaso de toques
     // Normalise: support both old finalFace (single) and new finalFaces (array)
     const faces = finalFaces ?? [finalFace ?? 1];
     const numDice = faces.length;
@@ -2088,6 +2137,7 @@ const app = {
   },
 
   closeDiceOverlay() {
+    this._tapShield();  // anti-traspaso de toques
     const overlay = document.getElementById('dice-overlay');
     if (!overlay.classList.contains('active')) return;
     overlay.classList.add('closing');
@@ -2122,6 +2172,7 @@ const app = {
       ['res_fill_pv',  'cur_pv',  'max_pv'],
       ['res_fill_adr', 'cur_adr', 'max_adr'],
       ['res_fill_ing', 'cur_ing', 'max_ing'],
+      ['res_fill_carne', 'cur_carne', 'res_carne'],
     ];
     pairs.forEach(([fillId, curId, maxId]) => {
       const fill = document.getElementById(fillId);
@@ -2297,6 +2348,7 @@ const app = {
   },
 
   openTalentManager() {
+    this._tapShield();  // anti-traspaso de toques
     if (!this.DB.talents) return;
     this._talentModalOpener = document.activeElement;
     const panel = document.getElementById('talent_panel');
@@ -2324,6 +2376,7 @@ const app = {
   },
 
   closeTalentManager() {
+    this._tapShield();  // anti-traspaso de toques
     const panel = document.getElementById('talent_panel');
     panel.style.transform = '';
     panel.style.opacity   = '';
@@ -3015,6 +3068,7 @@ const app = {
   },
 
   openAptManager(sec) {
+    this._tapShield();  // anti-traspaso de toques
     this._aptMode = sec;
     this._modalOpener = document.activeElement;
     const panel   = document.getElementById('apt_panel');
@@ -3157,6 +3211,7 @@ const app = {
   },
 
   closeAptManager() {
+    this._tapShield();  // anti-traspaso de toques
     const panel = document.getElementById('apt_panel');
     panel.style.transform = '';
     panel.style.opacity   = '';
@@ -3169,6 +3224,7 @@ const app = {
   },
 
   openDatabaseEditor() {
+    this._tapShield();  // anti-traspaso de toques
     const sm = document.getElementById('settings_modal');
     if (sm.open) sm.close();
     const panel = document.getElementById('db_panel');
@@ -3179,6 +3235,7 @@ const app = {
   },
 
   closeDatabaseEditor() {
+    this._tapShield();  // anti-traspaso de toques
     const panel = document.getElementById('db_panel');
     panel.style.transform = '';
     panel.style.opacity   = '';
@@ -4650,6 +4707,9 @@ const app = {
       nuevo (instalándose o ya en espera), ofrece activarlo con el mismo
       aviso persistente del arranque. */
   async checkForUpdate() {
+    // Los toasts se renderizan DEBAJO del top-layer del <dialog> de Ajustes:
+    // con el modal abierto serían invisibles e intocables. Cerrarlo primero.
+    this.closeSettings();
     if (!('serviceWorker' in navigator)) {
       this.toast('Este navegador no soporta actualizaciones automáticas', 'err');
       return;
@@ -4677,6 +4737,9 @@ const app = {
     if (reg.waiting) {
       this.toast('Nueva versión lista — toca para actualizar', 'info', () => {
         reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Respaldo: si controllerchange no dispara la recarga (navegadores
+        // con comportamientos raros), forzarla pasado un margen.
+        setTimeout(() => location.reload(), 1600);
       }, { sticky: true });
     } else {
       this.toast('Ya tienes la última versión', 'ok');
@@ -4684,6 +4747,7 @@ const app = {
   },
 
   openSettings() {
+    this._tapShield();  // anti-traspaso de toques
     // Ámbito por defecto contextual en cada apertura: con personaje abierto
     // (y prefs individuales activas) → "Este personaje"; si no → "Global".
     this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
@@ -4710,6 +4774,7 @@ const app = {
 
   /** Cierra Ajustes con escudo: el toque de cierre no traspasa a la hoja. */
   closeSettings() {
+    this._tapShield();  // anti-traspaso de toques
     if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
     this._closeSettingsDlg();
   },

@@ -197,7 +197,7 @@
     <div class="home-roster-wrap">
       <div class="home-roster-hdr">
         <span class="home-roster-title">Personajes</span>
-        <span class="home-roster-hint">← desliza para eliminar</span>
+        <span class="home-roster-hint">desliza · → ordenar · ← eliminar</span>
       </div>
       <div class="home-roster-body">
         <div id="home-roster"></div>
@@ -369,14 +369,15 @@
             </div>
             <!-- Stats secundarios row 2 -->
             <div class="g3c mb5">
-              <div class="sc" style="padding:4px 3px">
-                <div class="sc-lbl" style="color:#a0683a">Carne</div>
+              <div class="res-box res-box-carne" style="padding:4px 3px">
+                <div class="res-lbl res-lbl-carne">Carne</div>
                 <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--fm);font-weight:600;font-size:var(--fs-2xl);">
                   <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="-1" onclick="app.adjustRes('cur_carne','res_carne',-1)" aria-label="Reducir daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
                   <input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="color:var(--bright);width:5ch;max-width:5ch;text-align:center;font-size:var(--fs-2xl)">
                   <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="1" onclick="app.adjustRes('cur_carne','res_carne',1)" aria-label="Aumentar daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
                 </div>
                 <div style="font-family:var(--fm);font-size:var(--fs-xs);color:rgba(160,104,58,.8);margin-top:1px">/ <span id="res_carne">0</span></div>
+                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
               </div>
               <div class="sc">
                 <div class="sc-lbl" style="color:var(--gold)">Comp</div>

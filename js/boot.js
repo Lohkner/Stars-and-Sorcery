@@ -33,6 +33,8 @@
           try {
             app.toast('Nueva versión disponible — toca para actualizar', 'info', () => {
               worker.postMessage && worker.postMessage({ type: 'SKIP_WAITING' });
+              // Respaldo por si controllerchange no recarga
+              setTimeout(() => location.reload(), 1600);
             }, { sticky: true });
           } catch(e) { /* toast may not support action; ignore */ }
         };
