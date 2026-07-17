@@ -58,6 +58,13 @@ Tratamiento visual en las **tres zonas estándar de la industria** (superficie h
 - **Sombras del título restauradas y mejoradas** (grounding nítido 1px + profundidad 6/18 + glow dorado en dos radios). La "gradiente negra" de la esquina señalada en la captura era el **borde del bloom dorado central** (las esquinas quedaban fuera y se veían como manchas oscuras): el bloom pasa de 120% a **220% de ancho** y cubre uniformemente.
 - **Feedback del botón Buscar actualización**: estado `:active` con flash dorado + escala; el modal de Ajustes se cierra al lanzarlo (ya desde v45.2) y el toast de progreso queda visible.
 
+### Estado limpio, tinta espacial y swipe sin lag (v45.2)
+
+- **Sin grano en los recuadros internos de Estado** (PV/Adrenalina/Ingenio/Carne/CA/Ini/Vel/Comp/Filo): vuelven a superficie limpia `var(--raised)` conservando su tinte de color e identidad (hairlines y barras); el grano queda en la tarjeta contenedora. Los **pilares en modo lectura** (`.sbox` FUE…CAR) adoptan exactamente la superficie de las Tiradas de Salvación (verificado: mismos valores computados).
+- **Tinta de tarjetas**: `#1f142b` → **`#1d1426`** (tono oscuro espacial), manteniendo el grano dorado con su degradado mucho→cero.
+- **Lag del swipe eliminado**: el encabezado de la hoja (`blur 24px`) y la navegación inferior (`blur 20px`) tienen `backdrop-filter` y viven **encima de la pista que se desliza** — el navegador re-difuminaba ambos en cada frame del gesto. Fuera de la cromo fija (sus fondos casi opacos compensan subiendo la opacidad); los blurs de capas transitorias (diálogos, dados, toasts) se conservan. También se retiró el del cajón del roster (ya es negro sólido).
+- **Entrada del roster perceptible de nuevo**: la animación de las tarjetas sube de .22s a **.38s** con curva con rebote suave y ahora entra desde abajo (`translateY(14px) + scale(.97)`), con el stagger de 50ms por tarjeta.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:

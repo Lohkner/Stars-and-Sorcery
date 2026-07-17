@@ -350,7 +350,7 @@ body{
   background:linear-gradient(180deg,rgba(7,5,12,.7) 0%,rgba(5,4,10,.75) 100%);
   border:1px solid var(--edge);
   border-radius:var(--rl);overflow:hidden;
-  backdrop-filter:blur(16px);
+  
   box-shadow:0 4px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.02);
 }
 .home-roster-hdr{
@@ -393,7 +393,7 @@ body{
 }
 .char-card-wrap{
   position:relative;border-radius:var(--r);margin-bottom:5px;
-  animation:cardSlideIn .22s cubic-bezier(.22,.61,.36,1) forwards;opacity:0;
+  animation:cardSlideIn .38s cubic-bezier(.21,1.02,.73,1) forwards;opacity:0;
   /* overflow:hidden clips the delete button during swipe */
   overflow:hidden;
 }
@@ -476,7 +476,7 @@ body{
 .home-settings-btn:active{transform:scale(.97)}
 
 @keyframes cardSlideIn{
-  from{opacity:0;transform:translateX(-10px) scale(.985)}
+  from{opacity:0;transform:translateY(14px) scale(.97)}
   to  {opacity:1;transform:none}
 }
 
@@ -493,8 +493,8 @@ body{
   display:flex;align-items:center;gap:10px;
   border-bottom:1px solid var(--edge);
   z-index:10;
-  backdrop-filter:blur(24px);
-  background:linear-gradient(180deg,rgba(5,4,10,.97) 0%,rgba(10,8,16,.92) 100%);
+  /* sin backdrop-filter: se re-difuminaba en cada frame del swipe (lag) */
+  background:linear-gradient(180deg,rgba(5,4,10,.985) 0%,rgba(10,8,16,.96) 100%);
   box-shadow:0 1px 0 rgba(200,169,110,.04),0 4px 24px rgba(0,0,0,.5);
   position:relative;
 }
@@ -626,7 +626,7 @@ body{
   background:linear-gradient(0deg,rgba(5,4,10,.98) 0%,rgba(10,8,16,.96) 60%,transparent 100%);
   border-top:1px solid var(--edge);
   display:flex;flex-shrink:0;z-index:10;
-  backdrop-filter:blur(20px);
+  
   box-shadow:0 -1px 0 rgba(200,169,110,.03),0 -12px 40px rgba(0,0,0,.4);
   position:relative;
 }
@@ -2706,18 +2706,17 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 
 /* ══════════════════════════════════════════
    REVAMP v45 — Golden noise en todas las tarjetas
-   Base #1f142b; el grano (más intenso, 13%) se desvanece de arriba
+   Base #1d1426; el grano (más intenso, 13%) se desvanece de arriba
    hacia abajo: mucho ruido → cero ruido, con bloom dorado sutil.
 ══════════════════════════════════════════ */
 :root{
   --grain-md: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E");
-  --card-ink: #1f142b;
+  --card-ink: #1d1426;
 }
-.panel,.char-card,.atk-card,.dice-card,.pillar-card,.sbox,.svsbox,
-.sc,.sc-clickable,.apt-card{
+.panel,.char-card,.atk-card,.dice-card,.pillar-card,.apt-card{
   background-color:var(--card-ink);
   background-image:
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 55%, var(--card-ink) 82%),
+    linear-gradient(180deg, rgba(29,20,38,0) 0%, rgba(29,20,38,.9) 55%, var(--card-ink) 82%),
     var(--grain-md),
     radial-gradient(130% 55% at 50% -5%, rgba(200,169,110,.07), transparent 55%);
   background-size:auto, 160px 160px, auto;
@@ -2725,33 +2724,24 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* Héroe de la hoja (retrato/identidad): bloom dorado más presente */
 .panel-accent{
   background-image:
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.88) 58%, var(--card-ink) 85%),
+    linear-gradient(180deg, rgba(29,20,38,0) 0%, rgba(29,20,38,.88) 58%, var(--card-ink) 85%),
     var(--grain-md),
     radial-gradient(130% 65% at 50% -6%, rgba(200,169,110,.12), transparent 55%);
   background-size:auto, 160px 160px, auto;
 }
 /* Recursos: el tinte funcional (sangre/salvia/hielo) como velo superior */
-.res-box{background-color:var(--card-ink)}
+.res-box{background-color:var(--raised)}
 .res-box-pv{
-  background-image:
-    linear-gradient(rgba(130,25,45,.15), rgba(130,25,45,.15)),
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
-    var(--grain-md);
-  background-size:auto, auto, 160px 160px;
+  background-image:linear-gradient(rgba(130,25,45,.15), rgba(130,25,45,.15));
+  background-size:auto;
 }
 .res-box-adr{
-  background-image:
-    linear-gradient(rgba(63,160,108,.12), rgba(63,160,108,.12)),
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
-    var(--grain-md);
-  background-size:auto, auto, 160px 160px;
+  background-image:linear-gradient(rgba(63,160,108,.12), rgba(63,160,108,.12));
+  background-size:auto;
 }
 .res-box-ing{
-  background-image:
-    linear-gradient(rgba(61,143,194,.12), rgba(61,143,194,.12)),
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
-    var(--grain-md);
-  background-size:auto, auto, 160px 160px;
+  background-image:linear-gradient(rgba(61,143,194,.12), rgba(61,143,194,.12));
+  background-size:auto;
 }
 
 /* ══════════════════════════════════════════
@@ -2784,12 +2774,9 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .res-box-carne{
   border:1px solid rgba(160,104,58,.32);
   box-shadow:inset 0 1px 0 rgba(160,104,58,.1),0 0 12px rgba(120,70,40,.1);
-  background-color:var(--card-ink);
-  background-image:
-    linear-gradient(rgba(160,104,58,.12), rgba(160,104,58,.12)),
-    linear-gradient(180deg, rgba(31,20,43,0) 0%, rgba(31,20,43,.9) 60%, var(--card-ink) 85%),
-    var(--grain-md);
-  background-size:auto, auto, 160px 160px;
+  background-color:var(--raised);
+  background-image:linear-gradient(rgba(160,104,58,.12), rgba(160,104,58,.12));
+  background-size:auto;
 }
 .res-lbl-carne{color:#c08a52}
 .res-fill-carne{background:#a0683a}
@@ -2800,3 +2787,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   border-color:var(--gold)!important;color:var(--goldb)!important;
   transform:scale(.95);
 }
+
+/* Pilares en modo lectura: misma superficie que las Tiradas de Salvación */
+.sbox{background:var(--raised);border-color:var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+/* Recuadros internos de Estado: superficie limpia, sin grano */
+.sc,.sc-clickable{background:var(--raised)}
