@@ -82,6 +82,12 @@ Tratamiento visual en las **tres zonas estándar de la industria** (superficie h
 - **Swipe menos "torpe"**: (1) fuera la capa rAF del lote anterior — Chrome ya alinea `touchmove` al refresco, el doble buffer solo añadía un frame de latencia; (2) `V_BIAS` 2.2 → **1.5**: el bloqueo de eje exigía un gesto casi perfectamente horizontal, ahora acepta diagonales amables; (3) `DEAD_PX` 8 → 6; (4) `getComputedStyle` en `touchstart` forzaba un reflow que congelaba el primer frame del gesto — ahora solo se lee el transform si hay un snap en vuelo (`_snapUntil`).
 - **Actualizaciones por fin fiables — causa raíz**: el navegador solo detecta una actualización **si `sw.js` cambia en bytes**; al reutilizar la misma `CACHE_VERSION` entre despliegues, la app quedaba congelada (de ahí tener que borrar caché a mano). Ahora: **regla escrita en sw.js de subir versión en CADA despliegue** (→ `v23`), registro con `updateViaCache:'none'` (el fetch de sw.js nunca pasa por caché HTTP), y re-chequeo al volver a la app (`visibilitychange`) y cada 30 min además del arranque.
 
+### Medallas de oro metálico y home al tono de la hoja (v46 → `v24`)
+
+- **Medallas de Identidad y Origen en modo lectura** (Descriptor · Arquetipo · Origen): borde de **oro metálico en degradado** con la técnica de doble capa (`padding-box` opaco bajo un `border-box` dorado que gira de `#e8cd90` a `#8a6b35`), brillo interior, sombra de elevación y `text-shadow` de grounding — el filo se ve como metal pulido, no como una línea translúcida.
+- **Home al mismo tono oscuro que la hoja de personaje** (`--void` plano), conservando la iluminación del título (bloom dorado + glow), el campo de estrellas y **la línea degradada horizontal intacta**.
+- `CACHE_VERSION` → **v24** (regla: sube en cada publicación).
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:
