@@ -689,7 +689,7 @@ body{
 .ph{
   display:flex;align-items:center;gap:8px;
   margin-bottom:12px;padding-bottom:10px;
-  border-bottom:1px solid var(--edge);
+  position:relative;
 }
 .pt{
   font-family:var(--fd);font-size:var(--fs-md);font-weight:600;
@@ -2728,3 +2728,71 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .sbox{background:var(--raised);border-color:var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 /* Recuadros internos de Estado: superficie limpia, sin grano */
 .sc,.sc-clickable{background:var(--raised)}
+
+/* ══════════════════════════════════════════
+   REVAMP v46 — Sistema de oro de joyería + jerarquía + microfeedback
+══════════════════════════════════════════ */
+:root{
+  /* El metal de las medallas, como token reutilizable */
+  --oro-metal: linear-gradient(140deg, #e8cd90 0%, #c9a96f 38%, #8a6b35 62%, #e0c27e 100%);
+}
+
+/* P1 · Oro de joyería en los sellos importantes */
+.port-card{
+  border:1.5px solid transparent;
+  background:linear-gradient(#0a0810,#0a0810) padding-box, var(--oro-metal) border-box;
+}
+.char-lvl-badge{
+  border:1px solid transparent;
+  background:linear-gradient(180deg,#261f15,#171309) padding-box, var(--oro-metal) border-box;
+  color:#e0c27e;
+}
+.dice-badge.crit{
+  border:1px solid transparent;
+  background:linear-gradient(180deg,#2a2113,#1a1409) padding-box, var(--oro-metal) border-box;
+  color:var(--goldb);
+  animation:badgePulse 1.6s ease-in-out infinite;
+}
+@keyframes badgePulse{50%{box-shadow:0 0 16px rgba(224,194,126,.4)}}
+@media(prefers-reduced-motion:reduce){.dice-badge.crit{animation:none}}
+
+/* P2 · Encabezados de sección: rombo dorado + regla que se desvanece */
+.pt::before{content:'◆';color:var(--gold);font-size:.62em;margin-right:7px;vertical-align:.18em;opacity:.85}
+.ph::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg, rgba(200,169,110,.4), rgba(61,50,84,.35) 45%, transparent 88%);
+}
+
+/* P3 · Estados vacíos con voz */
+.empty-state{text-align:center;padding:14px 10px 12px}
+.empty-state .es-rune{display:block;color:var(--gold);opacity:.4;font-size:1rem;margin-bottom:5px}
+.empty-state .es-line{font-family:var(--fm);font-size:var(--fs-md);color:var(--dim)}
+.empty-state .es-hint{font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-top:3px}
+
+/* P4 · Hilo de oro en la navegación (transform puro: coste cero) */
+.bnav{position:relative}
+.nav-thread{
+  position:absolute;top:-1px;left:0;width:20%;height:2px;border-radius:1px;
+  background:linear-gradient(90deg, rgba(138,107,53,0), #e8cd90 30%, #c9a96f 70%, rgba(138,107,53,0));
+  transition:transform .28s cubic-bezier(.22,.61,.36,1);
+  pointer-events:none;
+}
+@media(prefers-reduced-motion:reduce){.nav-thread{transition:none}}
+
+/* P5 · El total del dado habla con la voz ceremonial de la app */
+.dice-total{font-family:var(--ft);font-size:1.75rem;letter-spacing:.04em}
+
+/* P6 · Ceremonia breve al confirmar una sección */
+.sum-reveal{animation:sumReveal .26s cubic-bezier(.21,1.02,.73,1)}
+@keyframes sumReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.sum-reveal{animation:none}}
+
+/* Golden noise sutil: PNG pre-rasterizado (JS), dorado, media ~4%,
+   desvaneciéndose a cero en el 40% superior de la tarjeta. */
+.panel::before,.dice-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:var(--gnoise,none) repeat;background-size:160px 160px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 40%);
+  mask-image:linear-gradient(180deg,#000 0%,transparent 40%);
+  pointer-events:none;
+}

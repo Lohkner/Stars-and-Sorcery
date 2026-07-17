@@ -32,7 +32,10 @@
         const show = () => {
           try {
             app.toast('Nueva versión disponible — toca para actualizar', 'info', () => {
-              worker.postMessage && worker.postMessage({ type: 'SKIP_WAITING' });
+              // Si se apilaron varias actualizaciones, el waiting VIGENTE puede
+              // ser más nuevo que el worker capturado al mostrar el aviso.
+              const target = reg.waiting || worker;
+              target.postMessage && target.postMessage({ type: 'SKIP_WAITING' });
               // Respaldo por si controllerchange no recarga
               setTimeout(() => location.reload(), 1600);
             }, { sticky: true });

@@ -85,6 +85,7 @@ const app = {
     this.setupSwipe();
     this._initDiceSwipe();
     this._setupEscapeKey();
+    this._initGrainTexture();
     // Crop wheel zoom (registered once, guarded inside handler)
     const ws = document.getElementById('crop_ws');
     if (ws) ws.addEventListener('wheel', e => this._cropWheel(e), {passive:false});
@@ -482,6 +483,27 @@ const app = {
       El filtro SVG se re-rasteriza en cada repintado — carísimo en móvil y
       una de las causas del lag del swipe; un PNG es un raster cacheado. */
 
+  /** Golden noise sutil pre-rasterizado (PNG vía canvas): coste de pintado
+      trivial, sin filtros SVG. Grano dorado con media de opacidad ~4%;
+      el CSS lo desvanece a cero en el 40% superior de cada tarjeta. */
+  _initGrainTexture() {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 160;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(160, 160);
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = 0.75 + Math.random() * 0.5;
+        d[i]   = Math.min(255, 201 * v) | 0;
+        d[i+1] = Math.min(255, 170 * v) | 0;
+        d[i+2] = Math.min(255, 111 * v) | 0;
+        d[i+3] = (Math.random() * 0.08 * 255) | 0;
+      }
+      ctx.putImageData(img, 0, 0);
+      document.documentElement.style.setProperty('--gnoise', `url("${c.toDataURL('image/png')}")`);
+    } catch (e) { /* sin ruido: el CSS cae a none */ }
+  },
+
   setupSwipe() {
     const w     = document.getElementById('pages_wrapper');
     const track = document.getElementById('pages_track');
@@ -733,6 +755,8 @@ const app = {
     this._snapUntil = Date.now() + (snapMs || 220) + 60;
     track.style.transform  = `translateX(-${n * pageW}px)`;
     document.querySelectorAll('.nbtn').forEach((b,i) => b.classList.toggle('active', i===n));
+    const thread = document.getElementById('nav_thread');
+    if (thread) thread.style.transform = `translateX(${n * 100}%)`;
     if (n === 4) this.buildDetailPage();
     if (n === 2) this.buildAptitudesPage();
 
@@ -823,7 +847,10 @@ const app = {
     const ev = document.getElementById(`${sec}_edit_view`);
     const sv = document.getElementById(`${sec}_summary_view`);
     if (ev) ev.style.display = 'none';
-    if (sv) sv.style.display = 'block';
+    if (sv) {
+      sv.style.display = 'block';
+      sv.classList.remove('sum-reveal'); void sv.offsetWidth; sv.classList.add('sum-reveal');
+    }
     // Hide panel header when collapsing identity section back to summary
     if (sec === 'identity') ev?.closest('.panel')?.classList.remove('identity-editing');
 
@@ -3060,7 +3087,7 @@ const app = {
 
     if (!items.length) {
       const label = sec === 'tricks' ? 'trucos' : 'conjuros';
-      sumList.innerHTML = `<p class="txt-it-c">Sin ${label} seleccionados.</p>`;
+      sumList.innerHTML = `<div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin ${label}</span><div class="es-hint">El Gestor te espera</div></div>`;
       return;
     }
     sumList.innerHTML = '';

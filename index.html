@@ -532,7 +532,7 @@
             </div>
             <!-- Summary (default) -->
             <div id="tricks_summary_view">
-              <div id="tricks_summary_list"><p class="txt-it-c">Sin trucos seleccionados.</p></div>
+              <div id="tricks_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin trucos</span><div class="es-hint">El Gestor te espera</div></div></div>
               <div style="text-align:center;margin-top:8px">
                 <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('tricks')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Trucos</button>
               </div>
@@ -548,7 +548,7 @@
             </div>
             <!-- Summary (default) -->
             <div id="spells_summary_view">
-              <div id="spells_summary_list"><p class="txt-it-c">Sin conjuros seleccionados.</p></div>
+              <div id="spells_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin conjuros</span><div class="es-hint">El Gestor te espera</div></div></div>
               <div style="text-align:center;margin-top:8px">
                 <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('spells')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Conjuros</button>
               </div>
@@ -685,7 +685,7 @@
       </div>
       <button type="button" class="adv-fab-main" id="adv_fab_main" onclick="app.toggleAdvFab()" aria-haspopup="true" aria-expanded="false" aria-label="Tirada: Normal. Tocar para cambiar Ventaja/Desventaja" title="Ventaja / Desventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg></button>
     </div>
-    <nav class="bnav">
+    <nav class="bnav"><span class="nav-thread" id="nav_thread" aria-hidden="true"></span>
       <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Perfil"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg></span><span class="nlbl">Perfil</span></button>
       <button class="nbtn" onclick="app.goToPage(1)" aria-label="Ir a Stats"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="4" height="8" rx="1"/><rect x="9" y="8" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="17" rx="1"/></svg></span><span class="nlbl">Stats</span></button>
       <button class="nbtn" onclick="app.goToPage(2)" aria-label="Ir a Aptitudes"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H20v20H4.5A2.5 2.5 0 0 1 2 19.5v-15z"/><path d="M20 2v20"/><path d="M7 8h7"/><path d="M7 12h5"/><path d="M7 16h7"/></svg></span><span class="nlbl">Aptitudes</span></button>

@@ -88,6 +88,20 @@ Tratamiento visual en las **tres zonas estándar de la industria** (superficie h
 - **Home al mismo tono oscuro que la hoja de personaje** (`--void` plano), conservando la iluminación del título (bloom dorado + glow), el campo de estrellas y **la línea degradada horizontal intacta**.
 - `CACHE_VERSION` → **v24** (regla: sube en cada publicación).
 
+### Sistema de oro de joyería, jerarquía y microfeedback (v46 → `v25`)
+
+Las seis propuestas aprobadas, más el golden noise en versión sutil:
+
+1. **Un solo oro de joyería** (`--oro-metal`, el metal de las medallas como token): marco del **retrato** de la hoja, **insignia de nivel** del roster y **badge del crítico** en dados (con pulso `badgePulse`, desactivado bajo reduced-motion).
+2. **Encabezados con jerarquía**: rombo dorado (`◆`) ante cada título de panel + regla que se desvanece de oro a sombra (sustituye al border-bottom plano).
+3. **Estados vacíos con voz**: runa ✦ + "Aún sin trucos/conjuros" + pista, en los estáticos y en `_renderAptSummary`.
+4. **Hilo de oro en la navegación** (`#nav_thread`): línea metálica de 2px que se desliza a la pestaña activa desde `goToPage` — `transform` puro, coste cero.
+5. **Total del dado en Cinzel Decorative** (1.75rem): el momento firma habla con la voz ceremonial de la app.
+6. **Ceremonia al confirmar**: el resumen de cada sección entra con un micro-fundido (`sum-reveal`, 260ms).
+- **Golden noise, esta vez bien**: PNG dorado pre-rasterizado en canvas (sin filtros SVG → sin coste de pintado), media de opacidad ~4%, y **desvanecido a cero en el 40% superior** de paneles y tarjeta de dados vía `mask-image` en un pseudo-elemento — un brillo de polvo de oro bajo los encabezados, no una textura que ensucia.
+- `CACHE_VERSION` → **v25**.
+- **Endurecimiento del aviso de actualización** (encontrado en el propio testing): si se apilan dos actualizaciones (p. ej. dos despliegues seguidos sin abrir la app), el aviso capturaba una referencia al worker que luego quedaba reemplazado — al tocarlo, el `SKIP_WAITING` iba a un worker muerto. Ahora el aviso resuelve **`reg.waiting` vigente en el momento del toque**. `CACHE_VERSION` → **v26**.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:
