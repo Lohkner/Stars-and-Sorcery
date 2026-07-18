@@ -102,6 +102,14 @@ Las seis propuestas aprobadas, más el golden noise en versión sutil:
 - `CACHE_VERSION` → **v25**.
 - **Endurecimiento del aviso de actualización** (encontrado en el propio testing): si se apilan dos actualizaciones (p. ej. dos despliegues seguidos sin abrir la app), el aviso capturaba una referencia al worker que luego quedaba reemplazado — al tocarlo, el `SKIP_WAITING` iba a un worker muerto. Ahora el aviso resuelve **`reg.waiting` vigente en el momento del toque**. `CACHE_VERSION` → **v26**.
 
+### Grano metalizado, metal calibrado y anti-congelación (v46.1 → `v27`)
+
+- **Golden grain metalizado**: el generador de textura pasa de ruido dorado uniforme a **flecks de luminancia variable con destellos dispersos** (~0.4% de glints brillantes, como pintura metalizada), siempre en degradado mucho→cero (45%). Aplicado a **todas las tarjetas**: paneles, roster, ataques, dados, pilares, aptitudes y **la tarjeta del retrato** (el sheen hover del roster cedió su pseudo-elemento).
+- **Metal calibrado** (los bordes de oro quedan intactos — "perfectos"): rombo de encabezados al 50% y más pequeño, regla áurea al 22%, hilo de navegación con alphas al 70%, pulso de crítico a la mitad, rellenos de insignias más sobrios y menos bronce.
+- **Congelamientos resueltos**: el escudo anti-traspaso podía quedarse pegado si su temporizador era estrangulado (pestaña en segundo plano) — un velo invisible bloqueando toda la app. Ahora es **singleton** (nunca se apilan), con **fecha límite absoluta**: el primer toque tras ella lo retira en vez de tragárselo, un vigilante re-programable lo limpia, y `visibilitychange` lo elimina al volver a la pestaña.
+- **Cielo negro sobre el título**: fuera el bloom de fondo del home — el espacio sobre "Stars & Sorcery" es negro puro (`--void`) y el glow vive únicamente en las letras. La línea degradada horizontal, intacta.
+- `CACHE_VERSION` → **v27**.
+
 ### Revisión de mejores prácticas (v45.1)
 
 Pasada de auditoría con correcciones aplicadas, cada una verificada en navegador:

@@ -238,13 +238,36 @@ const app = {
   /** Escudo anti-traspaso: absorbe el toque fantasma que sigue a abrir o
       cerrar una capa (modal, panel, FAB). Invisible y se autodestruye. */
   _tapShield(ms = 320) {
+    const now = Date.now();
+    // Singleton: si ya hay un escudo vivo, solo se extiende su fecha
+    // límite — nunca se apilan velos.
+    if (this._shieldEl && this._shieldEl.isConnected) {
+      this._shieldDeadline = now + ms;
+      return;
+    }
     const s = document.createElement('div');
     s.className = 'tap-shield';
-    const kill = e => { e.stopPropagation(); e.preventDefault(); };
+    this._shieldEl = s;
+    this._shieldDeadline = now + ms;
+    const remove = () => { s.remove(); if (this._shieldEl === s) this._shieldEl = null; };
+    const kill = e => {
+      // Autodefensa anti-congelación: si el temporizador quedó estrangulado
+      // (pestaña en segundo plano), el primer toque tras la fecha límite
+      // retira el velo en lugar de tragarse la interacción para siempre.
+      if (Date.now() >= this._shieldDeadline) { remove(); return; }
+      e.stopPropagation(); e.preventDefault();
+    };
     ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(t =>
       s.addEventListener(t, kill, { capture: true, passive: false }));
     document.body.appendChild(s);
-    setTimeout(() => s.remove(), ms);
+    const tick = () => {
+      if (!s.isConnected) return;
+      if (Date.now() >= this._shieldDeadline) remove();
+      else setTimeout(tick, 60);
+    };
+    setTimeout(tick, ms);
+    // Cinturón extra: al volver a la pestaña, fuera el velo
+    document.addEventListener('visibilitychange', remove, { once: true });
   },
 
   renderHome() {
@@ -493,11 +516,16 @@ const app = {
       const img = ctx.createImageData(160, 160);
       const d = img.data;
       for (let i = 0; i < d.length; i += 4) {
-        const v = 0.75 + Math.random() * 0.5;
-        d[i]   = Math.min(255, 201 * v) | 0;
-        d[i+1] = Math.min(255, 170 * v) | 0;
-        d[i+2] = Math.min(255, 111 * v) | 0;
-        d[i+3] = (Math.random() * 0.08 * 255) | 0;
+        // Metalizado: luminancia variable sobre la gama del oro con
+        // destellos brillantes dispersos (~0.4%), como pintura metalizada
+        const r = Math.random();
+        const glint = r > 0.996;
+        const v = glint ? 1.3 : 0.55 + r * 0.65;
+        d[i]   = Math.min(255, 216 * v) | 0;
+        d[i+1] = Math.min(255, 182 * v) | 0;
+        d[i+2] = Math.min(255, 122 * v) | 0;
+        d[i+3] = glint ? (110 + Math.random() * 70) | 0
+                       : (Math.random() * 0.07 * 255) | 0;
       }
       ctx.putImageData(img, 0, 0);
       document.documentElement.style.setProperty('--gnoise', `url("${c.toDataURL('image/png')}")`);
