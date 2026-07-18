@@ -102,6 +102,12 @@ Las seis propuestas aprobadas, más el golden noise en versión sutil:
 - `CACHE_VERSION` → **v25**.
 - **Endurecimiento del aviso de actualización** (encontrado en el propio testing): si se apilan dos actualizaciones (p. ej. dos despliegues seguidos sin abrir la app), el aviso capturaba una referencia al worker que luego quedaba reemplazado — al tocarlo, el `SKIP_WAITING` iba a un worker muerto. Ahora el aviso resuelve **`reg.waiting` vigente en el momento del toque**. `CACHE_VERSION` → **v26**.
 
+### Purple noise ligero y retrato limpio (v46.2 → `v28`)
+
+- **La textura de tarjetas cambia a purple noise claro muy ligero**: lavanda con luminancia suave y alpha media ~2%, sin destellos, conservando el degradado mucho→cero al 45%. Sustituye al golden grain metalizado.
+- **El recuadro de la imagen del retrato (`.port-card`) va limpio**: el efecto pertenece a la tarjeta contenedora (que ya lo hereda por ser `.panel`), no al marco de la foto. Verificado: tarjeta con ruido, recuadro limpio.
+- `CACHE_VERSION` → **v28**.
+
 ### Grano metalizado, metal calibrado y anti-congelación (v46.1 → `v27`)
 
 - **Golden grain metalizado**: el generador de textura pasa de ruido dorado uniforme a **flecks de luminancia variable con destellos dispersos** (~0.4% de glints brillantes, como pintura metalizada), siempre en degradado mucho→cero (45%). Aplicado a **todas las tarjetas**: paneles, roster, ataques, dados, pilares, aptitudes y **la tarjeta del retrato** (el sheen hover del roster cedió su pseudo-elemento).

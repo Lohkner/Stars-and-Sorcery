@@ -516,16 +516,13 @@ const app = {
       const img = ctx.createImageData(160, 160);
       const d = img.data;
       for (let i = 0; i < d.length; i += 4) {
-        // Metalizado: luminancia variable sobre la gama del oro con
-        // destellos brillantes dispersos (~0.4%), como pintura metalizada
-        const r = Math.random();
-        const glint = r > 0.996;
-        const v = glint ? 1.3 : 0.55 + r * 0.65;
-        d[i]   = Math.min(255, 216 * v) | 0;
-        d[i+1] = Math.min(255, 182 * v) | 0;
-        d[i+2] = Math.min(255, 122 * v) | 0;
-        d[i+3] = glint ? (110 + Math.random() * 70) | 0
-                       : (Math.random() * 0.07 * 255) | 0;
+        // Ruido púrpura claro, muy ligero: luminancia suave sobre lavanda,
+        // alpha media ~2% (presencia apenas perceptible, sin destellos)
+        const v = 0.8 + Math.random() * 0.4;
+        d[i]   = Math.min(255, 178 * v) | 0;
+        d[i+1] = Math.min(255, 158 * v) | 0;
+        d[i+2] = Math.min(255, 214 * v) | 0;
+        d[i+3] = (Math.random() * 0.045 * 255) | 0;
       }
       ctx.putImageData(img, 0, 0);
       document.documentElement.style.setProperty('--gnoise', `url("${c.toDataURL('image/png')}")`);

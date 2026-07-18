@@ -2782,11 +2782,11 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 @keyframes sumReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.sum-reveal{animation:none}}
 
-/* Golden grain METALIZADO: PNG pre-rasterizado (JS) — flecks de oro con
-   luminancia variable y destellos dispersos (pintura metalizada), en
-   degradado: presente arriba, cero al 45% de la tarjeta. */
-.pillar-card,.port-card{position:relative}
-.panel::before,.dice-card::before,.pillar-card::before,.port-card::before,
+/* Purple noise claro en degradado: PNG pre-rasterizado (JS), muy ligero,
+   presente arriba y cero al 45% de la tarjeta. La tarjeta del retrato lo
+   hereda por ser .panel; el RECUADRO de la imagen (.port-card) va limpio. */
+.pillar-card{position:relative}
+.panel::before,.dice-card::before,.pillar-card::before,
 .char-card::after,.atk-card::after,.apt-card::after{
   content:'';position:absolute;inset:0;border-radius:inherit;
   background:var(--gnoise,none) repeat;background-size:160px 160px;
