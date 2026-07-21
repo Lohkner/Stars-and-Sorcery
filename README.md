@@ -1,9 +1,27 @@
-# S&S Companion — v45
+# S&S Companion — v46
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
+
+## Novedades v46 — Reglas v5.5.2 (línea completa)
+
+- **Actualización a la línea v5.5.2** desde los documentos canónicos: Manual Básico v5.5.2, Compendio Maestro de Talentos v5.5.2 y Catálogo de Axiomas v5.5.2. `STORAGE.RULES_DATA_VERSION` sube a `5.5.2-app-r1` — los usuarios que regresan adoptan las reglas nuevas **sin tocar sus personajes guardados**.
+- **Axiomas: sin cambios de contenido.** El Catálogo v5.5.2 conserva las 364 entradas de la línea v5.3.8 (verificado con regeneración completa desde las tablas del docx: diff vacío). El Dominio del Engaño pasa a prosa en el catálogo pero sus dos Axiomas (*Reflejo Falaz*, *Velo de Identidad*) se conservan. **Sin renombres de id — no hay migración de axiomas.**
+- **Talentos: 225 → 233, catálogos 16 → 21**, sección regenerada íntegramente desde el Compendio v5.5.2:
+  - **Cinco catálogos nuevos**: **Armas** (Escuela de Combate, Maniobras, Ataque Adicional, Combate a Dos Armas…), **Nigromancia**, **Furia**, **Entidades** y **Sombras** (12 talentos cada uno). Buena parte del antiguo cajón «general» (59 talentos) se redistribuye en ellos; General queda en 13.
+  - **Talentos-contenedor consolidados**: los votos del Juramento se funden en **Voto** (6 votos con Grados 1/4+/7+), los linajes de Herencia en **Origen de Sangre** (8 orígenes), Pacto de la Hoja/Tomo en **Pacto** (elección Hoja/Tomo) y **Dominio Divino** pasa a 9 dominios con progresión Nv1/3+/5+. Cada opción se identifica entre «» en sus Grados.
+  - **Ki → Qi**: *Golpe de Qi*, *Reflexión de Qi* y los nuevos *Respiración Serena* y *Qi en el Filo*.
+  - **Rompejuramentos** se rehace como progresión propia (*Legado de la Caída*, *Corona Rota*); las capacidades-espejo (Tormento, Aura de Odio…) viven ahora en la Sustitución Espejo descrita en el propio Compendio.
+  - Los personajes guardados **conservan su snapshot de talento** (nombre, descripción y grado): un talento retirado del Compendio sigue legible en la ficha.
+- **Linajes al día con el Manual v5.5.2**: epítetos nuevos (Infernal «El Marcado», Sintético «El Construido», Aesir «El Portador», Medio Orco «El Marcado por la Furia»), **Inconveniente añadido a los 11 linajes** (Testarudo, Estigma, Torpeza Social, Orgullo Dracónico…), rasgos actualizados (*Presencia Imponente* del Dracónido pasa a Salvación SAB → Aterrado; *Furia Salvaje* del Cambiante definida; *Aguante* sustituye a *Resiliencia Implacable*; Mutante: *Aberración Mística* ocupa las dos elecciones).
+- **Arquetipos**: nuevos rasgos de chasis — **Lectura de Campo** (Audaz), **Filo Flexible + Procedimientos de Sigilo** explícitos (Sutil) y **Lectura del Vínculo** (Sagaz). Fórmulas de Reservas sin cambios.
+- **Despertar Sobrenatural ya no otorga +6 Ingenio** (en v5.5.2 da +2 Trucos y +1 Axioma Nv1): el cálculo de Ingenio máximo se actualiza en `app.js`.
+- **Trasfondos**: defectos con la redacción v5.5.2 y kits con su habilidad asociada (p. ej. «Herramientas de Alquimia (Naturaleza o Arcano)»).
+- **Equipo (Apéndice A)**: entra el **Ninjato**; **armaduras históricas [MÓDULO]** (Gambesón, Cota de Anillas, Media Armadura) y **avanzadas de magitecnología** (Traje Balístico, Exoesqueleto Táctico, Nanoplacas, Traje de Sombra, Coraza de Cristal de Éter). El cálculo de CA soporta ahora **topes de DES por armadura** (`dexCap`: anillas +3, nanoplacas +1…). Escudos con su Ud de bloqueo (§3b) y equipo básico (Morral, Raciones, Cantimplora, Antorchas) en el catálogo de Equipo.
+- El **Starter Set v5.5.2** no altera reglas de la app: no requiere cambios de datos.
+- `CACHE_VERSION` del service worker sube a `ss-companion-v29` para que los clientes instalados reciban los datos nuevos.
 
 ## Novedades v45.1 — Actualización PWA a prueba de balas, buscador y limpieza
 

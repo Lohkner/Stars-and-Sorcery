@@ -1381,12 +1381,10 @@ const app = {
     const ingScore = Math.max(final.INT||8, final.SAB||8, final.CAR||8);
     let maxIng = ingScore + lvl + (arq?.ing_bonus||0);
 
-    // Talent bonuses (v5.2): Despertar Sobrenatural otorga +6 Ingenio permanente.
-    // Iniciado Místico abre el Canal pero NO suma Ingenio. La Afinidad Mística
+    // Reglas v5.5.2: ningún talento de la Vía de Axiomas modifica el Ingenio
+    // máximo (Despertar Sobrenatural ya no otorga +6). La Afinidad Mística
     // Innata de ciertos Descriptores suma +3 si se elige (no automática).
     const hasTalent = (id) => !!document.querySelector(`input[name="chk_talents_hidden"][data-id="${id}"]`);
-    if (hasTalent('despertar_sobrenatural') || hasTalent('despertar')) maxIng += 6;
-    if (hasTalent('poderio_arcano')) maxIng += 0; // Poderío no añade Ingenio base
 
     $('max_pv').textContent = maxPv;
     $('max_adr').textContent = Math.max(0, maxAdr);
@@ -1440,14 +1438,16 @@ const app = {
     const armorType = armorData?.type || 'none';
     let caFinal = caBase;
 
-    // Primary MOD (respects armor type cap)
+    // Primary MOD (respects armor type cap; dexCap del Apéndice A v5.5.2
+    // permite topes distintos: cota de anillas +3, nanoplacas +1, etc.)
     const getMod1 = (k) => k === 'NONE' ? 0 : (mods[k] || 0);
+    const dexCap = (armorData && armorData.dexCap != null) ? armorData.dexCap : null;
     if (armorType === 'heavy') {
-      // heavy: no attribute bonus
+      caFinal += dexCap != null ? Math.min(dexCap, getMod1(caMod1Key)) : 0;
     } else if (armorType === 'medium') {
-      caFinal += Math.min(2, getMod1(caMod1Key));
+      caFinal += Math.min(dexCap != null ? dexCap : 2, getMod1(caMod1Key));
     } else {
-      caFinal += getMod1(caMod1Key);
+      caFinal += dexCap != null ? Math.min(dexCap, getMod1(caMod1Key)) : getMod1(caMod1Key);
     }
     // Extra mods (no cap)
     if (caMod2Key !== 'NONE') caFinal += (mods[caMod2Key] || 0);
@@ -2613,7 +2613,7 @@ const app = {
   /** MOD del atributo gobernante de la Fuente de Poder elegida. Devuelve el mejor
       MOD entre los atributos de esa Fuente, o null si no hay Fuente seleccionada.
       Erudici\u00f3n\u2192INT \u00b7 Pacto/Herencia/Juramento\u2192CAR \u00b7 Divinidad\u2192mejor de SAB/CAR \u00b7
-      Naturaleza\u2192SAB \u00b7 Psi\u00f3nica\u2192mejor de INT/SAB (tabla de Fuentes v5.3.6).
+      Naturaleza\u2192SAB \u00b7 Psi\u00f3nica\u2192mejor de INT/SAB (tabla de Fuentes v5.5.2).
       Lo usa la Conducci\u00f3n Arcana del Sagaz. */
   _sourceAttrMod(mods) {
     const src = this._normSource(this._powerSource || '');
