@@ -46,6 +46,23 @@ const AXIOM_ID_RENAMES = {
   sordera:                'ensordecido',
 };
 
+/* ── Migración de ids de Talento (reglas v5.5.2) ─────────────────
+   El Compendio v5.5.2 reestructuró 90 talentos en catálogos nuevos y
+   talentos-contenedor con opciones (Voto, Origen de Sangre, Pacto,
+   Dominio Divino…). La inmensa mayoría no tiene un id 1:1 equivalente
+   (pasan a ser una opción dentro de otro talento) y no se pueden
+   migrar automáticamente sin perder la elección original del jugador.
+   Solo se listan aquí los renombres puros verificados (mismo id salvo
+   el cambio de terminología "Ki"→"Qi", contenido idéntico letra por
+   letra en sus tres Grados). Los personajes con talentos v5.3.8 que no
+   están en este mapa conservan su nombre/leyenda guardados pero la
+   ficha lo marca como no encontrado en la base actual — ver
+   `_findTalent` / `_talentRichCard` en app.js. */
+const TALENT_ID_RENAMES = {
+  golpe_de_ki:      'golpe_de_qi',
+  reflexion_de_ki:  'reflexion_de_qi',
+};
+
 /** Inventory slots per card cap */
 const MAX_PORTRAIT_W = 600;
 

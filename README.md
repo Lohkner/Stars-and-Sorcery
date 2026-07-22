@@ -21,7 +21,10 @@ Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión rees
 - **Trasfondos**: defectos con la redacción v5.5.2 y kits con su habilidad asociada (p. ej. «Herramientas de Alquimia (Naturaleza o Arcano)»).
 - **Equipo (Apéndice A)**: entra el **Ninjato**; **armaduras históricas [MÓDULO]** (Gambesón, Cota de Anillas, Media Armadura) y **avanzadas de magitecnología** (Traje Balístico, Exoesqueleto Táctico, Nanoplacas, Traje de Sombra, Coraza de Cristal de Éter). El cálculo de CA soporta ahora **topes de DES por armadura** (`dexCap`: anillas +3, nanoplacas +1…). Escudos con su Ud de bloqueo (§3b) y equipo básico (Morral, Raciones, Cantimplora, Antorchas) en el catálogo de Equipo.
 - El **Starter Set v5.5.2** no altera reglas de la app: no requiere cambios de datos.
-- `CACHE_VERSION` del service worker sube a `ss-companion-v29` para que los clientes instalados reciban los datos nuevos.
+- **Fix: talentos guardados que solo mostraban la leyenda.** La reestructuración de 225→233 talentos (90 ids retirados, 98 nuevos) dejaba sin efecto visible a los personajes que tenían uno de esos 90 talentos: `_findTalent` no lo localizaba en la base actual, `grades` quedaba vacío y la tarjeta solo mostraba la leyenda guardada (`data-desc`) sin ningún bloque de Grados, indistinguible de un talento completo. Dos correcciones:
+  - **`TALENT_ID_RENAMES`** (constants.js, mismo patrón que `AXIOM_ID_RENAMES`): migra automáticamente los dos renombres 1:1 verificados letra por letra (`golpe_de_ki`→`golpe_de_qi`, `reflexion_de_ki`→`reflexion_de_qi`; el resto de los 90 pasaron a ser *opciones* dentro de talentos-contenedor como Voto u Origen de Sangre y no tienen un id equivalente migrable sin perder la elección original del jugador).
+  - **Aviso explícito** en `_talentRichCard` (app.js): cuando un talento guardado no se encuentra en la base actual, la tarjeta muestra "⚠ No encontrado en la versión actual de las reglas" en vez de aparentar estar completa.
+- `CACHE_VERSION` del service worker sube a `ss-companion-v30` para que los clientes instalados reciban los datos y el fix.
 
 ## Novedades v45.1 — Actualización PWA a prueba de balas, buscador y limpieza
 

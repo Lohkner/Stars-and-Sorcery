@@ -2908,6 +2908,17 @@ const app = {
     const dca = document.createElement('span'); dca.className = 'dca'; dca.textContent = '▾'; dch.appendChild(dca);
 
     const dcb = document.createElement('div'); dcb.className = 'dcb';
+    if (!tal) {
+      // El talento guardado ya no existe con ese nombre/id en la base actual
+      // (renombrado o reestructurado por una actualización de reglas). Se
+      // conserva la leyenda original del personaje, pero se avisa: sin esto,
+      // la tarjeta parecía un talento completo mostrando solo su leyenda.
+      const warn = document.createElement('div');
+      warn.className = 'js-grade-block grade-off';
+      warn.style.color = 'var(--blood)';
+      warn.textContent = '⚠ No encontrado en la versión actual de las reglas — se conserva el nombre y la leyenda guardados, sin sus Grados. Revísalo en el Gestor de Talentos.';
+      dcb.appendChild(warn);
+    }
     const desc = document.createElement('div'); desc.style.marginBottom = '6px';
     desc.textContent = this._sanitize(tal?.desc || h.getAttribute('data-desc') || 'Sin descripción.');
     dcb.appendChild(desc);
@@ -4363,7 +4374,18 @@ const app = {
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     data.checks?.forEach(item=>{let el=document.getElementById(item.id)||document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);if(el)el.checked=true});
-    data.hidden_talents?.forEach(t=>{const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';h.value=t.value;h.setAttribute('data-desc',t.desc||'');h.setAttribute('data-grade',t.grade||'1');if(t.id)h.setAttribute('data-id',t.id);document.body.appendChild(h)});
+    // Migración de talentos renombrados 1:1 (mapa en constants.js): si el id
+    // guardado cambió de nombre sin cambiar de mecánica, se remapea al id/nombre
+    // vigente para que _findTalent lo reconozca y muestre su contenido completo.
+    data.hidden_talents?.forEach(t=>{
+      let tid = t.id, tname = t.value;
+      const newId = tid && TALENT_ID_RENAMES[tid];
+      if (newId) {
+        const migrated = this._findTalent(null, newId);
+        if (migrated) { tid = migrated.id; tname = migrated.name; }
+      }
+      const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';h.value=tname;h.setAttribute('data-desc',t.desc||'');h.setAttribute('data-grade',t.grade||'1');if(tid)h.setAttribute('data-id',tid);document.body.appendChild(h);
+    });
     this.showTalentSummary(); this.updateTalentCount();
     // Close all sections to summary mode
     this.confirmPersonal();
