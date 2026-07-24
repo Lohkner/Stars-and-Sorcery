@@ -2573,6 +2573,20 @@ const app = {
         out.atoms.push({ kind:'talent', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
       }
+      // "Voto" genérico como prerrequisito: el talento-contenedor Voto se
+      // desglosó en 7 talentos individuales (Voto del Centinela, Voto de la
+      // Deuda Jurada, Voto Inquebrantable, Voto del Guardián Ancestral, Voto
+      // de Enemistad, Voto de Conquista, Rompejuramentos) — cualquiera de
+      // ellos satisface un requisito que pida "Voto" a secas (no un Voto
+      // concreto, que ya cae en la rama genérica de abajo por nombre exacto).
+      else if (/^Voto$/i.test(part.trim())) {
+        const VOW_IDS = ['voto_del_centinela','voto_de_la_deuda_jurada','voto_inquebrantable',
+          'voto_del_guardian_ancestral','voto_de_enemistad','voto_de_conquista','rompejuramentos'];
+        const met = VOW_IDS.some(id => haveIds.has(id)) ||
+          [...haveNames].some(n => n.startsWith('voto ') || n === 'rompejuramentos');
+        out.atoms.push({ kind:'talent', raw: part, met });
+        if (!met) { out.met = false; out.unmet.push('Voto (cualquiera)'); }
+      }
       // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
         // strip trailing "G1"/grade hints and parentheticals for the name match

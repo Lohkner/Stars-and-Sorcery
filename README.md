@@ -1,9 +1,17 @@
-# S&S Companion — v47
+# S&S Companion — v47.1
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
+
+## Novedades v47.1 — El talento "Voto" se desglosa en 7 talentos independientes
+
+- A petición del usuario: el talento-contenedor **Voto** (Juramento) mezclaba 7 variaciones dentro de un mismo talento con un selector de Grado que repetía G1/G2/G3 siete veces — difícil de navegar en el Gestor de Talentos. Ahora son **7 talentos independientes**: *Voto del Centinela*, *Voto de la Deuda Jurada*, *Voto Inquebrantable*, *Voto del Guardián Ancestral*, *Voto de Enemistad*, *Voto de Conquista* y *Rompejuramentos* (la variante corrupta), cada uno con sus propios 3 Grados y el mismo requisito que tenía Voto (`Iniciado Místico (Juramento) · Nivel 1`).
+- A diferencia del resto del Compendio de Sendas (sin `desc` por pedido explícito), **estos 7 sí llevan descripción**: el texto "Principio: …" de cada Voto en el documento fuente, que antes se descartaba como nota, ahora es su flavor — es lo que el propio usuario pidió usar como tal.
+- **Talentos: 254 → 260** (un talento-contenedor se convierte en 7).
+- **Robustez de código**: cualquier talento futuro cuyo requisito sea "Voto" a secas (no un Voto concreto) queda satisfecho si el personaje tiene cualquiera de los 7 — nueva rama en `_parseTalentReq` (`app.js`), en el mismo patrón que ya usan Iniciado Místico/Despertar Sobrenatural. Ningún talento actual del compendio requería "Voto" genérico, así que no hizo falta tocar más `req`.
+- `STORAGE.RULES_DATA_VERSION` sube a `5.5.2-sendas6.0-r2`, `CACHE_VERSION` a `ss-companion-v32`.
 
 ## Novedades v47 — Talentos reemplazados por el Compendio de Sendas v6.0
 
