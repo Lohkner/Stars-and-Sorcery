@@ -354,9 +354,9 @@
             <!-- Stats secundarios row 1 -->
             <div class="g3c mb4">
               <div class="sc">
-                <div class="sc-lbl" style="color:var(--gold)">CA</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_ca">10</span></div>
-                <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_ca_armor">—</div>
+                <div class="sc-lbl" style="color:var(--gold)">Armadura</div>
+                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_armor">0</span></div>
+                <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_armor_name">—</div>
               </div>
               <div class="sc-clickable" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)">
                 <div class="sc-lbl" style="color:var(--muted)">Ini</div>
@@ -504,6 +504,46 @@
               <button class="bedit" onclick="app.editSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
+
+          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
+               10 + PB + escudo + atributo defensivo. La armadura NO interviene
+               (solo aporta Reducción de Daño, en Equipo de Combate). -->
+          <div class="panel">
+            <div class="ph"><span class="pt">Guardia</span></div>
+            <div id="guard_edit_view">
+              <div class="guard-live">
+                <div class="guard-live-lbl">Guardia</div>
+                <div class="guard-live-val" id="guard_total_live">10</div>
+              </div>
+              <div class="guard-formula">
+                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Escudo</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Atributo</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
+              </div>
+              <div style="margin-top:8px">
+                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
+                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
+                  <option value="DES">Destreza — evitas el golpe moviéndote</option>
+                  <option value="SAB">Sabiduría — lo ves venir</option>
+                  <option value="CON">Constitución — mantienes la línea</option>
+                </select>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+              </div>
+              <div class="ccard"><span class="clbl">Desprevenido (§3d)</span><span class="cval" id="guard_unaware_val">—</span></div>
+              <div id="guard_alt_note" class="infobox"></div>
+              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="guard_summary_view" style="display:none">
+              <!-- Generado por app._buildGuardSummary() desde app._combat -->
+            </div>
+          </div>
         </div><!-- /page 1 -->
         <div class="page" id="page_2">
           <div class="panel">
@@ -561,19 +601,16 @@
             <div id="combat_edit_view">
               <div class="g2">
                 <div><span class="fl">Armadura</span><select id="sel_armor" aria-label="Armadura equipada" onchange="app.calc()"></select>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:5px">
-                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. CA Prim.</span><select id="ca_mod1" aria-label="Modificador de CA principal" class="ap" onchange="app.calc()"><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
-                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. Extra 1</span><select id="ca_mod2" aria-label="Modificador de CA extra 1" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
-                    <div><span class="fl" style="font-size:var(--fs-2xs)">Mod. Extra 2</span><select id="ca_mod3" aria-label="Modificador de CA extra 2" class="ap" onchange="app.calc()"><option value="NONE">—</option><option value="DES">DES</option><option value="FUE">FUE</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                  <div style="margin-top:5px">
+                    <span class="fl" style="font-size:var(--fs-2xs)">Armadura extra (talentos, objetos)</span>
+                    <select id="sel_armor_extra" class="ap" aria-label="Armadura adicional por talentos u objetos" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option></select>
                   </div>
-                  <div class="ccard"><span class="clbl">CA Base</span><span class="cval" id="armor_base_val">—</span></div>
+                  <div class="ccard"><span class="clbl">Armadura de la pieza</span><span class="cval" id="armor_base_val">—</span></div>
                   <div id="armor_desc" class="infobox"></div>
                 </div>
                 <div><span class="fl">Escudo</span><select id="sel_shield" aria-label="Escudo equipado" onchange="app.calc()"></select>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                    <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_magic_bonus" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                    <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_ca_other" class="ap" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                  </div>
+                  <div id="shield_desc" class="infobox" style="margin-top:5px"></div>
+                  <div class="infobox" style="margin-top:5px;font-style:italic">El escudo aporta Guardia, no Armadura. Ajusta la Guardia en su tarjeta (pestaña Stats).</div>
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:end;margin-top:8px">

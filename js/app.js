@@ -17,7 +17,9 @@ const app = {
       (La versión anterior raspaba textContent de la vista de edición, y si
       el orden de carga cambiaba, el resumen quedaba rancio.) */
   _combat: {
-    ca: 10, armorName: 'Sin Armadura', armorType: 'none', shieldName: 'Sin Escudo',
+    rd: 0, rdCap: 7, rdCapped: false, guardia: 10, guardAttr: 'DES',
+    armorName: 'Sin Armadura', armorType: 'none',
+    shieldName: 'Sin Escudo', shieldGuard: 0, shieldBlock: 0,
     w: [
       { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
       { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
@@ -172,6 +174,7 @@ const app = {
     this.editSection('stats');
     this.editSection('saves');
     this.editSection('skills');
+    this.editSection('guard');
     this.editSection('combat');
     this.editSection('equipment');
     this._bulkEditing = false;
@@ -866,6 +869,7 @@ const app = {
     if (sec === 'stats') this._buildStatsSummary();
     if (sec === 'saves') this._buildSavesSummary();
     if (sec === 'skills') this._buildSkillsSummary();
+    if (sec === 'guard') this._buildGuardSummary();
     if (sec === 'combat') this._buildCombatSummary();
     if (sec === 'equipment') this.renderInventory();
 
@@ -1098,15 +1102,41 @@ const app = {
         </div>
       </div>`;
     };
+    // Modo consulta v8.3: la tarjeta ya no reporta CA. Reporta la Armadura
+    // (tipo + valor de RD) y lo que el escudo aporta a la Guardia, que vive
+    // en su propia tarjeta (pestaña Stats).
+    const shieldLine = c.shieldGuard
+      ? `+${c.shieldGuard} Guardia · +${c.shieldBlock} Bloqueo`
+      : (c.shieldBlock ? `+${c.shieldBlock} Bloqueo` : '—');
     view.innerHTML = `
       <div class="g3" style="margin-bottom:6px">
-        <div class="fbox"><div class="flbl g">CA</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_ac">${this._esc(String(c.ca))}</span></div></div>
-        <div class="fbox"><div class="flbl">Armadura</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
-        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_shield">${this._esc(c.shieldName)}</span></div></div>
+        <div class="fbox"><div class="flbl g">Armadura</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_rd">${this._esc(String(c.rd))}</span></div></div>
+        <div class="fbox"><div class="flbl">Tipo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
+        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_shield">${this._esc(c.shieldName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_shield_bonus">${this._esc(shieldLine)}</span></div></div>
       </div>
+      ${c.rdCapped ? `<div class="calert" style="display:block">Armadura limitada por el techo del sistema (5 + PB = ${c.rdCap})</div>` : ''}
       ${card(1, 'Principal', '')}
       ${card(2, 'Secundaria', ' secondary')}
       <button class="bedit" onclick="app.editSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
+  },
+
+  /** Modo lectura de Guardia. Igual que el de combate: se regenera entero
+      desde el estado _combat que calc() acaba de escribir, nunca leyendo el
+      DOM de la vista de edición. */
+  _buildGuardSummary() {
+    const view = this._el('guard_summary_view');
+    if (!view) return;
+    const c = this._combat;
+    const ATTR_LBL = { DES:'Destreza', SAB:'Sabiduría', CON:'Constitución' };
+    const attrLbl = ATTR_LBL[c.guardAttr] || c.guardAttr;
+    const unaware = this._el('guard_unaware_val')?.textContent || '—';
+    view.innerHTML = `
+      <div class="g3" style="margin-bottom:6px">
+        <div class="fbox"><div class="flbl g">Guardia</div><div class="fval" style="color:var(--goldb);font-size:1.35rem"><span id="sum_guardia">${this._esc(String(c.guardia))}</span></div></div>
+        <div class="fbox"><div class="flbl">Atributo</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_guard_attr">${this._esc(attrLbl)}</span></div></div>
+        <div class="fbox"><div class="flbl">Desprevenido</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_guard_unaware">${this._esc(unaware)}</span></div></div>
+      </div>
+      <button class="bedit" onclick="app.editSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
   },
 
   _getInventoryItem(uid) {
@@ -1416,64 +1446,58 @@ const app = {
     const carneVal = conScore + (desc?.mods?.CON||0);
     $('res_carne').textContent = carneVal;
 
-    // CA
+    // ── ARMADURA (RD) y GUARDIA — las dos defensas (Manual v8.3, Cap.5 §3a) ──
+    // Ejes separados: la Armadura NO toca la Guardia. La armadura equipada
+    // aporta Reducción de Daño; el escudo aporta Guardia (defensa activa).
     const armorUID = $('sel_armor').value;
     const shieldUID = $('sel_shield').value;
-    const magicBonus  = parseInt($('sel_magic_bonus')?.value)||0;
-    const otherBonus  = parseInt($('sel_ca_other')?.value)||0;
-    const caMod1Key   = $('ca_mod1')?.value || 'DES';
-    const caMod2Key   = $('ca_mod2')?.value || 'NONE';
-    const caMod3Key   = $('ca_mod3')?.value || 'NONE';
     let armorItem = this._getInventoryItem(armorUID);
     let armorData = armorItem ? (armorItem.dbData || this.DB.armors?.[armorItem.dbKey]) : this.DB.armors?.[armorUID];
     const shieldItem = this._getInventoryItem(shieldUID);
     let shieldData = shieldItem ? (shieldItem.dbData || this.DB.shields?.[shieldItem.dbKey]) : this.DB.shields?.[shieldUID];
     // Items sin datos de juego: conservar el NOMBRE elegido por el jugador
-    // (con los mismos números que antes: CA 10 / bono 0) en lugar de mostrar
-    // "Sin Armadura/Escudo" mientras el select dice otra cosa.
-    if (!armorData && armorItem)   armorData  = { name: armorItem.name + ' (sin datos)',  ca: 10, type: 'none' };
-    if (!shieldData && shieldItem) shieldData = { name: shieldItem.name + ' (sin datos)', bonus: 0 };
+    // (con valores neutros) en lugar de mostrar "Sin Armadura/Escudo"
+    // mientras el select dice otra cosa.
+    if (!armorData && armorItem)   armorData  = { name: armorItem.name + ' (sin datos)',  rd: 0, type: 'none' };
+    if (!shieldData && shieldItem) shieldData = { name: shieldItem.name + ' (sin datos)', guardia: 0, block: 0 };
 
-    let caBase = armorData?.ca || 10;
     const armorType = armorData?.type || 'none';
-    let caFinal = caBase;
+    const armorRD   = this._armorRdOf(armorData);
+    const extraRD   = parseInt($('sel_armor_extra')?.value) || 0;
+    // Techo de Armadura del sistema: 5 + PB (Cap.5 §3a). Todo lo que exceda
+    // se pierde; se muestra al jugador para que sepa por qué no sube.
+    const rdCap     = 5 + prof;
+    const rdRaw     = armorRD + extraRD;
+    const rdFinal   = Math.min(rdRaw, rdCap);
 
-    // Primary MOD (respects armor type cap; dexCap del Apéndice A v5.5.2
-    // permite topes distintos: cota de anillas +3, nanoplacas +1, etc.)
-    const getMod1 = (k) => k === 'NONE' ? 0 : (mods[k] || 0);
-    const dexCap = (armorData && armorData.dexCap != null) ? armorData.dexCap : null;
-    if (armorType === 'heavy') {
-      caFinal += dexCap != null ? Math.min(dexCap, getMod1(caMod1Key)) : 0;
-    } else if (armorType === 'medium') {
-      caFinal += Math.min(dexCap != null ? dexCap : 2, getMod1(caMod1Key));
-    } else {
-      caFinal += dexCap != null ? Math.min(dexCap, getMod1(caMod1Key)) : getMod1(caMod1Key);
-    }
-    // Extra mods (no cap)
-    if (caMod2Key !== 'NONE') caFinal += (mods[caMod2Key] || 0);
-    if (caMod3Key !== 'NONE') caFinal += (mods[caMod3Key] || 0);
-
-    if (shieldData) caFinal += (shieldData.bonus || 0);
-    caFinal += magicBonus;
-    caFinal += otherBonus;
-
-    // Defensa Natural talent (override if no armor)
-    if (hasTalent('def_nat') && (armorType === 'none')) {
-      caFinal = Math.max(caFinal, 10 + (mods.DES||0) + (mods.CON||0));
-    }
-    $('res_ca').textContent = caFinal;
-    $('armor_base_val').textContent = caBase;
+    const armorEl = $('res_armor');
+    if (armorEl) armorEl.textContent = rdFinal;
+    const armorBaseEl = $('armor_base_val');
+    if (armorBaseEl) armorBaseEl.textContent = armorRD;
     // Estado para el resumen de combate (lo renderiza _buildCombatSummary)
-    this._combat.ca = caFinal;
+    this._combat.rd         = rdFinal;
+    this._combat.rdCapped   = rdRaw > rdCap;
+    this._combat.rdCap      = rdCap;
     this._combat.armorName  = armorData?.name  || 'Sin Armadura';
     this._combat.armorType  = armorType;
     this._combat.shieldName = shieldData?.name || 'Sin Escudo';
-    const caArmorEl = $('res_ca_armor');
-    if (caArmorEl) caArmorEl.textContent = armorData?.name || 'Sin armadura';
+    this._combat.shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
+    this._combat.shieldBlock = shieldData ? (shieldData.block || 0) : 0;
+    const armorNameEl = $('res_armor_name');
+    if (armorNameEl) armorNameEl.textContent = armorData?.name || 'Sin armadura';
 
     // Armor desc
     const adesc = $('armor_desc');
-    if (adesc) adesc.textContent = armorData ? `${armorData.name} · CA ${caBase} · ${({none:'Sin restricción',light:'Ligera',medium:'Media',heavy:'Pesada'}[armorType]||armorType)}` : '';
+    if (adesc) adesc.textContent = armorData
+      ? `${armorData.name} · Armadura ${armorRD} · ${({none:'Sin restricción',light:'Ligera',medium:'Media',heavy:'Pesada'}[armorType]||armorType)}`
+      : '';
+    const sdesc = $('shield_desc');
+    if (sdesc) sdesc.textContent = shieldData
+      ? `${shieldData.name} · +${shieldData.guardia||0} Guardia · +${shieldData.block||0} al Bloqueo`
+      : '';
+
+    // Guardia = 10 + PB + escudo + atributo defensivo (+ bonos declarados)
+    this._calcGuardia(mods, prof, arqKey, shieldData);
 
     // Weapons
     this._calcWeapon('w1', $('sel_weapon').value, $('w1_attr').value, $('w1_dmg_attr')?.value||'FUE', mods, prof, arq);
@@ -1518,6 +1542,63 @@ const app = {
     // actualizaba arriba, pero sum_wep*_name decía "Desarmado" y
     // sum_wep*_stats mostraba los valores de desarmado tras cargar.
     this._buildCombatSummary();
+    // Mismo motivo para Guardia: al cargar un personaje, confirmSection('guard')
+    // corre antes de que se apliquen sel_guard_attr/escudo, y el resumen
+    // mostraba la Guardia por defecto (DES) en vez de la ya calculada.
+    this._buildGuardSummary();
+  },
+
+  /** Valor de Armadura (RD) de una pieza. Usa el campo `rd` del Apéndice A
+      v8.3; para armaduras personalizadas guardadas bajo el esquema viejo
+      (solo `ca`, 10-18) aplica la equivalencia de la tabla oficial para que
+      no pasen a valer 0 al abrir la ficha.
+      La tabla de origen no es biyectiva —CA 12 era cuero (RD 1) y también
+      cota de anillas (RD 2); CA 13, escamas (2) y malla (3)—, así que en los
+      empates se toma el valor de la pieza más común de ese escalón. */
+  _armorRdOf(armorData) {
+    if (!armorData) return 0;
+    if (armorData.rd != null) return parseInt(armorData.rd) || 0;
+    const legacyCa = parseInt(armorData.ca);
+    if (!isFinite(legacyCa) || legacyCa <= 10) return 0;
+    const LEGACY_CA_TO_RD = { 11:1, 12:1, 13:3, 14:3, 15:4, 16:4, 17:5, 18:5 };
+    return LEGACY_CA_TO_RD[Math.min(18, legacyCa)] ?? 5;
+  },
+
+  /** Guardia = 10 + PB + bono de escudo + MOD del atributo defensivo
+      (DES/SAB/CON, elegido al crear el personaje) + bonos declarados.
+      La armadura NO interviene: solo aporta Reducción de Daño.
+      Conducción Arcana (Sagaz) y las demás fórmulas alternativas sustituyen
+      el atributo defensivo por el suyo — no se suman, y aplica la más alta. */
+  _calcGuardia(mods, prof, arqKey, shieldData) {
+    const $ = id => document.getElementById(id);
+    const defKey = $('sel_guard_attr')?.value || 'DES';
+    let defMod = mods[defKey] || 0;
+    let altNote = '';
+    // Conducción Arcana: el Sagaz con Fuente elegida usa el MOD de su Fuente.
+    if (arqKey === 'sagaz') {
+      const srcMod = this._sourceAttrMod(mods);
+      if (srcMod !== null && srcMod > defMod) { defMod = srcMod; altNote = 'Conducción Arcana'; }
+    }
+    const shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
+    const magicBonus  = parseInt($('sel_guard_magic')?.value) || 0;
+    const otherBonus  = parseInt($('sel_guard_other')?.value) || 0;
+    const total = 10 + prof + shieldGuard + defMod + magicBonus + otherBonus;
+
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set('guard_base_val', 10);
+    set('guard_prof_val', (prof >= 0 ? '+' : '') + prof);
+    set('guard_shield_val', (shieldGuard >= 0 ? '+' : '') + shieldGuard);
+    set('guard_attr_val', (defMod >= 0 ? '+' : '') + defMod);
+    set('res_guardia', total);
+    set('guard_total_live', total);
+    const noteEl = $('guard_alt_note');
+    if (noteEl) noteEl.textContent = altNote ? `Fórmula alternativa activa: ${altNote}` : '';
+    // Desprevenido (§3d): sin PB ni escudo, conserva el atributo defensivo.
+    set('guard_unaware_val', 10 + defMod + magicBonus + otherBonus);
+
+    this._combat.guardia = total;
+    this._combat.guardAttr = altNote ? altNote : defKey;
+    return total;
   },
 
   _calcWeapon(wid, uid, attr, dmgAttr, mods, prof, arq) {
@@ -1670,15 +1751,16 @@ const app = {
           <div><span class="fl">Bono ataque</span><input type="number" id="ci_atkb" value="${gd.atk_bonus||0}" min="-5" max="10"></div>
         </div>
         <div id="ci_armor_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
-          <div><span class="fl">CA base</span><input type="number" id="ci_ca" value="${gd.ca||11}" min="8" max="20"></div>
+          <div><span class="fl">Armadura (RD)</span><input type="number" id="ci_rd" value="${gd.rd ?? this._armorRdOf(gd) ?? 1}" min="0" max="5"></div>
           <div><span class="fl">Categoría</span><select id="ci_armor_type">
             <option value="light"${(!gd.type||gd.type==='light')?' selected':''}>Ligera</option>
             <option value="medium"${gd.type==='medium'?' selected':''}>Media</option>
             <option value="heavy"${gd.type==='heavy'?' selected':''}>Pesada</option>
           </select></div>
         </div>
-        <div id="ci_shield_fields" style="margin-bottom:8px;display:none">
-          <span class="fl">Bono de CA</span><input type="number" id="ci_shield_bonus" value="${gd.bonus??1}" min="0" max="5">
+        <div id="ci_shield_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
+          <div><span class="fl">Bono de Guardia</span><input type="number" id="ci_shield_guardia" value="${gd.guardia ?? gd.bonus ?? 1}" min="0" max="3"></div>
+          <div><span class="fl">Bono al Bloqueo</span><input type="number" id="ci_shield_block" value="${gd.block ?? 2}" min="0" max="5"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-g" style="flex:1" onclick="document.getElementById('custom_item_overlay').remove()">Cancelar</button>
@@ -1721,12 +1803,20 @@ const app = {
       if (dmg !== dmgRaw.toLowerCase()) this.toast('Daño inválido — usa el formato 1d8 o 2d6+1. Aplicado 1d4','err');
       item.dbData = { ...prevData, name, dmg, atk_bonus: parseInt(document.getElementById('ci_atkb')?.value)||0 };
     } else if (type === 'armors') {
-      item.dbData = { ...prevData, name,
-        ca:   parseInt(document.getElementById('ci_ca')?.value)||11,
+      const rd = parseInt(document.getElementById('ci_rd')?.value);
+      // `ca` se elimina: en v8.3 la armadura no toca la Guardia. Dejarlo
+      // haría que _armorRdOf lo reinterpretara si algún día falta `rd`.
+      const { ca, ...restPrev } = prevData;
+      item.dbData = { ...restPrev, name,
+        rd:   Number.isNaN(rd) ? 1 : Math.max(0, Math.min(5, rd)),
         type: document.getElementById('ci_armor_type')?.value||'light' };
     } else if (type === 'shields') {
-      const sb = parseInt(document.getElementById('ci_shield_bonus')?.value);
-      item.dbData = { ...prevData, name, bonus: Number.isNaN(sb) ? 1 : sb };
+      const sg = parseInt(document.getElementById('ci_shield_guardia')?.value);
+      const sbk = parseInt(document.getElementById('ci_shield_block')?.value);
+      const { bonus, ...restPrev } = prevData;
+      item.dbData = { ...restPrev, name,
+        guardia: Number.isNaN(sg) ? 1 : Math.max(0, Math.min(3, sg)),
+        block:   Number.isNaN(sbk) ? 2 : Math.max(0, Math.min(5, sbk)) };
     } else if (item.dbData) {
       // Cambió a miscelánea: el dbData previo ya no aplica al cálculo.
       item.dbData = { ...prevData, name };
@@ -1839,10 +1929,7 @@ const app = {
     const prev = {
       armor: document.getElementById('sel_armor')?.value,
       shield: document.getElementById('sel_shield')?.value,
-      ca_mod1: document.getElementById('ca_mod1')?.value,
-      ca_mod2: document.getElementById('ca_mod2')?.value,
-      ca_mod3: document.getElementById('ca_mod3')?.value,
-      ca_other: document.getElementById('sel_ca_other')?.value,
+      armor_extra: document.getElementById('sel_armor_extra')?.value,
       w1_dmg_attr: document.getElementById('w1_dmg_attr')?.value,
       w2_dmg_attr: document.getElementById('w2_dmg_attr')?.value,
       w1: document.getElementById('sel_weapon')?.value,
@@ -1865,8 +1952,7 @@ const app = {
       else s.value = s.options[0]?.value;
     };
     restore('sel_armor',prev.armor); restore('sel_shield',prev.shield);
-    restore('ca_mod1',prev.ca_mod1); restore('ca_mod2',prev.ca_mod2); restore('ca_mod3',prev.ca_mod3);
-    restore('sel_ca_other',prev.ca_other);
+    restore('sel_armor_extra',prev.armor_extra);
     restore('w1_dmg_attr',prev.w1_dmg_attr); restore('w2_dmg_attr',prev.w2_dmg_attr);
     restore('sel_weapon',prev.w1); restore('sel_weapon_sec',prev.w2);
   },
@@ -3655,7 +3741,7 @@ const app = {
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">CA Base</span><input type="number" id="db_ca" value="${existing?.ca||10}"></div>
+        <div><span class="dfl">Armadura (RD)</span><input type="number" id="db_rd" value="${existing?.rd ?? this._armorRdOf(existing)}" min="0" max="5"></div>
         <div><span class="dfl">Tipo</span><select id="db_atype"><option value="none"${existing?.type==='none'?' selected':''}>Sin armadura</option><option value="light"${existing?.type==='light'?' selected':''}>Ligera</option><option value="medium"${existing?.type==='medium'?' selected':''}>Media</option><option value="heavy"${existing?.type==='heavy'?' selected':''}>Pesada</option></select></div>
         <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots||1}"></div>
       </div>`;
@@ -3666,8 +3752,9 @@ const app = {
         <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>escudo_madera</em>, <em>escudo_torre</em></div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div class="g2" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Bono CA</span><input type="number" id="db_bonus_ca" value="${existing?.bonus||1}"></div>
+      <div class="g3" style="gap:6px;margin-bottom:6px">
+        <div><span class="dfl">Bono Guardia</span><input type="number" id="db_shield_guardia" value="${existing?.guardia ?? existing?.bonus ?? 1}" min="0" max="3"></div>
+        <div><span class="dfl">Bono Bloqueo</span><input type="number" id="db_shield_block" value="${existing?.block ?? 2}" min="0" max="5"></div>
         <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots||1}"></div>
       </div>`;
     } else if (cat === 'spells') {
@@ -3789,11 +3876,17 @@ const app = {
         entry.req_DES=parseInt(document.getElementById('db_req_des')?.value)||0;
         entry.atk_bonus=0;
       } else if (cat==='armors') {
-        entry.ca=parseInt(document.getElementById('db_ca')?.value)||10;
+        const rdIn = parseInt(document.getElementById('db_rd')?.value);
+        entry.rd = Number.isNaN(rdIn) ? 0 : Math.max(0, Math.min(5, rdIn));
+        delete entry.ca; // v8.3: la armadura ya no aporta CA/Guardia
         entry.type=document.getElementById('db_atype')?.value||'light';
         entry.slots=parseInt(document.getElementById('db_slots')?.value)||1;
       } else if (cat==='shields') {
-        entry.bonus=parseInt(document.getElementById('db_bonus_ca')?.value)||1;
+        const sg = parseInt(document.getElementById('db_shield_guardia')?.value);
+        const sbk = parseInt(document.getElementById('db_shield_block')?.value);
+        entry.guardia = Number.isNaN(sg) ? 1 : Math.max(0, Math.min(3, sg));
+        entry.block   = Number.isNaN(sbk) ? 2 : Math.max(0, Math.min(5, sbk));
+        delete entry.bonus; // v8.3: el bono del escudo va a Guardia, no a CA
         entry.slots=parseInt(document.getElementById('db_slots')?.value)||1;
       } else if (cat==='spells') {
         entry.txt=document.getElementById('db_txt')?.value;
@@ -4403,7 +4496,7 @@ const app = {
     this.showTalentSummary(); this.updateTalentCount();
     // Close all sections to summary mode
     this.confirmPersonal();
-    ['identity','stats','saves','skills','combat','equipment'].forEach(s=>this.confirmSection(s));
+    ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.confirmSection(s));
     this.renderInventory();
     this.calc();
   },
@@ -4534,11 +4627,10 @@ const app = {
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(c=>c.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     this._syncPortrait(DEFAULT_PORTRAIT);
-    const mg = document.getElementById('sel_magic_bonus'); if(mg)mg.value='0';
-    const co = document.getElementById('sel_ca_other'); if(co)co.value='0';
-    const cm1 = document.getElementById('ca_mod1'); if(cm1)cm1.value='DES';
-    const cm2 = document.getElementById('ca_mod2'); if(cm2)cm2.value='NONE';
-    const cm3 = document.getElementById('ca_mod3'); if(cm3)cm3.value='NONE';
+    const ax = document.getElementById('sel_armor_extra'); if(ax)ax.value='0';
+    const ga = document.getElementById('sel_guard_attr'); if(ga)ga.value='DES';
+    const gm = document.getElementById('sel_guard_magic'); if(gm)gm.value='0';
+    const go = document.getElementById('sel_guard_other'); if(go)go.value='0';
     const wd1 = document.getElementById('w1_dmg_attr'); if(wd1)wd1.value='FUE';
     const wd2 = document.getElementById('w2_dmg_attr'); if(wd2)wd2.value='FUE';
     this.showTalentSummary(); this.updateTalentCount();
@@ -5135,7 +5227,7 @@ const app = {
       this._pageScrolls = {}; // limpiar posiciones guardadas obsoletas
       this._bulkEditing = true;
       this.editSection('personal');
-      ['identity','stats','saves','skills','combat','equipment'].forEach(s=>this.editSection(s));
+      ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.editSection(s));
       this._bulkEditing = false;
       this.toast('Hoja reseteada','ok');
     });
@@ -5276,7 +5368,7 @@ const app = {
 
     // 14. Cerrar TODAS las secciones en modo resumen
     this.confirmPersonal();
-    ['identity','stats','saves','skills','combat','equipment'].forEach(s=>this.confirmSection(s));
+    ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.confirmSection(s));
 
     this.buildDetailPage();
     this._charLoading = false;

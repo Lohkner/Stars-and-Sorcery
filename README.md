@@ -1,9 +1,44 @@
-# S&S Companion — v47.1
+# S&S Companion — v48
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
+
+## Novedades v48 — Guardia y Armadura: las dos defensas (reglas v8.3 / v7.1 / v8.1)
+
+Actualización a la línea nueva desde los tres documentos canónicos: **Manual Básico v8.3**, **Catálogo de Axiomas v7.1** y **Compendio de Sendas v8.1**. `STORAGE.RULES_DATA_VERSION` sube a `8.3-guardia-r1` y `CACHE_VERSION` a `ss-companion-v33`.
+
+### El cambio de fondo: la Clase de Armadura desaparece
+
+El sistema separa en dos ejes lo que antes era un solo número (Manual, Cap. 5 §3a):
+
+- **Guardia** — lo difícil que es *alcanzarte*. `10 + PB + escudo + atributo defensivo`. El atributo defensivo se elige **una vez al crear el personaje** entre DES, SAB o CON (tres formas de impedir un impacto efectivo: apartarte, verlo venir o no ceder). **La armadura no la modifica en absoluto.**
+- **Armadura** — lo difícil que es *herirte*. Es Reducción de Daño: se resta a cada golpe que ya superó tu Guardia, con un mínimo de 1 punto. Techo del sistema: **5 + PB**.
+
+Los escudos son la excepción coherente: no son blindaje, son defensa activa, así que suben la **Guardia** (+1 estándar, +2 torre) y aportan +2 a la tirada de Bloqueo Enfrentado.
+
+### La tarjeta "Equipo de Combate" se divide en dos
+
+- **Equipo de Combate** (pestaña Equipo) mantiene armas principal y secundaria **sin ningún cambio**, y su bloque defensivo pasa a informar de **Armadura**: el nombre y categoría de la pieza equipada, su valor de Reducción de Daño, y qué aporta el escudo a la Guardia y al Bloqueo. Nuevo selector de **Armadura extra** para talentos y objetos (Veterano de Guerra, Piel Blindada, Escamas Endurecidas…). Si la suma supera el techo `5 + PB`, la tarjeta lo avisa en vez de mostrar un número que el sistema no permite.
+- **Guardia** (pestaña Stats, bajo Habilidades) es la tarjeta nueva. En modo edición calcula el total **en vivo** con la fórmula desglosada en sus cuatro sumandos (Base · Competencia · Escudo · Atributo), permite elegir el atributo defensivo y añadir bonos mágicos u otros, y muestra además la **Guardia de Desprevenido** (§3d: sin PB ni escudo). Al pulsar Confirmar pasa a modo lectura, igual que el resto de secciones.
+- La tarjeta **Estado** cambia su recuadro `CA` por **Armadura**, con el nombre de la pieza debajo.
+
+**Fórmulas alternativas de Guardia**: Conducción Arcana (Sagaz) sustituye el atributo defensivo por el de su Fuente y la tarjeta lo indica explícitamente; no se acumulan entre sí, aplica la más alta.
+
+**Migración**: las armaduras personalizadas guardadas bajo el esquema viejo (campo `ca`) se convierten a Reducción de Daño con la equivalencia de la tabla oficial, así que no pasan a valer 0 al abrir una ficha antigua. Los editores de objeto personalizado y de la base de datos piden ahora Armadura (RD) y, para escudos, bono de Guardia y de Bloqueo por separado.
+
+### Contenido
+
+- **Axiomas: 364 → 362** desde el Catálogo v7.1. *Conocer Alineamiento* se convierte en **Leer Intenciones** (percibe intención hostil y si la Fuente es sobrenatural, en vez de leer un alineamiento). Los Axiomas defensivos se reescriben en los ejes nuevos: *Armadura de Mago* y *Armadura Infernal* pasan a ser fórmulas alternativas de Guardia; *Escudo Arcano* da +4 Guardia y anula por completo Proyectil Mágico; *Fortalecer Armadura*, *Manto Aberrante* y *Piel de Corteza* dan **Armadura**. *Eco del Vacío* sube a 3d6 y encadena a un segundo objetivo.
+- **Talentos: 260 → 267** desde el Compendio de Sendas v8.1, con el mismo criterio de la versión anterior (solo nombre, requisitos y Grados). El reparto entre los dos ejes sigue la guía del propio compendio: blindaje y dureza corporal dan Armadura; postura, reflejos y escudo dan Guardia. *Defensa Marcial* ya no mejora la categoría de armadura (sin sentido cuando la armadura no toca la Guardia) y ahora da Armadura directamente; *Maestría de Armas* ignora Armadura y sus Críticos la deterioran. **Dominio Divino se desglosa en sus 9 Dominios** como talentos independientes, igual que se hizo con Voto en v47.1.
+- El estado **Sorprendido** se sustituye por **Desprevenido** en todo el compendio.
+- **Convicciones** (Manual Cap. 18) sustituyen al Alineamiento: las nueve etiquetas clásicas se conservan como coordenadas de dos ejes, no como veredicto moral; *Neutral Puro* pasa a llamarse **Neutral**. Es puramente narrativo y no modifica ninguna regla.
+- **Filo** pasa a llamarse **Pericia** en los textos de Arquetipo.
+
+### Visual
+
+El dorado de las **tarjetas de identidad** (marco del retrato, su nombre, las insignias de Linaje/Arquetipo/Trasfondo y las tarjetas del roster) baja un **10%** de intensidad. Se hace con `color-mix` sobre los tokens de tema, con respaldo en hex para navegadores sin soporte, de modo que los temas alternativos (blood, arcane, parchment) se atenúan igual.
 
 ## Novedades v47.1 — El talento "Voto" se desglosa en 7 talentos independientes
 
