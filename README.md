@@ -1,9 +1,28 @@
-# S&S Companion — v48
+# S&S Companion — v48.1
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).
 
 
 
+
+## Novedades v48.1 — Auditoría de código y ajustes de la tarjeta Guardia
+
+**Ajustes pedidos**
+
+- La tarjeta **Guardia** se mueve de la pestaña Stats a **Perfil, justo encima de Ataques** — donde se consulta de verdad durante el combate, junto al resto de números que se usan turno a turno.
+- El selector de atributo defensivo pierde las glosas descriptivas ("evitas el golpe moviéndote", "lo ves venir", "mantienes la línea"): ahora solo dice Destreza / Sabiduría / Constitución.
+- Al **generar un personaje aleatorio**, el atributo defensivo deja de sortearse a ciegas y toma el **mayor de DES/SAB/CON** con las puntuaciones ya tiradas, que es lo que haría cualquier jugador al construir la ficha (verificado en 8 de 8 tiradas).
+- Se retira la referencia "(§3d)" de la etiqueta **Desprevenido**.
+- **Detalle → Arquetipo**: el cuadro de *Ingenio* desbordaba su caja. La causa era el `min-width:auto` que los ítems de un grid tienen por defecto: impide encogerse por debajo del `min-content`, y `INT/SAB/CAR + Niv + 12` es un token largo sin espacios. Corregido con `min-width:0` y `overflow-wrap:anywhere`; verificado a 360 px, donde las tres cajas quedan idénticas y ninguna desborda.
+
+**Auditoría de código zombie**
+
+- **`hasTalent('alerta')`** en el cálculo de Iniciativa sumaba +5 por un talento que **no existe en ningún catálogo** de la app (ni en v6.0, ni v8.1, ni anteriores). Código muerto desde hace varias versiones: eliminado.
+- **"Filo" seguía visible en la interfaz** pese a que las reglas lo renombraron a **Pericia** en v8.3: corregido en el selector de Identidad, el recuadro de Estado, el resumen de Detalle y el editor de Arquetipos. El validador de requisitos acepta ahora ambas nomenclaturas, por si una base de reglas importada trae la antigua.
+- Cuatro `id` de HTML sin ninguna referencia en JS, CSS ni HTML (`adv_fab_opts`, `sdial_btn`, `db_editor_title`, `talent_modal_title`): esos elementos se localizan por clase, así que los ids sobraban.
+- Revisado también: métodos de `app.js` sin llamadas (ninguno real), clases CSS sin uso (ninguna real — las 17 candidatas resultaron construirse por concatenación de plantillas), referencias a ids inexistentes (ninguna), `data-action` sin manejador (ninguno), y restos de la migración CA→Guardia en el código (limpios; los `.bonus` que quedan son el bono de atributo de los Descriptores, otro campo distinto).
+
+`CACHE_VERSION` sube a `ss-companion-v34`.
 
 ## Novedades v48 — Guardia y Armadura: las dos defensas (reglas v8.3 / v7.1 / v8.1)
 

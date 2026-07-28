@@ -1715,9 +1715,16 @@ details[open] > summary::before { content: '▾'; }
 @media(hover:hover){.dc-gbtn:hover{border-color:var(--edge-gold);color:var(--gold)}}
 .dc-gbtn.active{border-color:var(--gold);color:var(--void);background:linear-gradient(135deg,rgba(200,169,110,.9),rgba(224,194,126,.95));font-weight:700}
 .dc-gbtn:active{transform:scale(.9)}
-.js-res-formula   { text-align: center; border-radius: var(--r); padding: 6px; }
+/* Cajas de fórmula de Reserva (Detalle → Arquetipo). `min-width:0` es
+   imprescindible: sin él el ítem del grid conserva min-width:auto y no puede
+   encogerse por debajo de su min-content, así que "INT/SAB/CAR + Niv + 12"
+   (un token largo sin espacios) se desbordaba de la caja de Ingenio. */
+.js-res-formula   { text-align: center; border-radius: var(--r); padding: 6px; min-width: 0; }
 .js-res-formula-lbl { font-family: var(--fm); font-size:var(--fs-2xs); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2px; }
-.js-res-formula-val { font-family: var(--fd); font-size:var(--fs-xl); color: var(--bright); font-weight: 700; }
+.js-res-formula-val {
+  font-family: var(--fd); font-size:var(--fs-lg); color: var(--bright); font-weight: 700;
+  overflow-wrap: anywhere; line-height: 1.25;
+}
 
 /* TOAST — Elevated glassmorphism */
 #toast-ct,#toast-ct-err{

@@ -229,7 +229,7 @@
       </div>
       <button class="app-hdr-save" data-action="saveChar" aria-label="Guardar personaje" title="Guardar">Guardar</button>
       <div class="sdial" id="sdial">
-        <button class="sdial-btn" data-action="toggleDial" title="Acciones" aria-label="Abrir menú de acciones" aria-expanded="false" id="sdial_btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+        <button class="sdial-btn" data-action="toggleDial" title="Acciones" aria-label="Abrir menú de acciones" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         <div class="sdial-menu" id="sdial_menu">
           <button class="sdial-item" onclick="app.randomize();app.toggleDial()" title="Personaje aleatorio" aria-label="Generar personaje aleatorio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
           <button class="sdial-item sdial-danger" onclick="app.confirmClear();app.toggleDial()" title="Resetear hoja" aria-label="Resetear hoja de personaje"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
@@ -300,7 +300,7 @@
             <div id="identity_edit_view">
               <div class="g2">
                 <div><span class="fl">Linaje (Raza)</span><select id="sel_desc" aria-label="Linaje del personaje" onchange="app.updateOptions()"></select><div id="desc_info" class="infobox"></div></div>
-                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Filo</span><select id="sel_filo" aria-label="Filo del arquetipo" onchange="app.calc()"></select></div>
+                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericia</span><select id="sel_filo" aria-label="Pericia del arquetipo" onchange="app.calc()"></select></div>
               </div>
               <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
               <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
@@ -384,7 +384,7 @@
                 <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_prof">+2</span></div>
               </div>
               <div class="sc">
-                <div class="sc-lbl" style="color:var(--muted)">Filo</div>
+                <div class="sc-lbl" style="color:var(--muted)">Pericia</div>
                 <div style="font-family:var(--fd);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_filo_val">—</span></div>
               </div>
             </div>
@@ -397,6 +397,46 @@
               <p id="carga_warn" style="display:none;color:var(--ember);font-size:var(--fs-xs);text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
             </div>
             <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
+          </div>
+
+          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
+               10 + PB + escudo + atributo defensivo. La armadura NO interviene
+               (solo aporta Reducción de Daño, en Equipo de Combate). -->
+          <div class="panel">
+            <div class="ph"><span class="pt">Guardia</span></div>
+            <div id="guard_edit_view">
+              <div class="guard-live">
+                <div class="guard-live-lbl">Guardia</div>
+                <div class="guard-live-val" id="guard_total_live">10</div>
+              </div>
+              <div class="guard-formula">
+                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Escudo</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Atributo</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
+              </div>
+              <div style="margin-top:8px">
+                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
+                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
+                  <option value="DES">Destreza</option>
+                  <option value="SAB">Sabiduría</option>
+                  <option value="CON">Constitución</option>
+                </select>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+              </div>
+              <div class="ccard"><span class="clbl">Desprevenido</span><span class="cval" id="guard_unaware_val">—</span></div>
+              <div id="guard_alt_note" class="infobox"></div>
+              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="guard_summary_view" style="display:none">
+              <!-- Generado por app._buildGuardSummary() desde app._combat -->
+            </div>
           </div>
 
           <!-- Ataques rápidos -->
@@ -502,46 +542,6 @@
             <div id="skills_summary_view" style="display:none;text-align:center">
               <div id="final_skills_list" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px 0"></div>
               <button class="bedit" onclick="app.editSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
-            </div>
-          </div>
-
-          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
-               10 + PB + escudo + atributo defensivo. La armadura NO interviene
-               (solo aporta Reducción de Daño, en Equipo de Combate). -->
-          <div class="panel">
-            <div class="ph"><span class="pt">Guardia</span></div>
-            <div id="guard_edit_view">
-              <div class="guard-live">
-                <div class="guard-live-lbl">Guardia</div>
-                <div class="guard-live-val" id="guard_total_live">10</div>
-              </div>
-              <div class="guard-formula">
-                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Escudo</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Atributo</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
-              </div>
-              <div style="margin-top:8px">
-                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
-                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
-                  <option value="DES">Destreza — evitas el golpe moviéndote</option>
-                  <option value="SAB">Sabiduría — lo ves venir</option>
-                  <option value="CON">Constitución — mantienes la línea</option>
-                </select>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
-                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
-              </div>
-              <div class="ccard"><span class="clbl">Desprevenido (§3d)</span><span class="cval" id="guard_unaware_val">—</span></div>
-              <div id="guard_alt_note" class="infobox"></div>
-              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
-            </div>
-            <div id="guard_summary_view" style="display:none">
-              <!-- Generado por app._buildGuardSummary() desde app._combat -->
             </div>
           </div>
         </div><!-- /page 1 -->
@@ -715,7 +715,7 @@
     </div><!-- /pages-wrapper -->
 
     <div id="adv_fab" class="adv-fab" data-state="0">
-      <div class="adv-fab-opts" id="adv_fab_opts" role="group" aria-label="Ventaja o Desventaja en las tiradas">
+      <div class="adv-fab-opts" role="group" aria-label="Ventaja o Desventaja en las tiradas">
         <button type="button" class="adv-opt adv-adv" data-adv="1" aria-pressed="false" onclick="app.setAdvantage(1)" title="Ventaja" aria-label="Ventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-up"/></svg></button>
         <button type="button" class="adv-opt adv-norm active" data-adv="0" aria-pressed="true" onclick="app.setAdvantage(0)" title="Normal" aria-label="Normal"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg></button>
         <button type="button" class="adv-opt adv-dis" data-adv="-1" aria-pressed="false" onclick="app.setAdvantage(-1)" title="Desventaja" aria-label="Desventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-down"/></svg></button>
@@ -871,6 +871,7 @@
       <span class="set-lbl" style="display:block;margin:12px 0 7px">Aplicación</span>
       <div style="display:flex;flex-direction:column;gap:6px">
         <button class="btn btn-g" style="width:100%" data-action="checkForUpdate"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>Buscar actualización</button>
+        <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);text-align:center;letter-spacing:.04em">Versión de la app: <span id="set_app_ver">—</span></div>
         <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);text-align:center;letter-spacing:.04em">Datos de reglas: <span id="set_rules_ver">—</span></div>
       </div>
     </section>
@@ -882,7 +883,7 @@
   <div class="fs-hdr" style="background:linear-gradient(180deg,rgba(10,8,24,.97) 0%,var(--raised) 100%)">
     <button class="fs-hdr-back" data-action="closeDatabaseEditor" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="fs-hdr-center">
-      <span class="fs-hdr-ttl" style="color:var(--ice)" id="db_editor_title">Editor de Reglas</span>
+      <span class="fs-hdr-ttl" style="color:var(--ice)">Editor de Reglas</span>
       <span class="fs-hdr-sub">Base de datos del sistema de juego</span>
     </div>
     <div class="fs-hdr-actions">
@@ -920,7 +921,7 @@
   <div class="fs-hdr">
     <button class="fs-hdr-back" data-action="closeTalentManager" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="fs-hdr-center">
-      <span class="fs-hdr-ttl" id="talent_modal_title">Gestor de Talentos</span>
+      <span class="fs-hdr-ttl">Gestor de Talentos</span>
       <span class="fs-hdr-sub">Elige hasta 3 talentos para el personaje</span>
     </div>
     <div class="fs-hdr-actions">

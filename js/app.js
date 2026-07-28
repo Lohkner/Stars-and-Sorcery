@@ -1276,7 +1276,7 @@ const app = {
     document.getElementById('arq_info').textContent = arq ? `PV base: ${arq.pv}+CON · Adr: FUE/DES+Niv+${arq.adr_bonus||0} · Ing: INT/SAB/CAR+Niv+${arq.ing_bonus||0} · Skills: ${arq.skills_count||2}` : '';
     document.getElementById('bg_info').textContent = bg ? `Habilidades: ${bg.skills?.join(', ')||'—'}${bg.defecto?' · '+bg.defecto:''}` : '';
 
-    // Filo select
+    // Pericia select
     const filoSel = document.getElementById('sel_filo');
     const curFilo = filoSel.value;
     filoSel.innerHTML = '<option value="">— Sin filo —</option>';
@@ -1421,7 +1421,7 @@ const app = {
     $('max_ing').textContent = Math.max(0, maxIng);
     $('res_prof').textContent = '+'+prof;
 
-    // Filo
+    // Pericia
     const filoVal = $('sel_filo').value;
     $('res_filo_val').textContent = filoVal || '—';
 
@@ -1434,7 +1434,6 @@ const app = {
       const srcMod = this._sourceAttrMod(mods);
       if (srcMod !== null) ini = Math.max(ini, srcMod);
     }
-    if (hasTalent('alerta')) ini += 5;
     $('res_ini').textContent = (ini>=0?'+':'')+ini;
 
     // Velocidad
@@ -2606,8 +2605,8 @@ const app = {
         out.atoms.push({ kind:'level', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(`Nivel ${need}+`); }
       }
-      // Filo: "Filo Físico 2 (o Filo Flexible 2)" — la hoja no registra Filos: informativo, no bloquea
-      else if (/^Filo\s+(F\u00edsico|Flexible|Mental)\s*\d/i.test(part)) {
+      // Pericia: "Pericia Física 2 (o Pericia Flexible 2)" — la hoja no registra Pericias: informativo, no bloquea
+      else if (/^(?:Pericia|Filo)\s+(F[íi]sic[ao]|Flexible|Mental)\s*\d/i.test(part)) {
         out.atoms.push({ kind:'info', raw: part, met:true });
       }
       // Competencia de Kit [v5.2.2] / de armas [v5.3.5]: "Competencia en Herramientas…",
@@ -3156,7 +3155,7 @@ const app = {
       rg.appendChild(mkResBox('rgba(74,158,202,.1)','rgba(74,158,202,.3)','var(--ice)','Ingenio',ingFormula));
       ab.appendChild(rg);
       if (filoVal) {
-        const fl=document.createElement('div'); fl.className='js-section-lbl'; fl.textContent='Filo Seleccionado'; ab.appendChild(fl);
+        const fl=document.createElement('div'); fl.className='js-section-lbl'; fl.textContent='Pericia Seleccionada'; ab.appendChild(fl);
         const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent=this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
       }
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
@@ -3705,7 +3704,7 @@ const app = {
         <div><span class="dfl">Adrenalina</span><input type="number" id="db_adr" value="${existing?.adr_bonus??existing?.adr??2}"></div>
         <div><span class="dfl">Ingenio</span><input type="number" id="db_ing" value="${existing?.ing_bonus??existing?.ing??0}"></div>
       </div>
-      <div style="margin-bottom:6px"><span class="dfl">Filos (separados por coma)</span><input type="text" id="db_edges" value="${_e((existing?.edges||[]).join(', '))}"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Pericias (separadas por coma)</span><input type="text" id="db_edges" value="${_e((existing?.edges||[]).join(', '))}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Habilidades (separadas por coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>`;
     } else if (cat === 'backgrounds') {
       formHtml += `<div style="margin-bottom:10px">
@@ -4897,6 +4896,27 @@ const app = {
   /** Ajustes → "Buscar actualización": fuerza reg.update() y, si hay un SW
       nuevo (instalándose o ya en espera), ofrece activarlo con el mismo
       aviso persistente del arranque. */
+  /** Escribe en Ajustes la versión de la app realmente en uso: el nombre del
+      caché que sirve el service worker. Es el único dato que distingue "la
+      app está al día" de "el despliegue no llegó a este dispositivo". */
+  async _stampAppVersion() {
+    const el = document.getElementById('set_app_ver');
+    if (!el) return;
+    if (!('serviceWorker' in navigator) || !('caches' in window)) {
+      el.textContent = 'sin service worker';
+      return;
+    }
+    try {
+      const keys = await caches.keys();
+      const mine = keys.filter(k => k.startsWith('ss-companion-'));
+      if (!mine.length) { el.textContent = 'sin caché (¿primera visita?)'; return; }
+      // Si hay más de uno, hay una actualización a medio aplicar.
+      el.textContent = mine.length === 1 ? mine[0] : mine.join(' → ') + ' (pendiente de aplicar)';
+    } catch (e) {
+      el.textContent = 'no disponible';
+    }
+  },
+
   async checkForUpdate() {
     // Los toasts se renderizan DEBAJO del top-layer del <dialog> de Ajustes:
     // con el modal abierto serían invisibles e intocables. Cerrarlo primero.
@@ -4943,9 +4963,14 @@ const app = {
     // (y prefs individuales activas) → "Este personaje"; si no → "Global".
     this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
     this._syncPortraitScopeUI();
-    // Sello de versión de datos (verificable tras actualizar)
+    // Sellos de versión (verificables tras actualizar). Son dos cosas
+    // distintas y conviene poder mirarlas por separado: los DATOS de reglas
+    // viven en el bundle JS, mientras que la VERSIÓN DE LA APP es la del
+    // caché que el service worker está sirviendo — si esta última no sube
+    // tras un despliegue, el problema es de distribución, no de la app.
     const rv = document.getElementById('set_rules_ver');
     if (rv) rv.textContent = STORAGE.RULES_DATA_VERSION;
+    this._stampAppVersion();
     const dlg = document.getElementById('settings_modal');
     if (!dlg) return;
     if (!dlg.open) {
@@ -5294,10 +5319,21 @@ const app = {
     // 6. updateOptions para construir filos y habilidades (ya tiene arq/desc/bg en los selects)
     this.updateOptions(true);
 
-    // 7. Filo aleatorio (ahora los options ya existen)
+    // 7. Pericia aleatoria (ahora los options ya existen)
     const filoSel = document.getElementById('sel_filo');
     if (filoSel.options.length > 1) filoSel.value = filoSel.options[Math.floor(Math.random()*(filoSel.options.length-1))+1].value;
     this.calc(); // sync res_filo_val immediately
+
+    // 7b. Atributo defensivo de la Guardia: no se sortea a ciegas — se toma el
+    // mejor de los tres elegibles (DES/SAB/CON) con las puntuaciones ya
+    // tiradas, que es lo que haría cualquier jugador al construir la ficha.
+    const guardSel = document.getElementById('sel_guard_attr');
+    if (guardSel) {
+      const best = ['DES','SAB','CON']
+        .map(k => ({ k, v: this._statFinal(k).final }))
+        .sort((a,b) => b.v - a.v)[0];
+      if (best) guardSel.value = best.k;
+    }
 
     // 8. Salvaciones aleatorias
     const saveCommon = ['DES','CON','SAB']; const saveUncommon = ['FUE','INT','CAR'];
