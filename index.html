@@ -315,89 +315,76 @@
             </div>
           </div>
 
-          <!-- Estado -->
-          <div class="panel" style="padding:8px">
-            <div class="ph" style="margin-bottom:7px"><span class="pt">Estado</span></div>
-            <!-- Reservas principales -->
-            <div class="g3c mb5" style="gap:5px">
-              <div class="res-box res-box-pv">
-                <div class="res-lbl res-lbl-pv">PV</div>
-                <div class="res-ctrl res-ctrl-pv">
-                  <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="-1" onclick="app.adjustRes('cur_pv','max_pv',-1)" aria-label="Reducir puntos de vida"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin" aria-label="Puntos de vida actuales">
-                  <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="1" onclick="app.adjustRes('cur_pv','max_pv',1)" aria-label="Aumentar puntos de vida"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-pv">/ <span id="max_pv">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
-              </div>
-              <div class="res-box res-box-adr">
-                <div class="res-lbl res-lbl-adr">Adrenalina</div>
-                <div class="res-ctrl res-ctrl-adr">
-                  <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="-1" onclick="app.adjustRes('cur_adr','max_adr',-1)" aria-label="Reducir adrenalina"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin" aria-label="Adrenalina actual">
-                  <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="1" onclick="app.adjustRes('cur_adr','max_adr',1)" aria-label="Aumentar adrenalina"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-adr">/ <span id="max_adr">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
-              </div>
-              <div class="res-box res-box-ing">
-                <div class="res-lbl res-lbl-ing">Ingenio</div>
-                <div class="res-ctrl res-ctrl-ing">
-                  <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="-1" onclick="app.adjustRes('cur_ing','max_ing',-1)" aria-label="Reducir ingenio"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin" aria-label="Ingenio actual">
-                  <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="1" onclick="app.adjustRes('cur_ing','max_ing',1)" aria-label="Aumentar ingenio"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-ing">/ <span id="max_ing">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
-              </div>
-            </div>
-            <!-- Stats secundarios row 1 -->
-            <div class="g3c mb4">
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--gold)">Armadura</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_armor">0</span></div>
-                <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_armor_name">—</div>
-              </div>
-              <div class="sc-clickable" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)">
-                <div class="sc-lbl" style="color:var(--muted)">Ini</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--bright);font-weight:700"><span id="res_ini">+0</span></div>
-              </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--muted)">Vel</div>
-                <div style="font-family:var(--fm);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_vel">30 pies</span></div>
-              </div>
-            </div>
-            <!-- Stats secundarios row 2 -->
-            <div class="g3c mb5">
-              <div class="res-box res-box-carne" style="padding:4px 3px">
-                <div class="res-lbl res-lbl-carne">Carne</div>
-                <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--fm);font-weight:600;font-size:var(--fs-2xl);">
-                  <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="-1" onclick="app.adjustRes('cur_carne','res_carne',-1)" aria-label="Reducir daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="color:var(--bright);width:5ch;max-width:5ch;text-align:center;font-size:var(--fs-2xl)">
-                  <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="1" onclick="app.adjustRes('cur_carne','res_carne',1)" aria-label="Aumentar daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div style="font-family:var(--fm);font-size:var(--fs-xs);color:rgba(160,104,58,.8);margin-top:1px">/ <span id="res_carne">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
-              </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--gold)">Comp</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_prof">+2</span></div>
-              </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--muted)">Pericia</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_filo_val">—</span></div>
-              </div>
-            </div>
-            <!-- Encumbramiento -->
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">
-                <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:var(--fs-md)">0/0</span>
-              </div>
-              <div class="lbar"><div id="carga_bar" class="lfill"></div></div>
-              <p id="carga_warn" style="display:none;color:var(--ember);font-size:var(--fs-xs);text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
-            </div>
-            <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
-          </div>
+         <!-- Estado -->
+<div class="panel" style="padding:12px 14px">
+  <div class="ph" style="margin-bottom:10px"><span class="pt">Estado</span></div>
+
+  <!-- PV -->
+  <div style="margin-bottom:10px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+      <span style="display:flex;align-items:center;gap:6px;font-family:var(--fd);font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.08em;text-transform:uppercase"><span style="width:6px;height:6px;border-radius:50%;background:var(--blood);display:inline-block"></span>Puntos de Vida</span>
+      <span style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted)"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin" aria-label="Puntos de vida actuales" style="background:none;border:none;color:var(--blood);font-weight:700;width:3ch;max-width:3ch;text-align:right;padding:0;font-size:var(--fs-md)">/ <span id="max_pv">0</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="-1" onclick="app.adjustRes('cur_pv','max_pv',-1)" aria-label="Reducir puntos de vida" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+      <div class="res-track" aria-hidden="true" style="flex:1"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
+      <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="1" onclick="app.adjustRes('cur_pv','max_pv',1)" aria-label="Aumentar puntos de vida" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+    </div>
+  </div>
+
+  <!-- Adrenalina / Ingenio / Carne -->
+  <div style="display:flex;flex-direction:column;gap:7px;padding:9px 0;border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:6px;font-family:var(--fd);font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.06em"><span style="width:5px;height:5px;border-radius:50%;background:var(--sage);display:inline-block"></span>Adrenalina</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="-1" onclick="app.adjustRes('cur_adr','max_adr',-1)" aria-label="Reducir adrenalina" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+        <span style="font-family:var(--fm);font-size:var(--fs-md);color:var(--sage);font-weight:600"><input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin" aria-label="Adrenalina actual" style="background:none;border:none;color:var(--sage);font-weight:600;width:2ch;max-width:2ch;text-align:right;padding:0;font-size:var(--fs-md)">/<span id="max_adr">0</span></span>
+        <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="1" onclick="app.adjustRes('cur_adr','max_adr',1)" aria-label="Aumentar adrenalina" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:6px;font-family:var(--fd);font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.06em"><span style="width:5px;height:5px;border-radius:50%;background:var(--ice);display:inline-block"></span>Ingenio</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="-1" onclick="app.adjustRes('cur_ing','max_ing',-1)" aria-label="Reducir ingenio" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+        <span style="font-family:var(--fm);font-size:var(--fs-md);color:var(--ice);font-weight:600"><input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin" aria-label="Ingenio actual" style="background:none;border:none;color:var(--ice);font-weight:600;width:2ch;max-width:2ch;text-align:right;padding:0;font-size:var(--fs-md)">/<span id="max_ing">0</span></span>
+        <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="1" onclick="app.adjustRes('cur_ing','max_ing',1)" aria-label="Aumentar ingenio" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:6px;font-family:var(--fd);font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.06em"><span style="width:5px;height:5px;border-radius:50%;background:#c08a52;display:inline-block"></span>Carne</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="-1" onclick="app.adjustRes('cur_carne','res_carne',-1)" aria-label="Reducir daño de carne" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+        <span style="font-family:var(--fm);font-size:var(--fs-md);color:#c08a52;font-weight:600"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="background:none;border:none;color:#c08a52;font-weight:600;width:2ch;max-width:2ch;text-align:right;padding:0;font-size:var(--fs-md)">/<span id="res_carne">0</span></span>
+        <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="1" onclick="app.adjustRes('cur_carne','res_carne',1)" aria-label="Aumentar daño de carne" style="border-radius:50%;background:none"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats secundarios: una sola fila -->
+  <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-bottom:2px">
+    <span>ARM <b style="color:var(--gold);font-family:var(--fd)" id="res_armor">0</b></span>
+    <span style="color:var(--border)">·</span>
+    <span class="sc-clickable" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)" style="display:flex;align-items:center;gap:3px;color:var(--goldb);cursor:pointer;background:none;border:none;padding:0">⚄ INI <b style="font-family:var(--fd)" id="res_ini">+0</b></span>
+    <span style="color:var(--border)">·</span>
+    <span>COMP <b style="color:var(--gold);font-family:var(--fd)" id="res_prof">+2</b></span>
+    <span style="color:var(--border)">·</span>
+    <span>VEL <b style="color:var(--bright)" id="res_vel">30 pies</b></span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-bottom:9px">
+    <span id="res_armor_name">—</span>
+    <span>Pericia <b style="color:var(--bright);font-family:var(--fd)" id="res_filo_val">—</b></span>
+  </div>
+
+  <!-- Encumbramiento -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">
+      <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:var(--fs-md)">0/0</span>
+    </div>
+    <div class="lbar"><div id="carga_bar" class="lfill"></div></div>
+    <p id="carga_warn" style="display:none;color:var(--ember);font-size:var(--fs-xs);text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
+  </div>
+  <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
+</div>
 
           <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
                10 + PB + escudo + atributo defensivo. La armadura NO interviene
