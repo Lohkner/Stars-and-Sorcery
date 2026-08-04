@@ -1482,8 +1482,8 @@ const app = {
     this._combat.shieldName = shieldData?.name || 'Sin Escudo';
     this._combat.shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
     this._combat.shieldBlock = shieldData ? (shieldData.block || 0) : 0;
-    const armorNameEl = $('res_armor_name');
-    if (armorNameEl) armorNameEl.textContent = armorData?.name || 'Sin armadura';
+    // El nombre de la armadura ya no se repite en Estado (basta el puntaje);
+    // sigue en Equipo de Combate vía _combat.armorName y #armor_desc.
 
     // Armor desc
     const adesc = $('armor_desc');
@@ -2359,9 +2359,15 @@ const app = {
     this._updateResBars();
   },
 
-  /** Attach long-press repeat behavior to all .res-btn elements.
-   *  Called once from init(). Holding fires at 120ms intervals, accelerating.
-   *  Reads data-cur / data-max / data-delta attributes — no regex parsing. */
+  /** Pulsación y repetición por mantenido de los botones ± (.res-btn).
+   *  Se llama una vez desde init(). Lee data-cur / data-max / data-delta.
+   *
+   *  Un clic suma 1, y solo 1. Antes sumaba 2: el atributo `onclick` del
+   *  HTML y este `mousedown` llamaban los dos a adjustRes(), y el
+   *  `preventDefault()` del listener de `click` no cancela un manejador
+   *  inline (ya se registró antes y se ejecuta igual). Los onclick se
+   *  retiraron del HTML y el teclado se atiende aquí abajo, que si no
+   *  Enter/Espacio dejaban de funcionar al quitarlos. */
   _initResLongPress() {
     document.querySelectorAll('.res-btn').forEach(btn => {
       const { cur: curId, max: maxId, delta: deltaStr } = btn.dataset;
@@ -2400,7 +2406,17 @@ const app = {
       btn.addEventListener('mouseleave',  stop);
       btn.addEventListener('touchend',    stop);
       btn.addEventListener('touchcancel', stop);
+      // El puntero ya disparó en mousedown/touchstart: el click posterior
+      // no debe volver a sumar.
       btn.addEventListener('click',       e => e.preventDefault());
+      // Teclado: Enter/Espacio suman 1. Se ignora la repetición automática
+      // del sistema (e.repeat) para que dejar la tecla pulsada no dispare
+      // una ráfaga; para eso está el mantenido con el dedo o el ratón.
+      btn.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+        e.preventDefault();
+        if (!e.repeat) fire();
+      });
     });
   },
 
@@ -2605,10 +2621,6 @@ const app = {
         out.atoms.push({ kind:'level', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(`Nivel ${need}+`); }
       }
-      // Pericia: "Pericia Física 2 (o Pericia Flexible 2)" — la hoja no registra Pericias: informativo, no bloquea
-      else if (/^(?:Pericia|Filo)\s+(F[íi]sic[ao]|Flexible|Mental)\s*\d/i.test(part)) {
-        out.atoms.push({ kind:'info', raw: part, met:true });
-      }
       // Competencia de Kit [v5.2.2] / de armas [v5.3.5]: "Competencia en Herramientas…",
       // "Competencia con armas ligeras" — informativo
       else if (/^Competencia\s+(en|con)\s+/i.test(part)) {
@@ -2676,8 +2688,11 @@ const app = {
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
         // strip trailing "G1"/grade hints and parentheticals for the name match
         const baseName = part.replace(/\bG\d\b/g,'').replace(/\([^)]*\)/g,'').trim().toLowerCase();
-        // Reserva/condición special-cases we can't verify → treat as informational, not blocking
-        const informational = /reserva|sin armadura|sin despertar|restringido|racial|atributo de fuente|atributo clave|requisito/i.test(part);
+        // Reserva/condición special-cases we can't verify → treat as informational, not blocking.
+        // «Pericia Física 2» tenía rama propia: ningún talento del catálogo la
+        // pide (ni la pedirá), pero una base de reglas importada podría, y sin
+        // esto caería aquí como si fuera un TALENTO llamado así y bloquearía.
+        const informational = /reserva|sin armadura|sin despertar|restringido|racial|atributo de fuente|atributo clave|requisito|^(?:pericia|filo)\s+(?:f[íi]sic[ao]|flexible|mental)\s*\d/i.test(part);
         if (informational || baseName.length < 4) {
           out.atoms.push({ kind:'info', raw: part, met:true });
         } else {
@@ -2752,12 +2767,16 @@ const app = {
       "NÚCLEO DURO" / arquetipo mentions found in `req`. */
   _talentMatchesArq(t) {
     const arqKey = document.getElementById('sel_arq')?.value || '';
-    const arqName = (this.DB.archetypes?.[arqKey]?.name || '').toLowerCase();
-    const blob = `${t.req||''}`.toLowerCase();
-    // If req names a specific arquetipo, require a match; otherwise it's open to all.
-    const named = ['audaz','sutil','sagaz'].filter(a => blob.includes(a));
+    const arqs = this.DB.archetypes || {};
+    // Sin acentos y sin cablear la lista: el Arquetipo del medio se muestra
+    // como «Versátil» pero su clave sigue siendo 'sutil', así que hay que
+    // reconocer AMBOS —y cualquier renombrado futuro— leyendo de la DB.
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const blob = norm(t.req);
+    const named = Object.keys(arqs).filter(k =>
+      blob.includes(norm(k)) || blob.includes(norm(arqs[k].name)));
     if (named.length === 0) return true;            // open to everyone
-    return named.includes(arqName);
+    return named.includes(arqKey);
   },
 
   /** Toggle a talent filter chip and re-render. */
@@ -3602,7 +3621,7 @@ const app = {
   _dbFilterList(q) {
     const lc = document.getElementById('db_list_container');
     if (!lc) return;
-    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const query = norm(q.trim());
     let visible = 0;
     lc.querySelectorAll('.dbitem').forEach(row => {
@@ -5380,7 +5399,7 @@ const app = {
     this.inventory.push({uid:this._nextUid(),name:'Raciones (×5) · Ud8',slots:1,type:'misc'});
     this.inventory.push({uid:this._nextUid(),name:'Antorchas (×5) · Ud6',slots:1,type:'misc'});
     this.inventory.push({uid:this._nextUid(),name:'Morral / Mochila (+5 slots)',slots:1,type:'misc'});
-    // Monedas iniciales por Arquetipo (v5.2): Audaz 5d6, Sutil 4d6, Sagaz 3d6 — ×10 pp
+    // Monedas iniciales por Arquetipo (v5.2): Audaz 5d6, Versatil 4d6, Sagaz 3d6 — ×10 pp
     const arqKeyRand = document.getElementById('sel_arq')?.value || 'sutil';
     const coinDice = { audaz:5, sutil:4, sagaz:3 }[arqKeyRand] || 4;
     let coinRoll = 0; for (let c=0;c<coinDice;c++) coinRoll += Math.floor(Math.random()*6)+1;

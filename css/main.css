@@ -2877,3 +2877,211 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   .port-name,.ibadge{ color:color-mix(in srgb, var(--goldb) 90%, #000); }
   .char-lvl-badge{ color:color-mix(in srgb, var(--gold) 90%, #000); }
 }
+
+/* ══════════════════════════════════════════
+   Sección de Estado — recursos + fila de referencia
+   Cuatro recursos con el mismo ritmo tipográfico (PV destacado y con
+   barra) y una sola fila de consulta: Armadura · Iniciativa · Velocidad
+   · Comp. · Pericias, separada por filetes que se desvanecen.
+   Reutiliza .res-btn / .res-fin / .res-track / .res-fill / .lbar, así que
+   adjustRes(), _initResLongPress() y _updateResBars() siguen sirviéndola
+   sin cambios. El editor de grados de Pericia lo puebla js/pericias.js.
+══════════════════════════════════════════ */
+/* ── Filas de recurso ─────────────────────────────────────────── */
+.est4 .e4-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:33px;
+}
+.est4 .e4-name{
+  font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;
+  text-transform:uppercase;letter-spacing:.15em;color:var(--dim);
+  white-space:nowrap;min-width:0;
+}
+.est4 .e4-row-pv .e4-name{color:var(--text);letter-spacing:.17em}
+/* Rejilla de anchos FIJOS en px, no en ch: el número de PV es de 21px y
+   el resto de 16px, así que un ancho en ch hacía que la columna de PV
+   midiera 66px y las otras 59 — y sus ± quedaban 7px desalineados.
+   Con px, los −, los números y los + caen en la misma vertical. */
+.est4 .e4-ctl{
+  display:grid;grid-template-columns:27px 74px 27px;
+  align-items:center;gap:8px;flex-shrink:0;
+}
+
+/* Botones ±: filete tenue, sin relleno. El área táctil de 44px la
+   sigue aportando .res-btn::before, así que el círculo puede ser fino. */
+.est4 .e4-btn{
+  width:27px;height:27px;border-radius:50%;
+  border:1px solid var(--edge-soft);background:none;color:var(--muted);
+  font-family:var(--fm);font-size:14px;line-height:1;font-weight:400;
+  transition:border-color .18s,color .18s,background .18s;
+}
+.est4 .e4-btn:active{border-color:var(--edge-gold);color:var(--goldb);background:rgba(200,169,110,.05)}
+@media(hover:hover){.est4 .e4-btn:hover{border-color:var(--edge-gold);color:var(--goldb)}}
+
+/* Números: columna derecha alineada, cifras tabulares */
+.est4 .e4-num{
+  display:inline-flex;align-items:baseline;justify-content:flex-end;
+  font-family:var(--fm);font-variant-numeric:tabular-nums;line-height:1;
+  min-width:0;                 /* el ancho lo fija la rejilla de .e4-ctl */
+}
+.est4 .e4-fin{
+  width:3ch !important;max-width:3ch !important;
+  text-align:right;font-weight:600;color:var(--bright);
+  font-variant-numeric:tabular-nums;
+}
+.est4 .e4-sep{color:var(--rim);margin:0 4px;font-size:var(--fs-md)}
+.est4 .e4-max{color:var(--muted);font-size:var(--fs-md);font-variant-numeric:tabular-nums}
+.est4 .e4-row-pv .e4-fin{font-size:21px !important;font-weight:700}
+.est4 .e4-row-pv .e4-sep{font-size:var(--fs-lg);margin:0 5px}
+.est4 .e4-row-pv .e4-max{font-size:var(--fs-lg)}
+
+/* Barra de PV: el único color de la tarjeta */
+.est4 .e4-track{height:4px;margin:1px 0 3px;border-radius:2px}
+.est4 .e4-track .res-fill{box-shadow:0 0 9px rgba(168,42,58,.45)}
+.est4 .e4-track .res-fill.res-low{box-shadow:0 0 9px rgba(217,84,42,.5)}
+.est4 .e4-res{margin-top:5px}
+
+/* ── Fila de referencia ───────────────────────────────────────── */
+.est4 .e4-stats{
+  /* En móvil las cinco celdas en una sola fila caían a 40–78px y el texto
+     se apelmazaba. Se reparten 3 + 2 sobre una base de 6 columnas: cada
+     celda pasa a ~100px arriba y ~155px abajo, y "Pericias" —la que puede
+     ocupar tres líneas— se queda con media fila para ella. */
+  display:grid;grid-template-columns:repeat(6,1fr);gap:9px 6px;align-items:stretch;
+  margin:13px 0 0;padding:9px 0 8px;
+  /* filetes superior e inferior que se desvanecen por los extremos */
+  background-image:var(--line-dim),var(--line-dim);
+  background-size:100% 1px,100% 1px;
+  background-position:top left,bottom left;
+  background-repeat:no-repeat;
+}
+.est4 .e4-stat{
+  position:relative;min-width:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:3px 4px;
+}
+/* Armadura · Iniciativa · Velocidad arriba; Comp. · Pericias abajo.
+   Abajo el reparto es 2/4: "Comp." solo enseña un +N, mientras que
+   Pericias necesita sitio para caber en UNA línea aunque sean tres. */
+.est4 .e4-stat:nth-child(-n+3){grid-column:span 2}
+.est4 .e4-stat:nth-child(4)   {grid-column:span 2}
+.est4 .e4-stat:nth-child(5)   {grid-column:span 4}
+
+/* Filete vertical entre celdas, desvanecido por los extremos. Solo se
+   pinta donde hace falta: la primera de cada fila no lo lleva, y el botón
+   de Iniciativa tampoco ni antes ni después — ya se separa con su propio
+   contorno. En móvil eso deja un único filete, entre Comp. y Pericias. */
+.est4 .e4-stat::before{
+  content:none;position:absolute;left:-3px;top:4%;bottom:4%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--rim) 28%,var(--rim) 72%,transparent);
+}
+.est4 .e4-stat:nth-child(5)::before{content:''}
+
+/* Pantallas anchas: las cinco vuelven a caber en una sola fila */
+@media(min-width:480px){
+  .est4 .e4-stats{grid-template-columns:.9fr 1.1fr .95fr .7fr 1.35fr;gap:0 6px}
+  .est4 .e4-stat:nth-child(-n+3),
+  .est4 .e4-stat:nth-child(n+4){grid-column:auto}
+  .est4 .e4-stat:nth-child(4)::before{content:''}
+}
+.est4 .e4-slbl{
+  display:flex;align-items:center;gap:3px;
+  font-family:var(--fd);font-size:var(--fs-2xs);font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  white-space:nowrap;
+}
+.est4 .e4-sval{
+  font-family:var(--fd);font-size:var(--fs-xl);font-weight:700;
+  color:var(--text);line-height:1;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.est4 .e4-sval-sm{font-family:var(--fm);font-size:var(--fs-sm);font-weight:600}
+/* Pericias en línea — "Físico 1 · Mental 2". Con media fila para ella
+   caben las tres sin partirse; si no cupieran, flex-wrap las baja de
+   línea en vez de recortarlas. */
+.est4 .e4-sval-per{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;
+  gap:1px 7px;
+  font-family:var(--fm);font-size:var(--fs-2xs);font-weight:600;line-height:1.2;
+}
+.est4 .e4-per{white-space:nowrap;position:relative}
+.est4 .e4-per + .e4-per::before{
+  content:'·';position:absolute;left:-5px;color:var(--rim);font-weight:400;
+}
+
+/* Iniciativa: botón real, con contorno propio para que se lea como tal */
+.est4 .e4-stat-btn{
+  margin:0;font:inherit;cursor:pointer;min-height:0;
+  border:1px solid var(--edge-gold);border-radius:var(--rl);
+  background:rgba(200,169,110,.045);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:background .18s,border-color .18s,transform .1s;
+}
+.est4 .e4-stat-btn .e4-slbl{color:var(--gold)}
+.est4 .e4-stat-btn .e4-sval{
+  display:inline-flex;align-items:center;gap:4px;
+  color:var(--goldb);text-shadow:0 0 14px rgba(200,169,110,.3);
+}
+.est4 .e4-die{font-size:.82em;opacity:.7;line-height:1}
+.est4 .e4-stat-btn:active{background:rgba(200,169,110,.11);border-color:var(--gold);transform:scale(.96)}
+@media(hover:hover){.est4 .e4-stat-btn:hover{background:rgba(200,169,110,.09);border-color:var(--edge-gold-strong)}}
+
+/* ── Carga ────────────────────────────────────────────────────── */
+.est4 .e4-load{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-top:12px;
+}
+.est4 .e4-load-lbl{
+  font-family:var(--fd);font-size:var(--fs-2xs);font-weight:600;
+  text-transform:uppercase;letter-spacing:.15em;color:var(--muted);
+}
+.est4 .e4-load-val{
+  font-family:var(--fm);font-size:var(--fs-md);color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.est4 .e4-lbar{margin-top:5px}
+.est4 .e4-warn{
+  display:none;margin:6px 0 0;text-align:center;
+  font-family:var(--fd);font-size:var(--fs-2xs);font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ember);
+}
+.est4 .e4-notes{margin-top:12px}
+
+/* ── Editor de grados de Pericia (panel Identidad) ───────────── */
+.per-grid{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+.per-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:4px 8px;border:1px solid var(--edge-soft);border-radius:var(--r);
+  background:var(--raised);
+}
+.per-lbl{
+  font-family:var(--fd);font-size:var(--fs-sm);color:var(--dim);
+  letter-spacing:.06em;white-space:nowrap;
+}
+/* Lo que compra el grado: coste por Nivel de Esfuerzo */
+.per-cost{
+  margin-left:auto;font-family:var(--fm);font-size:var(--fs-2xs);
+  color:var(--muted);white-space:nowrap;
+}
+.per-row.per-on .per-cost{color:var(--gold)}
+.per-sel{
+  width:auto !important;min-width:52px;flex-shrink:0;
+  min-height:32px !important;padding:2px 4px !important;
+  font-family:var(--fm) !important;font-size:var(--fs-md) !important;
+  text-align:center;
+}
+/* Adquirida: se marca desde JS (el atributo value de un select no refleja
+   la propiedad, así que :has() no sirve aquí) */
+.per-row.per-on{border-color:var(--edge-gold);background:rgba(200,169,110,.05)}
+.per-row.per-on .per-lbl{color:var(--text)}
+.per-empty{
+  font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);
+  padding:4px 2px;
+}
+
+/* Móviles estrechos: la fila de referencia respira menos */
+@media(max-width:359px){
+  .est4 .e4-slbl{letter-spacing:.02em}
+  .est4 .e4-stat{padding:1px 1px}
+}

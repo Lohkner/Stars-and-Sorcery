@@ -1,3 +1,43 @@
+# S&S Companion — v49
+
+## Novedades v49 — Compendio de Sendas v2.0, Pericias con grado y tarjeta Estado
+
+Actualización desde **Compendio de Sendas v2.0** y **Stars & Sorcery Reglas Esenciales**. `STORAGE.RULES_DATA_VERSION` sube a `9.0-sendas-v2-r2` y `CACHE_VERSION` a `ss-companion-v39`.
+
+**Los botones ± suman de uno en uno**
+
+Un clic sumaba **2**: el atributo `onclick` del HTML y el `mousedown` de `_initResLongPress()` llamaban ambos a `adjustRes()`, y el `preventDefault()` del listener de `click` no cancela un manejador inline —ya está registrado antes y se ejecuta igual—. Se retiran los ocho `onclick` del HTML y el puntero queda como única vía. Mantener pulsado sigue repitiendo con aceleración (verificado: 0 → 97 en 6,6 s). Como quitar el `onclick` dejaba sin efecto Enter y Espacio, se añade un manejador de teclado que suma 1 e **ignora la repetición automática del sistema** (`e.repeat`): para una ráfaga está el mantenido.
+
+**Catálogo de Talentos — 267 → 257, en 23 Sendas**
+
+- **Dos fallos de maquetación del .docx que fusionaban talentos.** En la Senda **Pacto**, los nombres de «La Hoja del Pacto» y «El Tomo del Pacto» quedaron como texto normal en vez de encabezado: los tres talentos se leían como uno solo. En **Voto de Conquista** se coló pegada la tanda completa de Grados de **Rompejuramentos**. El parser detecta ambos casos —una segunda línea técnica dentro del bloque indica un talento nuevo cuyo nombre va dos líneas antes; un segundo «Grado 1» sin línea técnica de por medio indica contenido ajeno y se corta— y se pasó la comprobación por las 23 Sendas: no hay más casos.
+- Se conservan **212 ids**; entran 44 talentos nuevos y salen 55. `TALENT_ID_RENAMES` crece de 2 a 15 entradas con los renombrados **comprobados 1:1** (mismo texto de Grado 1, o el mismo concepto con el artículo caído): los nueve `dominio_de_la_X` → `dominio_de_X`, `pericia_que_vuelve` → `filo_que_vuelve`, `qi_en_la_pericia` → `qi_en_el_filo`, `metamagia_arcana` → `torsion_arcana`, `companero_de_exploracion` → `vinculo_animal`.
+- **No se mapean los contenedores desglosados.** `origen_de_sangre`, `herencia_refinada` y `herencia_culminada` se convierten en los ocho Orígenes independientes (Sangre Dracónica, Linaje Infernal, …); elegir por el jugador cuál le tocó sería inventarse su ficha. Esos talentos muestran "⚠ No encontrado" y **conservan su texto** en la ficha guardada, que almacena una copia completa.
+- Los **nueve Dominios** y los **seis Votos** vienen ya desglosados en el documento como talentos independientes de tres Grados. Los Dominios no traen línea técnica: sus Grados se derivan del chasis que el propio Compendio declara (G1 El Mandato = Axiomas + Rasgo · G2 El Signo · G3 La Prerrogativa).
+
+**Anomalías del documento fuente** (corregidas en la app, pendientes en el .docx)
+
+- **«Hechizo de Toda una Vida»** (General) aparece en el índice y como encabezado pero **sin texto**. Se conserva el contenido de v1.0.
+- **«Lectura del Combate»** (Arsenal) trae una nota de edición en lugar del talento: *«Se conserva, con el requisito abierto (dos talentos de esta Senda en vez de dos talentos de esta Senda)»* — el paréntesis dice lo mismo a ambos lados. Se conserva el contenido y el requisito de v1.0.
+- El bloque **Arsenal Personal / Lectura del Combate / El Armero** está **duplicado literalmente** en la Senda Arsenal. Se toma una sola copia: Arsenal queda con sus 6 talentos.
+- **«Al abrir tu Canal eliges un Origen»** (Herencia) es una instrucción introductoria a los ocho Orígenes con nivel de encabezado de talento. No entra al catálogo.
+
+**El Arquetipo «Sutil» pasa a llamarse «Versátil»**
+
+Las Reglas Esenciales lo renombran (76 menciones, cero de «Sutil»). Cambia **solo el nombre visible**: la clave interna sigue siendo `sutil` porque las fichas guardadas la referencian en `sel_arq`, y renombrarla obligaría a migrar cada personaje. `_talentMatchesArq` deja de tener la lista de Arquetipos cableada y la deriva de la base de reglas, reconociendo clave y nombre visible. Sus cifras no cambian (6 PV base, +5/+5, 3 habilidades, Pericia Flexible exclusiva). Ojo: **«Sutil» sigue siendo una propiedad de arma** y ahí no se toca.
+
+**Pericias con grado** (`js/pericias.js`, módulo nuevo)
+
+La ficha ya registra las Pericias, que antes no guardaba. Cada Pericia lleva grado **0–3** con su coste por Nivel de Esfuerzo a la vista (Sin Pericia 5 · 1→4 · 2→3 · 3→2). **Física y Mental las adquiere cualquiera** con Puntos de Desarrollo sin importar el Arquetipo —este solo decide la Pericia *inicial*—; **Flexible sigue siendo exclusiva del Versátil**. Los grados se guardan solos porque `gatherCharData` serializa todo `<select>` con id; las fichas anteriores migran poniendo a grado 1 la Pericia que tuvieran elegida.
+
+**Validador de requisitos: fuera la rama de Pericia**
+
+`_parseTalentReq` tenía una rama dedicada a «Pericia Física 2» para tratarla como informativa. Ningún talento del catálogo pide una Pericia como requisito, y no lo hará: la rama era código muerto y se retira. No cambia el comportamiento — el patrón se añade a la lista `informational` del caso general, porque sin eso caería en la rama que interpreta cualquier texto capitalizado como *talento requerido* y pasaría a **bloquear** en una base de reglas importada que sí usara esa redacción.
+
+**Tarjeta Estado, rediseñada**
+
+Cuatro recursos con el mismo ritmo tipográfico (PV destacado y con barra) y una sola fila de consulta —Armadura · Iniciativa · Velocidad · Comp. · Pericias— separada por filetes que se desvanecen. Iniciativa es un botón con contorno propio. En móvil la fila se reparte 3 + 2 para que ninguna celda baje de 100 px. El nombre de la armadura se retira de Estado: basta el puntaje, y el nombre sigue en Equipo de Combate.
+
 # S&S Companion — v48.1
 
 Hoja de personaje digital (PWA) para **Stars & Sorcery RPG**. Esta versión reestructura el monolito original de 7.800 líneas en un proyecto modular, corrige el bug de *touch bleed-through* del diálogo de confirmación y completa las piezas PWA que faltaban. **Toda la funcionalidad original se conserva** (verificado con suite de pruebas automatizada).

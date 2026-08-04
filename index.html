@@ -300,7 +300,7 @@
             <div id="identity_edit_view">
               <div class="g2">
                 <div><span class="fl">Linaje (Raza)</span><select id="sel_desc" aria-label="Linaje del personaje" onchange="app.updateOptions()"></select><div id="desc_info" class="infobox"></div></div>
-                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericia</span><select id="sel_filo" aria-label="Pericia del arquetipo" onchange="app.calc()"></select></div>
+                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericias (grado 0&ndash;3)</span><div id="filo_grades" class="per-grid"></div><select id="sel_filo" aria-label="Pericia principal del arquetipo" onchange="app.calc()" hidden style="display:none"></select></div>
               </div>
               <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
               <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
@@ -316,87 +316,83 @@
           </div>
 
           <!-- Estado -->
-          <div class="panel" style="padding:8px">
-            <div class="ph" style="margin-bottom:7px"><span class="pt">Estado</span></div>
-            <!-- Reservas principales -->
-            <div class="g3c mb5" style="gap:5px">
-              <div class="res-box res-box-pv">
-                <div class="res-lbl res-lbl-pv">PV</div>
-                <div class="res-ctrl res-ctrl-pv">
-                  <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="-1" onclick="app.adjustRes('cur_pv','max_pv',-1)" aria-label="Reducir puntos de vida"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin" aria-label="Puntos de vida actuales">
-                  <button class="res-btn res-btn-pv" data-cur="cur_pv" data-max="max_pv" data-delta="1" onclick="app.adjustRes('cur_pv','max_pv',1)" aria-label="Aumentar puntos de vida"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-pv">/ <span id="max_pv">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
+          <div class="panel est4" style="padding:13px 14px">
+            <div class="ph" style="margin-bottom:11px"><span class="pt">Estado</span></div>
+
+            <!-- Puntos de Vida -->
+            <div class="e4-pv">
+              <div class="e4-row e4-row-pv">
+                <span class="e4-name">Puntos de Vida</span>
+                <span class="e4-ctl">
+                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="-1" aria-label="Reducir puntos de vida">&minus;</button>
+                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin e4-fin" aria-label="Puntos de vida actuales"><span class="e4-sep">/</span><span class="e4-max" id="max_pv">0</span></span>
+                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="1" aria-label="Aumentar puntos de vida">+</button>
+                </span>
               </div>
-              <div class="res-box res-box-adr">
-                <div class="res-lbl res-lbl-adr">Adrenalina</div>
-                <div class="res-ctrl res-ctrl-adr">
-                  <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="-1" onclick="app.adjustRes('cur_adr','max_adr',-1)" aria-label="Reducir adrenalina"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin" aria-label="Adrenalina actual">
-                  <button class="res-btn res-btn-adr" data-cur="cur_adr" data-max="max_adr" data-delta="1" onclick="app.adjustRes('cur_adr','max_adr',1)" aria-label="Aumentar adrenalina"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-adr">/ <span id="max_adr">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
+              <div class="res-track e4-track" aria-hidden="true"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
+            </div>
+
+            <!-- Adrenalina · Ingenio · Carne -->
+            <div class="e4-res">
+              <div class="e4-row">
+                <span class="e4-name">Adrenalina</span>
+                <span class="e4-ctl">
+                  <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="-1" aria-label="Reducir adrenalina">&minus;</button>
+                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin e4-fin" aria-label="Adrenalina actual"><span class="e4-sep">/</span><span class="e4-max" id="max_adr">0</span></span>
+                  <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="1" aria-label="Aumentar adrenalina">+</button>
+                </span>
               </div>
-              <div class="res-box res-box-ing">
-                <div class="res-lbl res-lbl-ing">Ingenio</div>
-                <div class="res-ctrl res-ctrl-ing">
-                  <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="-1" onclick="app.adjustRes('cur_ing','max_ing',-1)" aria-label="Reducir ingenio"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin" aria-label="Ingenio actual">
-                  <button class="res-btn res-btn-ing" data-cur="cur_ing" data-max="max_ing" data-delta="1" onclick="app.adjustRes('cur_ing','max_ing',1)" aria-label="Aumentar ingenio"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div class="res-max res-max-ing">/ <span id="max_ing">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
+              <div class="e4-row">
+                <span class="e4-name">Ingenio</span>
+                <span class="e4-ctl">
+                  <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="-1" aria-label="Reducir ingenio">&minus;</button>
+                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin e4-fin" aria-label="Ingenio actual"><span class="e4-sep">/</span><span class="e4-max" id="max_ing">0</span></span>
+                  <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="1" aria-label="Aumentar ingenio">+</button>
+                </span>
+              </div>
+              <div class="e4-row">
+                <span class="e4-name">Carne</span>
+                <span class="e4-ctl">
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir daño de carne">&minus;</button>
+                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Daño de carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar daño de carne">+</button>
+                </span>
               </div>
             </div>
-            <!-- Stats secundarios row 1 -->
-            <div class="g3c mb4">
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--gold)">Armadura</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_armor">0</span></div>
-                <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="res_armor_name">—</div>
+
+            <!-- Fila de referencia: Armadura · Iniciativa · Velocidad · Comp. · Pericia -->
+            <div class="e4-stats">
+              <div class="e4-stat">
+                <span class="e4-slbl">Armadura</span>
+                <span class="e4-sval" id="res_armor">0</span>
               </div>
-              <div class="sc-clickable" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)">
-                <div class="sc-lbl" style="color:var(--muted)">Ini</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--bright);font-weight:700"><span id="res_ini">+0</span></div>
+              <button type="button" class="e4-stat e4-stat-btn" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)" aria-label="Tirar Iniciativa">
+                <span class="e4-slbl">Iniciativa</span>
+                <span class="e4-sval" id="res_ini">+0</span>
+              </button>
+              <div class="e4-stat">
+                <span class="e4-slbl">Velocidad</span>
+                <span class="e4-sval e4-sval-sm" id="res_vel">30 pies</span>
               </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--muted)">Vel</div>
-                <div style="font-family:var(--fm);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_vel">30 pies</span></div>
+              <div class="e4-stat">
+                <span class="e4-slbl">Comp.</span>
+                <span class="e4-sval" id="res_prof">+2</span>
               </div>
-            </div>
-            <!-- Stats secundarios row 2 -->
-            <div class="g3c mb5">
-              <div class="res-box res-box-carne" style="padding:4px 3px">
-                <div class="res-lbl res-lbl-carne">Carne</div>
-                <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--fm);font-weight:600;font-size:var(--fs-2xl);">
-                  <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="-1" onclick="app.adjustRes('cur_carne','res_carne',-1)" aria-label="Reducir daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                  <input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin" style="color:var(--bright);width:5ch;max-width:5ch;text-align:center;font-size:var(--fs-2xl)">
-                  <button class="res-btn res-btn-carne" data-cur="cur_carne" data-max="res_carne" data-delta="1" onclick="app.adjustRes('cur_carne','res_carne',1)" aria-label="Aumentar daño de carne"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="2" x2="5" y2="8"/><line x1="2" y1="5" x2="8" y2="5"/></svg></button>
-                </div>
-                <div style="font-family:var(--fm);font-size:var(--fs-xs);color:rgba(160,104,58,.8);margin-top:1px">/ <span id="res_carne">0</span></div>
-                <div class="res-track" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
-              </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--gold)">Comp</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-2xl);color:var(--gold);font-weight:700"><span id="res_prof">+2</span></div>
-              </div>
-              <div class="sc">
-                <div class="sc-lbl" style="color:var(--muted)">Pericia</div>
-                <div style="font-family:var(--fd);font-size:var(--fs-xl);color:var(--bright);font-weight:600"><span id="res_filo_val">—</span></div>
+              <div class="e4-stat">
+                <span class="e4-slbl">Pericias</span>
+                <span class="e4-sval e4-sval-per" id="res_filo_val">—</span>
               </div>
             </div>
-            <!-- Encumbramiento -->
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">
-                <span>Encumbramiento</span><span id="res_carga" style="color:var(--text);font-family:var(--fm);font-size:var(--fs-md)">0/0</span>
-              </div>
-              <div class="lbar"><div id="carga_bar" class="lfill"></div></div>
-              <p id="carga_warn" style="display:none;color:var(--ember);font-size:var(--fs-xs);text-align:center;margin-top:2px;font-family:var(--fm)">SOBRECARGADO</p>
+
+            <!-- Carga -->
+            <div class="e4-load">
+              <span class="e4-load-lbl">Carga</span>
+              <span class="e4-load-val" id="res_carga">0/0</span>
             </div>
-            <details style="margin-top:6px"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
+            <div class="lbar e4-lbar"><div id="carga_bar" class="lfill"></div></div>
+            <p id="carga_warn" class="e4-warn">Sobrecargado</p>
+
+            <details class="e4-notes"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
           </div>
 
           <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
@@ -1010,6 +1006,7 @@
 <script defer src="js/storage.js"></script>
 <script defer src="js/ui-dialogs.js"></script>
 <script defer src="js/app.js"></script>
+<script defer src="js/pericias.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
 </html>

@@ -61,6 +61,28 @@ const AXIOM_ID_RENAMES = {
 const TALENT_ID_RENAMES = {
   golpe_de_ki:      'golpe_de_qi',
   reflexion_de_ki:  'reflexion_de_qi',
+
+  /* ── Compendio de Sendas v2.0 ───────────────────────────────────
+     Solo renombrados 1:1 comprobados: o el texto del Grado 1 coincide
+     letra por letra, o es el MISMO concepto con el artículo caído del
+     nombre. Los talentos-contenedor que el v2.0 desglosó en varios
+     (Origen de Sangre → los ocho Orígenes) NO se mapean: elegir por el
+     jugador cuál le tocó sería inventarse su ficha. Esos muestran
+     "⚠ No encontrado" y conservan su texto en la ficha guardada. */
+  dominio_de_la_vida:         'dominio_de_vida',
+  dominio_de_la_luz:          'dominio_de_luz',
+  dominio_de_la_guerra:       'dominio_de_guerra',
+  dominio_de_la_tormenta:     'dominio_de_tormenta',
+  dominio_de_la_naturaleza:   'dominio_de_naturaleza',
+  dominio_de_la_forja:        'dominio_de_forja',
+  dominio_del_conocimiento:   'dominio_de_conocimiento',
+  dominio_del_engano:         'dominio_de_engano',
+  dominio_de_la_muerte_requiere_aprobacion_del_dj: 'dominio_de_muerte',
+
+  companero_de_exploracion:   'vinculo_animal',
+  pericia_que_vuelve:         'filo_que_vuelve',
+  qi_en_la_pericia:           'qi_en_el_filo',
+  metamagia_arcana:           'torsion_arcana',
 };
 
 /** Inventory slots per card cap */
