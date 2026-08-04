@@ -1,4 +1,24 @@
-# S&S Companion — v49
+# S&S Companion — v49.1
+
+## Novedades v49.1 — Ajustes visuales de la tarjeta Estado y las insignias
+
+Ronda de acabado sobre lo entregado en v49. No cambia ningún dato de reglas, así que `STORAGE.RULES_DATA_VERSION` se queda en `9.0-sendas-v2-r2`; `CACHE_VERSION` sube a `ss-companion-v40`.
+
+**Los ± caían desalineados entre filas**
+
+El bloque del número usaba `min-width:6.6ch`, y `ch` escala con el tamaño de fuente: como el número de PV es de 21 px y el de los otros tres recursos de 16 px, la columna de PV medía 66 px y las demás 59 — sus botones quedaban 7 px a la izquierda. `.e4-ctl` pasa a ser una rejilla de anchos fijos en píxeles (`27px / 74px / 27px`), así que los cuatro `−` y los cuatro `+` caen en la misma vertical. Verificado también con máximos de tres cifras, que era el caso que más desalineaba.
+
+**El separador de Pericias era invisible**
+
+Con dos Pericias adquiridas se leían de corrido (`Físico 2 Mental 1`). El punto sí se pintaba, pero en `var(--rim)` (#2e2540), que es un color de **borde**: prácticamente negro sobre el fondo del panel. Pasa a `var(--muted)`. Además iba anclado al borde izquierdo de la segunda Pericia y quedaba pegado a ella; ahora se centra en el hueco con `translateX(-50%)` sobre un espacio de 11 px.
+
+**Iniciativa deja de estar señalada**
+
+Tenía contorno dorado, fondo tenue y colores de acento para leerse como botón. Ahora usa **exactamente los mismos colores que las otras cuatro celdas** y la fila se lee uniforme. Sigue siendo un `<button>` que tira la iniciativa, y conserva dos cosas que no lo marcan en reposo: el hundido al pulsar como acuse de recibo, y un anillo de foco para quien navegue con teclado — sin él quedaría invisible al tabular. Como ya no tiene contorno propio, vuelven los filetes verticales que se le habían suprimido a los lados: los lleva toda celda que no abra fila (la 2, la 3 y la 5 en el reparto 3 + 2 de móvil).
+
+**Insignias de Identidad: menos metalizado**
+
+Lo que hace que un borde parezca metal pulido no es el tono, sino el vaivén claro→oscuro→claro del degradado. En las medallas de Linaje/Arquetipo/Trasfondo ese recorrido se comprime —el tramo oscuro sube de `#7c6030` a `#96794c`— y baja el brillo interior, así que el filo queda como una línea de oro mate. Se hace con una variable propia, `--oro-suave`: **el marco del retrato y las tarjetas del roster conservan el metalizado completo**. El separador `·` entre medallas pasa de `var(--muted)` a `var(--gold)` y sale del estilo inline a una clase `.isep`, para que siga el color de los temas alternativos en lugar de quedarse en un dorado fijo.
 
 ## Novedades v49 — Compendio de Sendas v2.0, Pericias con grado y tarjeta Estado
 
@@ -36,7 +56,7 @@ La ficha ya registra las Pericias, que antes no guardaba. Cada Pericia lleva gra
 
 **Tarjeta Estado, rediseñada**
 
-Cuatro recursos con el mismo ritmo tipográfico (PV destacado y con barra) y una sola fila de consulta —Armadura · Iniciativa · Velocidad · Comp. · Pericias— separada por filetes que se desvanecen. Iniciativa es un botón con contorno propio. En móvil la fila se reparte 3 + 2 para que ninguna celda baje de 100 px. El nombre de la armadura se retira de Estado: basta el puntaje, y el nombre sigue en Equipo de Combate.
+Cuatro recursos con el mismo ritmo tipográfico (PV destacado y con barra) y una sola fila de consulta —Armadura · Iniciativa · Velocidad · Comp. · Pericias— separada por filetes que se desvanecen. Iniciativa es un botón que tira la iniciativa (su aspecto se unifica con el resto de celdas en v49.1). En móvil la fila se reparte 3 + 2 para que ninguna celda baje de 100 px. El nombre de la armadura se retira de Estado: basta el puntaje, y el nombre sigue en Equipo de Combate.
 
 # S&S Companion — v48.1
 
