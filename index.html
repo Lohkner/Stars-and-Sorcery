@@ -262,6 +262,11 @@
                 <div id="xp_bar_wrap" style="margin-bottom:6px;display:none">
                   <div class="lbar" style="margin-top:0"><div id="xp_bar_fill" class="lfill" style="background:linear-gradient(90deg,var(--ice),var(--gold))"></div></div>
                 </div>
+                <button type="button" id="lvlup_btn" class="lvlup-btn" onclick="app.levelUp()" style="display:none">Subir de Nivel</button>
+                <div class="g2" style="gap:5px;margin-bottom:6px">
+                  <div><span class="fl">Puntos de Desarrollo</span><input type="number" id="char_pd" value="0" min="0" inputmode="numeric" onchange="app._markUnsaved()" aria-label="Puntos de Desarrollo disponibles"></div>
+                  <div><span class="fl">Talentos</span><div class="slots-box" id="talent_slots_lbl">0 / 3</div></div>
+                </div>
                 <div style="margin-bottom:6px">
                   <span class="fl">Alineamiento</span>
                   <div class="asel" id="align_sel"></div>
@@ -383,6 +388,12 @@
                 <span class="e4-sval e4-sval-per" id="res_filo_val">—</span>
               </div>
             </div>
+
+            <!-- Descanso -->
+            <details class="rest-panel" id="rest_panel">
+              <summary>Descansar</summary>
+              <div class="rest-list" id="rest_list"></div>
+            </details>
 
             <!-- Carga -->
             <div class="e4-load">
@@ -1007,6 +1018,7 @@
 <script defer src="js/ui-dialogs.js"></script>
 <script defer src="js/app.js"></script>
 <script defer src="js/pericias.js"></script>
+<script defer src="js/progresion.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
 </html>

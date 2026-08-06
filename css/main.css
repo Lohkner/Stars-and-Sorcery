@@ -3104,3 +3104,83 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   .est4 .e4-slbl{letter-spacing:.02em}
   .est4 .e4-stat{padding:1px 1px}
 }
+
+/* ══════════════════════════════════════════
+   Progresión y descanso
+   Botón de subida de nivel (aparece solo cuando la XP llega al umbral),
+   contador de espacios de Talento y menú de descanso de la tarjeta
+   Estado. La lógica está en js/progresion.js; las tablas, en constants.js.
+══════════════════════════════════════════ */
+
+/* ── Subir de nivel ─────────────────────────────────────────────── */
+.lvlup-btn{
+  display:block;width:100%;margin:0 0 6px;padding:9px 12px;cursor:pointer;
+  font-family:var(--fd);font-size:var(--fs-md);font-weight:700;
+  text-transform:uppercase;letter-spacing:.13em;
+  color:var(--void);
+  background:linear-gradient(135deg,rgba(200,169,110,.9),rgba(224,194,126,.95));
+  border:1px solid rgba(224,194,126,.5);border-radius:var(--r);
+  box-shadow:0 2px 16px rgba(200,169,110,.22),inset 0 1px 0 rgba(255,255,255,.25);
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  min-height:40px;
+  animation:lvlupBreath 2.4s ease-in-out infinite;
+}
+@keyframes lvlupBreath{
+  0%,100%{box-shadow:0 2px 16px rgba(200,169,110,.22),inset 0 1px 0 rgba(255,255,255,.25)}
+  50%    {box-shadow:0 2px 26px rgba(200,169,110,.45),inset 0 1px 0 rgba(255,255,255,.25)}
+}
+@media(prefers-reduced-motion:reduce){.lvlup-btn{animation:none}}
+.lvlup-btn:active{transform:scale(.97);box-shadow:none}
+
+/* ── Espacios de Talento ────────────────────────────────────────── */
+.slots-box{
+  display:flex;align-items:center;justify-content:center;
+  min-height:38px;padding:6px 10px;
+  background:var(--raised);border:1px solid var(--edge);border-radius:var(--r);
+  font-family:var(--fm);font-size:var(--fs-lg);color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+/* Pasarse no bloquea: el sistema es abierto y el DJ manda. Solo se avisa. */
+.slots-box.over{color:var(--ember);border-color:rgba(217,84,42,.45)}
+
+/* ── Menú de descanso ───────────────────────────────────────────── */
+.rest-panel{margin-top:12px}
+.rest-panel > summary{
+  cursor:pointer;list-style:none;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:36px;padding:7px 12px;
+  font-family:var(--fd);font-size:var(--fs-xs);font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--dim);
+  background:var(--raised);border:1px solid var(--edge);border-radius:var(--r);
+  transition:border-color .15s,color .15s;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.rest-panel > summary::-webkit-details-marker{display:none}
+.rest-panel > summary::before{content:'☾';font-size:1.05em;opacity:.8}
+.rest-panel[open] > summary{border-color:var(--edge-gold);color:var(--goldb)}
+@media(hover:hover){.rest-panel > summary:hover{border-color:var(--edge-gold);color:var(--goldb)}}
+
+.rest-list{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.rest-opt{
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  width:100%;padding:8px 11px;cursor:pointer;text-align:left;
+  background:var(--surface);border:1px solid var(--edge-soft);
+  border-radius:var(--r);
+  transition:border-color .15s,background .15s,transform .1s;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.rest-opt:active{transform:scale(.985);background:var(--raised)}
+@media(hover:hover){.rest-opt:hover{border-color:var(--edge-gold);background:var(--raised)}}
+.rest-opt-t{
+  font-family:var(--fd);font-size:var(--fs-md);font-weight:600;color:var(--text);
+  letter-spacing:.04em;
+}
+.rest-opt-m{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--gold)}
+.rest-opt-d{
+  font-family:var(--fb);font-size:var(--fs-xs);color:var(--muted);
+  line-height:1.35;
+}
+/* El reposo prolongado es el único que toca la Carne: se distingue. */
+.rest-opt-carne{border-color:rgba(160,104,58,.34)}
+.rest-opt-carne .rest-opt-m{color:#c08a52}

@@ -35,6 +35,49 @@ const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro
 /** XP required to reach each level (index = current level) */
 const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
 
+/* ── Progresión por nivel (Expert v1.0, «Tabla de progresión completa»)
+   Índice = nivel, así que la posición 0 no se usa. Total al Nivel 10:
+   7 Talentos · 1 Epítome · 14 PD · PB +4.                              */
+
+/** PD ganados AL ALCANZAR cada nivel. El Nivel 1 no otorga ninguno. */
+const PD_POR_NIVEL = [0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+
+/** Espacios de Talento disponibles en cada nivel (3 iniciales + 1 en los
+    niveles impares a partir del 3). El Epítome del Nivel 10 va aparte. */
+const TALENT_SLOTS = [0, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7];
+
+/** Hito narrativo de cada nivel, para avisar al subir. */
+const HITOS_NIVEL = {
+  3:  '+1 Talento nuevo',
+  5:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
+  7:  '+1 Talento nuevo',
+  9:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
+  10: 'Trascendencia + Epítome',
+};
+
+/* ── Descanso y recuperación (Reglas Esenciales §7) ─────────────
+   La Carne/Flesh NO figura aquí a propósito: ningún descanso la
+   recupera. Solo sube 1 punto por semana completa de reposo real,
+   con curación avanzada (100 pp) o con botiquín avanzado (CD 16). */
+const DESCANSOS = [
+  { id:'respiro',     nombre:'Respiro',                  dur:'10 min',
+    coste:'1 Ración',
+    txt:'1d8 + MOD CON en PV. Las Reservas no se recuperan.',
+    pv:'1d8+con', reservas:0 },
+  { id:'largo_inseg', nombre:'Descanso Largo — Inseguro', dur:'6 h',
+    coste:'1 Ración',
+    txt:'Mitad de PV máximos y mitad de Reservas. No elimina Fatiga.',
+    pv:'mitad',   reservas:.5 },
+  { id:'largo_seg',   nombre:'Descanso Largo — Seguro',   dur:'8 h',
+    coste:'1 Ración + entorno adecuado',
+    txt:'Todos los PV y Reservas. Elimina 1 nivel de Fatiga.',
+    pv:'todo',    reservas:1 },
+  { id:'largo_conf',  nombre:'Descanso Largo — Confortable', dur:'8 h',
+    coste:'Posada de calidad o camarote',
+    txt:'Todos los PV y Reservas. Elimina 2 niveles de Fatiga.',
+    pv:'todo',    reservas:1 },
+];
+
 /* ── Migración de ids de Axioma (reglas v5.3.7/v5.3.8) ──────────
    Cuatro Axiomas cambiaron de id (unidades en el nombre y el estado
    canónico Ensordecido). Los personajes guardados bajo v5.3.5

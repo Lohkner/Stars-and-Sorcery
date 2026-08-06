@@ -1,4 +1,33 @@
-# S&S Companion — v49.1
+# S&S Companion — v50
+
+## Novedades v50 — Subida de nivel y descanso
+
+Dos funciones nuevas en `js/progresion.js`, un módulo aparte que se carga entre `app.js` y `boot.js` y envuelve `updateXpHint()`, `updateTalentCount()` e `init()`. Las tablas viven en `constants.js`. No cambia ningún dato de reglas: `STORAGE.RULES_DATA_VERSION` sigue en `9.0-sendas-v2-r2`; `CACHE_VERSION` sube a `ss-companion-v41`.
+
+**Subir de nivel**
+
+Al alcanzar el umbral de XP aparece un botón dorado bajo la barra de experiencia —«Subir a Nivel 5 · +1 PD»—, que dice de antemano qué se gana. Al pulsarlo sube el nivel, suma los PD al contador nuevo y avisa del Hito que toca (Talento nuevo en 3/5/7/9, Hito de Estilo en 5 y 9, Trascendencia + Epítome en 10). El botón solo existe mientras la XP dé para ello, y desaparece al Nivel 10.
+
+Se recorrió la progresión entera comprobando contra la «Tabla de progresión completa» del Expert v1.0: los diez umbrales de XP, los PD alternos +2/+1 y el total al Nivel 10 — **14 PD, 7 espacios de Talento y PB +4**, que es exactamente lo que declara el manual.
+
+**Puntos de Desarrollo y espacios de Talento**
+
+Dos campos nuevos junto a Nivel y XP. Los PD son un contador editable —la subida de nivel los suma sola— y los espacios de Talento muestran `3 / 4` según el nivel, siguiendo la tabla 3·3·4·4·5·5·6·6·7·7. Pasarse **no bloquea**: el contador se pone en ámbar y explica el margen al pasar el cursor, porque el sistema es abierto y quien decide es el DJ. Esto sustituye al tope fijo de 3 que tenía el Gestor de Talentos cableado. Los PD se guardan solos: `gatherCharData` serializa todo `input[type=number]` con id.
+
+**Descanso**
+
+Un desplegable en la tarjeta Estado con los cuatro descansos del §7, cada uno con su duración, su coste y lo que recupera:
+
+| Tipo | Duración | Recupera |
+|---|---|---|
+| Respiro | 10 min | 1d8 + MOD CON en PV. **Reservas no** |
+| Descanso Largo — Inseguro | 6 h | Mitad de PV y mitad de Reservas |
+| Descanso Largo — Seguro | 8 h | Todo. Elimina 1 Fatiga |
+| Descanso Largo — Confortable | 8 h | Todo. Elimina 2 Fatiga |
+
+El Respiro **tira el dado de verdad** y el aviso enseña el resultado (`1d8+MOD CON = 2+3 → 5 PV`), en vez de dar una cantidad fija.
+
+**La Carne no se recupera descansando.** Se pidió que el botón la restaurara, pero el manual es explícito: *«El Flesh solo baja por efectos que lo ataquen expresamente… Recuperación: 1 punto de Flesh por semana completa de reposo real, además de la curación avanzada (100 pp) y del botiquín avanzado (CD 16)»*. Ninguno de los cuatro descansos la toca. Para la vía que sí existe se añade una quinta entrada aparte y marcada en color distinto, **Reposo prolongado** (1 semana sin viajar ni combatir): PV y Reservas al completo **y +1 de Carne**. Es el único que la mueve.
 
 ## Novedades v49.1 — Ajustes visuales de la tarjeta Estado y las insignias
 
