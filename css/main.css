@@ -3157,7 +3157,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
 }
 .rest-panel > summary::-webkit-details-marker{display:none}
-.rest-panel > summary::before{content:'☾';font-size:1.05em;opacity:.8}
+/* Sin marcador propio: hereda el ▸/▾ dorado de `details > summary` que ya
+   usan el resto de desplegables de la app. */
 .rest-panel[open] > summary{border-color:var(--edge-gold);color:var(--goldb)}
 @media(hover:hover){.rest-panel > summary:hover{border-color:var(--edge-gold);color:var(--goldb)}}
 

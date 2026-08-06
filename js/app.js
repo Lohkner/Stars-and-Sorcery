@@ -2274,7 +2274,7 @@ const app = {
               if (isFail) totalEl.classList.add('fail');
               totalRow.classList.add('show');
               if (isCrit) { badgeEl.textContent = '✦ Crítico ✦'; badgeEl.className = 'dice-badge crit'; badgeEl.style.display = ''; cardEl.classList.add('crit'); }
-              if (isFail) { badgeEl.textContent = '☠ Fallo Total ☠'; badgeEl.className = 'dice-badge fail'; badgeEl.style.display = ''; cardEl.classList.add('fail'); }
+              if (isFail) { badgeEl.textContent = 'Fallo Total'; badgeEl.className = 'dice-badge fail'; badgeEl.style.display = ''; cardEl.classList.add('fail'); }
               hintEl.classList.add('show');
             }, 160);
           }
@@ -3034,7 +3034,7 @@ const app = {
       const warn = document.createElement('div');
       warn.className = 'js-grade-block grade-off';
       warn.style.color = 'var(--blood)';
-      warn.textContent = '⚠ No encontrado en la versión actual de las reglas — se conserva el nombre y la leyenda guardados, sin sus Grados. Revísalo en el Gestor de Talentos.';
+      warn.textContent = 'No encontrado en la versión actual de las reglas — se conserva el nombre y la leyenda guardados, sin sus Grados. Revísalo en el Gestor de Talentos.';
       dcb.appendChild(warn);
     }
     const desc = document.createElement('div'); desc.style.marginBottom = '6px';

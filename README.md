@@ -1,4 +1,23 @@
-# S&S Companion — v50
+# S&S Companion — v50.1
+
+## Novedades v50.1 — Emojis fuera de la interfaz
+
+La v46 ya había establecido la política «Sin emojis», pero quedaban cuatro pictogramas de color repartidos por la app. `CACHE_VERSION` sube a `ss-companion-v42`; ninguna otra versión cambia.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Insignia de pifia en la tirada | `☠ Fallo Total ☠` | `Fallo Total` |
+| Aviso de talento retirado | `⚠ No encontrado…` | `No encontrado…` |
+| Desplegable «Descansar» | `☾` | hereda el `▸`/`▾` dorado del resto de desplegables |
+| Rasgos de Arquetipo (`data.js`) | `Inercia de Guerra (⚡ 0 PA)` | `Inercia de Guerra (Trigger · 0 PA)` |
+
+Los dos primeros no perdían nada: sus insignias ya llevan color y borde propios por CSS, así que el pictograma era pura decoración. El `☾` era un marcador que se había puesto a mano en vez de usar el que ya define `details > summary`.
+
+**Lo que NO se ha tocado**, porque no son emojis sino la tipografía de la casa —ninguno tiene presentación de color en Unicode—: `✦` y `✧` (el ornamento que abre las cabeceras de panel y marca los avisos de éxito), `◆` (el rombo de `.pt`), `▸ ▾ ▲ ▼ ●` (los controles) y `✓ ✕`.
+
+Tampoco se han limpiado los emojis que aparecen en el README y en algunos comentarios del código: ahí están **citados** como registro de lo que se retiró en versiones anteriores, no usados como decoración.
+
+Queda una asimetría deliberada: la insignia de crítico sigue siendo `✦ Crítico ✦` y la de pifia es ahora `Fallo Total` a secas. Si prefieres las dos sin ornamento, es quitar los dos `✦`.
 
 ## Novedades v50 — Subida de nivel y descanso
 
