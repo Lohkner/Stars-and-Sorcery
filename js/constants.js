@@ -35,6 +35,12 @@ const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro
 /** XP required to reach each level (index = current level) */
 const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
 
+/* Índice de Letalidad: el sumando FIJO de los PV que se ganan por nivel,
+   sobre el que se añade el MOD de CON. El Manual v1.8 da «2 + MOD CON»
+   como estándar de los tres Arquetipos, así que la 2 es el valor por
+   defecto; la 1 hace la campaña más mortal y la 3, más heroica. */
+const LETHALITY_DEFAULT = 2;
+
 /* ── Progresión por nivel (Expert v1.0, «Tabla de progresión completa»)
    Índice = nivel, así que la posición 0 no se usa. Total al Nivel 10:
    7 Talentos · 1 Epítome · 14 PD · PB +4.                              */
@@ -52,7 +58,7 @@ const HITOS_NIVEL = {
   5:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
   7:  '+1 Talento nuevo',
   9:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
-  10: 'Trascendencia + Epítome',
+  10: 'Trascendencia',
 };
 
 /* ── Descanso y recuperación (Reglas Esenciales §7) ─────────────

@@ -1397,12 +1397,20 @@ const app = {
     this.updateXpHint();
     const prof = (PROF_THRESHOLDS.find(([min]) => lvl >= min) ?? [1,2])[1];
 
-    // Resources — fórmulas según tabla de Arquetipos (Cap.II Paso 3)
+    // Resources — fórmulas según tabla de Arquetipos (Manual v1.8 Cap.3)
     // PV Nivel 1: base_arquetipo + Puntuación CON
-    // PV Nivel 2+: resultado nivel 1 + MOD_CON por cada nivel adicional
+    // PV Nivel 2+: + (índice de Letalidad + MOD_CON) por cada nivel.
+    //
+    // El manual fija «PV por nivel posterior = 2 + MOD CON, igual para los
+    // tres Arquetipos» y remite al índice de Letalidad para moverlo. Ese
+    // índice ES el sumando fijo, así que Letalidad N da +N por nivel y la
+    // 2 es el estándar del manual. Antes se restaba uno (`lethality - 1`),
+    // de modo que la Letalidad 1 no sumaba nada pese a que su etiqueta
+    // prometía «+1 PV/nivel»: la ficha quedaba por debajo del manual en
+    // 2 PV por nivel — 18 PV al Nivel 10.
     const conScoreForPV = final.CON || 8;
     const pvNivel1 = (arq?.pv||6) + conScoreForPV;
-    const lethBonus = (this.lethality||1) - 1; // extra PV per level above 1
+    const lethBonus = this.lethality || LETHALITY_DEFAULT;
     const maxPv = pvNivel1 + ((mods.CON + lethBonus) * Math.max(0, lvl - 1));
     // Adrenalina: max(Puntuación FUE, Puntuación DES) + Nivel + bonus
     const adrScore = Math.max(final.FUE||8, final.DES||8);
@@ -3177,6 +3185,28 @@ const app = {
         const fl=document.createElement('div'); fl.className='js-section-lbl'; fl.textContent='Pericia Seleccionada'; ab.appendChild(fl);
         const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent=this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
       }
+      // Chasis del Arquetipo (Manual v1.8): Perfil · Sustrato · Permiso ·
+      // Límite. Los cuatro son exclusivos y ningún Talento los otorga, así
+      // que conviene tenerlos a mano en la ficha. Los rasgos de Perfil ya
+      // vivían en data.js (feature1/feature2) pero no los pintaba nadie.
+      const bloques = [
+        ['Perfil',  [arq.feature1, arq.feature2].filter(Boolean).join(' · ')],
+        [arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato', arq.sustrato],
+        [arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',  arq.permiso],
+        ['Límite', arq.limite],
+      ];
+      bloques.forEach(([titulo, cuerpo]) => {
+        if (!cuerpo) return;
+        const l = document.createElement('div');
+        l.className = 'js-section-lbl';
+        l.textContent = titulo;
+        ab.appendChild(l);
+        const p = document.createElement('p');
+        p.className = 'js-detail-txt';
+        p.textContent = this._sanitize(cuerpo);
+        ab.appendChild(p);
+      });
+
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {
         const sl=document.createElement('div'); sl.className='js-section-lbl'; sl.textContent='Habilidades Seleccionadas'; ab.appendChild(sl);
@@ -4409,7 +4439,7 @@ const app = {
       alignment: this.alignment,
       inventory: this.inventory,
       gold: this.gold,
-      lethality: this.lethality||1,
+      lethality: this.lethality||LETHALITY_DEFAULT,
       apt_tricks: [...(this._aptSel?.tricks||[])],
       apt_spells: [...(this._aptSel?.spells||[])],
       skillBonus: { ...(this._skillBonus || {}) },
@@ -4612,7 +4642,7 @@ const app = {
           alignment:    typeof raw.alignment=== 'string'  ? raw.alignment      : '',
           inventory:    Array.isArray(raw.inventory)      ? raw.inventory      : [],
           gold:         isFinite(raw.gold)                ? Number(raw.gold)   : 0,
-          lethality:    [1,2,3].includes(Number(raw.lethality)) ? Number(raw.lethality) : 1,
+          lethality:    [1,2,3].includes(Number(raw.lethality)) ? Number(raw.lethality) : LETHALITY_DEFAULT,
           apt_tricks:   Array.isArray(raw.apt_tricks)     ? raw.apt_tricks     : [],
           apt_spells:   Array.isArray(raw.apt_spells)     ? raw.apt_spells     : []
         };
@@ -4657,7 +4687,7 @@ const app = {
     this._weaponAtkData = [0, 0];
     this._weaponDmgData = [{formula:'1',name:'Desarmado'},{formula:'1',name:'Desarmado'}];
     // Reset lethality to default
-    this.setLethality(1);
+    this.setLethality(LETHALITY_DEFAULT);
     // Reset active talent category so next open starts fresh
     this.activeTalentCat = null;
     // El nuevo personaje arranca con los predeterminados globales de retrato
@@ -5170,7 +5200,7 @@ const app = {
       : 'Activar recordar posición al volver';
   },
 
-  lethality: 1,
+  lethality: LETHALITY_DEFAULT,
 
   setLethality(n) {
     this.lethality = n;
@@ -5180,12 +5210,13 @@ const app = {
       if (el) el.classList.toggle('active', i === n);
     });
     // Update summary badge
+    // El índice es el sumando FIJO; el MOD de CON se añade encima.
     const TIERS = {
-      1: { label:'Letalidad 1 — +1 PV/nivel', tier:'1' },
-      2: { label:'Letalidad 2 — +2 PV/nivel', tier:'2' },
-      3: { label:'Letalidad 3 — +3 PV/nivel', tier:'3' },
+      1: { label:'Letalidad 1 — +1 + MOD CON por nivel', tier:'1' },
+      2: { label:'Letalidad 2 — +2 + MOD CON por nivel', tier:'2' },
+      3: { label:'Letalidad 3 — +3 + MOD CON por nivel', tier:'3' },
     };
-    const t = TIERS[n] || TIERS[1];
+    const t = TIERS[n] || TIERS[LETHALITY_DEFAULT];
     const badge = document.getElementById('campana_leth_badge');
     const lbl   = document.getElementById('campana_leth_label');
     if (badge) badge.dataset.tier = t.tier;

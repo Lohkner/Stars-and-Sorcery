@@ -1,4 +1,36 @@
-# S&S Companion — v50.1
+# S&S Companion — v51
+
+## Novedades v51 — Manual Básico v1.8 y Compendio de Sendas v2.2
+
+Actualización a la línea nueva desde **Stars & Sorcery Manual Básico v1.8** y **Compendio de Sendas v2.2** (carpeta `V2`). `STORAGE.RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r1` y `CACHE_VERSION` a `ss-companion-v43`.
+
+**Los PV por nivel estaban 2 puntos por debajo del manual**
+
+El manual fija, en cuatro sitios y para los tres Arquetipos, que los PV por nivel posterior son **2 + MOD CON**, y remite al índice de Letalidad para moverlo. La app calculaba `lethality - 1`, así que con la Letalidad 1 por defecto sumaba **solo el MOD de CON**: un personaje de Nivel 10 tenía **18 PV menos** de los que le tocan.
+
+El índice de Letalidad *es* ese sumando fijo. Corregido a `lethality` y el valor por defecto pasa a **2**, que es el estándar del manual — con la 1 para campañas más mortales y la 3 para las más heroicas. De paso, las etiquetas mentían: prometían «+1 PV/nivel» cuando el valor real depende también de la CON. Ahora dicen «+1 + MOD CON». Verificado a Nivel 1, 5 y 10 contra la fórmula del manual.
+
+Las fichas guardadas conservan su índice, así que **ninguna cambia de PV sola**; solo los personajes nuevos arrancan en 2.
+
+**Chasis de Arquetipo: Sustrato, Permiso y Límite**
+
+El manual reestructura los Arquetipos en cuatro bloques —Perfil, Sustrato, Permiso y Límite— y añade tres mecánicas centrales que antes no existían: **Presión** (Audaz), **Enfoque** (Versátil) y **Analizado** (Sagaz), cada una con su Permiso (Intervención · Improvisar · Previsión) y su Límite, que ningún Talento levanta.
+
+Los tres van a `data.js` y se muestran en la ficha de Arquetipo de la página Detalle. Esto destapó que **`feature1` y `feature2` no las leía nadie**: llevaban versiones en `data.js` sin que ningún punto de la app las pintara. Ahora se muestran como el bloque Perfil.
+
+**Catálogo de Talentos: 257 → 256**
+
+v2.2 corrigió los cuatro fallos de maquetación que se reportaron en la v49 —el bloque duplicado de Arsenal, los encabezados perdidos de «La Hoja del Pacto» y «El Tomo del Pacto», y los Grados de Rompejuramentos colados en «Voto de Conquista»—. Ya no hace falta repararlos al importar.
+
+- **«Lectura del Combate» se retira** del compendio (era el que traía una nota de edición en lugar del talento). No se rescata: v2.2 borró su encabezado, no lo dejó vacío. Quien lo tuviera verá «No encontrado» conservando su texto.
+- **21 talentos con el texto revisado** y uno con el requisito actualizado: `comunicacion_silenciosa` pasa a pedir «Vínculo Animal G1» en vez de «Compañero de Exploración G1», que es el renombrado que la v49 ya había migrado.
+- Cero ids nuevos y cero renombrados, así que `TALENT_ID_RENAMES` no se toca.
+
+**«Hechizo de Toda una Vida» sigue sin cuerpo en el .docx.** Aparece en el índice y como encabezado, pero sin texto — igual que en v2.0. Se mantiene el contenido heredado y queda pendiente en el documento.
+
+**Otras comprobaciones**, todas sin cambios respecto a lo que ya implementaba la app: tabla de progresión (XP, PD, PB), tabla de descansos, Guardia (`10 + PB + escudo + atributo defensivo`), techo de Armadura (`5 + PB`), NLE por nivel y costes de Pericia (5/4/3/2). El Hito del Nivel 10 pierde el «+ Epítome»: el manual ahora dice solo «Trascendencia».
+
+**Una inconsistencia del documento**, sin resolver aquí: el Manual v1.8 remite a un «índice de Letalidad» que no define, y tampoco aparece en la Guía del Director v1.2. La app lo interpreta como el sumando fijo de PV por nivel, que es lo único coherente con «2 + MOD CON».
 
 ## Novedades v50.1 — Emojis fuera de la interfaz
 

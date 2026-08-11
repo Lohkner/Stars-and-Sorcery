@@ -681,8 +681,8 @@
             </div>
             <!-- Summary view -->
             <div id="campana_summary" style="padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
-              <span class="leth-summary-badge" id="campana_leth_badge" data-tier="1">
-                <span id="campana_leth_label">Letalidad 1 — +1 PV/nivel</span>
+              <span class="leth-summary-badge" id="campana_leth_badge" data-tier="2">
+                <span id="campana_leth_label">Letalidad 2 — +2 + MOD CON por nivel</span>
               </span>
               <button class="bedit" id="campana_edit_btn" data-action="editCampana"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
@@ -690,26 +690,26 @@
             <div id="campana_edit" style="display:none;margin-top:8px">
               <span class="fl" style="margin-bottom:8px;display:block">Nivel de Letalidad</span>
               <div class="g3" style="gap:8px">
-                <button class="leth-card active" id="leth_1" data-tier="1"
+                <button class="leth-card" id="leth_1" data-tier="1"
                   onclick="app.setLethality(1)" onmousedown="this.blur()">
                   <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 1</div>
-                  <div class="leth-bonus">+1 PV/nivel</div>
+                  <div class="leth-bonus">+1 + MOD CON</div>
                 </button>
-                <button class="leth-card" id="leth_2" data-tier="2"
+                <button class="leth-card active" id="leth_2" data-tier="2"
                   onclick="app.setLethality(2)" onmousedown="this.blur()">
                   <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 2</div>
-                  <div class="leth-bonus">+2 PV/nivel</div>
+                  <div class="leth-bonus">+2 + MOD CON</div>
                 </button>
                 <button class="leth-card" id="leth_3" data-tier="3"
                   onclick="app.setLethality(3)" onmousedown="this.blur()">
                   <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
                   <div class="leth-name">Letalidad 3</div>
-                  <div class="leth-bonus">+3 PV/nivel</div>
+                  <div class="leth-bonus">+3 + MOD CON</div>
                 </button>
               </div>
-              <p style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV adicionales a partir del Nivel 2. No afectan al Nivel 1.</p>
+              <p style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV que se ganan por cada nivel a partir del 2, sumados al MOD de CON. El Manual v1.8 fija la Letalidad 2 como estándar. No afectan al Nivel 1.</p>
               <button class="bcnf" data-action="confirmCampana"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
           </div>
