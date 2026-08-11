@@ -893,9 +893,40 @@ const app = {
   },
 
   /** MOD final de un atributo (base + bonos de linaje) y su valor final. */
+  /** Mods de atributo del Linaje: los fijos de `mods` MÁS los que el
+      jugador eligió cuando el Descriptor deja elegir («+1 a dos Atributos
+      a elección», «+2 FUE o DES»…). Antes solo se leía `mods`, así que un
+      Humano o un Medio Elfo no recibían NINGÚN bono racial y los cuatro
+      Linajes con rama a elegir tenían una cableada en los datos.
+      Punto único: lo usan _statFinal, _buildStatsSummary y calc(). */
+  /** Una entrada de `grant` es una ELECCIÓN si abre un desplegable en la
+      ficha: «Elección: A o B» o «Elige DOS Cosas: A / B / C». El Editor de
+      Reglas las presenta en su propio campo; el resto son rasgos fijos.
+      El mismo criterio que usa js/origen.js al pintarlas. */
+  _esEleccion(g) {
+    return /^Elecci[óo]n\s*(?:de Experiencia)?\s*[:—–-]/i.test(g)
+        || /^Elige\s+\S+\s+[^:]+:/i.test(g);
+  },
+  _grantFijos(d)      { return (d?.grant || []).filter(g => !this._esEleccion(g)); },
+  _grantElecciones(d) { return (d?.grant || []).filter(g =>  this._esEleccion(g)); },
+
+  _descMods(descKey) {
+    const d = this.DB.descriptors?.[descKey];
+    if (!d) return {};
+    const out = { ...(d.mods || {}) };
+    if (d.pick) {
+      const n = d.pick.n || 1;
+      for (let i = 1; i <= n; i++) {
+        const a = document.getElementById('desc_pick_' + i)?.value;
+        if (a) out[a] = (out[a] || 0) + (d.pick.val || 1);
+      }
+    }
+    return out;
+  },
+
   _statFinal(s) {
     const descKey  = document.getElementById('sel_desc')?.value || '';
-    const descMods = this.DB.descriptors?.[descKey]?.mods || {};
+    const descMods = this._descMods(descKey);
     const base  = parseInt(this._el('base_'+s)?.value) || 8;
     const final = base + (descMods[s] || 0);
     return { final, mod: this.getMod(final) };
@@ -941,7 +972,7 @@ const app = {
 
     // Compute save totals once — shared across both container renders
     const descKey  = this._el('sel_desc')?.value || '';
-    const descMods = this.DB.descriptors?.[descKey]?.mods || {};
+    const descMods = this._descMods(descKey);
     const saveData = STATS.map(s => {
       const base   = parseInt(this._el('base_'+s)?.value) || 8;
       const final  = base + (descMods[s] || 0);
@@ -1381,7 +1412,7 @@ const app = {
     const descKey = $('sel_desc').value;
     const desc = this.DB.descriptors?.[descKey];
     const final = {...raw};
-    if (desc?.mods) Object.entries(desc.mods).forEach(([k,v]) => final[k]=(final[k]||0)+v);
+    Object.entries(this._descMods(descKey)).forEach(([k,v]) => final[k]=(final[k]||0)+v);
 
     const mods = {};
     STATS.forEach(s => mods[s] = this.getMod(final[s]));
@@ -1433,15 +1464,11 @@ const app = {
     const filoVal = $('sel_filo').value;
     $('res_filo_val').textContent = filoVal || '—';
 
-    // Iniciativa — DES por defecto. Conducción Arcana (rasgo del Sagaz, v5.3.x):
-    // si es Sagaz con una Fuente elegida, su Iniciativa usa el MOD del atributo de
-    // su Fuente (INT/SAB/CAR) en lugar de DES. Aplicamos el mejor de ambos para no
-    // penalizar fichas que sí invirtieron en DES ("aplica solo la más alta").
-    let ini = mods.DES;
-    if (arqKey === 'sagaz') {
-      const srcMod = this._sourceAttrMod(mods);
-      if (srcMod !== null) ini = Math.max(ini, srcMod);
-    }
+    // Iniciativa — MOD de DES para todos. El Sagaz ya no la tira con el
+    // atributo de su Fuente: «Conducción Arcana» desapareció en el Manual
+    // v1.8 (ver _calcGuardia), que le deja el Misticismo Innato como único
+    // rasgo pasivo.
+    const ini = mods.DES;
     $('res_ini').textContent = (ini>=0?'+':'')+ini;
 
     // Velocidad
@@ -1574,18 +1601,19 @@ const app = {
   /** Guardia = 10 + PB + bono de escudo + MOD del atributo defensivo
       (DES/SAB/CON, elegido al crear el personaje) + bonos declarados.
       La armadura NO interviene: solo aporta Reducción de Daño.
-      Conducción Arcana (Sagaz) y las demás fórmulas alternativas sustituyen
-      el atributo defensivo por el suyo — no se suman, y aplica la más alta. */
+
+      El Sagaz ya NO sustituye ese atributo por el de su Fuente: el Manual
+      v1.8 retiró «Conducción Arcana» —le deja un único rasgo pasivo, el
+      Misticismo Innato— y su propio ejemplo lo confirma (Sable, Sagaz con
+      INT 17/+3 y DES 12/+1, Guardia 13 = 10 + PB 2 + DES 1; con el rasgo
+      habrían sido 15). Sustituir el atributo defensivo sigue siendo
+      posible, pero solo por Talento (p. ej. Armadura de Magia), que entra
+      por los bonos declarados. */
   _calcGuardia(mods, prof, arqKey, shieldData) {
     const $ = id => document.getElementById(id);
     const defKey = $('sel_guard_attr')?.value || 'DES';
     let defMod = mods[defKey] || 0;
     let altNote = '';
-    // Conducción Arcana: el Sagaz con Fuente elegida usa el MOD de su Fuente.
-    if (arqKey === 'sagaz') {
-      const srcMod = this._sourceAttrMod(mods);
-      if (srcMod !== null && srcMod > defMod) { defMod = srcMod; altNote = 'Conducción Arcana'; }
-    }
     const shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
     const magicBonus  = parseInt($('sel_guard_magic')?.value) || 0;
     const otherBonus  = parseInt($('sel_guard_other')?.value) || 0;
@@ -3186,26 +3214,51 @@ const app = {
         const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent=this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
       }
       // Chasis del Arquetipo (Manual v1.8): Perfil · Sustrato · Permiso ·
-      // Límite. Los cuatro son exclusivos y ningún Talento los otorga, así
-      // que conviene tenerlos a mano en la ficha. Los rasgos de Perfil ya
-      // vivían en data.js (feature1/feature2) pero no los pintaba nadie.
-      const bloques = [
-        ['Perfil',  [arq.feature1, arq.feature2].filter(Boolean).join(' · ')],
-        [arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato', arq.sustrato],
-        [arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',  arq.permiso],
-        ['Límite', arq.limite],
-      ];
-      bloques.forEach(([titulo, cuerpo]) => {
-        if (!cuerpo) return;
+      // Límite. Los cuatro son exclusivos y ningún Talento los otorga.
+      // Cada rasgo se pinta como una tarjeta propia con su nombre y su
+      // tipo: antes iban concatenados con « · » en un solo párrafo y se
+      // leían de corrido.
+      const rasgosDe = b => (arq.rasgos || []).filter(r => r.b === b);
+      const bloque = (titulo, cuerpo, b) => {
+        const rs = rasgosDe(b);
+        if (!cuerpo && !rs.length) return;
         const l = document.createElement('div');
         l.className = 'js-section-lbl';
         l.textContent = titulo;
         ab.appendChild(l);
-        const p = document.createElement('p');
-        p.className = 'js-detail-txt';
-        p.textContent = this._sanitize(cuerpo);
-        ab.appendChild(p);
-      });
+        if (cuerpo) {
+          const p = document.createElement('p');
+          p.className = 'js-detail-txt';
+          p.textContent = this._sanitize(cuerpo);
+          ab.appendChild(p);
+        }
+        rs.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'arq-rasgo';
+          const h = document.createElement('div');
+          h.className = 'arq-rasgo-h';
+          const nm = document.createElement('span');
+          nm.className = 'arq-rasgo-n';
+          nm.textContent = this._sanitize(r.n);
+          h.appendChild(nm);
+          if (r.t) {
+            const tp = document.createElement('span');
+            tp.className = 'arq-rasgo-t';
+            tp.textContent = this._sanitize(r.t);
+            h.appendChild(tp);
+          }
+          card.appendChild(h);
+          const d = document.createElement('p');
+          d.className = 'arq-rasgo-d';
+          d.textContent = this._sanitize(r.d);
+          card.appendChild(d);
+          ab.appendChild(card);
+        });
+      };
+      bloque('Perfil', '', 'perfil');
+      bloque(arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato', arq.sustrato, 'sustrato');
+      bloque(arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',  arq.permiso,  'permiso');
+      bloque('Límite', arq.limite, 'limite');
 
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {
@@ -3734,11 +3787,24 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
       <div style="margin-bottom:6px"><span class="dfl">Bono</span><input type="text" id="db_bonus" value="${_e(existing?.bonus)}" placeholder="ej: +1 DES"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos (separados por coma)</span><input type="text" id="db_grant" value="${_e((existing?.grant||[]).join(', '))}" placeholder="ej: Visión en la oscuridad, Resistencia"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Modificadores de Atributo</span>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px" placeholder="Visión en la Oscuridad: 60 pies&#10;Inconveniente — …">${_e(this._grantFijos(existing).join('\n'))}</textarea>
+        <div class="is-field-note" style="margin-top:3px">Antes se separaban por coma, pero los rasgos llevan comas dentro y se partían solos. Ahora, una línea por rasgo.</div>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Elecciones <span class="is-field-note">— una por línea</span></span><textarea id="db_elecciones" style="min-height:66px" placeholder="Elección: Ingenio Práctico (…) o Aguante (…)&#10;Elige DOS Mutaciones: Garras (…) / Piel Blindada (…)">${_e(this._grantElecciones(existing).join('\n'))}</textarea>
+        <div class="is-field-note" style="margin-top:3px">Se convierten en desplegables en la ficha. Formatos: <em>Elección: A o B</em>, <em>Elección: A / B / C</em> o <em>Elige DOS Cosas: A / B / C</em>. Los paréntesis se respetan, así que una opción puede contener « o » dentro.</div>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Modificadores de Atributo <span class="is-field-note">— los fijos</span></span>
         <div class="g6" style="gap:4px">
           ${['FUE','DES','CON','INT','SAB','CAR'].map(s=>`<div><span class="dfl">${s}</span><input type="number" id="db_mod_${s}" value="${existing?.mods?.[s]||0}" min="-5" max="5" style="font-family:var(--fm);font-size:var(--fs-xl);text-align:center;padding:3px"></div>`).join('')}
         </div>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Bono de Atributo a elegir <span class="is-field-note">— déjalo en 0 si no lo hay</span></span>
+        <div class="g3" style="gap:4px">
+          <div><span class="dfl">Cuántos</span><input type="number" id="db_pick_n" value="${existing?.pick?.n||0}" min="0" max="6" style="font-family:var(--fm);text-align:center;padding:3px"></div>
+          <div><span class="dfl">Valor</span><input type="number" id="db_pick_val" value="${existing?.pick?.val||1}" min="1" max="5" style="font-family:var(--fm);text-align:center;padding:3px"></div>
+          <div><span class="dfl">Distintos</span><select id="db_pick_distinct"><option value="1"${existing?.pick?.distinct?' selected':''}>Sí</option><option value="0"${existing?.pick?.distinct?'':' selected'}>No</option></select></div>
+        </div>
+        <input type="text" id="db_pick_from" value="${_e((existing?.pick?.from||[]).join(', '))}" placeholder="Limitar a (coma): INT, DES — vacío = cualquiera" style="margin-top:4px">
       </div>`;
     } else if (cat === 'archetypes') {
       formHtml += `<div style="margin-bottom:10px">
@@ -3899,9 +3965,24 @@ const app = {
       if (cat==='descriptors') {
         entry.txt = document.getElementById('db_txt')?.value;
         entry.bonus = document.getElementById('db_bonus')?.value;
-        entry.grant = (document.getElementById('db_grant')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+        // Una línea por rasgo: partir por coma rompía los que llevan comas
+        // dentro, que son la mayoría. Rasgos y Elecciones se editan en dos
+        // campos y se vuelven a unir en `grant`, que es el formato del dato.
+        const lineas = id => (document.getElementById(id)?.value||'')
+          .split('\n').map(s=>s.trim()).filter(Boolean);
+        entry.grant = lineas('db_grant').concat(lineas('db_elecciones'));
         entry.mods = {};
         ['FUE','DES','CON','INT','SAB','CAR'].forEach(s=>{const v=parseInt(document.getElementById(`db_mod_${s}`)?.value)||0;if(v!==0)entry.mods[s]=v});
+        const pickN = parseInt(document.getElementById('db_pick_n')?.value)||0;
+        if (pickN > 0) {
+          const from = (document.getElementById('db_pick_from')?.value||'')
+            .split(',').map(s=>s.trim().toUpperCase()).filter(s=>STATS.includes(s));
+          entry.pick = { n: pickN, val: parseInt(document.getElementById('db_pick_val')?.value)||1 };
+          if (document.getElementById('db_pick_distinct')?.value === '1') entry.pick.distinct = true;
+          if (from.length) entry.pick.from = from;
+        } else {
+          delete entry.pick;
+        }
       } else if (cat==='archetypes') {
         entry.txt=document.getElementById('db_txt')?.value;
         entry.pv=parseInt(document.getElementById('db_pv')?.value)||8;

@@ -3185,3 +3185,28 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* El reposo prolongado es el único que toca la Carne: se distingue. */
 .rest-opt-carne{border-color:rgba(160,104,58,.34)}
 .rest-opt-carne .rest-opt-m{color:#c08a52}
+
+/* ── Rasgos de Arquetipo (Detalle) ──────────────────────────────
+   Cada rasgo del chasis —Perfil, Sustrato, Permiso, Límite— es una
+   tarjeta con su nombre y su tipo. Antes iban todos concatenados con
+   « · » dentro de un mismo párrafo y se leían de corrido.          */
+.arq-rasgo{
+  background:var(--raised);border:1px solid var(--edge-soft);
+  border-left:2px solid var(--edge-gold);
+  border-radius:var(--r);padding:8px 11px;margin-bottom:6px;
+}
+.arq-rasgo-h{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:4px;
+}
+.arq-rasgo-n{
+  font-family:var(--fd);font-size:var(--fs-lg);font-weight:600;
+  color:var(--goldb);letter-spacing:.04em;
+}
+.arq-rasgo-t{
+  font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.arq-rasgo-d{
+  margin:0;font-family:var(--fb);font-size:var(--fs-lg);
+  color:var(--text);line-height:1.5;
+}

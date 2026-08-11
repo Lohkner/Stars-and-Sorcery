@@ -1,4 +1,55 @@
-# S&S Companion — v51
+# S&S Companion — v51.2
+
+## Novedades v51.2 — Mutaciones del Mutante y elecciones desde el Editor
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r3` y `CACHE_VERSION` a `ss-companion-v45`.
+
+**El Mutante ya elige sus dos Mutaciones**
+
+Era el único Linaje cuya elección no se recogía, porque usa otro formato: «Elige DOS Mutaciones: A / B / C» en vez de «Elección: A o B». El lector reconoce ahora ambos, y el número sale del propio texto (`DOS` → dos desplegables).
+
+Las dos ranuras **se excluyen entre sí**, y **Aberración Mística ocupa las dos**: al elegirla, la segunda desaparece; al cambiarla por otra, vuelve. Esa regla se deduce del texto de la opción («ocupa las DOS elecciones»), así que funciona igual para cualquier opción futura redactada de esa forma, sin cablear nombres.
+
+**Editar un Linaje le rompía los rasgos**
+
+El Editor de Reglas guardaba `grant` partiendo el campo **por comas**, y la mayoría de rasgos llevan comas dentro. Editar un Humano convertía «Elección: Ingenio Práctico (repite 1 tirada de 1d20 fallida por conflicto dramático, 1/Descanso Largo; vale el segundo resultado) o Aguante» en dos rasgos rotos.
+
+Ahora es un área de texto con **una línea por rasgo**. Comprobado: entra con 3 rasgos y sale con 3, ninguno partido.
+
+**Elecciones y bonos, editables**
+
+El formulario de Linaje gana dos campos:
+
+- **Elecciones** — una por línea. Se convierten en desplegables en la ficha. Admite `Elección: A o B`, `Elección: A / B / C` y `Elige DOS Cosas: A / B / C`, y respeta los paréntesis, así que una opción puede contener « o » dentro.
+- **Bono de Atributo a elegir** — cuántos, de qué valor, si deben ser distintos y a qué atributos limitarlo. Es lo que la ficha pinta como «Bono de Linaje».
+
+Con esto se pueden añadir Experiencias y bonos a un Linaje existente, o crear uno nuevo con ellos, sin tocar `data.js`.
+
+## Novedades v51.1 — Rasgos de Arquetipo, y el Linaje ya se elige
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r2` y `CACHE_VERSION` a `ss-companion-v44`.
+
+**Los rasgos de Arquetipo se leían de corrido**
+
+Iban concatenados con « · » dentro de un mismo párrafo, así que en Detalle salía un muro de texto. Ahora cada rasgo es una tarjeta con **su nombre y su tipo** (`◆ pasivo`, `⚡ trigger`…), agrupada bajo su bloque del chasis: Perfil, Sustrato, Permiso y Límite. En `data.js` dejan de ser dos cadenas (`feature1`/`feature2`) y pasan a ser `rasgos:[{n,t,d,b}]`.
+
+Al reconstruirlos desde el Manual v1.8 salió que **el catálogo de rasgos estaba desfasado**. El manual dice literalmente que «el Sagaz tiene un solo rasgo pasivo desde el Nivel 1, el Misticismo Innato»; la ficha le mostraba cinco, heredados de una versión anterior. Queda: Audaz con Veterano de Guerra, Lectura de Campo e Inercia de Guerra; Versátil con Pericia Flexible; Sagaz con Misticismo Innato.
+
+**Conducción Arcana ya no existe, y afectaba a dos cálculos**
+
+Ese rasgo permitía al Sagaz usar el atributo de su Fuente en lugar del defensivo para la **Guardia** y la **Iniciativa**. No aparece en el Manual v1.8 ni en el Compendio v2.2, y el propio ejemplo del manual lo confirma: *Sable, Sagaz con INT 17/+3 y DES 12/+1, **Guardia 13*** = 10 + PB 2 + DES 1. Con el rasgo habrían sido 15.
+
+Retirado de ambos cálculos. Sustituir el atributo defensivo sigue siendo posible, pero solo por Talento —Armadura de Magia—, que entra por los bonos declarados de la tarjeta Guardia.
+
+**El Linaje ya se elige: bonos de atributo y Elección de Experiencia**
+
+Los bonos raciales con elección no se recogían en ninguna parte. Un **Humano** o un **Medio Elfo** («+1 a dos Atributos a elección») no recibían **ningún** bono, y cuatro Linajes tenían una rama cableada en los datos: Infernal aplicaba siempre INT, Aesir siempre SAB, Cambiante siempre FUE y Mutante perdía su +2.
+
+Ahora el panel de Identidad muestra un desplegable por elección, bajo el Linaje. Los bonos entran por `app._descMods()`, punto único que leen `_statFinal`, `_buildStatsSummary` y `calc()`, así que **al confirmar Identidad y Origen los atributos ya aparecen aplicados en Stats**. Cuando el Linaje pide «dos Atributos distintos», el segundo desplegable excluye el ya elegido.
+
+La **Elección de Experiencia** vivía como una línea de texto corrido dentro de `grant`; ahora es un desplegable con sus opciones. El separador varía entre Linajes (` o ` con dos opciones, ` / ` con tres) y **Cambiante tiene un « o » dentro de un paréntesis**, así que la división respeta el nivel de anidamiento en vez de partir por la primera coincidencia.
+
+Todo se guarda solo: `gatherCharData` serializa los `<select>` con id.
 
 ## Novedades v51 — Manual Básico v1.8 y Compendio de Sendas v2.2
 
