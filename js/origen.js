@@ -96,6 +96,31 @@
     return wrap;
   }
 
+  /* ── Lectores públicos: la pestaña Detalle pinta lo ELEGIDO ────── */
+
+  /** Bonos de atributo que el jugador escogió: [{a:'CAR', v:1}, …] */
+  app._descPicksElegidos = function () {
+    const d = descActual();
+    if (!d?.pick) return [];
+    const out = [];
+    for (let i = 1; i <= (d.pick.n || 1); i++) {
+      const a = $('desc_pick_' + i)?.value;
+      if (a) out.push({ a, v: d.pick.val || 1 });
+    }
+    return out;
+  };
+
+  /** Elecciones resueltas: [{etiqueta:'Mutaciones 1', valor:'Garras'}, …] */
+  app._descEleccionesElegidas = function () {
+    const out = [];
+    document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').forEach(s => {
+      if (!s.value) return;
+      const et = s.previousSibling?.textContent || 'Elección';
+      out.push({ etiqueta: et, valor: s.value });
+    });
+    return out;
+  };
+
   function pintar() {
     const host = $('desc_choices');
     if (!host) return;
@@ -105,6 +130,29 @@
     host.querySelectorAll('select').forEach(s => { previos[s.id] = s.value; });
     host.textContent = '';
     if (!d) return;
+
+    // 0. Bonos FIJOS del Linaje, visibles junto a los que se eligen: si no,
+    //    el jugador ve «Bono de Linaje (+1)» sin saber que además ya lleva
+    //    un +2 CON puesto por su Descriptor.
+    const fijos = Object.entries(d.mods || {});
+    if (fijos.length) {
+      const wrap = document.createElement('div');
+      wrap.style.marginTop = '6px';
+      const l = document.createElement('span');
+      l.className = 'fl';
+      l.textContent = 'Bonos de Linaje (fijos)';
+      wrap.appendChild(l);
+      const fila = document.createElement('div');
+      fila.className = 'desc-fijos';
+      fijos.forEach(([a, v]) => {
+        const chip = document.createElement('span');
+        chip.className = 'desc-fijo';
+        chip.textContent = `${a} ${v > 0 ? '+' : ''}${v}`;
+        fila.appendChild(chip);
+      });
+      wrap.appendChild(fila);
+      host.appendChild(wrap);
+    }
 
     // 1. Bonos de atributo a elección
     if (d.pick) {
@@ -168,6 +216,28 @@
   app.init = function () {
     const r = _init.apply(this, arguments);
     pintar();
+    return r;
+  };
+
+  /* randomize() es anterior a estos campos, así que dejaba las elecciones
+     en blanco: un Cambiante aleatorio se quedaba sin su +2 de atributo y
+     sin Experiencia. Se rellenan al azar, respetando las exclusiones
+     («distintos», opciones que ocupan varias ranuras) porque se hace a
+     través de los mismos selects y repintando entre uno y otro. */
+  const _randomize = app.randomize;
+  app.randomize = function () {
+    const r = _randomize.apply(this, arguments);
+    pintar();
+    let vueltas = 0;
+    while (vueltas++ < 8) {
+      const vacio = [...document.querySelectorAll('#desc_choices select')]
+        .find(s => !s.value && s.options.length > 1);
+      if (!vacio) break;
+      const ops = [...vacio.options].filter(o => o.value);
+      vacio.value = ops[Math.floor(Math.random() * ops.length)].value;
+      pintar();
+    }
+    this.calc();
     return r;
   };
 })();

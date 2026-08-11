@@ -3210,3 +3210,15 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   margin:0;font-family:var(--fb);font-size:var(--fs-lg);
   color:var(--text);line-height:1.5;
 }
+
+/* ── Bonos fijos del Linaje (tarjeta de Identidad) ──────────────
+   Se muestran junto a los desplegables de bono a elegir para que el
+   jugador vea el reparto completo: lo que ya trae el Linaje y lo que
+   le toca escoger. Son informativos, no editables. */
+.desc-fijos{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.desc-fijo{
+  font-family:var(--fm);font-size:var(--fs-md);color:var(--sage);
+  background:var(--raised);border:1px solid rgba(63,160,108,.35);
+  border-radius:var(--r);padding:4px 10px;
+  font-variant-numeric:tabular-nums;
+}

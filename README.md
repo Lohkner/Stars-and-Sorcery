@@ -1,4 +1,62 @@
-# S&S Companion — v51.2
+# S&S Companion — v51.4
+
+## Novedades v51.4 — Detalle muestra lo elegido, no lo disponible
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r5` y `CACHE_VERSION` a `ss-companion-v47`.
+
+**Las tarjetas de Linaje y Arquetipo enseñaban el menú, no el plato**
+
+En Detalle, la tarjeta de Linaje listaba entre sus Rasgos la línea cruda «Elección: Ingenio Práctico (…) o Aguante (…)» —que no es un rasgo, es un menú— y en Modificadores solo mostraba los bonos **fijos**. Un Humano, cuyo bono es todo elección, aparecía sin ningún modificador aunque hubiera elegido dos.
+
+Ahora:
+
+- **Rasgos** lista solo los fijos.
+- **Elecciones** es una sección nueva con lo que el jugador escogió, y marca «Sin elegir» lo que falte.
+- **Modificadores** suma los fijos y los elegidos, con `·elegido` en los que vienen de una elección.
+
+En la tarjeta de Arquetipo, **Pericias** pasa de mostrar la de `sel_filo` a mostrarlas todas **con su grado** (`Físico 2 · Mental 1`), que es lo que determina el coste de Esfuerzo. Y **Habilidades Seleccionadas** indica el cupo: «2 de 3 del Arquetipo», así se ve de un vistazo si faltan por elegir.
+
+**Los bonos fijos, a la vista en Identidad**
+
+Si el Linaje trae un bono establecido (Enano: +2 CON, +1 FUE), ahora se muestra junto a los desplegables de bono a elegir, como fichas informativas. Antes solo se veía lo que había que escoger, sin el reparto que ya venía dado.
+
+**Un personaje aleatorio se quedaba sin sus elecciones**
+
+`randomize()` es anterior a estos campos y los dejaba en blanco: un Cambiante aleatorio salía **sin su +2 de atributo** y sin Experiencia. Ahora se rellenan al azar respetando las exclusiones —atributos distintos, opciones que ocupan varias ranuras—, porque se resuelven a través de los mismos desplegables. Verificado con 12 personajes aleatorios seguidos: los 12 completos.
+
+**Sobre los datos de Arquetipo**: se cotejaron contra el Manual v1.8 y ya estaban al día desde la v51.1 —las listas de habilidades iniciales y sus cupos (2/3/4) coinciden—, así que aquí solo cambia la presentación.
+
+## Novedades v51.3 — El Editor de Reglas edita la mecánica, no solo el texto
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r4` y `CACHE_VERSION` a `ss-companion-v46`.
+
+**El editor destruía datos en silencio**
+
+Construía la entrada desde cero (`let entry = {name}`), así que **todo campo que el formulario no mostrase se borraba al guardar**. Abrir el Audaz y pulsar Guardar sin tocar nada lo dejaba en **10 campos de 18**: perdía su chasis entero —`rasgos`, `sustrato`, `permiso`, `limite`—, `skills_count` e `ignoresGearReq`, y `armorProf` se vaciaba. Los Linajes perdían `innate_optional` (que satisface el requisito de Iniciado Místico) y `skillGrants`; las armas, sus `notes`.
+
+Ahora se parte de la entrada existente y se sobrescribe solo lo editado.
+
+**Campos que no se podían tocar, y ahora sí**
+
+| Categoría | Se añade |
+|---|---|
+| Arquetipo | Velocidad · Habilidades a elegir · Competencia de armadura · Ignora requisitos de FUE · Sustrato, Permiso y Límite · Rasgos (uno por línea, `Nombre (tipo) \| texto @bloque`) |
+| Linaje | Elecciones · Bono de Atributo a elegir *(v51.2)* |
+| Trasfondo | Defecto |
+| Armas | Notas |
+| Armaduras y escudos | Notas · Requisitos de FUE y DES |
+| Axiomas | Nivel · Fuente |
+
+**Cuatro fallos más que salieron en la auditoría**
+
+- **Trasfondos partía `grant` por comas**, igual que Linajes antes de v51.2. «Kit de caligrafía y sellos (Influencia, Engaño) — competencia incluida» se convertía en dos rasgos rotos. Ahora es una línea por rasgo.
+- **«Sangre de Gigante» perdía su Grado 4**: el formulario tenía tres campos fijos y el guardado recorría `[1,2,3]`. Ahora los campos se generan según los Grados que tenga, con uno de más para añadir.
+- **Sin Armadura pasaba de 0 a 1 slot** en cada guardado: `||1` trataba el 0 como ausente.
+- **Se inventaban campos vacíos**: `desc:""` en cada talento —el catálogo no lleva descripción desde v47—, `cost:""` en Axiomas y ceros en los requisitos de armas.
+
+**El PB del Arquetipo no se ofrece**, y es deliberado: el Bono de Competencia sale del **nivel** (`PROF_THRESHOLDS`), no del Arquetipo. El campo `prof` del dato no lo lee nadie, así que un control ahí no haría nada.
+
+**Verificación**: abrir y guardar sin tocar nada las **435 entradas** de las siete categorías más 73 talentos. Idempotente en todas: ni un campo perdido, cambiado o inventado. Y comprobado que editar sí llega al motor — cambiar la Velocidad del Sagaz a 25 aparece como «25 pies» en la ficha.
 
 ## Novedades v51.2 — Mutaciones del Mutante y elecciones desde el Editor
 

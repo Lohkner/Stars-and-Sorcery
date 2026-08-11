@@ -1773,7 +1773,7 @@ const app = {
         <div style="font-family:var(--fd);color:var(--gold);font-size:var(--fs-xl);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">${idx!==null?'Editar':'Nuevo'} Objeto</div>
         <div style="margin-bottom:8px"><span class="fl">Nombre</span><input type="text" id="ci_name" value="${this._esc(existing?.name||'')}" placeholder="Nombre del objeto"></div>
         <div class="g2" style="gap:6px;margin-bottom:8px">
-          <div><span class="fl">Slots</span><input type="number" id="ci_slots" value="${existing?.slots||1}" min="0" max="20"></div>
+          <div><span class="fl">Slots</span><input type="number" id="ci_slots" value="${existing?.slots ?? 1}" min="0" min="0" max="20"></div>
           <div><span class="fl">Tipo</span><select id="ci_type" onchange="app._syncCustomItemFields()">
             <option value="misc"${(!existing||existing.type==='misc')?' selected':''}>Miscelánea</option>
             <option value="weapons"${existing?.type==='weapons'?' selected':''}>Arma</option>
@@ -3161,23 +3161,55 @@ const app = {
         bs.className = 'js-badge-gold';
         bs.textContent = this._sanitize(desc.bonus); bw.appendChild(bs); db.appendChild(bw);
       }
-      if (desc.grant?.length) {
+      // Rasgos: solo los FIJOS. Las líneas «Elección: A o B» no son un
+      // rasgo que el personaje tenga, son un menú — se resuelven abajo.
+      const fijos = this._grantFijos(desc);
+      if (fijos.length) {
         const gl = document.createElement('div');
         gl.className = 'js-section-lbl';
         gl.textContent='Rasgos'; db.appendChild(gl);
         const gw = document.createElement('div'); gw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        desc.grant.forEach(g => { const s=document.createElement('span'); s.className='tbadge'; s.textContent='✦ '+this._sanitize(String(g)); gw.appendChild(s); });
+        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge'; s.textContent='✦ '+this._sanitize(String(g)); gw.appendChild(s); });
         db.appendChild(gw);
       }
-      if (desc.mods && Object.keys(desc.mods).length) {
+
+      // Lo que el jugador ELIGIÓ, no lo que podía elegir.
+      const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
+      const pendientes = this._grantElecciones(desc).length - elegidas.length;
+      if (elegidas.length || pendientes > 0) {
+        const el = document.createElement('div');
+        el.className = 'js-section-lbl';
+        el.textContent = 'Elecciones'; db.appendChild(el);
+        const ew = document.createElement('div'); ew.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
+        elegidas.forEach(({etiqueta, valor}) => {
+          const s=document.createElement('span'); s.className='tbadge';
+          s.textContent = `${this._sanitize(etiqueta)}: ${this._sanitize(valor)}`;
+          ew.appendChild(s);
+        });
+        if (pendientes > 0) {
+          const s=document.createElement('span'); s.className='tbadge';
+          s.style.cssText='color:var(--muted);border-style:dashed';
+          s.textContent = pendientes === 1 ? 'Sin elegir' : `${pendientes} sin elegir`;
+          ew.appendChild(s);
+        }
+        db.appendChild(ew);
+      }
+
+      // Modificadores: los fijos MÁS los que el jugador escogió, que es lo
+      // que de verdad se le suma a los atributos.
+      const picks = this._descPicksElegidos ? this._descPicksElegidos() : [];
+      const totales = this._descMods(descKey);
+      if (Object.keys(totales).length) {
         const ml = document.createElement('div');
         ml.className = 'js-section-lbl';
         ml.textContent='Modificadores'; db.appendChild(ml);
         const mw = document.createElement('div'); mw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
-        Object.entries(desc.mods).forEach(([k,v]) => {
+        Object.entries(totales).forEach(([k,v]) => {
+          const elegido = picks.some(p => p.a === k);
           const s=document.createElement('span');
-          s.style.cssText=`font-family:var(--fm);font-size:var(--fs-xl);color:${Number(v)>0?'var(--sage)':'var(--blood)'};background:var(--raised);border:1px solid var(--rim);border-radius:var(--r);padding:3px 8px`;
-          s.textContent=String(k)+' '+(Number(v)>0?'+':'')+Number(v); mw.appendChild(s);
+          s.style.cssText=`font-family:var(--fm);font-size:var(--fs-xl);color:${Number(v)>0?'var(--sage)':'var(--blood)'};background:var(--raised);border:1px solid ${elegido?'var(--edge-gold)':'var(--rim)'};border-radius:var(--r);padding:3px 8px`;
+          s.textContent=String(k)+' '+(Number(v)>0?'+':'')+Number(v)+(elegido?' ·elegido':'');
+          mw.appendChild(s);
         });
         db.appendChild(mw);
       }
@@ -3209,9 +3241,25 @@ const app = {
       rg.appendChild(mkResBox('rgba(76,175,125,.1)','rgba(76,175,125,.3)','var(--sage)','Adrenalina',adrFormula));
       rg.appendChild(mkResBox('rgba(74,158,202,.1)','rgba(74,158,202,.3)','var(--ice)','Ingenio',ingFormula));
       ab.appendChild(rg);
-      if (filoVal) {
-        const fl=document.createElement('div'); fl.className='js-section-lbl'; fl.textContent='Pericia Seleccionada'; ab.appendChild(fl);
-        const fw=document.createElement('div'); fw.style.marginBottom='8px'; const fb=document.createElement('span'); fb.className='tbadge'; fb.textContent=this._sanitize(filoVal); fw.appendChild(fb); ab.appendChild(fw);
+      // Pericias adquiridas CON SU GRADO, no la que estuviera en sel_filo:
+      // desde v49 el personaje puede tener varias, cada una a un grado
+      // distinto, y el coste de Esfuerzo depende de él.
+      const periciasConGrado = [];
+      (arq?.edges || []).forEach(e => {
+        const slug = e.normalize('NFD').replace(/[̀-ͯ]/g,'')
+                      .toLowerCase().replace(/[^a-z0-9]+/g,'_');
+        const g = parseInt(document.getElementById('filo_g_' + slug)?.value, 10) || 0;
+        if (g > 0) periciasConGrado.push(`${e} ${g}`);
+      });
+      if (periciasConGrado.length || filoVal) {
+        const fl=document.createElement('div'); fl.className='js-section-lbl';
+        fl.textContent = periciasConGrado.length > 1 ? 'Pericias' : 'Pericia'; ab.appendChild(fl);
+        const fw=document.createElement('div'); fw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
+        (periciasConGrado.length ? periciasConGrado : [filoVal]).forEach(t => {
+          const fb=document.createElement('span'); fb.className='tbadge';
+          fb.textContent=this._sanitize(t); fw.appendChild(fb);
+        });
+        ab.appendChild(fw);
       }
       // Chasis del Arquetipo (Manual v1.8): Perfil · Sustrato · Permiso ·
       // Límite. Los cuatro son exclusivos y ningún Talento los otorga.
@@ -3262,7 +3310,12 @@ const app = {
 
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {
-        const sl=document.createElement('div'); sl.className='js-section-lbl'; sl.textContent='Habilidades Seleccionadas'; ab.appendChild(sl);
+        const nArq = document.querySelectorAll('input[name="chk_arq"]:checked').length;
+        const cupo = arq?.skills_count;
+        const sl=document.createElement('div'); sl.className='js-section-lbl';
+        // Con el cupo a la vista se ve de un vistazo si faltan por elegir.
+        sl.textContent = cupo ? `Habilidades Seleccionadas — ${nArq} de ${cupo} del Arquetipo` : 'Habilidades Seleccionadas';
+        ab.appendChild(sl);
         const sw=document.createElement('div'); sw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
         selSkills.forEach(s => { const sp=document.createElement('span'); sp.className='js-tag-neutral'; sp.textContent=this._sanitize(String(s)); sw.appendChild(sp); });
         ab.appendChild(sw);
@@ -3819,8 +3872,27 @@ const app = {
         <div><span class="dfl">Adrenalina</span><input type="number" id="db_adr" value="${existing?.adr_bonus??existing?.adr??2}"></div>
         <div><span class="dfl">Ingenio</span><input type="number" id="db_ing" value="${existing?.ing_bonus??existing?.ing??0}"></div>
       </div>
+      <div class="g3" style="gap:6px;margin-bottom:6px">
+        <div><span class="dfl">Velocidad</span><input type="number" id="db_speed" value="${existing?.speed??30}" step="5"></div>
+        <div><span class="dfl">Habilidades a elegir</span><input type="number" id="db_skills_count" value="${existing?.skills_count??2}" min="0" max="8"></div>
+      </div>
       <div style="margin-bottom:6px"><span class="dfl">Pericias (separadas por coma)</span><input type="text" id="db_edges" value="${_e((existing?.edges||[]).join(', '))}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Habilidades (separadas por coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>`;
+      <div style="margin-bottom:6px"><span class="dfl">Habilidades (separadas por coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Competencia de armadura <span class="is-field-note">— light, medium, heavy</span></span><input type="text" id="db_armorprof" value="${_e((existing?.armorProf||[]).join(', '))}" placeholder="ej: light, medium"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Ignora requisitos de FUE del equipo</span><select id="db_ignoresgear"><option value="1"${existing?.ignoresGearReq?' selected':''}>Sí</option><option value="0"${existing?.ignoresGearReq?'':' selected'}>No</option></select></div>
+      <div style="margin-bottom:6px"><span class="dfl">Sustrato <span class="is-field-note">— nombre y texto</span></span>
+        <input type="text" id="db_sustrato_n" value="${_e(existing?.sustrato_nombre)}" placeholder="ej: Presión" style="margin-bottom:4px">
+        <textarea id="db_sustrato" style="min-height:56px">${_e(existing?.sustrato)}</textarea>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Permiso <span class="is-field-note">— nombre y texto</span></span>
+        <input type="text" id="db_permiso_n" value="${_e(existing?.permiso_nombre)}" placeholder="ej: Intervención" style="margin-bottom:4px">
+        <textarea id="db_permiso" style="min-height:56px">${_e(existing?.permiso)}</textarea>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Límite</span><textarea id="db_limite" style="min-height:48px">${_e(existing?.limite)}</textarea></div>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea: Nombre (tipo) | texto</span></span>
+        <textarea id="db_rasgos" style="min-height:76px" placeholder="Veterano de Guerra (◆ pasivo) | Mientras vistes armadura…">${_e((existing?.rasgos||[]).map(r=>`${r.n}${r.t?' ('+r.t+')':''} | ${r.d}${r.b&&r.b!=='perfil'?' @'+r.b:''}`).join('\n'))}</textarea>
+        <div class="is-field-note" style="margin-top:3px">Van al bloque Perfil salvo que acabes la línea con <em>@sustrato</em>, <em>@permiso</em> o <em>@limite</em>.</div>
+      </div>`;
     } else if (cat === 'backgrounds') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
@@ -3829,7 +3901,8 @@ const app = {
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos (coma)</span><input type="text" id="db_grant" value="${_e((existing?.grant||[]).join(', '))}"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px">${_e((existing?.grant||[]).join('\n'))}</textarea><div class="is-field-note" style="margin-top:3px">Los rasgos llevan comas dentro, así que se separan por línea, no por coma.</div></div>
+      <div style="margin-bottom:6px"><span class="dfl">Defecto <span class="is-field-note">— el inconveniente del Trasfondo</span></span><input type="text" id="db_defecto" value="${_e(existing?.defecto)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Habilidades (coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>`;
     } else if (cat === 'weapons') {
       formHtml += `<div style="margin-bottom:10px">
@@ -3843,10 +3916,11 @@ const app = {
         <div><span class="dfl">Tipo</span><select id="db_wtype"><option value="light"${existing?.type==='light'?' selected':''}>Ligera</option><option value="medium"${existing?.type==='medium'?' selected':''}>Media</option><option value="heavy"${existing?.type==='heavy'?' selected':''}>Pesada</option><option value="ranged"${existing?.type==='ranged'?' selected':''}>Distancia</option><option value="reach"${existing?.type==='reach'?' selected':''}>Alcance</option></select></div>
       </div>
       <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots||1}"></div>
+        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
         <div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue" value="${existing?.req_FUE||0}"></div>
         <div><span class="dfl">Req. DES</span><input type="number" id="db_req_des" value="${existing?.req_DES||0}"></div>
-      </div>`;
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>`;
     } else if (cat === 'armors') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
@@ -3857,8 +3931,10 @@ const app = {
       <div class="g3" style="gap:6px;margin-bottom:6px">
         <div><span class="dfl">Armadura (RD)</span><input type="number" id="db_rd" value="${existing?.rd ?? this._armorRdOf(existing)}" min="0" max="5"></div>
         <div><span class="dfl">Tipo</span><select id="db_atype"><option value="none"${existing?.type==='none'?' selected':''}>Sin armadura</option><option value="light"${existing?.type==='light'?' selected':''}>Ligera</option><option value="medium"${existing?.type==='medium'?' selected':''}>Media</option><option value="heavy"${existing?.type==='heavy'?' selected':''}>Pesada</option></select></div>
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots||1}"></div>
-      </div>`;
+        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>
+      <div class="g2" style="gap:6px;margin-bottom:6px"><div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue2" value="${existing?.req_FUE||0}" min="0" max="20"></div><div><span class="dfl">Req. DES</span><input type="number" id="db_req_des2" value="${existing?.req_DES||0}" min="0" max="20"></div></div>`;
     } else if (cat === 'shields') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
@@ -3869,8 +3945,10 @@ const app = {
       <div class="g3" style="gap:6px;margin-bottom:6px">
         <div><span class="dfl">Bono Guardia</span><input type="number" id="db_shield_guardia" value="${existing?.guardia ?? existing?.bonus ?? 1}" min="0" max="3"></div>
         <div><span class="dfl">Bono Bloqueo</span><input type="number" id="db_shield_block" value="${existing?.block ?? 2}" min="0" max="5"></div>
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots||1}"></div>
-      </div>`;
+        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
+      </div>
+      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>
+      <div class="g2" style="gap:6px;margin-bottom:6px"><div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue2" value="${existing?.req_FUE||0}" min="0" max="20"></div><div><span class="dfl">Req. DES</span><input type="number" id="db_req_des2" value="${existing?.req_DES||0}" min="0" max="20"></div></div>`;
     } else if (cat === 'spells') {
       formHtml += `<div style="margin-bottom:10px">
         <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
@@ -3882,6 +3960,8 @@ const app = {
       <div class="g2" style="gap:6px;margin-bottom:6px">
         <div><span class="dfl">Tipo</span><select id="db_stype"><option value="spell"${existing?.type==='spell'?' selected':''}>Conjuro</option><option value="trick"${(existing?.type==='trick'||existing?.type==='power')?'selected':''}>Truco</option></select></div>
         <div><span class="dfl">Coste</span><input type="text" id="db_cost" value="${_e(existing?.cost)}" placeholder="ej: 2 Ing"></div>
+        <div><span class="dfl">Nivel</span><input type="number" id="db_level" value="${existing?.level??0}" min="0" max="10"></div>
+        <div><span class="dfl">Fuente</span><input type="text" id="db_source" value="${_e(existing?.source)}" placeholder="ej: pacto"></div>
       </div>`;
     } else if (isTalent) {
       const grds = existing?.grades || [];
@@ -3890,9 +3970,9 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Requisitos</span><input type="text" id="db_req" value="${_e(existing?.req)}" placeholder="ej: FUE 13+ · Nivel 1 · Iniciado Místico (Pacto)"></div>
       <div style="margin-bottom:6px"><span class="dfl">Leyenda / Descripción</span><textarea id="db_txt" style="min-height:48px">${_e(existing?.desc)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Grado 1 <span class="is-field-note">— efecto base</span></span><textarea id="db_g1" style="min-height:46px">${gd(1)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Grado 2 <span class="is-field-note">— opcional</span></span><textarea id="db_g2" style="min-height:46px">${gd(2)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Grado 3 <span class="is-field-note">— opcional</span></span><textarea id="db_g3" style="min-height:46px">${gd(3)}</textarea></div>`;
+      ${Array.from({length: Math.max(4, (existing?.grades||[]).length + 1)}, (_, i) => i + 1).map(n =>
+        `<div style="margin-bottom:6px"><span class="dfl">Grado ${n} <span class="is-field-note">${n===1?'— efecto base':'— opcional; vacío = no existe'}</span></span><textarea id="db_g${n}" style="min-height:46px">${gd(n)}</textarea></div>`
+      ).join('')}`;
     }
 
     formHtml += `<div style="display:flex;gap:8px;margin-top:14px">
@@ -3948,20 +4028,38 @@ const app = {
       const req  = document.getElementById('db_req')?.value?.trim() || '';
       if (!name) { this.toast('Nombre requerido','err'); return; }
       const grades = [];
-      [1,2,3].forEach(n => { const d = document.getElementById('db_g'+n)?.value?.trim(); if (d) grades.push({g:n, d}); });
+      // Se recorren todos los campos de Grado que el formulario haya
+      // pintado, no [1,2,3] fijo: «Sangre de Gigante» tiene cuatro y
+      // el cuarto se borraba en cada guardado.
+      for (let n = 1; document.getElementById('db_g'+n); n++) {
+        const d = document.getElementById('db_g'+n).value.trim();
+        if (d) grades.push({g:n, d});
+      }
       if (!this.DB.talents[tcat]) this.DB.talents[tcat] = [];
       if (isTalent) {
         const idx = parseInt(oldKey.split('|')[1]);
         const prev = this.DB.talents[tcat][idx] || {};
-        this.DB.talents[tcat][idx] = {...prev, id: prev.id || this._slugify(name), name, desc, req, grades};
+        // `desc` solo si tiene contenido: el catálogo no lleva descripción
+        // desde v47 y escribirla vacía ensuciaba cada talento al guardarlo.
+        const ent = {...prev, id: prev.id || this._slugify(name), name, req, grades};
+        if (desc) ent.desc = desc; else delete ent.desc;
+        this.DB.talents[tcat][idx] = ent;
       } else {
-        this.DB.talents[tcat].push({id: this._slugify(name), name, desc, req, grades});
+        const nuevo = {id: this._slugify(name), name, req, grades};
+        if (desc) nuevo.desc = desc;
+        this.DB.talents[tcat].push(nuevo);
       }
     } else {
       const key = (document.getElementById('db_key')?.value||'').trim().toLowerCase().replace(/\s+/g,'_');
       if (!key) { this.toast('Clave requerida','err'); return; }
       const name = document.getElementById('db_name')?.value?.trim() || key;
-      let entry = {name};
+      // Se PARTE de la entrada existente. Antes se construía desde cero
+      // (`{name}`), así que abrir una entrada y guardarla sin tocar nada
+      // borraba todo campo que el formulario no mostrase: el Audaz pasaba
+      // de 18 campos a 10 —perdía su chasis entero (rasgos, sustrato,
+      // permiso, límite), skills_count e ignoresGearReq—, los Linajes
+      // perdían innate_optional y skillGrants, y las armas sus notas.
+      let entry = { ...(this.DB[cat]?.[oldKey] || {}), name };
       if (cat==='descriptors') {
         entry.txt = document.getElementById('db_txt')?.value;
         entry.bonus = document.getElementById('db_bonus')?.value;
@@ -3984,43 +4082,81 @@ const app = {
           delete entry.pick;
         }
       } else if (cat==='archetypes') {
+        const num = (id, def) => { const v = parseInt(document.getElementById(id)?.value); return Number.isNaN(v) ? def : v; };
+        const csv = id => (document.getElementById(id)?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
         entry.txt=document.getElementById('db_txt')?.value;
-        entry.pv=parseInt(document.getElementById('db_pv')?.value)||8;
-        entry.adr_bonus=parseInt(document.getElementById('db_adr')?.value)||2;
-        entry.ing_bonus=parseInt(document.getElementById('db_ing')?.value)||0;
-        entry.speed=30;
-        entry.prof=2;
-        entry.edges=(document.getElementById('db_edges')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-        entry.skills=(document.getElementById('db_skills')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-        entry.armorProf=[];
+        entry.pv=num('db_pv',8);
+        entry.adr_bonus=num('db_adr',2);
+        entry.ing_bonus=num('db_ing',0);
+        // speed/prof/armorProf iban fijos a 30/2/[]: una Velocidad propia o
+        // la competencia de armadura se perdían en cada guardado.
+        entry.speed=num('db_speed',30);
+        // `prof` no se ofrece: el PB sale del NIVEL (PROF_THRESHOLDS), no
+        // del Arquetipo, así que un control aquí no haría nada. Se conserva
+        // el valor que hubiera en el dato por la fusión.
+        entry.skills_count=num('db_skills_count',2);
+        entry.edges=csv('db_edges');
+        entry.skills=csv('db_skills');
+        entry.armorProf=csv('db_armorprof');
+        if (document.getElementById('db_ignoresgear')?.value === '1') entry.ignoresGearReq = true;
+        else delete entry.ignoresGearReq;
+        // Chasis (Manual v1.8)
+        const txtOf = id => (document.getElementById(id)?.value||'').trim();
+        [['sustrato_nombre','db_sustrato_n'],['sustrato','db_sustrato'],
+         ['permiso_nombre','db_permiso_n'],['permiso','db_permiso'],
+         ['limite','db_limite']].forEach(([campo,id])=>{
+          const v = txtOf(id); if (v) entry[campo] = v; else delete entry[campo];
+        });
+        // Rasgos: «Nombre (tipo) | texto @bloque», uno por línea
+        const rasgos = (document.getElementById('db_rasgos')?.value||'')
+          .split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+            let b='perfil';
+            const mb=l.match(/\s@(perfil|sustrato|permiso|limite)\s*$/i);
+            if (mb) { b=mb[1].toLowerCase(); l=l.slice(0,mb.index).trim(); }
+            const i=l.indexOf('|');
+            const cab=(i<0?l:l.slice(0,i)).trim();
+            const d=(i<0?'':l.slice(i+1)).trim();
+            const mt=cab.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+            return mt ? {n:mt[1].trim(), t:mt[2].trim(), d, b} : {n:cab, t:'', d, b};
+          }).filter(r=>r.n);
+        if (rasgos.length) entry.rasgos = rasgos; else delete entry.rasgos;
       } else if (cat==='backgrounds') {
         entry.txt=document.getElementById('db_txt')?.value;
-        entry.grant=(document.getElementById('db_grant')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+        entry.grant=(document.getElementById('db_grant')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
         entry.skills=(document.getElementById('db_skills')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+        const df=document.getElementById('db_defecto')?.value?.trim(); if(df) entry.defecto=df; else delete entry.defecto;
       } else if (cat==='weapons') {
         entry.dmg=document.getElementById('db_dmg')?.value||'1d6';
         entry.type=document.getElementById('db_wtype')?.value||'medium';
-        entry.slots=parseInt(document.getElementById('db_slots')?.value)||1;
-        entry.req_FUE=parseInt(document.getElementById('db_req_fue')?.value)||0;
-        entry.req_DES=parseInt(document.getElementById('db_req_des')?.value)||0;
-        entry.atk_bonus=0;
+        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
+        const rfw=parseInt(document.getElementById('db_req_fue')?.value)||0; if(rfw) entry.req_FUE=rfw; else delete entry.req_FUE;
+        const rdw=parseInt(document.getElementById('db_req_des')?.value)||0; if(rdw) entry.req_DES=rdw; else delete entry.req_DES;
+        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
       } else if (cat==='armors') {
         const rdIn = parseInt(document.getElementById('db_rd')?.value);
         entry.rd = Number.isNaN(rdIn) ? 0 : Math.max(0, Math.min(5, rdIn));
         delete entry.ca; // v8.3: la armadura ya no aporta CA/Guardia
         entry.type=document.getElementById('db_atype')?.value||'light';
-        entry.slots=parseInt(document.getElementById('db_slots')?.value)||1;
+        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
+        const rf=parseInt(document.getElementById('db_req_fue2')?.value)||0; if(rf) entry.req_FUE=rf; else delete entry.req_FUE;
+        const rd2=parseInt(document.getElementById('db_req_des2')?.value)||0; if(rd2) entry.req_DES=rd2; else delete entry.req_DES;
+        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
       } else if (cat==='shields') {
         const sg = parseInt(document.getElementById('db_shield_guardia')?.value);
         const sbk = parseInt(document.getElementById('db_shield_block')?.value);
         entry.guardia = Number.isNaN(sg) ? 1 : Math.max(0, Math.min(3, sg));
         entry.block   = Number.isNaN(sbk) ? 2 : Math.max(0, Math.min(5, sbk));
         delete entry.bonus; // v8.3: el bono del escudo va a Guardia, no a CA
-        entry.slots=parseInt(document.getElementById('db_slots')?.value)||1;
+        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
+        const rf=parseInt(document.getElementById('db_req_fue2')?.value)||0; if(rf) entry.req_FUE=rf; else delete entry.req_FUE;
+        const rd2=parseInt(document.getElementById('db_req_des2')?.value)||0; if(rd2) entry.req_DES=rd2; else delete entry.req_DES;
+        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
       } else if (cat==='spells') {
         entry.txt=document.getElementById('db_txt')?.value;
         entry.type=document.getElementById('db_stype')?.value||'spell';
-        entry.cost=document.getElementById('db_cost')?.value;
+        const ct=document.getElementById('db_cost')?.value?.trim(); if(ct) entry.cost=ct; else delete entry.cost;
+        const lv=parseInt(document.getElementById('db_level')?.value); if(!Number.isNaN(lv)&&(lv>0||'level' in entry)) entry.level=lv;
+        const so=document.getElementById('db_source')?.value?.trim(); if(so) entry.source=so; else delete entry.source;
       }
       if (oldKey !== 'new' && oldKey !== key && this.DB[cat]?.[oldKey]) delete this.DB[cat][oldKey];
       if (!this.DB[cat]) this.DB[cat] = {};
