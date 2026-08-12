@@ -89,7 +89,8 @@
     sel.addEventListener('change', () => {
       app._markUnsaved && app._markUnsaved();
       app.calc();
-      pintar();          // repinta para que las opciones distintas se excluyan
+      pintar();                       // para que las opciones distintas se excluyan
+      app._renderTraits && app._renderTraits();  // Aptitudes → tarjeta Rasgos
     });
     wrap.appendChild(l);
     wrap.appendChild(sel);
@@ -209,6 +210,9 @@
     const r = _updateOptions.apply(this, arguments);
     pintar();
     app.calc();          // los bonos elegidos entran en los atributos
+    // _updateOptions ya pintó la tarjeta Rasgos, pero con los desplegables
+    // del Linaje ANTERIOR: al cambiar de Linaje arrastraba su elección.
+    app._renderTraits && app._renderTraits();
     return r;
   };
 
@@ -238,6 +242,7 @@
       pintar();
     }
     this.calc();
+    this._renderTraits && this._renderTraits();
     return r;
   };
 })();

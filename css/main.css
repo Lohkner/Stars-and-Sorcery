@@ -3222,3 +3222,9 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   border-radius:var(--r);padding:4px 10px;
   font-variant-numeric:tabular-nums;
 }
+
+/* ── Rasgos venidos de una Elección (pestaña Aptitudes) ─────────
+   Se distinguen de los fijos: el jugador los escogió, y conviene ver
+   de un vistazo cuáles vinieron dados y cuáles decidió él. */
+.tbadge-elegido{border-color:var(--edge-gold);color:var(--goldb)}
+.tbadge-pendiente{border-style:dashed;color:var(--muted)}

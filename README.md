@@ -1,4 +1,20 @@
-# S&S Companion — v51.4
+# S&S Companion — v51.5
+
+## Novedades v51.5 — La tarjeta Rasgos también muestra lo elegido
+
+Mismo criterio que la v51.4, aplicado a la tarjeta **Rasgos** de la pestaña Aptitudes. `CACHE_VERSION` sube a `ss-companion-v48`; los datos de reglas no cambian, así que `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r5`.
+
+La tarjeta volcaba todos los `grant` del Linaje y del Trasfondo, incluida la línea cruda «Elección: Furia de la Forja (…) o Guardia de la Montaña (…)» — un menú, no un rasgo del personaje. Ahora:
+
+- Los rasgos **fijos** del Linaje y del Trasfondo, como antes.
+- La opción **escogida**, con borde dorado para distinguirla de las que vienen dadas.
+- Un aviso **«Elección sin resolver»** en discontinuo cuando queda algo por decidir.
+
+Las pendientes se cuentan por **ranura vacía**, no por línea de `grant`: el Mutante abre dos desplegables desde una sola línea («Elige DOS Mutaciones»), y contando líneas su segunda ranura vacía pasaba desapercibida.
+
+**Dos refrescos que faltaban.** El repintado de la tarjeta vivía dentro de `updateOptions()`, así que no ocurría al resolver una elección —el badge se quedaba en «sin resolver» tras elegir— y al cambiar de Linaje se pintaba con los desplegables del anterior, arrastrando su elección al nuevo. Se extrae a `_renderTraits()` y se llama también desde el manejador de cambio, desde `updateOptions()` una vez reconstruidos los desplegables, y desde `randomize()`.
+
+Verificado: Enano, Mutante con sus dos ranuras, cambios de Linaje encadenados y 10 personajes aleatorios seguidos, todos sin pendientes.
 
 ## Novedades v51.4 — Detalle muestra lo elegido, no lo disponible
 

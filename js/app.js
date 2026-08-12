@@ -899,6 +899,44 @@ const app = {
       Humano o un Medio Elfo no recibían NINGÚN bono racial y los cuatro
       Linajes con rama a elegir tenían una cableada en los datos.
       Punto único: lo usan _statFinal, _buildStatsSummary y calc(). */
+  /** Tarjeta «Rasgos» de la pestaña Aptitudes. Vive aparte de
+      updateOptions() porque también hay que repintarla al resolver una
+      Elección, y eso no pasa por ahí.
+
+      Del Linaje se toman solo los rasgos FIJOS: sus líneas «Elección: A o
+      B» son un menú, no algo que el personaje tenga. De ellas se muestra
+      la opción escogida, marcada, y lo que quede por decidir. */
+  _renderTraits() {
+    const tl = document.getElementById('traits_list');
+    if (!tl) return;
+    const desc = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
+    const bg   = this.DB.backgrounds?.[document.getElementById('sel_bg')?.value];
+    tl.innerHTML = '';
+    [...this._grantFijos(desc), ...(bg?.grant || [])].forEach(g => {
+      const b = document.createElement('span');
+      b.className = 'tbadge'; b.textContent = '✦ ' + g;
+      tl.appendChild(b);
+    });
+    const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
+    elegidas.forEach(({ valor }) => {
+      const b = document.createElement('span');
+      b.className = 'tbadge tbadge-elegido';
+      b.textContent = '✦ ' + valor;
+      tl.appendChild(b);
+    });
+    // Pendientes = ranuras vacías, no líneas de `grant` sin resolver: una
+    // sola línea puede abrir varias («Elige DOS Mutaciones»).
+    const ranuras = document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').length;
+    const pendientes = Math.max(0, ranuras - elegidas.length);
+    if (pendientes > 0) {
+      const b = document.createElement('span');
+      b.className = 'tbadge tbadge-pendiente';
+      b.textContent = pendientes === 1
+        ? 'Elección sin resolver' : `${pendientes} elecciones sin resolver`;
+      tl.appendChild(b);
+    }
+  },
+
   /** Una entrada de `grant` es una ELECCIÓN si abre un desplegable en la
       ficha: «Elección: A o B» o «Elige DOS Cosas: A / B / C». El Editor de
       Reglas las presenta en su propio campo; el resto son rasgos fijos.
@@ -1372,14 +1410,7 @@ const app = {
     this._buildSkillsSummary();
 
     // Traits
-    const tl = document.getElementById('traits_list');
-    tl.innerHTML = '';
-    const grants = [...(desc?.grant||[]), ...(bg?.grant||[])];
-    grants.forEach(g => {
-      const b = document.createElement('span');
-      b.className = 'tbadge'; b.textContent = '✦ '+g;
-      tl.appendChild(b);
-    });
+    this._renderTraits();
 
     this.calc();
   },
