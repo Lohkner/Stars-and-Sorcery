@@ -3186,18 +3186,28 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .rest-opt-carne{border-color:rgba(160,104,58,.34)}
 .rest-opt-carne .rest-opt-m{color:#c08a52}
 
-/* ── Rasgos de Arquetipo (Detalle) ──────────────────────────────
-   Cada rasgo del chasis —Perfil, Sustrato, Permiso, Límite— es una
-   tarjeta con su nombre y su tipo. Antes iban todos concatenados con
-   « · » dentro de un mismo párrafo y se leían de corrido.          */
+/* ── Aptitudes de Arquetipo (Detalle) ───────────────────────────
+   Cada aptitud del chasis —Perfil, Sustrato, Permiso, Límite— es un
+   desplegable CERRADO: el chasis son unos 2.000 caracteres por
+   Arquetipo y abierto sepultaba la tarjeta. Cerrado se ve el nombre,
+   el tipo y la primera frase; el resto, al tocarlo.               */
 .arq-rasgo{
   background:var(--raised);border:1px solid var(--edge-soft);
   border-left:2px solid var(--edge-gold);
-  border-radius:var(--r);padding:8px 11px;margin-bottom:6px;
+  border-radius:var(--r);padding:7px 11px;margin-bottom:5px;
 }
-.arq-rasgo-h{
-  display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:4px;
+.arq-rasgo > summary{
+  cursor:pointer;list-style:none;
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
 }
+.arq-rasgo > summary::-webkit-details-marker{display:none}
+.arq-rasgo > summary::before{
+  content:'▸';color:var(--gold);font-size:var(--fs-2xs);
+  align-self:center;
+}
+.arq-rasgo[open] > summary::before{content:'▾'}
+.arq-rasgo[open] > summary{margin-bottom:5px}
 .arq-rasgo-n{
   font-family:var(--fd);font-size:var(--fs-lg);font-weight:600;
   color:var(--goldb);letter-spacing:.04em;
@@ -3206,10 +3216,18 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);
   text-transform:uppercase;letter-spacing:.08em;
 }
+/* Primera frase, solo mientras está cerrado */
+.arq-rasgo-peek{
+  flex-basis:100%;font-family:var(--fb);font-size:var(--fs-md);
+  color:var(--muted);line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.arq-rasgo[open] .arq-rasgo-peek{display:none}
 .arq-rasgo-d{
   margin:0;font-family:var(--fb);font-size:var(--fs-lg);
   color:var(--text);line-height:1.5;
 }
+.arq-rasgo:not([open]) .arq-rasgo-d{display:none}
 
 /* ── Bonos fijos del Linaje (tarjeta de Identidad) ──────────────
    Se muestran junto a los desplegables de bono a elegir para que el

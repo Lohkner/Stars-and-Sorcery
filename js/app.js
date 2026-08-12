@@ -3297,47 +3297,58 @@ const app = {
       // Cada rasgo se pinta como una tarjeta propia con su nombre y su
       // tipo: antes iban concatenados con « · » en un solo párrafo y se
       // leían de corrido.
+      // Cada aptitud es un desplegable cerrado: en la ficha se ve la lista
+      // de nombres, y el texto solo cuando se pide. El chasis son unos
+      // 2.000 caracteres por Arquetipo y desplegado sepultaba la tarjeta.
       const rasgosDe = b => (arq.rasgos || []).filter(r => r.b === b);
-      const bloque = (titulo, cuerpo, b) => {
+      const resumen = t => {
+        const s = String(t || '').trim();
+        const corte = s.search(/[.:]\s/);
+        const primera = corte > 0 ? s.slice(0, corte + 1) : s;
+        return primera.length > 96 ? primera.slice(0, 95).trimEnd() + '…' : primera;
+      };
+      const desplegable = (nombre, tipo, cuerpo) => {
+        const det = document.createElement('details');
+        det.className = 'arq-rasgo';
+        const sum = document.createElement('summary');
+        sum.className = 'arq-rasgo-h';
+        const nm = document.createElement('span');
+        nm.className = 'arq-rasgo-n';
+        nm.textContent = this._sanitize(nombre);
+        sum.appendChild(nm);
+        if (tipo) {
+          const tp = document.createElement('span');
+          tp.className = 'arq-rasgo-t';
+          tp.textContent = this._sanitize(tipo);
+          sum.appendChild(tp);
+        }
+        const pk = document.createElement('span');
+        pk.className = 'arq-rasgo-peek';
+        pk.textContent = this._sanitize(resumen(cuerpo));
+        sum.appendChild(pk);
+        det.appendChild(sum);
+        const d = document.createElement('p');
+        d.className = 'arq-rasgo-d';
+        d.textContent = this._sanitize(cuerpo);
+        det.appendChild(d);
+        ab.appendChild(det);
+      };
+      const bloque = (titulo, cuerpo, b, nombreCorto) => {
         const rs = rasgosDe(b);
         if (!cuerpo && !rs.length) return;
         const l = document.createElement('div');
         l.className = 'js-section-lbl';
         l.textContent = titulo;
         ab.appendChild(l);
-        if (cuerpo) {
-          const p = document.createElement('p');
-          p.className = 'js-detail-txt';
-          p.textContent = this._sanitize(cuerpo);
-          ab.appendChild(p);
-        }
-        rs.forEach(r => {
-          const card = document.createElement('div');
-          card.className = 'arq-rasgo';
-          const h = document.createElement('div');
-          h.className = 'arq-rasgo-h';
-          const nm = document.createElement('span');
-          nm.className = 'arq-rasgo-n';
-          nm.textContent = this._sanitize(r.n);
-          h.appendChild(nm);
-          if (r.t) {
-            const tp = document.createElement('span');
-            tp.className = 'arq-rasgo-t';
-            tp.textContent = this._sanitize(r.t);
-            h.appendChild(tp);
-          }
-          card.appendChild(h);
-          const d = document.createElement('p');
-          d.className = 'arq-rasgo-d';
-          d.textContent = this._sanitize(r.d);
-          card.appendChild(d);
-          ab.appendChild(card);
-        });
+        if (cuerpo) desplegable(nombreCorto || titulo, '', cuerpo);
+        rs.forEach(r => desplegable(r.n, r.t, r.d));
       };
       bloque('Perfil', '', 'perfil');
-      bloque(arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato', arq.sustrato, 'sustrato');
-      bloque(arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',  arq.permiso,  'permiso');
-      bloque('Límite', arq.limite, 'limite');
+      bloque(arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato',
+             arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Sustrato');
+      bloque(arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',
+             arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso');
+      bloque('Límite', arq.limite, 'limite', 'Límite');
 
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {

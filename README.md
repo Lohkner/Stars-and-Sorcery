@@ -1,4 +1,20 @@
-# S&S Companion — v51.5
+# S&S Companion — v51.6
+
+## Novedades v51.6 — Aptitudes de Arquetipo retráctiles
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r6` y `CACHE_VERSION` a `ss-companion-v49`.
+
+**Inercia de Guerra salía dos veces**
+
+La extracción del chasis desde el Manual v1.8 se tragaba *todas* las líneas de cada bloque, y el SUSTRATO del Audaz contiene dentro el rasgo «Inercia de Guerra». Como los rasgos además se guardan aparte en `rasgos[]`, el texto aparecía duplicado: una vez dentro de la prosa de Presión y otra como aptitud propia.
+
+La prosa del chasis ahora se corta en el primer rasgo. El Sustrato del Audaz pasa de **1.524 a 675 caracteres** y no queda ningún nombre de rasgo embebido en los tres bloques de los tres Arquetipos.
+
+**Cada aptitud es un desplegable, cerrado por defecto**
+
+El chasis son unos 2.000 caracteres por Arquetipo y, abierto, sepultaba la tarjeta. Ahora cerrado se ve el **nombre**, su **tipo** (`◆ pasivo`, `⚡ trigger`) y la **primera frase** recortada; el resto, al tocarlo. Usa el mismo marcador `▸`/`▾` dorado que los demás desplegables de la app.
+
+La tarjeta del Audaz —la más larga, con seis aptitudes— pasa de **1.160 px a 621 px**. Los otros dos quedan en 497 px.
 
 ## Novedades v51.5 — La tarjeta Rasgos también muestra lo elegido
 
