@@ -1,4 +1,28 @@
-# S&S Companion — v51.6
+# S&S Companion — v51.7
+
+## Novedades v51.7 — Estado, Guardia y Ataques plegables
+
+`CACHE_VERSION` sube a `ss-companion-v50`. No cambia ningún dato de reglas, así que `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r6`.
+
+Las tres tarjetas de Perfil se pliegan desde su cabecera. Van **abiertas por defecto** —al revés que las aptitudes de Arquetipo, que son consulta: estas se usan cada turno— y el estado **se recuerda** entre sesiones.
+
+Se guarda en `localStorage`, no en el personaje: plegar una tarjeta es una preferencia de quien juega en esa mesa, no un dato de la ficha, así que no viaja en el JSON exportado ni marca el personaje como no guardado.
+
+**Plegada, la cabecera no pierde el dato.** Cada una muestra un resumen de una línea:
+
+| Tarjeta | Plegada muestra | Alto |
+|---|---|---|
+| Estado | `PV 22/23 · Adr 25/25 · Ing 18/18` | 384 → 57 px |
+| Guardia | `Guardia 15` | 170 → 49 px |
+| Ataques | `Ataque +3 · Daño 1d8+1` | 253 → 53 px |
+
+El resumen se refresca desde `calc()` y `adjustRes()`, así que sigue los `±` en vivo aunque la tarjeta esté cerrada.
+
+Con las tres plegadas, Perfil baja de unas 2 pantallas a poco más de media.
+
+**Detalle de implementación**: el indicador `▸`/`▾` usa `::before` con `order`, porque `::after` ya lo ocupa la línea divisoria dorada de `.ph` y `::before` sin `order` se colocaría delante del rombo `◆` del título.
+
+Verificado que plegar no rompe nada de dentro: los ocho botones `±`, la tirada de Iniciativa, el menú de Descanso —un `<details>` anidado dentro de otro— y el ciclo Editar/Confirmar de Guardia siguen funcionando.
 
 ## Novedades v51.6 — Aptitudes de Arquetipo retráctiles
 

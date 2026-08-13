@@ -321,8 +321,8 @@
           </div>
 
           <!-- Estado -->
-          <div class="panel est4" style="padding:13px 14px">
-            <div class="ph" style="margin-bottom:11px"><span class="pt">Estado</span></div>
+          <details class="panel est4 fold" id="fold_estado" data-fold="estado" open style="padding:13px 14px">
+            <summary class="ph" style="margin-bottom:11px"><span class="pt">Estado</span></summary>
 
             <!-- Puntos de Vida -->
             <div class="e4-pv">
@@ -404,13 +404,13 @@
             <p id="carga_warn" class="e4-warn">Sobrecargado</p>
 
             <details class="e4-notes"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
-          </div>
+          </details>
 
           <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
                10 + PB + escudo + atributo defensivo. La armadura NO interviene
                (solo aporta Reducción de Daño, en Equipo de Combate). -->
-          <div class="panel">
-            <div class="ph"><span class="pt">Guardia</span></div>
+          <details class="panel fold" id="fold_guardia" data-fold="guardia" open>
+            <summary class="ph"><span class="pt">Guardia</span></summary>
             <div id="guard_edit_view">
               <div class="guard-live">
                 <div class="guard-live-lbl">Guardia</div>
@@ -444,11 +444,11 @@
             <div id="guard_summary_view" style="display:none">
               <!-- Generado por app._buildGuardSummary() desde app._combat -->
             </div>
-          </div>
+          </details>
 
           <!-- Ataques rápidos -->
-          <div class="panel">
-            <div class="ph" style="margin-bottom:4px"><span class="pt">Ataques</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">desde equipo</span></div>
+          <details class="panel fold" id="fold_ataques" data-fold="ataques" open>
+            <summary class="ph" style="margin-bottom:4px"><span class="pt">Ataques</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">desde equipo</span></summary>
             <div class="atk-card">
               <div class="atk-hdr">
                 <span class="atk-nm" id="atk_name_1">Desarmado</span>
@@ -483,7 +483,7 @@
                 </button>
               </div>
             </div>
-          </div>
+          </details>
 
         </div><!-- /page 0 -->
         <div class="page" id="page_1">
@@ -1020,6 +1020,7 @@
 <script defer src="js/pericias.js"></script>
 <script defer src="js/progresion.js"></script>
 <script defer src="js/origen.js"></script>
+<script defer src="js/plegables.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
 </html>

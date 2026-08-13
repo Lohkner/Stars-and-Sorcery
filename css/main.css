@@ -3246,3 +3246,35 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
    de un vistazo cuáles vinieron dados y cuáles decidió él. */
 .tbadge-elegido{border-color:var(--edge-gold);color:var(--goldb)}
 .tbadge-pendiente{border-style:dashed;color:var(--muted)}
+
+/* ══════════════════════════════════════════
+   Tarjetas plegables de Perfil (Estado · Guardia · Ataques)
+   Se usan cada turno, así que van ABIERTAS por defecto — al revés que
+   las aptitudes de Arquetipo, que son consulta. Plegarlas sirve para
+   dejar a la vista solo lo que esa mesa necesita; el estado se recuerda
+   en localStorage (js/plegables.js), no en el personaje: es una
+   preferencia de quien juega, no un dato de la ficha.
+══════════════════════════════════════════ */
+.panel.fold > summary{
+  cursor:pointer;list-style:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.panel.fold > summary::-webkit-details-marker{display:none}
+/* El indicador usa ::before con `order` para ir al final: ::after ya lo
+   ocupa la línea divisoria dorada de .ph, y ::before sin order se
+   colocaría delante del rombo ◆ de .pt. */
+.panel.fold > summary::before{
+  content:'▾';order:9;margin-left:auto;padding-left:8px;
+  color:var(--gold);font-size:var(--fs-xs);
+}
+.panel.fold:not([open]) > summary::before{content:'▸'}
+@media(hover:hover){.panel.fold > summary:hover::before{color:var(--goldb)}}
+/* Plegada: la cabecera pierde el aire inferior y su línea divisoria */
+.panel.fold:not([open]) > summary{margin-bottom:0;padding-bottom:0}
+.panel.fold:not([open]) > summary::after{display:none}
+/* Resumen de una línea mientras está plegada */
+.fold-peek{
+  margin-left:auto;font-family:var(--fm);font-size:var(--fs-xs);
+  color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.panel.fold[open] .fold-peek{display:none}
