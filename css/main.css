@@ -3272,15 +3272,20 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
 }
 .panel.fold > summary::-webkit-details-marker{display:none}
-/* El indicador usa ::before con `order` para ir al final: ::after ya lo
-   ocupa la línea divisoria dorada de .ph, y ::before sin order se
-   colocaría delante del rombo ◆ de .pt. */
+/* El indicador va al PRINCIPIO y en flujo normal, como en el resto de
+   desplegables de la app. Antes iba al final con `order` y
+   `margin-left:auto`; en el navegador de escritorio quedaba dentro a
+   320 y 375 px, pero en móvil se salía de la tarjeta. Anclado al inicio
+   no depende del espacio sobrante, así que no puede desbordar. */
 .panel.fold > summary::before{
-  content:'▾';order:9;margin-left:auto;padding-left:8px;
+  content:'▾';flex:0 0 auto;
   color:var(--gold);font-size:var(--fs-xs);
 }
 .panel.fold:not([open]) > summary::before{content:'▸'}
 @media(hover:hover){.panel.fold > summary:hover::before{color:var(--goldb)}}
+/* El título cede espacio antes que empujar nada fuera */
+.panel.fold > summary > .pt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.panel.fold > summary{flex-wrap:nowrap}
 /* Plegada: la cabecera pierde el aire inferior y su línea divisoria */
 .panel.fold:not([open]) > summary{margin-bottom:0;padding-bottom:0}
 .panel.fold:not([open]) > summary::after{display:none}
@@ -3288,5 +3293,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .fold-peek{
   margin-left:auto;font-family:var(--fm);font-size:var(--fs-xs);
   color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;
+  /* Se recorta antes que empujar la cabecera fuera de la tarjeta */
+  min-width:0;overflow:hidden;text-overflow:ellipsis;
 }
 .panel.fold[open] .fold-peek{display:none}

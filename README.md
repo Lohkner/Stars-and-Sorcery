@@ -1,4 +1,18 @@
-# S&S Companion — v51.9
+# S&S Companion — v51.10
+
+## Novedades v51.10 — El indicador de plegado, a la izquierda
+
+Solo presentación. `CACHE_VERSION` sube a `ss-companion-v53`; `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
+
+El triángulo dorado de las tarjetas plegables de Perfil —Estado, Guardia y Ataques— se salía de la tarjeta en móvil. Iba al final de la cabecera con `order:9` y `margin-left:auto`, es decir, **colocado por el espacio sobrante**: si algo de la fila medía más de lo previsto, el indicador era lo primero en salirse.
+
+Ahora va **al principio y en flujo normal**, anclado al borde izquierdo, que es además donde lo ponen todos los demás desplegables de la app (`details > summary::before`). Al no depender del espacio sobrante, no puede desbordar.
+
+Dos anclajes más para que la cabecera ceda en vez de empujar: el título (`.pt`) y el resumen de una línea (`.fold-peek`) se recortan con puntos suspensivos antes de forzar el ancho.
+
+Medido con las tarjetas abiertas y plegadas a **375, 320 y 280 px**, y en los cuatro tamaños de letra de la app: cero desbordamiento en la cabecera y cero desbordamiento horizontal de página. El indicador ocupa 14–16 px a la izquierda.
+
+**«desde equipo» se retira** de la cabecera de Ataques.
 
 ## Novedades v51.9 — Fuera las cabeceras redundantes del chasis
 
