@@ -1,4 +1,46 @@
-# S&S Companion — v51.7
+# S&S Companion — v51.9
+
+## Novedades v51.9 — Fuera las cabeceras redundantes del chasis
+
+Solo presentación. `CACHE_VERSION` sube a `ss-companion-v52`; `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
+
+En Detalle, el chasis imprimía una cabecera de sección justo encima de una tarjeta con el mismo nombre: **«Sustrato — Analizado»** sobre una tarjeta llamada «Analizado», y **«Permiso — Previsión»** sobre «Previsión». Se dice dos veces lo mismo en dos renglones.
+
+La cabecera desaparece y la clasificación pasa a la propia tarjeta, en el hueco del tipo:
+
+```
+▸ Analizado    SUSTRATO
+▸ Previsión    PERMISO
+```
+
+Así no se pierde a qué bloque pertenece cada aptitud —Sustrato y Permiso son categorías con significado en el sistema—, pero se lee una sola vez.
+
+**El Perfil conserva su cabecera** porque no es redundante: agrupa varios rasgos con nombres propios (Veterano de Guerra, Lectura de Campo) y ya usan su hueco de tipo para el marcador `◆ pasivo`.
+
+La tarjeta del Audaz pierde dos renglones; la del Versátil y la del Sagaz, dos cada una.
+
+## Novedades v51.8 — Rasgos de Arquetipo reescritos
+
+`RULES_DATA_VERSION` sube a `1.8-manual-sendas-v22-r7` y `CACHE_VERSION` a `ss-companion-v51`.
+
+Los once rasgos de los tres Arquetipos se sustituyen por la redacción revisada del autor, más corta y sin la prosa de color del manual.
+
+**El bloque Límite desaparece.** Su contenido queda incorporado dentro del Sustrato al que pertenece, que es donde se lee mejor:
+
+- «Solo puedes beneficiarte de Presión contra una criatura con la que hayas intercambiado al menos un ataque…» → dentro de **Presión**.
+- «Puedes mantener Analizadas tantas criaturas como tu modificador del atributo de tu Fuente activa…» → dentro de **Analizado**.
+- «Solo puedes tener un Enfoque activo a la vez. Cambiarlo requiere un Respiro.» → dentro de **Enfoque**.
+
+La ficha pasa a mostrar tres secciones —Perfil, Sustrato y Permiso— en vez de cuatro.
+
+**Las viñetas se pintan como lista.** Seis de los rasgos nuevos las llevan y el render las volcaba de corrido dentro del párrafo. Ahora cada `•` es un elemento con su punto en oro y su sangría. Recuento verificado: Misticismo Innato 4, Analizado 4, Previsión 5, Enfoque 5, Intervención 3.
+
+**Cambios de regla que trae la redacción nueva**, más allá del estilo:
+
+- **Enfoque** gana un efecto que antes no tenía: «las Habilidades de su categoría utilizan tu Grado de Maestría más alto, aunque la Habilidad concreta tenga un Grado inferior».
+- **Lectura de Campo** se reduce a la Ventaja en evaluaciones tácticas; se retira el «pregunta 2 de 3 al Director sin tirada».
+- **Analizado** pasa de que el Director elija entre cuatro datos a revelar «uno de estos», e incluye ahora la Vulnerabilidad y la capacidad que la criatura pretende usar.
+- La lista de **Enfoques** queda en cinco (Movilidad, Infiltración, Exploración, Interacción, Conocimiento). El Manual v1.8 listaba seis, con **Combate** al principio.
 
 ## Novedades v51.7 — Estado, Guardia y Ataques plegables
 

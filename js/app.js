@@ -3327,28 +3327,50 @@ const app = {
         pk.textContent = this._sanitize(resumen(cuerpo));
         sum.appendChild(pk);
         det.appendChild(sum);
-        const d = document.createElement('p');
-        d.className = 'arq-rasgo-d';
-        d.textContent = this._sanitize(cuerpo);
-        det.appendChild(d);
+        // El texto viene con saltos de línea y viñetas «• »: pintarlo de
+        // un tirón las dejaba de corrido en mitad del párrafo.
+        const cuerpoDiv = document.createElement('div');
+        cuerpoDiv.className = 'arq-rasgo-d';
+        let ul = null;
+        String(cuerpo || '').split('\n').forEach(linea => {
+          const t = linea.trim();
+          if (!t) return;
+          if (t.startsWith('•')) {
+            if (!ul) { ul = document.createElement('ul'); ul.className = 'arq-rasgo-ul'; cuerpoDiv.appendChild(ul); }
+            const li = document.createElement('li');
+            li.textContent = this._sanitize(t.replace(/^•\s*/, ''));
+            ul.appendChild(li);
+          } else {
+            ul = null;
+            const p = document.createElement('p');
+            p.textContent = this._sanitize(t);
+            cuerpoDiv.appendChild(p);
+          }
+        });
+        det.appendChild(cuerpoDiv);
         ab.appendChild(det);
       };
-      const bloque = (titulo, cuerpo, b, nombreCorto) => {
+      /* `etiqueta` es la clasificación del bloque (Sustrato, Permiso). No se
+         imprime como cabecera propia: diría «Sustrato — Presión» justo
+         encima de una tarjeta llamada «Presión». Va como tipo de la
+         tarjeta, donde clasifica sin repetir. El Perfil sí conserva su
+         cabecera porque agrupa rasgos con nombres distintos. */
+      const bloque = (titulo, cuerpo, b, nombreCorto, etiqueta) => {
         const rs = rasgosDe(b);
         if (!cuerpo && !rs.length) return;
-        const l = document.createElement('div');
-        l.className = 'js-section-lbl';
-        l.textContent = titulo;
-        ab.appendChild(l);
-        if (cuerpo) desplegable(nombreCorto || titulo, '', cuerpo);
+        if (!etiqueta) {
+          const l = document.createElement('div');
+          l.className = 'js-section-lbl';
+          l.textContent = titulo;
+          ab.appendChild(l);
+        }
+        if (cuerpo) desplegable(nombreCorto || titulo, etiqueta || '', cuerpo);
         rs.forEach(r => desplegable(r.n, r.t, r.d));
       };
       bloque('Perfil', '', 'perfil');
-      bloque(arq.sustrato_nombre ? 'Sustrato — ' + arq.sustrato_nombre : 'Sustrato',
-             arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Sustrato');
-      bloque(arq.permiso_nombre  ? 'Permiso — '  + arq.permiso_nombre  : 'Permiso',
-             arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso');
-      bloque('Límite', arq.limite, 'limite', 'Límite');
+      bloque('Sustrato', arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Sustrato', 'Sustrato');
+      bloque('Permiso',  arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso',  'Permiso');
+      bloque('Límite',   arq.limite,   'limite',   'Límite',                          'Límite');
 
       const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
       if (selSkills.length) {
