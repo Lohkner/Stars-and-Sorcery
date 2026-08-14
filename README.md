@@ -1,4 +1,14 @@
-# S&S Companion — v51.10
+# S&S Companion — v51.11
+
+## Novedades v51.11 — Estado plegado: solo los PV
+
+Solo presentación. `CACHE_VERSION` sube a `ss-companion-v54`; `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
+
+Plegada, la tarjeta de Estado resumía `PV · Adrenalina · Ingenio`. En pantallas de móvil ese resumen ocupaba tanto que el título de la tarjeta se recortaba y se leía «Esta…» en vez de «Estado».
+
+El resumen se queda **solo con los PV** (`RESUMEN.estado` en `js/plegables.js`). Es el dato que se consulta de un vistazo en mesa; Adrenalina e Ingenio están a un toque, al desplegar. Guardia y Ataques mantienen su resumen tal cual.
+
+Medido a **375, 320 y 280 px**, con letra normal, grande y XL, y forzando el caso peor de tres cifras (`PV 188/188`): el título nunca se recorta, el resumen nunca se recorta, y quedan entre 27 y 100 px de hueco libre entre ambos. Cero desbordamiento de cabecera y de página.
 
 ## Novedades v51.10 — El indicador de plegado, a la izquierda
 

@@ -25,11 +25,11 @@
     try { localStorage.setItem(CLAVE, JSON.stringify(p)); } catch (e) { /* cuota */ }
   }
 
-  /** Resumen de una línea por tarjeta. */
+  /** Resumen de una línea por tarjeta.
+      Estado se queda solo con los PV: con Adrenalina e Ingenio detrás, el
+      resumen era tan largo que en móvil comía el título de la tarjeta. */
   const RESUMEN = {
-    estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`
-                + ` · Adr ${val('cur_adr', '0')}/${txt('max_adr', '0')}`
-                + ` · Ing ${val('cur_ing', '0')}/${txt('max_ing', '0')}`,
+    estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`,
     guardia: () => `Guardia ${txt('guard_total_live', txt('res_guardia', '—'))}`,
     ataques: () => {
       const a = txt('atk_bonus_1', ''), d = txt('atk_dmg_1', '');
