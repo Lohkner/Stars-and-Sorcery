@@ -3,6 +3,14 @@
 // never conflicts with other listeners and never misses an already-
 // fired 'load' event (readyState guard handles that case).
 (function boot() {
+  // "Forzar actualización" recarga con ?_fresh=<ts> para que ni el navegador
+  // ni un CDN puedan servir el HTML rancio. Cumplida su función, se borra de
+  // la barra de direcciones: si se quedara, el usuario podría guardarla en
+  // favoritos y arrastrar el marcador para siempre.
+  if (location.search.indexOf('_fresh=') !== -1) {
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  }
+
   function dismissLoader() {
     const l = document.getElementById('ss-loader');
     if (!l) return;

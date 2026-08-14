@@ -5245,6 +5245,64 @@ const app = {
     } catch (e) {
       el.textContent = 'no disponible';
     }
+    // La versión que el SERVIDOR publica ahora mismo, al lado de la que
+    // usa este dispositivo. Es el par de datos que separa los dos fallos
+    // que se sienten idénticos: "no subí los archivos" y "los subí pero
+    // este móvil sigue con la copia vieja".
+    const sv = document.getElementById('set_srv_ver');
+    if (!sv) return;
+    sv.textContent = 'comprobando…';
+    const remota = await this._versionServida();
+    sv.textContent = remota || 'no se pudo leer (¿sin conexión?)';
+  },
+
+  /** Lee del servidor la CACHE_VERSION que sw.js publica en este momento,
+      saltándose toda caché HTTP. No instala nada: solo mira. */
+  async _versionServida() {
+    try {
+      const r = await fetch('sw.js?_=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return null;
+      const m = (await r.text()).match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
+      return m ? m[1] : null;
+    } catch (e) { return null; }
+  },
+
+  /** Nombre del caché en uso, sin adornos, para comparar con el servidor. */
+  async _versionLocal() {
+    try {
+      const mine = (await caches.keys()).filter(k => k.startsWith('ss-companion-'));
+      return mine.length ? mine[mine.length - 1] : null;
+    } catch (e) { return null; }
+  },
+
+  /** Último recurso cuando "Buscar actualización" dice que todo está al día
+      pero la app sigue vieja: borra la copia local, da de baja el service
+      worker y recarga desde red con la URL marcada, para que ni el
+      navegador ni un CDN intermedio puedan devolver la versión rancia.
+      NO toca localStorage: personajes y reglas se conservan. */
+  async forceUpdate() {
+    this.closeSettings();
+    this._confirm(
+      'Forzar actualización',
+      'Se borra la copia local de la app y se descarga de nuevo desde el servidor. '
+      + 'Tus personajes y tus reglas NO se tocan. Hace falta conexión a internet.',
+      'Forzar',
+      async () => {
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister().catch(() => {})));
+          }
+          if ('caches' in window) {
+            const ks = await caches.keys();
+            await Promise.all(
+              ks.filter(k => k.startsWith('ss-companion-')).map(k => caches.delete(k))
+            );
+          }
+        } catch (e) { /* se recarga igual: sin SW, la red manda */ }
+        location.replace(location.pathname + '?_fresh=' + Date.now());
+      }
+    );
   },
 
   async checkForUpdate() {
@@ -5282,9 +5340,24 @@ const app = {
         // con comportamientos raros), forzarla pasado un margen.
         setTimeout(() => location.reload(), 1600);
       }, { sticky: true });
-    } else {
-      this.toast('Ya tienes la última versión', 'ok');
+      return;
     }
+    // Sin worker en espera hay DOS situaciones que se sentían iguales y
+    // que el aviso "ya estás al día" confundía: que de verdad no haya nada
+    // nuevo, o que el servidor publique una versión que este navegador se
+    // niega a ver (CDN cacheando sw.js, proxy, copia sin subir). Se
+    // resuelve preguntando al servidor qué versión sirve.
+    const [remota, local] = await Promise.all([this._versionServida(), this._versionLocal()]);
+    if (remota && local && remota !== local) {
+      this.toast(`El servidor sirve ${remota} y tú tienes ${local} — toca para forzar`, 'info',
+        () => this.forceUpdate(), { sticky: true });
+      return;
+    }
+    if (remota && local) {
+      this.toast(`Ya tienes la última versión (${remota})`, 'ok');
+      return;
+    }
+    this.toast('Ya tienes la última versión', 'ok');
   },
 
   openSettings() {

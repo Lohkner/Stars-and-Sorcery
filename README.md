@@ -1,8 +1,29 @@
-# S&S Companion — v51.11
+# S&S Companion — v51.12
+
+## Novedades v51.12 — El actualizador dice la verdad, y tiene salida de emergencia
+
+`CACHE_VERSION` sube a `ss-companion-v56`; `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
+
+El flujo de actualización se probó de punta a punta en local —instalar una versión, publicar la siguiente, recibir el aviso, tocarlo, comprobar que el código nuevo corre— y **funciona**. El problema es que cuando *no* funciona, la app no sabía decir por qué: respondía «Ya tienes la última versión» tanto si de verdad no había nada nuevo como si el servidor publicaba algo que este navegador se negaba a ver (un CDN cacheando `sw.js`, un proxy, archivos que nunca se subieron). Dos fallos muy distintos con el mismo mensaje.
+
+**Ajustes → Aplicación** ahora enseña dos versiones en vez de una:
+
+```
+Versión de la app:          ss-companion-v56   ← la que corre en este dispositivo
+Publicada en el servidor:   ss-companion-v56   ← la que sirve el hosting ahora mismo
+```
+
+La segunda se lee pidiendo `sw.js` con `cache:'no-store'` y extrayendo su `CACHE_VERSION`. Si las dos no coinciden, el problema es de distribución, no de la app — y se ve de un vistazo.
+
+**«Buscar actualización»** usa esa comparación: si no hay worker en espera pero el servidor sirve otra versión, en vez de mentir avisa `El servidor sirve X y tú tienes Y — toca para forzar`.
+
+**«Forzar actualización»** (botón nuevo) es el último recurso: da de baja el service worker, borra los cachés `ss-companion-*` y recarga con `?_fresh=<ts>` para que ni el navegador ni un CDN puedan devolver el HTML rancio. `boot.js` limpia esa marca de la barra de direcciones nada más arrancar, para que nadie la guarde en favoritos. **No toca `localStorage`**: personajes y reglas se conservan — y el diálogo de confirmación lo dice.
+
+Verificado en local: instalación limpia → v55 → aviso → toque → v56 corriendo con el código nuevo; el botón «Buscar actualización» por su camino real de click; la rama de discrepancia; y `forceUpdate` completo (cachés borrados y reconstruidos desde red, SW reinstalado, URL limpia, `localStorage` intacto).
 
 ## Novedades v51.11 — Estado plegado: solo los PV
 
-Solo presentación. `CACHE_VERSION` sube a `ss-companion-v54`; `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
+Solo presentación. `RULES_DATA_VERSION` se queda en `1.8-manual-sendas-v22-r7`.
 
 Plegada, la tarjeta de Estado resumía `PV · Adrenalina · Ingenio`. En pantallas de móvil ese resumen ocupaba tanto que el título de la tarjeta se recortaba y se leía «Esta…» en vez de «Estado».
 
