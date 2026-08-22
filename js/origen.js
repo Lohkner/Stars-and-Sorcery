@@ -176,12 +176,15 @@
       }
     }
 
-    // 1.5. Afinidad. La Fuente que concede es fija —no se elige—, pero la
-    //      Afinidad SÍ trae una elección real: «además, aprendes 1 Truco de
-    //      <Fuente>». Sin desplegable no había dónde anotarla. Los Trucos son
-    //      transversales a todas las Fuentes (Catálogo: «la Fuente cambia
-    //      cómo se manifiestan, no su mecánica»), así que se ofrecen los 24.
-    if (d.afinidad) {
+    /* Bloque de Afinidad. La Fuente que concede no se elige —la fija el
+       Linaje—, pero la Afinidad SÍ trae una elección real: «además, aprendes
+       1 Truco de <Fuente>». Los Trucos son transversales a todas las Fuentes
+       (Catálogo: «la Fuente cambia cómo se manifiestan, no su mecánica»), así
+       que se ofrecen los 24.
+       La del Mutante no es fija: es una de sus dos Expresiones Mutantes, así
+       que este bloque solo aparece si la ha escogido — y va DESPUÉS de los
+       desplegables de Expresión, porque es consecuencia de ellos. */
+    const pintarAfinidad = fuente => {
       const chip = document.createElement('div');
       chip.style.marginTop = '6px';
       const l = document.createElement('span');
@@ -191,7 +194,7 @@
       v.className = 'desc-fijos';
       const c = document.createElement('span');
       c.className = 'desc-fijo afin-chip';
-      c.textContent = d.afinidad;
+      c.textContent = fuente;
       v.appendChild(c);
       chip.appendChild(l);
       chip.appendChild(v);
@@ -203,9 +206,10 @@
         .sort((a, b) => a.localeCompare(b, 'es'));
       if (trucos.length) {
         host.appendChild(mkSelect('desc_eleccion_afinidad',
-          `Truco de ${d.afinidad}`, trucos, previos['desc_eleccion_afinidad']));
+          `Truco de ${fuente}`, trucos, previos['desc_eleccion_afinidad']));
       }
-    }
+    };
+    if (d.afinidad) pintarAfinidad(d.afinidad);
 
     // 2. Elecciones (Experiencia, Mutaciones…)
     elecciones(d).forEach((el, k) => {
@@ -234,6 +238,16 @@
         host.appendChild(mkSelect(id, etiqueta, opts, previos[id]));
       }
     });
+
+    // 3. Afinidad condicionada a una elección (Mutante): se pinta al final,
+    //    ya con las Expresiones delante, y solo si una de ellas la concede.
+    //    Se consulta con `previos` porque los selects recién creados aún no
+    //    tienen valor asignado en el DOM en este punto del repintado.
+    if (!d.afinidad && d.afinidadOpcional) {
+      const fuente = app._afinidadFuente(previos);
+      if (fuente) pintarAfinidad(fuente);
+    }
+    app._sincronizarFuenteAfinidad();
   }
 
   const _updateOptions = app.updateOptions;

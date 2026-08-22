@@ -1370,20 +1370,10 @@ const app = {
     const arq = this.DB.archetypes?.[arqKey];
     const bg = this.DB.backgrounds?.[bgKey];
 
-    // La Afinidad del Linaje habilita su Fuente: se preselecciona sola, igual
-    // que los bonos de atributo fijos. Solo pisa una Fuente ya elegida si esa
-    // Fuente venía de la Afinidad del Linaje ANTERIOR — una Fuente que el
-    // jugador eligió a mano en el Gestor no se toca nunca.
-    const afin = desc?.afinidad || '';
-    if (afin && this._powerSource !== afin) {
-      // Se rellena si no hay Fuente, o si la que hay es exactamente la que
-      // puso la Afinidad del Linaje anterior (cambiar de Linaje mueve la
-      // Afinidad con él). Una Fuente elegida a mano en el Gestor no se pisa.
-      if (!this._powerSource || this._powerSource === this._afinidadPrevia) {
-        this._powerSource = afin;
-      }
-    }
-    this._afinidadPrevia = afin;
+    // La Afinidad del Linaje habilita su Fuente. Se vuelve a sincronizar desde
+    // origen.js en cuanto repinta las elecciones: la del Mutante depende de
+    // una de ellas y aquí todavía están los desplegables del Linaje anterior.
+    this._sincronizarFuenteAfinidad();
 
     // Info boxes
     this._pintarDescInfo(desc);
@@ -2868,11 +2858,44 @@ const app = {
   FUENTES: ['Erudici\u00f3n', 'Psi\u00f3nica', 'Divinidad', 'Naturaleza', 'Pacto', 'Herencia', 'Juramento'],
 
   /** La Fuente que otorga la Afinidad del Descriptor elegido, o ''.
-      Manual v5.0 Cap.3: seis Linajes traen una Afinidad fija que da Acceso a
-      una Fuente y cuenta como su Talento de Iniciaci\u00f3n para los requisitos. */
-  _afinidadFuente() {
+      Manual v5.0 Cap.3: la Afinidad da Acceso a una Fuente y cuenta como su
+      Talento de Iniciaci\u00f3n para los requisitos de esa Fuente.
+
+      Dos formas: fija (`afinidad`) o condicionada a una elecci\u00f3n
+      (`afinidadOpcional`) \u2014 el Mutante, cuya Afinidad Psi\u00f3nica es una de sus
+      dos Expresiones Mutantes y por tanto solo cuenta si la escoge.
+
+      `valores` opcional: mapa id\u2192valor de los desplegables, para consultarla
+      mientras se est\u00e1 repintando el bloque de elecciones y el DOM a\u00fan no
+      tiene los selects nuevos. */
+  _afinidadFuente(valores) {
     const d = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
-    return d?.afinidad || '';
+    if (!d) return '';
+    if (d.afinidad) return d.afinidad;
+    const op = d.afinidadOpcional;
+    if (!op) return '';
+    const elegidas = valores
+      ? Object.keys(valores).filter(k => /^desc_eleccion/.test(k)).map(k => valores[k])
+      : [...document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]')].map(s => s.value);
+    return elegidas.includes(op.opcion) ? op.fuente : '';
+  },
+
+  /** Mantiene la Fuente de Poder en sinton\u00eda con la Afinidad del Linaje.
+      Rellena la Fuente si no hay ninguna, la mueve si el jugador cambia de
+      Linaje, y la retira si deja de tener Afinidad (el Mutante que deselecciona
+      su Expresi\u00f3n Psi\u00f3nica). Una Fuente elegida a mano en el Gestor no se toca:
+      solo se pisa el valor que puso la Afinidad anterior. */
+  _sincronizarFuenteAfinidad() {
+    const afin = this._afinidadFuente();
+    if (afin) {
+      if (this._powerSource !== afin &&
+          (!this._powerSource || this._powerSource === this._afinidadPrevia)) {
+        this._powerSource = afin;
+      }
+    } else if (this._powerSource && this._powerSource === this._afinidadPrevia) {
+      this._powerSource = '';
+    }
+    this._afinidadPrevia = afin;
   },
 
   /** Fuentes en las que el personaje est\u00e1 iniciado, por talento \u00abIniciado en
@@ -5955,12 +5978,14 @@ const app = {
     });
     this.updateTalentCount();
 
-    // 10b. Fuente de Poder aleatoria SOLO si el Canal queda abierto (Iniciado
-    // Místico salió en la tirada, el Arquetipo es Sagaz, o el Linaje ofrece
-    // Afinidad Mística Innata). Si no, queda sin Fuente.
-    if (this._channelOpen()) {
-      const FUENTES = ['Erudición','Pacto','Herencia','Divinidad','Juramento','Naturaleza','Psiónica'];
-      this._powerSource = FUENTES[Math.floor(Math.random()*FUENTES.length)];
+    // 10b. La Fuente sale de las que el personaje TIENE abiertas —un Talento
+    // de Iniciación o la Afinidad de su Linaje—, no de una tirada aparte.
+    // Antes se sorteaba entre las siete y salían fichas incoherentes: «Fuente
+    // de Poder: Naturaleza» en alguien iniciado solo en Pacto.
+    const abiertas = [...this._fuentesIniciadas()];
+    if (abiertas.length) {
+      const norm = abiertas[Math.floor(Math.random() * abiertas.length)];
+      this._powerSource = this.FUENTES.find(f => this._normSource(f) === norm) || '';
     } else {
       this._powerSource = '';
     }

@@ -7,13 +7,17 @@ const DEFAULT_DB = {
      mods: bonificadores fijos, aplicados automáticamente al calcular.
      pick: bonificadores que elige el jugador (los pinta origen.js).
 
-     `afinidad` es la novedad de v5.0: seis Linajes traen una Afinidad, que
-     YA NO es una opción sino un Rasgo fijo. Da Acceso a esa Fuente y —dice
-     el manual— «cuenta como su Talento de Iniciación para cumplir los
-     requisitos de los Talentos de esa Fuente», pero no concede el Axioma ni
-     el resto de la entrega de la Iniciación. La app la usa para dos cosas:
-     preseleccionar la Fuente de Poder y dar por cumplido «Iniciado en
-     <esa Fuente>» — nunca en otra.                                       */
+     `afinidad` es la novedad de v5.0: cinco Linajes traen una Afinidad como
+     Rasgo FIJO. Da Acceso a esa Fuente y —dice el manual— «cuenta como su
+     Talento de Iniciación para cumplir los requisitos de los Talentos de esa
+     Fuente», pero no concede el Axioma ni el resto de la entrega de la
+     Iniciación. La app la usa para dos cosas: preseleccionar la Fuente de
+     Poder y dar por cumplido «Iniciado en <esa Fuente>» — nunca en otra.
+
+     `afinidadOpcional` es el caso del Mutante, el único que no la lleva de
+     serie: su Afinidad Psiónica es UNA de las dos Expresiones Mutantes que
+     elige, así que solo cuenta si el jugador gasta una de sus dos ranuras en
+     ella. {fuente, opcion} — `opcion` es el nombre exacto de la Expresión.  */
   descriptors:{
     "humano":{name:"Humano",pr:4,
       txt:"El Ambicioso. Pilares: Adaptación · Ambición. Prospera en casi cualquier entorno y compensa sus límites con aprendizaje, cooperación e iniciativa.",
@@ -56,8 +60,8 @@ const DEFAULT_DB = {
     "mutante":{name:"Mutante",pr:4,
       txt:"La Aberración. Pilares: Alterado · Adaptación Forzada. Tu biología fue alterada por exposición, experimentación, herencia o alguna influencia que cambió tu cuerpo.",
       bonus:"+2 a un Atributo a elección, +1 CON",
-      afinidad:"Psiónica",
-      grant:["Rasgo — Inmunidad Tóxica: Resistencia al daño de Veneno y Ventaja en Salvaciones contra toxinas y radiación.","Rasgo — Afinidad Psiónica: tienes Acceso a Psiónica. Para cumplir los requisitos de los Talentos de Psiónica, tu Afinidad cuenta como Iniciado en Psiónica. Además, aprendes 1 Truco de Psiónica.","Además: una vez por escena percibes sin tirada la emoción dominante de una criatura a 30 pies, y puedes enviarle una imagen o una sola palabra sin hablar ni moverte. Ella sabe que viene de ti.","Inconveniente — Rasgo Aberrante: posees una característica física claramente anómala. Desventaja en CAR con criaturas que te observen por primera vez hasta que se acostumbren a tu apariencia.","Elige DOS Expresiones Mutantes: Regeneración Lenta (al inicio de tu turno, con menos de la mitad de tus PV máximos, recuperas 1 PV) / Piel Blindada (+1 de Armadura permanente aunque no lleves armadura) / Garras Naturales (desarmado 1d6 + MOD FUE Cortante) / Apéndices Extra (Ventaja para escalar superficies y mantener agarres) / Resistencia Elemental (elige un tipo de daño elemental; Resistencia a ese tipo) / Sentidos Agudos (Ventaja en Percepción de Visión y Olfato) / Telepatía Mutante (comunicas pensamientos simples con una criatura que percibas a corta distancia; debe compartir idioma contigo o tener comunicación mental) / Psicoquinesis Mutante (mueves objetos pequeños a corta distancia sin tocarlos; no causa daño ni sustituye una acción de combate) / Empatía Mutante (percibes la emoción predominante de una criatura cercana; no revela pensamientos ni si la emoción es fingida) / Percepción Extrasensorial (percibes criaturas cercanas aunque no las veas; no revela identidad ni atraviesa barreras sólidas) / Proyección Energética (manifestación energética visible que ilumina, señala, distrae o interactúa con objetos pequeños; no causa daño) / Adaptación Ambiental (sobrevives temporalmente en entornos hostiles como frío o calor extremos, aire contaminado o falta moderada de oxígeno; no protege de peligros extremos ni evita Salvaciones)"],
+      afinidadOpcional:{fuente:"Psiónica",opcion:"Afinidad Psiónica"},
+      grant:["Rasgo — Inmunidad Tóxica: Resistencia al daño de Veneno y Ventaja en Salvaciones contra toxinas y radiación.","Inconveniente — Rasgo Aberrante: posees una característica física claramente anómala. Desventaja en CAR con criaturas que te observen por primera vez hasta que se acostumbren a tu apariencia.","Elige DOS Expresiones Mutantes: Regeneración Lenta (al inicio de tu turno, con menos de la mitad de tus PV máximos, recuperas 1 PV) / Piel Blindada (+1 de Armadura permanente aunque no lleves armadura) / Garras Naturales (desarmado 1d6 + MOD FUE Cortante) / Apéndices Extra (Ventaja para escalar superficies y mantener agarres) / Resistencia Elemental (elige un tipo de daño elemental; Resistencia a ese tipo) / Sentidos Agudos (Ventaja en Percepción de Visión y Olfato) / Telepatía Mutante (comunicas pensamientos simples con una criatura que percibas a corta distancia; debe compartir idioma contigo o tener comunicación mental) / Psicoquinesis Mutante (mueves objetos pequeños a corta distancia sin tocarlos; no causa daño ni sustituye una acción de combate) / Empatía Mutante (percibes la emoción predominante de una criatura cercana; no revela pensamientos ni si la emoción es fingida) / Percepción Extrasensorial (percibes criaturas cercanas aunque no las veas; no revela identidad ni atraviesa barreras sólidas) / Proyección Energética (manifestación energética visible que ilumina, señala, distrae o interactúa con objetos pequeños; no causa daño) / Adaptación Ambiental (sobrevives temporalmente en entornos hostiles como frío o calor extremos, aire contaminado o falta moderada de oxígeno; no protege de peligros extremos ni evita Salvaciones) / Afinidad Psiónica (tienes Acceso a Psiónica y cuenta como Iniciado en Psiónica para cumplir los requisitos de los Talentos de Psiónica; aprendes 1 Truco de Psiónica; y una vez por escena percibes sin tirada la emoción dominante de una criatura a 30 pies y puedes enviarle una imagen o una sola palabra sin hablar ni moverte, y ella sabe que viene de ti)"],
       mods:{CON:1},pick:{n:1,val:2}},
     "medio_orco":{name:"Medio Orco",pr:4,
       txt:"El Marcado por la Furia. Pilares: Furia · Tenacidad. Una resistencia física difícil de ignorar y una presencia que muchos reconocen como peligrosa.",

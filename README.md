@@ -1,4 +1,26 @@
-# S&S Companion — v52.2
+# S&S Companion — v52.3
+
+## Novedades v52.3 — La Afinidad del Mutante es una Expresión, no un Rasgo
+
+`RULES_DATA_VERSION` pasa a `…-r2` y `CACHE_VERSION` a `ss-companion-v60`.
+
+Corrección de reglas. El Mutante era el único Linaje al que se le había dado la Afinidad como Rasgo fijo, y no lo es: **su Afinidad Psiónica es una de las dos Expresiones Mutantes**, así que solo cuenta si gastas una de tus dos ranuras en ella. El documento induce a error porque coloca el Inconveniente entre medias, y el Rasgo de Afinidad después — al revés que en los otros cinco Linajes.
+
+Ahora la lista de Expresiones tiene **trece** opciones en vez de doce, y la decimotercera es *Afinidad Psiónica*, con su Acceso a la Fuente, su Truco y el sentido extra que antes iba suelto en el «Además:».
+
+### Cómo lo modela la app
+
+Campo nuevo en `descriptors`: `afinidadOpcional: {fuente, opcion}`, frente al `afinidad` fijo de los otros cinco. `app._afinidadFuente()` resuelve las dos formas y devuelve la Fuente **solo si la Expresión está escogida**.
+
+Todo lo que cuelga de ella sigue el estado en tiempo real: al elegir *Afinidad Psiónica* aparecen el chip **Afinidad de Linaje → Psiónica** y el desplegable **Truco de Psiónica**, la Fuente de Poder se rellena y los requisitos de Talentos psiónicos pasan a cumplirse. Al cambiar esa ranura por otra Expresión, **todo se retira**: chip, desplegable, Fuente y requisitos. En el Mutante el bloque de Afinidad se pinta *después* de las Expresiones, porque es consecuencia de ellas.
+
+### De regalo, un fallo que esto destapó
+
+`randomize()` sorteaba la Fuente entre las siete al azar, sin mirar en cuál estaba iniciado el personaje. Salían fichas imposibles: *Fuente de Poder: Naturaleza* en alguien iniciado solo en Pacto. Ahora la Fuente se sortea **entre las que el personaje tiene realmente abiertas** —un Talento de Iniciación o la Afinidad de su Linaje— y queda vacía si no hay ninguna. Verificado con 14 personajes aleatorios: 0 incoherencias.
+
+### Verificado
+
+Ciclo completo del Mutante: sin elegir la Expresión no hay chip, ni Truco, ni Fuente, ni Canal, y *Mente Blindada* pide `Iniciado en Psiónica`; al elegirla aparece todo y el requisito se cumple, mientras *Las Concesiones* sigue pidiendo Pacto; al cambiarla por *Piel Blindada* se retira todo. Guardar y recargar conserva las dos Expresiones, el Truco *Destello* y la Fuente. Los otros cinco Linajes con Afinidad fija, sin cambios (chip + Truco + cuatro líneas de ficha); los cinco sin ella, tres líneas y ningún control.
 
 ## Novedades v52.2 — La ficha del Linaje deja de ser un muro de texto
 
