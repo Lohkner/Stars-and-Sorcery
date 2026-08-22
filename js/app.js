@@ -1331,6 +1331,36 @@ const app = {
   },
 
   /** Rebuilds dependent selects (filo, skills, traits) after identity changes. */
+  /** Ficha corta del Linaje bajo el selector de Identidad.
+      Antes se volcaba `bonus` + TODO `grant` unido por comas: un muro de
+      texto en cursiva de doce líneas donde no se distinguía nada. Aquí se
+      queda solo lo que hace falta para ELEGIR linaje:
+        · la frase de sabor,
+        · los bonos de atributo,
+        · la Afinidad, porque decide tu Fuente,
+        · el Inconveniente, porque es el precio.
+      Los demás Rasgos viven en la pestaña Detalle, y la Elección de
+      Experiencia tiene su propio desplegable justo debajo (origen.js), así
+      que repetirla aquí era decir dos veces lo mismo. */
+  _pintarDescInfo(desc) {
+    const box = document.getElementById('desc_info');
+    if (!box) return;
+    box.textContent = '';
+    if (!desc) return;
+    const linea = (txt, cls) => {
+      if (!txt) return;
+      const d = document.createElement('div');
+      d.className = 'di-linea' + (cls ? ' ' + cls : '');
+      d.textContent = txt;
+      box.appendChild(d);
+    };
+    const grants = desc.grant || [];
+    linea(desc.txt, 'di-flavor');
+    linea(desc.bonus, 'di-bonus');
+    linea(grants.find(g => /^Rasgo\s*[—–-]\s*Afinidad/i.test(g)), 'di-afin');
+    linea(grants.find(g => /^Inconveniente/i.test(g)), 'di-contra');
+  },
+
   updateOptions(reset=false) {
     if (!this.DB.archetypes) return;
     const descKey = document.getElementById('sel_desc').value;
@@ -1356,7 +1386,7 @@ const app = {
     this._afinidadPrevia = afin;
 
     // Info boxes
-    document.getElementById('desc_info').textContent = desc ? (desc.bonus||'') + (desc.grant?.length?' · '+desc.grant.join(', '):'') : '';
+    this._pintarDescInfo(desc);
     document.getElementById('arq_info').textContent = arq ? `PV base: ${arq.pv}+CON · Adr: FUE/DES+Niv+${arq.adr_bonus||0} · Ing: INT/SAB/CAR+Niv+${arq.ing_bonus||0} · Skills: ${arq.skills_count||2}` : '';
     document.getElementById('bg_info').textContent = bg ? `Habilidades: ${bg.skills?.join(', ')||'—'}${bg.defecto?' · '+bg.defecto:''}` : '';
 

@@ -176,6 +176,37 @@
       }
     }
 
+    // 1.5. Afinidad. La Fuente que concede es fija —no se elige—, pero la
+    //      Afinidad SÍ trae una elección real: «además, aprendes 1 Truco de
+    //      <Fuente>». Sin desplegable no había dónde anotarla. Los Trucos son
+    //      transversales a todas las Fuentes (Catálogo: «la Fuente cambia
+    //      cómo se manifiestan, no su mecánica»), así que se ofrecen los 24.
+    if (d.afinidad) {
+      const chip = document.createElement('div');
+      chip.style.marginTop = '6px';
+      const l = document.createElement('span');
+      l.className = 'fl';
+      l.textContent = 'Afinidad de Linaje';
+      const v = document.createElement('div');
+      v.className = 'desc-fijos';
+      const c = document.createElement('span');
+      c.className = 'desc-fijo afin-chip';
+      c.textContent = d.afinidad;
+      v.appendChild(c);
+      chip.appendChild(l);
+      chip.appendChild(v);
+      host.appendChild(chip);
+
+      const trucos = Object.values(app.DB.spells || {})
+        .filter(s => s.type === 'trick')
+        .map(s => s.name)
+        .sort((a, b) => a.localeCompare(b, 'es'));
+      if (trucos.length) {
+        host.appendChild(mkSelect('desc_eleccion_afinidad',
+          `Truco de ${d.afinidad}`, trucos, previos['desc_eleccion_afinidad']));
+      }
+    }
+
     // 2. Elecciones (Experiencia, Mutaciones…)
     elecciones(d).forEach((el, k) => {
       const ops = opciones(el.txt).map(o => ({ v: o.split('(')[0].trim(), t: o }));

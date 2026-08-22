@@ -1307,6 +1307,17 @@ input[type=radio]:checked::after{transform:scale(1)}
 }
 .infobox:not(:empty){border-left-color:var(--edge-gold);background:rgba(200,169,110,.02)}
 
+/* Ficha corta del Linaje: cuatro líneas jerarquizadas en vez de un párrafo
+   corrido. Cada una se lee por lo que es antes de leerse por lo que dice. */
+.di-linea + .di-linea{margin-top:5px}
+.di-flavor{font-style:italic}
+.di-bonus{
+  font-family:var(--fm);font-style:normal;color:var(--gold);
+  font-size:var(--fs-sm);letter-spacing:.03em;
+}
+.di-afin{font-style:normal;color:var(--ice)}
+.di-contra{font-style:normal;color:rgba(231,167,174,.85)}
+
 /* BUTTONS */
 .btn{
   font-family:var(--fd);font-size:var(--fs-md);letter-spacing:.1em;text-transform:uppercase;
@@ -3272,6 +3283,9 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   border-radius:var(--r);padding:4px 10px;
   font-variant-numeric:tabular-nums;
 }
+/* La Fuente que abre la Afinidad no es un bono de atributo: se distingue
+   del resto de chips fijos para que no se lea como un +2 más. */
+.desc-fijo.afin-chip{color:var(--ice);border-color:rgba(61,143,194,.35)}
 
 /* ── Rasgos venidos de una Elección (pestaña Aptitudes) ─────────
    Se distinguen de los fijos: el jugador los escogió, y conviene ver

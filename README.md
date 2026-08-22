@@ -1,4 +1,34 @@
-# S&S Companion — v52.1
+# S&S Companion — v52.2
+
+## Novedades v52.2 — La ficha del Linaje deja de ser un muro de texto
+
+`CACHE_VERSION` sube a `ss-companion-v59`. Solo presentación de Identidad, más un desplegable nuevo.
+
+El recuadro bajo el selector de Linaje volcaba `bonus` y **todo** `grant` unido por comas. En el Infernal eran doce líneas seguidas en cursiva donde no se distinguía un Rasgo de un Inconveniente, y repetía entera la Elección de Experiencia **que ya tiene su propio desplegable justo debajo**.
+
+Ahora se queda solo con lo que hace falta para *elegir* linaje, en cuatro líneas jerarquizadas:
+
+```
+El Marcado. Pilares: Pacto · Estigma. Algo en tu ascendencia…   ← sabor, cursiva
++2 CAR, +1 INT o DES                                            ← bonos, en dorado
+Rasgo — Afinidad de Pacto: tienes Acceso a Pacto…               ← decide tu Fuente
+Inconveniente — Estigma: Desventaja en Reacción…                ← el precio
+```
+
+Los demás Rasgos siguen enteros en la pestaña **Detalle**, que es donde se consultan; no se ha perdido texto, solo ha dejado de estar dos veces. Los linajes sin Afinidad muestran tres líneas.
+
+### Selector de Afinidad
+
+Los seis linajes con Afinidad ganan su propio bloque en Identidad, junto a los bonos y la Elección de Experiencia:
+
+- **Afinidad de Linaje** — la Fuente que abre, como chip. No es elegible (la fija el Descriptor), y va en azul para que no se lea como un bono de atributo más.
+- **Truco de \<Fuente\>** — desplegable con los 24 Trucos. Esta sí es una elección real que la ficha no recogía: la Afinidad dice «además, aprendes 1 Truco de Pacto» y no había dónde anotarlo. Se ofrecen los 24 porque el Catálogo los declara transversales a todas las Fuentes — «la Fuente cambia cómo se manifiestan, no su mecánica».
+
+Se guarda solo (`gatherCharData` serializa todo `<select>` con id) y aparece en Detalle junto al resto de elecciones.
+
+### Verificado
+
+Los once linajes: los seis con Afinidad muestran chip + Truco y cuatro líneas de ficha; los cinco sin ella, tres líneas y ningún control de Afinidad. Ciclo completo con un Infernal —Truco *Mano Mágica*, Experiencia *Lengua de la Mentira*, bono +1 INT—: guardar, abrir otro personaje, volver a cargarlo y encontrarlo todo intacto, con la Fuente en Pacto. Detalle lista `Truco de Pacto: Mano Mágica`. Consola limpia.
 
 ## Novedades v52.1 — Los botones de actualización actualizan
 
