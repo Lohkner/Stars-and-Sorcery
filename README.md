@@ -1,4 +1,43 @@
-# S&S Companion — v52.3
+# S&S Companion — v52.5
+
+## Novedades v52.5 — Las Pericias ya se pueden bajar a cero
+
+`CACHE_VERSION` sube a `ss-companion-v62`.
+
+Al revisar lo que apunté al final de la v52.4 resulta que **aquello no era un fallo** —no existe ningún desplegable de Pericia que el grado pueda pisar: `sel_filo` está oculto y es un campo derivado—, pero la revisión destapó uno de verdad y del mismo origen.
+
+**Poner las Pericias a cero era imposible.** Bajabas Mental de 2 a 0, y volvía a 1 sola. La causa: `pericias.js` tiene una migración para las fichas anteriores a los grados, que solo guardaban `sel_filo` —«si hay Pericia elegida y ningún grado, vale 1»—, y esa comprobación corría en **cada** `calc()`. En cuanto ponías todo a cero la condición se volvía a cumplir, y `sel_filo`, que conserva la última Pericia con grado, te devolvía un 1 que no habías pedido.
+
+Ahora la migración vive en una ventana que abre `clearCharData()` —justo cuando entra una ficha que puede ser antigua— y se cierra en cuanto migra o en cuanto tocas un grado. A partir de ahí los grados mandan y `sel_filo` no puede reimponerse.
+
+### De paso
+
+- **Un dueño para la celda de Pericia.** `calc()` escribía en `res_filo_val` el nombre pelado de `sel_filo` («Mental»), y `pericias.js` lo sobrescribía acto seguido con las insignias con grado («Mental 2 · Flexible 1»). Dos dueños para la misma celda, y el valor equivocado si el módulo no llegaba a cargar. Se queda solo `pericias.js`.
+- **`sel_filo` deja de llamarse «Pericia principal».** Es un puente de compatibilidad derivado, no una elección, y su etiqueta accesible ya lo dice. No existe una «Pericia activa» única: el Manual da un grado por dominio, y solo el Versátil declara cada turno a cuál de los dos aplica su Flexible.
+
+### Verificado
+
+Subir Mental a 2 y Flexible a 1, bajar Mental a 0, bajar Flexible a 0 y forzar `calc()`: se queda en «—» y no resucita. Una ficha degradada a mano al formato pre-grados (sin `filo_g_*`, solo `sel_filo: Físico`) sigue migrando a **Físico 1** al cargarse, y desde ahí baja a cero sin problema. Un personaje guardado deliberadamente **sin** Pericias vuelve sin Pericias. Seis `randomize()` seguidos siguen repartiendo Pericia con grado. Cambiar de Versátil a Audaz retira Flexible y volver no la resucita. Consola limpia.
+
+## Novedades v52.4 — Un personaje nuevo empieza vacío
+
+`CACHE_VERSION` sube a `ss-companion-v61`.
+
+Al crear un personaje después de haber abierto o editado otro, **Identidad y Origen llegaba con los desplegables del anterior ya puestos**: su Linaje, su Arquetipo, su Trasfondo, su Pericia, sus bonos elegidos y su Elección de Experiencia. Ahora arranca en «— Seleccionar —», como el resto de la ficha.
+
+La causa: `clearCharData()` limpiaba campos de texto, atributos y casillas, pero nunca tocaba los desplegables de identidad. Y `unlockApp()` **conserva a propósito** la selección al reconstruir las listas — lo correcto a media sesión, no al empezar de cero. Se vacían ahora en `clearCharData()`, que es el único punto por el que pasan tanto `newChar()` como `loadCharToApp()`, así que la ficha nueva sale limpia y la carga no se entera: aplica sus valores guardados justo después.
+
+Se limpian `sel_desc`, `sel_arq`, `sel_bg`, `sel_filo`, los grados de Pericia (`filo_g_*`) y el bloque entero de elecciones del Linaje.
+
+### Un fallo latente que esto destapó
+
+Vaciar el bloque de elecciones dejó al descubierto que **cargar** un personaje solo hacía una pasada: los desplegables se crean a partir del Linaje y *después* se les aplican los valores guardados, así que un desplegable que solo existe porque otra elección lo convoca —el bloque de Afinidad del Mutante, que aparece al escoger la Expresión Psiónica— no llegaba a crearse y su Truco se perdía. Antes pasaba desapercibido porque los restos del personaje anterior lo tapaban.
+
+`applyCharData` hace ahora una segunda pasada: repinta las elecciones con los valores ya aplicados (`app._repintarOrigen()`) y los vuelve a volcar, que es lo que rellena los recién creados.
+
+### Verificado
+
+Crear un Infernal completo (Linaje, Arquetipo, Trasfondo, Pericia Mental grado 2, bono +1 INT, Truco *Destello*, Experiencia *Lengua de la Mentira*) y pulsar «Nuevo personaje»: los tres desplegables en «— Seleccionar —», cero elecciones, Pericias a «—», sin Fuente. Guardar dos personajes —el Infernal y un Mutante con *Afinidad Psiónica* + *Piel Blindada* y Truco *Mensaje*—, cargarlos alternando y crear uno nuevo detrás: cada uno vuelve entero, con su chip de Afinidad y su Truco, y el nuevo sigue saliendo vacío.
 
 ## Novedades v52.3 — La Afinidad del Mutante es una Expresión, no un Rasgo
 

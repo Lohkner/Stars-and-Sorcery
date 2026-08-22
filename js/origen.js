@@ -250,6 +250,12 @@
     app._sincronizarFuenteAfinidad();
   }
 
+  /** Repintado bajo demanda. Lo usa applyCharData: al cargar un personaje,
+      los desplegables de elección se crean ANTES de que se apliquen sus
+      valores guardados, así que los que dependen de otra elección —el bloque
+      de Afinidad del Mutante— aún no existen en la primera pasada. */
+  app._repintarOrigen = pintar;
+
   const _updateOptions = app.updateOptions;
   app.updateOptions = function () {
     const r = _updateOptions.apply(this, arguments);

@@ -1526,9 +1526,11 @@ const app = {
     $('max_ing').textContent = Math.max(0, maxIng);
     $('res_prof').textContent = '+'+prof;
 
-    // Pericia
-    const filoVal = $('sel_filo').value;
-    $('res_filo_val').textContent = filoVal || '—';
+    // Pericia — la pinta pericias.js, que envuelve este calc() y es el único
+    // dueño de `res_filo_val`. Aquí se escribía además el nombre pelado de
+    // `sel_filo` («Mental»), que el módulo sobrescribía acto seguido por las
+    // insignias con grado («Mental 2 · Flexible 1»): dos dueños para una
+    // celda, y el valor equivocado si el módulo no llega a cargar.
 
     // Iniciativa — MOD de DES para todos. El Sagaz ya no la tira con el
     // atributo de su Fuente: «Conducción Arcana» desapareció en el Manual
@@ -4976,6 +4978,15 @@ const app = {
     this.updateOptions(false);
     // Now apply ALL selects (including sel_filo which now has its options populated)
     for (const id in data.selects) { const el=document.getElementById(id); if(el)el.value=data.selects[id]; }
+    // Segunda pasada: hay desplegables que solo existen si OTRA elección los
+    // convoca —el bloque de Afinidad del Mutante aparece al escoger la
+    // Expresión Psiónica—, y en la primera pasada esa elección todavía no
+    // estaba puesta. Se repinta con los valores ya aplicados y se vuelven a
+    // volcar, que es lo que rellena los recién creados.
+    if (this._repintarOrigen) {
+      this._repintarOrigen();
+      for (const id in data.selects) { const el=document.getElementById(id); if(el)el.value=data.selects[id]; }
+    }
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     data.checks?.forEach(item=>{let el=document.getElementById(item.id)||document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);if(el)el.checked=true});
@@ -5122,6 +5133,23 @@ const app = {
     this._skillsSel = { arq: new Set(), bg: new Set() };
     this._skillBonus = {}; this._skillAttrPick = {}; this._powerSource = '';
     this._syncAlignmentUI();
+    // Identidad y Origen. Los desplegables seguían mostrando el Linaje, el
+    // Arquetipo, el Trasfondo y las elecciones del personaje ANTERIOR al
+    // crear uno nuevo: unlockApp() conserva a propósito la selección al
+    // reconstruir las listas —lo correcto a media sesión, no al empezar de
+    // cero—. Se vacían aquí, el único punto por el que pasan newChar y
+    // loadCharToApp, así que la ficha nueva arranca en «— Elegir —» y la
+    // carga no se ve afectada: aplica sus valores guardados justo después.
+    ['sel_desc','sel_arq','sel_bg','sel_filo'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    document.querySelectorAll('select[id^="filo_g_"]').forEach(s=>{ s.value='0'; });
+    const dch=document.getElementById('desc_choices'); if(dch) dch.textContent='';
+    this._afinidadPrevia='';
+    // Se abre la ventana de migración de Pericias: la ficha que venga puede
+    // ser anterior a los grados y traer solo `sel_filo`. La cierra pericias.js
+    // en cuanto migra o en cuanto el jugador toca un grado (ver allí).
+    this._periciasMigrar=true;
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(c=>c.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     this._syncPortrait(DEFAULT_PORTRAIT);

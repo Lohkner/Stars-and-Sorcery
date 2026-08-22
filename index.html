@@ -305,7 +305,7 @@
             <div id="identity_edit_view">
               <div class="g2">
                 <div><span class="fl">Linaje (Raza)</span><select id="sel_desc" aria-label="Linaje del personaje" onchange="app.updateOptions()"></select><div id="desc_info" class="infobox"></div><div id="desc_choices"></div></div>
-                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericias (grado 0&ndash;3)</span><div id="filo_grades" class="per-grid"></div><select id="sel_filo" aria-label="Pericia principal del arquetipo" onchange="app.calc()" hidden style="display:none"></select></div>
+                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericias (grado 0&ndash;3)</span><div id="filo_grades" class="per-grid"></div><select id="sel_filo" aria-label="Pericia de referencia (campo derivado, no editable)" onchange="app.calc()" hidden style="display:none"></select></div>
               </div>
               <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
               <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>

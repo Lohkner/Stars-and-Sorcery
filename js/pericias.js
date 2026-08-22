@@ -16,10 +16,15 @@
      Arquetipos que la listan en sus edges.
    La tarjeta Estado muestra todas las de grado ≥1 ("Físico 1", "Mental 2").
 
-   `sel_filo` sigue existiendo (oculto) y se mantiene sincronizado con
-   la Pericia de mayor grado, para que gatherCharData/applyCharData,
-   buildDetailPage y randomize() sigan funcionando sin cambios. Los
-   grados se guardan solos: gatherCharData serializa todo <select> con id.
+   `sel_filo` NO es una elección del jugador: está oculto y es un campo
+   DERIVADO, sincronizado con la Pericia de mayor grado. Existe solo como
+   puente de compatibilidad — fichas guardadas antes de los grados, el
+   respaldo de buildDetailPage y randomize()— y nada de lo que se ve en
+   pantalla depende de él: el coste por NE sale del grado de cada Pericia,
+   y la tarjeta Estado las lista todas. No hay «Pericia activa» única: el
+   Manual da un grado por dominio, y solo el Versátil declara cada turno a
+   cuál de los dos aplica su Flexible.
+   Los grados se guardan solos: gatherCharData serializa todo <select> con id.
 ══════════════════════════════════════════════════════════════ */
 (function () {
   const EDGE_MAX = 3;                       // Sin Pericia · 1 · 2 · 3
@@ -92,6 +97,9 @@
       }
       sel.value = String(prev[e] || 0);
       sel.addEventListener('change', () => {
+        // Tocar un grado cierra la ventana de migración: a partir de aquí los
+        // grados son la fuente de verdad y `sel_filo` no puede reimponerse.
+        app._periciasMigrar = false;
         app._markUnsaved && app._markUnsaved();
         app.calc();
       });
@@ -132,10 +140,15 @@
     const grades = readGrades();
     // Migración: fichas guardadas antes de los grados —y randomize()— sólo
     // fijan sel_filo. Si no hay ningún grado, la Pericia elegida vale 1.
+    // SOLO durante la ventana que abre clearCharData: sin esa guarda, la
+    // condición «no hay ningún grado» se volvía a cumplir cada vez que el
+    // jugador bajaba sus Pericias a cero, y `sel_filo` —que conserva la
+    // última que tuvo grado— le devolvía un 1 que no había pedido. Poner las
+    // Pericias a cero era imposible.
     const primary = $('sel_filo')?.value;
-    if (primary && !edgesOf().some(e => grades[e] > 0)) {
+    if (app._periciasMigrar && primary && !edgesOf().some(e => grades[e] > 0)) {
       const s = $('filo_g_' + slug(primary));
-      if (s) { s.value = '1'; grades[primary] = 1; }
+      if (s) { s.value = '1'; grades[primary] = 1; app._periciasMigrar = false; }
     }
     syncPrimary(grades);
     render(grades);
