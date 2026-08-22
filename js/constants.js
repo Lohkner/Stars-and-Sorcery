@@ -132,6 +132,38 @@ const TALENT_ID_RENAMES = {
   pericia_que_vuelve:         'filo_que_vuelve',
   qi_en_la_pericia:           'qi_en_el_filo',
   metamagia_arcana:           'torsion_arcana',
+
+  /* ── Compendio de Sendas v5.6 ───────────────────────────────────
+     La Senda de Juramento renombró sus siete talentos hermanos de
+     «Voto de X» a «Gracia de X», con el texto de los tres Grados
+     idéntico letra por letra. El resto son renombres verificados uno
+     a uno comparando el Grado 1: mismo efecto, terminología nueva
+     («Canal»→«Fuente», «canalizar»→«usar», «Patrón»→«Patrono»).
+
+     NO se mapean —y muestran "⚠ No encontrado" conservando su texto
+     guardado— los que dejaron de ser talentos o se repartieron entre
+     varios: «Iniciado Místico» (ahora son los siete «Iniciado en X» y
+     elegir cuál le tocó al jugador sería inventarse su ficha),
+     «Afinidad Mística», «Pacto», «Regalo Oscuro», «La Letra Pequeña»,
+     «Hechizo de Toda una Vida», los nueve Dominios de Divinidad y los
+     ocho Orígenes de Herencia, que pasaron a ser elecciones dentro de
+     un subsistema en vez de talentos comprables. */
+  voto_del_centinela:          'gracia_del_centinela',
+  voto_de_la_deuda_jurada:     'gracia_de_la_deuda_jurada',
+  voto_inquebrantable:         'gracia_del_inquebrantable',
+  voto_del_guardian_ancestral: 'gracia_del_guardian_ancestral',
+  voto_de_enemistad:           'gracia_de_enemistad',
+  voto_de_conquista:           'gracia_de_conquista',
+  rompejuramentos:             'gracia_del_rompejuramentos',
+  voto_de_servicio:            'el_servicio',
+
+  represalia_del_patron:       'represalia_del_patrono',
+  banneret_del_patron:         'voz_delegada',
+  voz_del_contrato:            'nombre_invocado',
+  herencia_maldita:            'la_estirpe',
+  canal_compartido:            'fuente_compartida',
+  resonancia_del_canal:        'oido_abierto',
+  trascendencia_mistica:       'maestria_de_fuente',
 };
 
 /** Inventory slots per card cap */

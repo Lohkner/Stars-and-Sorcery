@@ -1,4 +1,94 @@
-# S&S Companion — v51.12
+# S&S Companion — v52.1
+
+## Novedades v52.1 — Los botones de actualización actualizan
+
+`CACHE_VERSION` sube a `ss-companion-v58`. Solo toca el flujo de actualización.
+
+El fallo era de diseño, no de mecánica: **la actualización estaba escondida detrás de un segundo toque**. Pulsabas «Buscar actualización», la app encontraba la versión nueva… y en vez de aplicarla mostraba un aviso flotante que había que tocar. Si tocabas fuera, o no lo veías, el worker se quedaba en espera y el botón parecía no hacer nada. Encima salían **dos avisos casi idénticos** superpuestos: uno del arranque (`updatefound` de `boot.js`, que se dispara al llamar a `reg.update()`) y otro del propio botón.
+
+Ahora:
+
+- **«Buscar actualización» aplica.** Quien pulsa un botón con ese nombre ya ha dicho que sí. Si encuentra versión nueva, activa el worker y recarga: `Buscando actualización…` → `Actualizando…` → recarga.
+- **El aviso del arranque sigue siendo tocable.** Ese no lo pidió nadie, así que es una notificación, no una orden.
+- **Un solo aviso.** `app._buscandoActualizacion` silencia el de `boot.js` mientras dura la comprobación manual.
+- **Si el servidor sirve otra versión y el navegador no la ve** (CDN, proxy), ya no propone forzar: fuerza.
+- **Al volver de la recarga, la app dice en qué versión se ha quedado** — `Actualizada — ss-companion-v58` o `App descargada de nuevo — ss-companion-v58`. Sin esto la app se reiniciaba sin más y ambos botones parecían no haber hecho nada, que era la mitad de la queja.
+
+Ese aviso llega **con la carga terminada y dura el triple** (`opts.hold` nuevo en `app.toast`). Nacía debajo del velo de carga y se gastaba sus 3,2 s sin que nadie lo viera — comprobado midiendo: el toast se creaba y moría antes de que la pantalla estuviera lista.
+
+### Verificado con clics reales
+
+Instalada la v60, publicada la v61 en el servidor, Ajustes muestra las dos versiones distintas. Un clic en «Buscar actualización» → aplica, recarga y confirma **«Actualizada — ss-companion-v61»**, con el caché viejo borrado. Sin versión nueva responde `Ya tienes la última versión (ss-companion-v60)`. «Forzar actualización» pide confirmación, borra caché y service worker, recarga con `?_fresh=` (que `boot.js` limpia de la barra), confirma **«App descargada de nuevo»** y deja intactos `localStorage`, personajes y reglas.
+
+## Novedades v52.0 — Manual Básico v5.0, Compendio de Sendas v5.6, Catálogo de Axiomas v2.2
+
+Actualización de reglas completa. `RULES_DATA_VERSION` pasa a `5.0-manual-v5-sendas-v56-axiomas-v22` y `CACHE_VERSION` a `ss-companion-v57`.
+
+### Lo que cambia en el juego
+
+**La Iniciación deja de ser un talento y pasa a ser siete.** «Iniciado Místico» desaparece; en su lugar están *Iniciado en Erudición · Psiónica · Divinidad · Naturaleza · Pacto · Herencia · Juramento*, cada uno abriendo su Fuente. Detrás llegan **Adepto de Fuente** (techo Nivel 6) y **Maestría de Fuente** (techo Nivel 9).
+
+**El Sagaz ya no se inicia gratis en una Fuente.** El manual es explícito: «si quiere una Fuente, gasta un Talento como cualquiera». Su Misticismo Innato desaparece y lo sustituyen tres Rasgos que no dependen de tener Fuente — **Deducción** (Analizar + la Deducción por sujeto), **Preparación** (Preparativos por Descanso Largo) y **Ejecución** (Excluir · Reencuadrar · Aplazar · Contener · Repartir). `_channelOpen()` deja de abrir el Canal por ser Sagaz.
+
+**Las Afinidades de Linaje.** Seis Descriptores traen una Afinidad, y ya no es una opción: es un Rasgo fijo. Elfo → Erudición · Infernal → Pacto · Aesir → Divinidad · Mutante → Psiónica · Dracónido → Herencia · Cambiante → Naturaleza.
+
+**El Versátil** recupera *Combate* en su lista de Enfoques (ahora son seis) y gana *Oportunidad*: cambiar de Enfoque una vez por escena cuando la situación cambia de categoría.
+
+### Cómo lo implementa la app
+
+La Afinidad hace exactamente las dos cosas que el manual le atribuye:
+
+1. **Habilita su Fuente.** Al elegir un Linaje con Afinidad, la Fuente de Poder se preselecciona sola y el desplegable la marca — «Erudición (INT) — Afinidad de tu Linaje». Cambiar de Linaje mueve la Afinidad con él; una Fuente que hayas elegido a mano en el Gestor no se pisa nunca.
+2. **Cuenta como el Talento de Iniciación.** Un requisito «Iniciado en Erudición» se da por cumplido con la Afinidad Arcana del Elfo, y **solo** en esa Fuente: al mismo personaje le sigue faltando «Iniciado en Pacto». `_fuentesIniciadas()` es el único punto que decide esto, y lo alimentan tanto los siete Talentos de Iniciación como la Afinidad.
+
+El evaluador de requisitos entiende las tres formas nuevas: `Iniciado en cualquier Fuente`, `Iniciado en <Fuente>` e `Iniciado en Juramento o en Divinidad`. Y deja de bloquear seis átomos que no son talentos y antes trataba como si lo fueran — `Competencia con armas marciales`, `elección permanente`, `Modo`, `Don`, `En Ruptura`, `dos talentos de esta Senda`.
+
+### Los talentos, uno por uno
+
+**254 talentos en 23 Sendas** (antes 256), regenerados desde el Compendio. Cada uno lleva ahora su **tipo** (◆ PASIVO · ✦ HABILITADOR · ⚡ TRIGGER · ◈ MODIFICADOR, con sus etiquetas FUNDACIONAL / Grado Único / Acumulable), que dice cómo entra en juego antes de decir qué hace.
+
+**Las notas salen de los Grados.** Sinergias, Respuestas y listas de opciones viven en el Compendio *fuera* de los bloques de Grado. Meterlas dentro del último las escondía de quien solo tiene el Grado 1; ahora son un campo `notes` propio del talento y se pintan aparte, en cursiva y sin fondo de bloque.
+
+Verificación del texto, que era el encargo explícito. Sobre los 254 talentos y sus **700 Grados**:
+
+| Comprobación | Resultado |
+|---|---|
+| Grados duplicados, desordenados o no consecutivos | 0 |
+| Grados vacíos | 0 |
+| Dos Grados fundidos en un mismo texto | 0 |
+| Texto de Grado repetido entre talentos distintos | 0 |
+| Grado que arranca con el nombre de otro talento | 0 |
+| Línea técnica o separador de Senda colado en un Grado | 0 |
+| `desc` contaminada con una línea técnica | 0 |
+| Nombres o ids duplicados | 0 |
+| Líneas del documento sin representar | 0 |
+
+Dos casos que el documento trae mal formados y se han corregido al importar:
+
+- **Las Concesiones** traía sus tres Grados fundidos en una sola línea (`Grado 1 — … Grado 2 · Nivel 4+ — … Grado 3 · Nivel 7+ — …`). Se separan, y los seis regalos pasan a notas.
+- **Los nueve Dominios de Divinidad** se escriben sin línea técnica propia porque su estructura se declara una vez en la cabecera de sección. El parser genérico los descartaba enteros. Se reconstruyen como talentos de tres Grados — Mandato / Signo (Nv3+) / Prerrogativa (Nv5+) — con requisito `Iniciado en Divinidad`.
+
+**Los Ocho Orígenes de Herencia** dejaron de ser talentos comprables y son ahora una elección al abrir la Fuente: su lista se adjunta como notas de *Iniciado en Herencia* para que no se pierda.
+
+### Axiomas
+
+**351 Axiomas** del Catálogo v2.2, con sus siete columnas completas (Nivel · Coste y Reserva · PA · Concentración · Efecto · Salvación). Solo cinco Fuentes tienen catálogo: Pacto culmina en Nivel 4 por diseño, Erudición es la única que llega al 9. Herencia escribe su propio repertorio (Manifestaciones) y Juramento no tiene catálogo.
+
+Doce nombres se repiten entre Fuentes —*Disipar Magia* está en Erudición, Divinidad y Naturaleza, a distinto Nivel en cada una—, así que las tarjetas del Gestor muestran ahora la Fuente junto al nombre. Como el buscador mira el nombre, escribir «pacto» filtra el catálogo entero de esa Fuente.
+
+### Migración de fichas guardadas
+
+`TALENT_ID_RENAMES` crece con 15 renombres verificados uno a uno comparando el Grado 1: los siete `Voto de X` → `Gracia de X` de la Senda de Juramento (texto idéntico letra por letra), más `Voto de Servicio` → `El Servicio`, `Represalia del Patrón` → `Represalia del Patrono`, `Banneret del Patrón` → `Voz Delegada`, `Voz del Contrato` → `Nombre Invocado`, `Herencia Maldita` → `La Estirpe`, `Canal Compartido` → `Fuente Compartida`, `Resonancia del Canal` → `Oído Abierto` y `Trascendencia Mística` → `Maestría de Fuente`.
+
+**No** se mapean los que se repartieron entre varios talentos o dejaron de serlo: `Iniciado Místico` (elegir por el jugador cuál de las siete Fuentes le tocó sería inventarse su ficha), `Afinidad Mística`, `Pacto`, `Regalo Oscuro`, `La Letra Pequeña`, `Hechizo de Toda una Vida` y los ocho Orígenes de Herencia. Esos muestran «⚠ No encontrado» conservando el nombre y la leyenda guardados. Los requisitos, en cambio, sí siguen reconociendo el viejo `Iniciado Místico (Fuente)` de esas fichas.
+
+### El editor de reglas
+
+Gana los dos campos nuevos —**Tipo** y **Notas del talento** (una por línea)— para que siga editando la mecánica entera y no solo una parte.
+
+### Verificado en el navegador
+
+Base cargada desde cero: 23 Sendas, 254 talentos, 351 Axiomas, 11 Linajes, consola limpia. Los 254 requisitos pasan por el evaluador sin una sola excepción. Comprobado que el Sagaz solo ya no abre el Canal; que el Elfo lo abre y preselecciona Erudición; que cambiar a Infernal mueve la Fuente a Pacto; que una Fuente elegida a mano sobrevive al cambio de Linaje; que *Mente Arcana* (Erudición) se cumple con la Afinidad del Elfo mientras *Las Concesiones* (Pacto) sigue pidiendo su Iniciación; y que los selectores de Elección de Experiencia salen con 2, 3 y 12 opciones según el Linaje —el Mutante con sus dos Expresiones y su bono de +2 aparte—.
 
 ## Novedades v51.12 — El actualizador dice la verdad, y tiene salida de emergencia
 

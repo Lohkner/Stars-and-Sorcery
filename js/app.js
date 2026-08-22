@@ -1340,6 +1340,21 @@ const app = {
     const arq = this.DB.archetypes?.[arqKey];
     const bg = this.DB.backgrounds?.[bgKey];
 
+    // La Afinidad del Linaje habilita su Fuente: se preselecciona sola, igual
+    // que los bonos de atributo fijos. Solo pisa una Fuente ya elegida si esa
+    // Fuente venía de la Afinidad del Linaje ANTERIOR — una Fuente que el
+    // jugador eligió a mano en el Gestor no se toca nunca.
+    const afin = desc?.afinidad || '';
+    if (afin && this._powerSource !== afin) {
+      // Se rellena si no hay Fuente, o si la que hay es exactamente la que
+      // puso la Afinidad del Linaje anterior (cambiar de Linaje mueve la
+      // Afinidad con él). Una Fuente elegida a mano en el Gestor no se pisa.
+      if (!this._powerSource || this._powerSource === this._afinidadPrevia) {
+        this._powerSource = afin;
+      }
+    }
+    this._afinidadPrevia = afin;
+
     // Info boxes
     document.getElementById('desc_info').textContent = desc ? (desc.bonus||'') + (desc.grant?.length?' · '+desc.grant.join(', '):'') : '';
     document.getElementById('arq_info').textContent = arq ? `PV base: ${arq.pv}+CON · Adr: FUE/DES+Niv+${arq.adr_bonus||0} · Ing: INT/SAB/CAR+Niv+${arq.ing_bonus||0} · Skills: ${arq.skills_count||2}` : '';
@@ -2551,9 +2566,13 @@ const app = {
     // lo toque (avisos que no deben perderse, p. ej. "Nueva versión").
     if (opts.sticky) toast.classList.add('t-sticky');
     if (!opts.sticky) {
-      const visibleFor = (typeof action === 'function')
-        ? TIMING.TOAST_VISIBLE * 4   // give the user time to act on prompts
-        : TIMING.TOAST_VISIBLE;
+      // opts.hold: duración a medida en ms. La usa el aviso posterior a una
+      // actualización, que aparece justo cuando la app se está repintando
+      // tras recargar — con los 3,2 s normales se lo perdía casi siempre.
+      const visibleFor = opts.hold ? opts.hold
+        : (typeof action === 'function')
+          ? TIMING.TOAST_VISIBLE * 4   // give the user time to act on prompts
+          : TIMING.TOAST_VISIBLE;
       setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(8px)';
@@ -2697,26 +2716,28 @@ const app = {
       else if (/^Origen\s*:/i.test(part)) {
         out.atoms.push({ kind:'info', raw: part, met:true });
       }
-      // Canal abierto — tres v\u00edas [v5.2.2]: Iniciado M\u00edstico se satisface por el talento,
-      // por el Misticismo Innato del Sagaz o por un descriptor con Afinidad M\u00edstica Innata.
-      else if (/^Iniciado M[\u00edi]stico/i.test(part)) {
-        const isSagaz = (document.getElementById('sel_arq')?.value === 'sagaz');
-        const desc = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
-        const innate = !!desc?.innate_optional;
-        const chosen = this._normSource(this._powerSource || '');
-        const hasTalent = haveNames.has('iniciado m\u00edstico') || haveIds.has('iniciado_mistico');
-        const channelOpen = !!chosen || isSagaz || innate || hasTalent;
-        // \u00bfEl requisito pide una Fuente concreta? p. ej. "Iniciado M\u00edstico (Pacto)".
-        const KNOWN = ['eruricion','erudicion','pacto','herencia','divinidad','juramento','naturaleza','psionica'];
-        const m = part.match(/\(([^)]+)\)/);
-        const reqSources = m ? m[1].split(/\s+(?:o|y)\s+|\s*[\/,]\s*/i).map(x => this._normSource(x)).filter(x => KNOWN.includes(x)) : [];
+      // Iniciacion en una Fuente [Manual v5.0]. El requisito aparece en dos
+      // formas: «Iniciado en cualquier Fuente» —vale cualquiera de las siete—
+      // e «Iniciado en Pacto» —esa y solo esa—. Las satisface tanto el Talento
+      // de Iniciacion como la Afinidad del Descriptor, que el manual declara
+      // equivalente «para cumplir los requisitos de los Talentos de esa
+      // Fuente». Se acepta tambien el viejo «Iniciado Mistico» de las fichas
+      // anteriores a v5.0, que llevaba la Fuente entre parentesis.
+      else if (/^Iniciad[oa]\s+(en\b|M[íi]stico)/i.test(part)) {
+        const iniciadas = this._fuentesIniciadas();
+        const m = part.match(/^Iniciad[oa]\s+en\s+(.+)$/i);
+        const resto = (m ? m[1] : (part.match(/\(([^)]+)\)/) || [,''])[1]).trim();
         let met, miss;
-        if (reqSources.length) {
-          met = !!chosen && reqSources.includes(chosen);
-          miss = `Iniciado M\u00edstico \u2014 elige la Fuente ${m[1].trim()} (en el Gestor de Talentos)`;
+        if (!resto || /cualquier|tu Fuente/i.test(resto)) {
+          met = iniciadas.size > 0;
+          miss = 'Iniciado en cualquier Fuente (un Talento de Iniciación o la Afinidad de tu Linaje)';
         } else {
-          met = channelOpen;
-          miss = part.replace(/\s+/g,' ').trim() + ' (o Canal abierto por otra v\u00eda)';
+          // «Iniciado en Juramento o en Divinidad»: basta una de las dos.
+          const pedidas = resto.split(/\s+o\s+|\s*[\/,]\s*/i)
+            .map(x => this._normSource(x.replace(/^en\s+/i, '')))
+            .filter(Boolean);
+          met = pedidas.some(f => iniciadas.has(f));
+          miss = 'Iniciado en ' + resto;
         }
         out.atoms.push({ kind:'talent', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(miss); }
@@ -2737,19 +2758,18 @@ const app = {
         out.atoms.push({ kind:'talent', raw: part, met });
         if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
       }
-      // "Voto" genérico como prerrequisito: el talento-contenedor Voto se
-      // desglosó en 7 talentos individuales (Voto del Centinela, Voto de la
-      // Deuda Jurada, Voto Inquebrantable, Voto del Guardián Ancestral, Voto
-      // de Enemistad, Voto de Conquista, Rompejuramentos) — cualquiera de
-      // ellos satisface un requisito que pida "Voto" a secas (no un Voto
-      // concreto, que ya cae en la rama genérica de abajo por nombre exacto).
-      else if (/^Voto$/i.test(part.trim())) {
-        const VOW_IDS = ['voto_del_centinela','voto_de_la_deuda_jurada','voto_inquebrantable',
-          'voto_del_guardian_ancestral','voto_de_enemistad','voto_de_conquista','rompejuramentos'];
-        const met = VOW_IDS.some(id => haveIds.has(id)) ||
-          [...haveNames].some(n => n.startsWith('voto ') || n === 'rompejuramentos');
+      // "Gracia" (antes "Voto") genérico como prerrequisito: la Senda de
+      // Juramento reparte siete talentos hermanos —Gracia del Centinela, de
+      // la Deuda Jurada, del Inquebrantable, del Guardián Ancestral, de
+      // Enemistad, de Conquista y del Rompejuramentos— y cualquiera de ellos
+      // satisface un requisito que pida "Gracia" a secas. Se sigue aceptando
+      // "Voto" por las fichas anteriores al Compendio v5.6, donde estos siete
+      // talentos se llamaban así.
+      else if (/^(Voto|Gracia)$/i.test(part.trim())) {
+        const met = [...haveNames].some(n =>
+          n.startsWith('gracia ') || n.startsWith('voto ') || n === 'rompejuramentos');
         out.atoms.push({ kind:'talent', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push('Voto (cualquiera)'); }
+        if (!met) { out.met = false; out.unmet.push('Gracia de Juramento (cualquiera)'); }
       }
       // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
@@ -2759,7 +2779,12 @@ const app = {
         // «Pericia Física 2» tenía rama propia: ningún talento del catálogo la
         // pide (ni la pedirá), pero una base de reglas importada podría, y sin
         // esto caería aquí como si fuera un TALENTO llamado así y bloquearía.
-        const informational = /reserva|sin armadura|sin despertar|restringido|racial|atributo de fuente|atributo clave|requisito|^(?:pericia|filo)\s+(?:f[íi]sic[ao]|flexible|mental)\s*\d/i.test(part);
+        // El Compendio v5.6 añade atomos que NO son talentos y que antes
+        // caían aquí como si lo fueran, bloqueando el requisito para siempre:
+        // «Competencia con armas marciales», «elección permanente», «Modo»,
+        // «Don», «En Ruptura», «dos talentos de esta Senda». Son condiciones
+        // que la ficha no puede verificar sola: se muestran, no bloquean.
+        const informational = /reserva|sin armadura|sin despertar|restringido|racial|atributo de fuente|atributo clave|requisito|^competencia\b|elecci[óo]n permanente|^modo\b|^don$|^en ruptura$|talentos de esta senda|^(?:pericia|filo)\s+(?:f[íi]sic[ao]|flexible|mental)\s*\d/i.test(part);
         if (informational || baseName.length < 4) {
           out.atoms.push({ kind:'info', raw: part, met:true });
         } else {
@@ -2809,13 +2834,44 @@ const app = {
     return Math.max(...attrs.map(a => mods[a] || 0));
   },
 
-  /** \u00bfEl Canal Arcano est\u00e1 abierto? (Iniciado M\u00edstico, Sagaz o Afinidad racial). */
+  /** Las siete Fuentes, en la forma normalizada que usan las comparaciones. */
+  FUENTES: ['Erudici\u00f3n', 'Psi\u00f3nica', 'Divinidad', 'Naturaleza', 'Pacto', 'Herencia', 'Juramento'],
+
+  /** La Fuente que otorga la Afinidad del Descriptor elegido, o ''.
+      Manual v5.0 Cap.3: seis Linajes traen una Afinidad fija que da Acceso a
+      una Fuente y cuenta como su Talento de Iniciaci\u00f3n para los requisitos. */
+  _afinidadFuente() {
+    const d = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
+    return d?.afinidad || '';
+  },
+
+  /** Fuentes en las que el personaje est\u00e1 iniciado, por talento \u00abIniciado en
+      X\u00bb o por la Afinidad de su Linaje. Devuelve nombres normalizados. */
+  _fuentesIniciadas() {
+    const out = new Set();
+    const af = this._afinidadFuente();
+    if (af) out.add(this._normSource(af));
+    [...document.querySelectorAll('input[name="chk_talents_hidden"]')].forEach(h => {
+      const m = (h.value || '').match(/^Iniciad[oa]\s+en\s+(.+)$/i);
+      if (m) out.add(this._normSource(m[1]));
+      // Compatibilidad con fichas anteriores a v5.0: el viejo talento \u00fanico
+      // \u00abIniciado M\u00edstico (Fuente)\u00bb llevaba la Fuente entre par\u00e9ntesis.
+      const v = (h.value || '').toLowerCase();
+      if (v.startsWith('iniciado m\u00edstico') || h.getAttribute('data-id') === 'iniciado_mistico') {
+        const p = (h.value || '').match(/\(([^)]+)\)/);
+        out.add(p ? this._normSource(p[1]) : this._normSource(this._powerSource || ''));
+      }
+    });
+    out.delete('');
+    return out;
+  },
+
+  /** \u00bfEl Canal est\u00e1 abierto? Desde v5.0 el Sagaz YA NO lo abre gratis: el
+      manual dice que \u00absi quiere una Fuente, gasta un Talento como
+      cualquiera\u00bb. Quedan dos v\u00edas: un Talento de Iniciaci\u00f3n, o la Afinidad
+      del Descriptor. */
   _channelOpen() {
-    const hasIniciado = !![...document.querySelectorAll('input[name="chk_talents_hidden"]')]
-      .find(h => (h.value||'').toLowerCase() === 'iniciado m\u00edstico' || h.getAttribute('data-id') === 'iniciado_mistico');
-    const isSagaz = document.getElementById('sel_arq')?.value === 'sagaz';
-    const innate = !!this.DB.descriptors?.[document.getElementById('sel_desc')?.value]?.innate_optional;
-    return hasIniciado || isSagaz || innate;
+    return this._fuentesIniciadas().size > 0;
   },
 
   /** Fija la Fuente de Poder elegida y refresca talentos/res\u00famenes. */
@@ -2901,7 +2957,10 @@ const app = {
     const matchScore = t => {
       if (!searching) return 1;
       const name = norm(t.name), desc = norm(t.desc), grds = norm((t.grades||[]).map(g=>g.d).join(' '));
-      if (!tokens.every(tok => name.includes(tok) || desc.includes(tok) || grds.includes(tok))) return 0;
+      // Las notas también entran en la búsqueda: los seis regalos de «Las
+      // Concesiones» y los cuatro tabúes de «Lo Prohibido» viven ahí.
+      const nts = norm((t.notes||[]).join(' '));
+      if (!tokens.every(tok => name.includes(tok) || desc.includes(tok) || grds.includes(tok) || nts.includes(tok))) return 0;
       let score = 0;
       if (name === qn) score += 1000;
       else if (name.startsWith(qn)) score += 500;
@@ -2953,6 +3012,15 @@ const app = {
         tag.textContent = cat.charAt(0).toUpperCase()+cat.slice(1);
         infoDiv.appendChild(tag);
       }
+      // Tipo del talento (◆ PASIVO, ✦ HABILITADOR, ⚡ TRIGGER, ◈ MODIFICADOR)
+      // con sus etiquetas (FUNDACIONAL, Grado Único, Acumulable). Dice cómo
+      // entra en juego, que es lo primero que se busca al comparar dos.
+      if (t.tipo) {
+        const tp = document.createElement('span');
+        tp.className = 'tc-tipo';
+        tp.textContent = t.tipo;
+        infoDiv.appendChild(tp);
+      }
       const p = document.createElement('p'); p.textContent = t.desc||''; infoDiv.appendChild(p);
       const grades = t.grades || [];
       const hiddenSel = sel ? [...document.querySelectorAll('input[name="chk_talents_hidden"]')].find(el=>el.value===t.name) : null;
@@ -2979,6 +3047,15 @@ const app = {
         sp.className = cls;
         sp.textContent = `G${g.g}: ${g.d}` + (sel && g.g>activeG ? '  (aún no adquirido)' : '');
         infoDiv.appendChild(sp);
+      });
+      // Notas del talento ENTERO (Sinergia, Respuesta, listas de opciones).
+      // En el Compendio viven fuera de los bloques de Grado, y meterlas dentro
+      // del último las escondía de quien solo tiene el Grado 1.
+      (t.notes || []).forEach(n => {
+        const nt = document.createElement('span');
+        nt.className = 'js-grade-block tc-nota';
+        nt.textContent = n;
+        infoDiv.appendChild(nt);
       });
       // Requirement line
       if (t.req) {
@@ -3104,6 +3181,11 @@ const app = {
       warn.textContent = 'No encontrado en la versión actual de las reglas — se conserva el nombre y la leyenda guardados, sin sus Grados. Revísalo en el Gestor de Talentos.';
       dcb.appendChild(warn);
     }
+    if (tal?.tipo) {
+      const tp = document.createElement('div'); tp.className = 'tc-tipo';
+      tp.textContent = this._sanitize(String(tal.tipo));
+      dcb.appendChild(tp);
+    }
     const desc = document.createElement('div'); desc.style.marginBottom = '6px';
     desc.textContent = this._sanitize(tal?.desc || h.getAttribute('data-desc') || 'Sin descripción.');
     dcb.appendChild(desc);
@@ -3126,6 +3208,12 @@ const app = {
       gd.textContent = 'G' + Number(g.g) + ': ' + this._sanitize(String(g.d || '')) + (owned ? '' : '  (aún no adquirido)');
       dcb.appendChild(gd);
     });
+    (tal?.notes || []).forEach(n => {
+      const nt = document.createElement('div');
+      nt.className = 'js-grade-block tc-nota';
+      nt.textContent = this._sanitize(String(n));
+      dcb.appendChild(nt);
+    });
     card.appendChild(dch); card.appendChild(dcb);
     return card;
   },
@@ -3138,7 +3226,14 @@ const app = {
     const opts = [['', '— Elige Fuente —'], ['Erudición', 'Erudición (INT)'], ['Pacto', 'Pacto (CAR)'],
       ['Herencia', 'Herencia (CAR)'], ['Divinidad', 'Divinidad (SAB)'], ['Juramento', 'Juramento (CAR)'],
       ['Naturaleza', 'Naturaleza (SAB)'], ['Psiónica', 'Psiónica (INT/SAB/CAR)']];
-    opts.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+    const afin = this._afinidadFuente();
+    opts.forEach(([v, t]) => {
+      const o = document.createElement('option'); o.value = v;
+      // La Fuente que abre la Afinidad del Linaje se marca en la propia lista:
+      // sigue siendo elegible otra, pero se ve de dónde sale la preseleccionada.
+      o.textContent = (afin && v === afin) ? t + ' — Afinidad de tu Linaje' : t;
+      sel.appendChild(o);
+    });
     sel.value = this._powerSource || '';
     sel.addEventListener('change', () => this.setPowerSource(sel.value));
     wrap.appendChild(lbl); wrap.appendChild(sel);
@@ -3150,7 +3245,10 @@ const app = {
     const wrap = document.createElement('div'); wrap.className = 'fuente-row readonly';
     const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
     const val = document.createElement('span'); val.className = 'fuente-val';
-    val.textContent = this._powerSource ? this._powerSource : '— elígela en el Gestor —';
+    const afin = this._afinidadFuente();
+    val.textContent = this._powerSource
+      ? this._powerSource + (this._powerSource === afin ? ' · Afinidad' : '')
+      : '— elígela en el Gestor —';
     wrap.appendChild(lbl); wrap.appendChild(val);
     return wrap;
   },
@@ -3535,6 +3633,15 @@ const app = {
       const nameSpan = document.createElement('span');
       nameSpan.className = 'apt-card__name';
       nameSpan.textContent = s.name || k;
+      // Doce Axiomas comparten nombre entre Fuentes distintas —Disipar Magia
+      // está en Erudición, Divinidad y Naturaleza, y a distinto Nivel en cada
+      // una—. Sin la Fuente a la vista son tres tarjetas idénticas.
+      if (s.source) {
+        const src = document.createElement('span');
+        src.className = 'apt-card__src';
+        src.textContent = s.source;
+        nameSpan.appendChild(src);
+      }
 
       const badge = document.createElement('span');
       badge.className = 'apt-card__badge' + (isSelected ? '' : ' badge-add');
@@ -4032,8 +4139,10 @@ const app = {
       const gd = n => _e((grds.find(g=>Number(g.g)===n) || grds[n-1] || {}).d || '');
       formHtml += `<div style="margin-bottom:6px"><span class="dfl">Categoría (existente)</span><input type="text" id="db_tcat" value="${_e(talentSub)}" placeholder="ej: combate"></div>
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Requisitos</span><input type="text" id="db_req" value="${_e(existing?.req)}" placeholder="ej: FUE 13+ · Nivel 1 · Iniciado Místico (Pacto)"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Tipo</span><input type="text" id="db_tipo" value="${_e(existing?.tipo)}" placeholder="ej: ◆ PASIVO · Grado Único"></div>
+      <div style="margin-bottom:6px"><span class="dfl">Requisitos</span><input type="text" id="db_req" value="${_e(existing?.req)}" placeholder="ej: FUE 13+ · Nivel 1 · Iniciado en Pacto"></div>
       <div style="margin-bottom:6px"><span class="dfl">Leyenda / Descripción</span><textarea id="db_txt" style="min-height:48px">${_e(existing?.desc)}</textarea></div>
+      <div style="margin-bottom:6px"><span class="dfl">Notas del talento <span class="is-field-note">— una por línea; Sinergia, Respuesta, listas de opciones</span></span><textarea id="db_notes" style="min-height:46px">${_e((existing?.notes||[]).join('\n'))}</textarea></div>
       ${Array.from({length: Math.max(4, (existing?.grades||[]).length + 1)}, (_, i) => i + 1).map(n =>
         `<div style="margin-bottom:6px"><span class="dfl">Grado ${n} <span class="is-field-note">${n===1?'— efecto base':'— opcional; vacío = no existe'}</span></span><textarea id="db_g${n}" style="min-height:46px">${gd(n)}</textarea></div>`
       ).join('')}`;
@@ -4100,17 +4209,24 @@ const app = {
         if (d) grades.push({g:n, d});
       }
       if (!this.DB.talents[tcat]) this.DB.talents[tcat] = [];
+      const tipo  = document.getElementById('db_tipo')?.value?.trim() || '';
+      const notes = (document.getElementById('db_notes')?.value || '')
+        .split('\n').map(s => s.trim()).filter(Boolean);
       if (isTalent) {
         const idx = parseInt(oldKey.split('|')[1]);
         const prev = this.DB.talents[tcat][idx] || {};
         // `desc` solo si tiene contenido: el catálogo no lleva descripción
         // desde v47 y escribirla vacía ensuciaba cada talento al guardarlo.
         const ent = {...prev, id: prev.id || this._slugify(name), name, req, grades};
-        if (desc) ent.desc = desc; else delete ent.desc;
+        if (desc)  ent.desc  = desc;  else delete ent.desc;
+        if (tipo)  ent.tipo  = tipo;  else delete ent.tipo;
+        if (notes.length) ent.notes = notes; else delete ent.notes;
         this.DB.talents[tcat][idx] = ent;
       } else {
         const nuevo = {id: this._slugify(name), name, req, grades};
-        if (desc) nuevo.desc = desc;
+        if (desc)  nuevo.desc  = desc;
+        if (tipo)  nuevo.tipo  = tipo;
+        if (notes.length) nuevo.notes = notes;
         this.DB.talents[tcat].push(nuevo);
       }
     } else {
@@ -5287,22 +5403,59 @@ const app = {
       'Se borra la copia local de la app y se descarga de nuevo desde el servidor. '
       + 'Tus personajes y tus reglas NO se tocan. Hace falta conexión a internet.',
       'Forzar',
-      async () => {
-        try {
-          if ('serviceWorker' in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            await Promise.all(regs.map(r => r.unregister().catch(() => {})));
-          }
-          if ('caches' in window) {
-            const ks = await caches.keys();
-            await Promise.all(
-              ks.filter(k => k.startsWith('ss-companion-')).map(k => caches.delete(k))
-            );
-          }
-        } catch (e) { /* se recarga igual: sin SW, la red manda */ }
-        location.replace(location.pathname + '?_fresh=' + Date.now());
-      }
+      () => this._forzarDescarga()
     );
+  },
+
+  /** Activa el worker en espera y recarga. El respaldo por temporizador existe
+      porque en algunos navegadores controllerchange no llega a disparar. */
+  _aplicarWorker(worker) {
+    this._buscandoActualizacion = false;
+    this.toast('Actualizando…', 'ok');
+    try { sessionStorage.setItem('ss_update_aplicada', '1'); } catch (e) {}
+    worker.postMessage({ type: 'SKIP_WAITING' });
+    setTimeout(() => location.reload(), 1400);
+  },
+
+  /** Borra la copia local y recarga desde red con la URL marcada, para que ni
+      el navegador ni un CDN intermedio puedan devolver la versión rancia.
+      NO toca localStorage: personajes y reglas se conservan. */
+  async _forzarDescarga() {
+    try { sessionStorage.setItem('ss_update_forzada', '1'); } catch (e) {}
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister().catch(() => {})));
+      }
+      if ('caches' in window) {
+        const ks = await caches.keys();
+        await Promise.all(
+          ks.filter(k => k.startsWith('ss-companion-')).map(k => caches.delete(k))
+        );
+      }
+    } catch (e) { /* se recarga igual: sin SW, la red manda */ }
+    location.replace(location.pathname + '?_fresh=' + Date.now());
+  },
+
+  /** Tras recargar por una actualización, decir en qué versión se ha quedado.
+      Sin esto la app se reinicia y parece que no ha pasado nada — que es
+      justo lo que se sentía al pulsar los botones de Ajustes. */
+  async _avisoTrasActualizar() {
+    let clave = null;
+    try {
+      if (sessionStorage.getItem('ss_update_forzada')) clave = 'forzada';
+      else if (sessionStorage.getItem('ss_update_aplicada')) clave = 'aplicada';
+      sessionStorage.removeItem('ss_update_forzada');
+      sessionStorage.removeItem('ss_update_aplicada');
+    } catch (e) { return; }
+    if (!clave) return;
+    const v = await this._versionLocal() || await this._versionServida();
+    const etiqueta = v ? ' — ' + v : '';
+    const msg = (clave === 'forzada' ? 'App descargada de nuevo' : 'Actualizada') + etiqueta;
+    // Esperar a que la pantalla de carga se haya ido: si no, el aviso nace
+    // debajo del velo y se consume su tiempo sin que nadie lo vea.
+    setTimeout(() => this.toast(msg, 'ok', null, { hold: TIMING.TOAST_VISIBLE * 3 }),
+               TIMING.LOADER_DISMISS * 3);
   },
 
   async checkForUpdate() {
@@ -5319,7 +5472,11 @@ const app = {
       return;
     }
     this.toast('Buscando actualización…');
+    // Silencia el aviso automático de boot.js mientras dura esta comprobación:
+    // reg.update() dispara su 'updatefound' y salían dos avisos superpuestos.
+    this._buscandoActualizacion = true;
     try { await reg.update(); } catch (e) {
+      this._buscandoActualizacion = false;
       this.toast('No se pudo comprobar (¿sin conexión?)', 'err');
       return;
     }
@@ -5334,12 +5491,12 @@ const app = {
       await new Promise(r => setTimeout(r, 250));
     }
     if (reg.waiting) {
-      this.toast('Nueva versión lista — toca para actualizar', 'info', () => {
-        reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        // Respaldo: si controllerchange no dispara la recarga (navegadores
-        // con comportamientos raros), forzarla pasado un margen.
-        setTimeout(() => location.reload(), 1600);
-      }, { sticky: true });
+      // Se APLICA, no se ofrece. Pedir un segundo toque sobre un toast era el
+      // fallo: quien pulsa un botón llamado "Buscar actualización" ya ha dicho
+      // que sí, y si tocaba fuera —o no veía el aviso— la actualización se
+      // quedaba en espera y el botón parecía no hacer nada. El aviso del
+      // arranque sí sigue siendo tocable: ese no lo pidió nadie.
+      this._aplicarWorker(reg.waiting);
       return;
     }
     // Sin worker en espera hay DOS situaciones que se sentían iguales y
@@ -5348,9 +5505,12 @@ const app = {
     // niega a ver (CDN cacheando sw.js, proxy, copia sin subir). Se
     // resuelve preguntando al servidor qué versión sirve.
     const [remota, local] = await Promise.all([this._versionServida(), this._versionLocal()]);
+    this._buscandoActualizacion = false;
     if (remota && local && remota !== local) {
-      this.toast(`El servidor sirve ${remota} y tú tienes ${local} — toca para forzar`, 'info',
-        () => this.forceUpdate(), { sticky: true });
+      // El servidor publica otra versión pero el navegador no la ve: forzar es
+      // la única salida, así que se fuerza en vez de proponerlo.
+      this.toast(`El servidor sirve ${remota} y tú tienes ${local} — forzando…`, 'info');
+      this._forzarDescarga();
       return;
     }
     if (remota && local) {

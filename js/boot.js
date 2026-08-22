@@ -21,6 +21,10 @@
   function startApp() {
     try {
       app.init();
+      // Si venimos de "Buscar actualización" o de "Forzar actualización",
+      // decir en qué versión hemos quedado: sin esto la app se reinicia sin
+      // más y los dos botones parecen no haber hecho nada.
+      app._avisoTrasActualizar && app._avisoTrasActualizar();
     } catch(err) {
       console.error('S&S init error:', err);
     }
@@ -37,6 +41,10 @@
       // aceptar, SKIP_WAITING activa el SW nuevo y es controllerchange
       // (abajo) quien recarga — sin carrera con la activación.
       const promptUpdate = (worker) => {
+        // Si el usuario está pulsando "Buscar actualización", ese flujo ya se
+        // encarga —y aplica sin pedir un segundo toque—. Sin esta guarda
+        // salían DOS avisos casi idénticos, uno encima del otro.
+        if (app._buscandoActualizacion) return;
         const show = () => {
           try {
             app.toast('Nueva versión disponible — toca para actualizar', 'info', () => {

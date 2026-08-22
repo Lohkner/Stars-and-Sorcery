@@ -2170,6 +2170,21 @@ body.port-border-none .port-card-edit{
 }
 .tc.tc-locked .tc-req{color:#e6969f}
 .tc .tc-req-ok{color:var(--sage)}
+
+/* Tipo del talento (◆ PASIVO · Grado Único). Va sobre la leyenda y por
+   debajo del nombre: dice CÓMO entra en juego antes de decir qué hace. */
+.tc-tipo{
+  display:block;margin:2px 0 4px;
+  font-family:var(--fm);font-size:var(--fs-2xs);
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);opacity:.85;
+}
+/* Notas del talento entero: no son un Grado, así que no se pintan como
+   uno — sin fondo de bloque y en cursiva, para que no se confundan. */
+.js-grade-block.tc-nota{
+  background:none;color:var(--muted);font-style:italic;
+  border-left:2px solid var(--line-dim);padding-left:7px;
+}
 .tm-empty{
   color:var(--muted);margin-top:28px;text-align:center;
   font-style:italic;font-size:var(--fs-xl);padding:0 16px;
@@ -2248,6 +2263,11 @@ input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
 .apt-card__row{display:flex;justify-content:space-between;align-items:center;gap:6px}
 .apt-card__name{font-family:var(--fd);font-size:var(--fs-lg);color:var(--gold);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .apt-card--sel .apt-card__name{color:var(--ice)}
+/* Fuente del Axioma, junto al nombre: doce nombres se repiten entre Fuentes. */
+.apt-card__src{
+  margin-left:7px;font-family:var(--fm);font-size:var(--fs-2xs);
+  font-weight:400;color:var(--muted);letter-spacing:.04em;
+}
 .apt-card__badge{
   font-family:var(--fm);font-size:var(--fs-2xs);padding:2px 8px;border-radius:2px;
   background:rgba(61,143,194,.1);color:var(--ice);
