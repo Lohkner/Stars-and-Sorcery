@@ -66,6 +66,7 @@
     arqSkills: [], bgSkills: [], talentos: [], nombre: '', cat: '', q: '',
     savCom: '', savPoco: '', guardAttr: 'DES',
     armas: [], opcArq: '', armaExtra: '', monedas: null,
+    alineamiento: '', retrato: '',
   });
 
   /* Paso 6 — «Salvaciones con PB» y «Guardia» del Manual Cap.6: dos
@@ -490,11 +491,57 @@
     const ing = Math.max(total('INT'), total('SAB'), total('CAR')) + 1 + (a.ing_bonus || 0);
     const guardia = 10 + pb + mod(total(S.guardAttr));
 
+    /* Retrato. Reutiliza el mismo <input type=file> y el mismo recorte que la
+       ficha (#img_input → app.startCrop), así que no hay dos caminos que
+       mantener. El diálogo de recorte es un <dialog> modal: sale en el top
+       layer, por encima del panel del asistente, sin tocar z-index. */
+    b.appendChild(el('span', 'wiz-lbl', 'Retrato'));
+    const port = el('div', 'wiz-port');
+    const img = el('img', 'wiz-port-img');
+    img.alt = '';
+    img.src = S.retrato || (typeof DEFAULT_PORTRAIT !== 'undefined' ? DEFAULT_PORTRAIT : '');
+    const bot = el('button', 'btn btn-g', S.retrato ? 'Cambiar retrato' : 'Elegir retrato');
+    bot.type = 'button';
+    bot.onclick = () => {
+      const inp = $('img_input');
+      if (!inp) return;
+      // El recorte escribe en #char_img; se recoge de ahí al cerrarse.
+      const alCerrar = () => {
+        const src = $('char_img')?.src || '';
+        if (src && !src.startsWith('data:image/svg')) { S.retrato = src; pintar(); }
+      };
+      $('crop_modal')?.addEventListener('close', alCerrar, { once: true });
+      inp.click();
+    };
+    port.appendChild(img);
+    const cols = el('div', 'wiz-port-side');
+    cols.appendChild(bot);
+    if (S.retrato) {
+      const quitar = el('button', 'btn btn-g', 'Quitar'); quitar.type = 'button';
+      quitar.onclick = () => { S.retrato = ''; pintar(); };
+      cols.appendChild(quitar);
+    }
+    port.appendChild(cols);
+    b.appendChild(port);
+
     b.appendChild(el('span', 'wiz-lbl', 'Nombre'));
     const inp = el('input'); inp.type = 'text'; inp.placeholder = 'Ej. Vorath el Audaz';
     inp.value = S.nombre;
     inp.oninput = () => { S.nombre = inp.value; pie(); };
     b.appendChild(inp);
+
+    /* Convicción — Manual Apéndice D. Las nueve etiquetas clásicas como
+       coordenadas de dos ejes, no como veredicto moral. No cambia ninguna
+       regla, pero es parte de quién es el personaje y faltaba. */
+    b.appendChild(el('span', 'wiz-lbl', 'Convicción'));
+    const conv = el('div', 'wiz-conv');
+    (typeof ALIGNMENTS !== 'undefined' ? ALIGNMENTS : []).forEach(x => {
+      const btn = el('button', 'wiz-conv-b' + (S.alineamiento === x ? ' sel' : ''), x);
+      btn.type = 'button';
+      btn.onclick = () => { S.alineamiento = (S.alineamiento === x ? '' : x); pintar(); };
+      conv.appendChild(btn);
+    });
+    b.appendChild(conv);
 
     /* Fila de opciones excluyentes: la elección permanente se ve entera y de
        un toque, sin desplegar. Muestra el MOD de cada una porque es lo que se
@@ -553,6 +600,7 @@
     fila('Talentos', S.talentos.map(t => t.name).join(', '));
     fila('Salvaciones con PB', [S.savCom, S.savPoco].filter(Boolean).join(' · '));
     fila('Guardia con', ATTR_N[S.guardAttr]);
+    if (S.alineamiento) fila('Convicción', S.alineamiento);
     b.appendChild(dl);
   }
 
@@ -597,12 +645,43 @@
       b.appendChild(card);
     });
 
-    // 2 · Elección propia del Arquetipo
+    // 2 · Armadura. Se nombra SIEMPRE, aunque el Arquetipo no dé a elegir:
+    //     antes el Sagaz no veía la palabra «armadura» por ninguna parte y
+    //     parecía que faltaba el control, cuando la regla es que no lleva.
     const eq = EQUIPO_ARQ[S.arq];
-    if (eq) {
+    const arm = el('div', 'wiz-sub');
+    arm.appendChild(el('span', 'wiz-lbl', 'Armadura'));
+    if (eq && eq.fijo.armors) {
+      const a = app.DB.armors[eq.fijo.armors];
+      arm.appendChild(tarjeta(a.name, 'Armadura ' + a.rd, a.notes || '',
+        'Fija para tu Arquetipo — no se elige.', true, () => {}));
+    }
+    if (eq && eq.opciones.some(o => o.armor)) {
+      eq.opciones.filter(o => o.armor).forEach(o => {
+        const a = app.DB.armors[o.armor];
+        arm.appendChild(tarjeta(a.name, 'Armadura ' + a.rd, a.notes || '', '',
+          S.opcArq === o.v, () => { S.opcArq = o.v; S.armaExtra = ''; pintar(); }));
+      });
+    }
+    if (!eq || (!eq.fijo.armors && !eq.opciones.some(o => o.armor))) {
+      arm.appendChild(el('p', 'wiz-hint',
+        (arq.name || 'Tu Arquetipo') + ' no tiene competencia con armadura y empieza sin ella. '
+        + 'Podrás llevarla más adelante con los Talentos que la otorguen.'));
+    }
+    if (eq && eq.fijo.shields) {
+      const s = app.DB.shields[eq.fijo.shields];
+      arm.appendChild(el('span', 'wiz-lbl', 'Escudo'));
+      arm.appendChild(tarjeta(s.name, '+' + s.guardia + ' Guardia', s.notes || '',
+        'Incluido para tu Arquetipo.', true, () => {}));
+    }
+    b.appendChild(arm);
+
+    // 3 · Elección propia del Arquetipo que no sea de armadura
+    if (eq && eq.opciones.some(o => !o.armor)) {
       const sub = el('div', 'wiz-sub');
       sub.appendChild(el('span', 'wiz-lbl', eq.etiqueta));
-      eq.opciones.forEach(o => {
+      // Las de armadura ya se han pintado arriba, en su propio bloque.
+      eq.opciones.filter(o => !o.armor).forEach(o => {
         sub.appendChild(tarjeta(o.t.split(' — ')[0], '', o.t.split(' — ')[1] || '', '',
           S.opcArq === o.v, () => { S.opcArq = o.v; S.armaExtra = ''; pintar(); }));
       });
@@ -690,7 +769,12 @@
         return S.nombre.trim() ? '' : 'Ponle un nombre';
       case 6:
         if (!S.armas.length) return 'Elige tu arma';
-        if (EQUIPO_ARQ[S.arq] && !S.opcArq) return 'Elige el equipo de tu Arquetipo';
+        if (EQUIPO_ARQ[S.arq] && !S.opcArq) {
+          // El aviso nombra lo que falta de verdad: al Audaz le falta la
+          // armadura, no «el equipo de tu Arquetipo».
+          const soloArmadura = EQUIPO_ARQ[S.arq].opciones.every(o => o.armor);
+          return soloArmadura ? 'Elige tu armadura' : 'Elige ' + EQUIPO_ARQ[S.arq].etiqueta.toLowerCase();
+        }
         if (S.opcArq === 'arma_extra' && !S.armaExtra) return 'Elige el arma ligera adicional';
         return S.monedas == null ? 'Tira tus monedas iniciales' : '';
     }
@@ -817,6 +901,10 @@
     app.onWeaponChange && app.onWeaponChange('w1');
 
     set('char_name', S.nombre.trim());
+    if (S.alineamiento) { app.alignment = S.alineamiento; app._syncAlignmentUI(); }
+    // El retrato se reaplica DESPUÉS de newCharManual, que lo devolvió al
+    // marcador por defecto al limpiar la ficha.
+    if (S.retrato) app._syncPortrait(S.retrato);
     app.updateOptions(false);                  // refleja habilidades y Pericias
     app.calc();
     app.showTalentSummary(); app.updateTalentCount();

@@ -844,11 +844,16 @@
       <span class="set-lbl" style="display:block;margin-bottom:7px">Tema Visual</span>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
         <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')" title="Art Déco" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Art Déco</button>
-        <button class="fs-btn theme-btn" data-theme="blood" onclick="app.setTheme('blood')" title="Sangre" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Sangre</button>
         <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')" title="Vacío" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Vacío</button>
         <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')" title="Arcano" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Arcano</button>
-        <button class="fs-btn theme-btn" data-theme="parchment" onclick="app.setTheme('parchment')" title="Pergamino" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Pergamino</button>
       </div>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Tipografía</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
+        <button class="fs-btn font-btn" data-font="clasica" onclick="app.setFontFamily('clasica')" title="Cinzel y Spectral" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Clásica</button>
+        <button class="fs-btn font-btn" data-font="sobria" onclick="app.setFontFamily('sobria')" title="Palatino y Georgia" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Sobria</button>
+        <button class="fs-btn font-btn" data-font="legible" onclick="app.setFontFamily('legible')" title="Tipografía del sistema" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Legible</button>
+      </div>
+      <span class="set-hint" style="display:block;margin-bottom:12px">Cambia la familia, no el tamaño. «Legible» usa la tipografía del sistema, con letras más abiertas para pantallas pequeñas.</span>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Fondo de Pantalla</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div>

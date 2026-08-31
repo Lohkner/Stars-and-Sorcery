@@ -95,6 +95,7 @@ const app = {
     this._restoreScrollPreserve();
     this._restorePortraitSettings();
     this._restoreTheme();
+    this._restoreFontFamily();
     this._restoreBgImages();
     // Long-press repeat on resource +/- buttons
     this._initResLongPress();
@@ -4503,7 +4504,7 @@ const app = {
       circle:  {r:'50%',  clip:'none', cls:''},
 
     };
-    const s = shapeData[this._portShape || 'rect'] || shapeData['rect'];
+    const s = shapeData[this._portShape || 'rounded'] || shapeData['rounded'];
     if (frame) {
       frame.style.setProperty('--crfr-r',    s.r);
       frame.style.setProperty('--crfr-clip', s.clip);
@@ -4921,7 +4922,7 @@ const app = {
         // Se serializa lo CONFIRMADO con "✓ Aplicar al Personaje"
         // (_charPrefs), nunca una vista previa sin aplicar.
         portSize:   this._charPrefs?.portSize   || this._portSize        || 'm',
-        portShape:  this._charPrefs?.portShape  || this._portShape       || 'rect',
+        portShape:  this._charPrefs?.portShape  || this._portShape       || 'rounded',
         portBorder: this._charPrefs?.portBorder || this._portBorderMode  || 'premium',
         fontSize:  localStorage.getItem(STORAGE.KEYS.font) || 'normal'
       }
@@ -4968,7 +4969,7 @@ const app = {
     const prefs = (data._prefs && typeof data._prefs === 'object') ? data._prefs : {};
     this._charPrefs = {
       portSize:   prefs.portSize   || localStorage.getItem(STORAGE.KEYS.portSize)  || 'm',
-      portShape:  prefs.portShape  || localStorage.getItem(STORAGE.KEYS.portShape) || 'rect',
+      portShape:  prefs.portShape  || localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded',
       portBorder: prefs.portBorder || localStorage.getItem('ss_port_border')        || 'premium',
     };
     if (this._perCharPrefs) {
@@ -5262,7 +5263,7 @@ const app = {
       circle:  {r:'50%',         clip:'none',                                                         poly:false},
 
     };
-    const d = shapes[shape] || shapes['rect'];
+    const d = shapes[shape] || shapes['rounded'];
     const root = document.documentElement;
     root.style.setProperty('--port-r',    d.r);
     root.style.setProperty('--port-clip', d.clip);
@@ -5295,8 +5296,8 @@ const app = {
       circle:  {r:'50%',   clip:'none', cls:''},
 
     };
-    const shape = this._portShape || 'rect';
-    const cr = crClips[shape] || crClips['rect'];
+    const shape = this._portShape || 'rounded';
+    const cr = crClips[shape] || crClips['rounded'];
     frame.style.setProperty('--crfr-r',    cr.r);
     frame.style.setProperty('--crfr-clip', cr.clip);
     frame.className = 'crfr' + (cr.cls ? ' ' + cr.cls : '');
@@ -5311,7 +5312,7 @@ const app = {
 
   _restorePortraitSettings() {
     const size  = localStorage.getItem(STORAGE.KEYS.portSize)  || 'm';
-    const shape = localStorage.getItem(STORAGE.KEYS.portShape) || 'rect';
+    const shape = localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded';
     this._portBorderMode = localStorage.getItem('ss_port_border') || 'premium';
     this._applyPortraitBorder();
     // Activado por defecto: los ajustes de retrato son por personaje
@@ -5338,7 +5339,7 @@ const app = {
   /** Restaura los predeterminados globales (al crear/limpiar personaje). */
   _resetCharPrefsToDefaults() {
     const size   = localStorage.getItem(STORAGE.KEYS.portSize)  || 'm';
-    const shape  = localStorage.getItem(STORAGE.KEYS.portShape) || 'rect';
+    const shape  = localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded';
     const border = localStorage.getItem('ss_port_border')        || 'premium';
     this._charPrefs = { portSize: size, portShape: shape, portBorder: border };
     this.setPortraitSize(size);
@@ -5362,14 +5363,40 @@ const app = {
     this.toast('Vista previa descartada — el personaje conserva sus ajustes', 'info');
   },
 
+  /** Temas vigentes. «Sangre» y «Pergamino» se retiraron: quien los tuviera
+      guardados vuelve al predeterminado en vez de quedarse sin tema, que
+      dejaba la app con los tokens del :root y los botones sin marcar. */
+  TEMAS: ['deco', 'void', 'arcane'],
+
   setTheme(id) {
-    const tid = id || 'deco';
+    const tid = this.TEMAS.includes(id) ? id : 'deco';
     document.documentElement.setAttribute('data-theme', tid);
     this._theme = tid;
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === tid)
     );
     localStorage.setItem('ss_theme', tid);
+  },
+
+  /** Familia tipográfica. Independiente del TAMAÑO, que vive en setFontSize:
+      son dos ejes distintos y mezclarlos obligaba a elegir entre leer bien y
+      que la ficha tuviera el aire que toca. «clasica» no pone atributo: es
+      la del :root, así que no hay que duplicar sus pilas. */
+  setFontFamily(id) {
+    const fid = ['clasica', 'sobria', 'legible'].includes(id) ? id : 'clasica';
+    const root = document.documentElement;
+    if (fid === 'clasica') root.removeAttribute('data-font');
+    else root.setAttribute('data-font', fid);
+    this._fontFamily = fid;
+    document.querySelectorAll('.font-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.font === fid));
+    try { localStorage.setItem('ss_font_family', fid); } catch (e) {}
+  },
+
+  _restoreFontFamily() {
+    let v = 'clasica';
+    try { v = localStorage.getItem('ss_font_family') || 'clasica'; } catch (e) {}
+    this.setFontFamily(v);
   },
 
   _restoreTheme() {
@@ -5722,7 +5749,7 @@ const app = {
     }
     // GLOBAL: persistir la vista previa actual como predeterminado de la app.
     const size   = this._portSize        || 'm';
-    const shape  = this._portShape       || 'rect';
+    const shape  = this._portShape       || 'rounded';
     const border = this._portBorderMode  || 'premium';
     localStorage.setItem(STORAGE.KEYS.portSize,  size);
     localStorage.setItem(STORAGE.KEYS.portShape, shape);
@@ -5752,7 +5779,7 @@ const app = {
     // 1) Confirmar la vista previa como estado del personaje actual.
     this._charPrefs = {
       portSize:   this._portSize        || 'm',
-      portShape:  this._portShape       || 'rect',
+      portShape:  this._portShape       || 'rounded',
       portBorder: this._portBorderMode  || 'premium',
     };
     // 2) Persistir _prefs directamente en SU entrada del roster (solo la

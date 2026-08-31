@@ -28,7 +28,7 @@
   --border: #3d3254;
 
   /* Text scale */
-  --muted:  #7a6a92;
+  --muted:  #8c7ea1;
   --dim:    #9e8db6;
   --text:   #cfc0e4;
   --bright: #ece4f8;
@@ -37,7 +37,7 @@
   --gold:   #c9aa6f;
   --goldb:  #e0c27e;
   --crimson:#6e1525;
-  --blood:  #a82a3a;
+  --blood:  #d45363;
   --ember:  #d9542a;
   --ice:    #3d8fc2;
   --sage:   #3fa06c;
@@ -1971,7 +1971,29 @@ input:focus-visible,textarea:focus-visible{outline:none}
 /* Per-shape gold border match */
 .crfr.arch{border-radius:140px 140px 2px 2px / 160px 160px 2px 2px}
 
-[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#666666;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#333333;--ember:#555555;--ice:#444444;--sage:#444444;}
+/* ── Tipografías ────────────────────────────────────────────────
+   Solo cambian la FAMILIA; la escala de tamaños (--fs-*) es aparte y la
+   controla el selector de tamaño de fuente. Ninguna de las alternativas
+   descarga nada: usan pilas del sistema, así que cambiar de tipografía es
+   instantáneo y funciona sin conexión. */
+[data-font="sobria"]{
+  --ft:'Palatino Linotype','Book Antiqua',Palatino,'Iowan Old Style',Georgia,serif;
+  --fd:'Palatino Linotype','Book Antiqua',Palatino,'Iowan Old Style',Georgia,serif;
+  --fb:Georgia,'Times New Roman',serif;
+  --fm:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+}
+[data-font="legible"]{
+  --ft:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --fd:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --fb:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --fm:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+}
+/* Las mayúsculas espaciadas de los títulos están calibradas para Cinzel;
+   en una sans del sistema quedan sueltas. */
+[data-font="legible"] .pt,[data-font="legible"] .fs-hdr-ttl,
+[data-font="legible"] .dvdr,[data-font="legible"] .set-lbl{letter-spacing:.06em}
+
+[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;}
 
 /* Background image overlays — ensure readability */
 #home-screen::before,.pages-wrapper::before{
@@ -2007,24 +2029,15 @@ body.port-border-none .port-card-edit{
   border:1px dashed rgba(200,169,110,.15);
 }
 
-[data-theme="blood"]{--edge-soft:rgba(90,24,48,.35);--edge:rgba(90,24,48,.55);--edge-strong:rgba(90,24,48,.75);--edge-gold:rgba(212,64,96,.4);--edge-gold-strong:rgba(212,64,96,.55);
-  --void:#060205;--deep:#0c0308;--surface:#14050e;--raised:#1e0812;--panel:#280b18;--rim:#3d1020;--border:#5a1830;
-  --muted:#8a4858;--dim:#b06878;--text:#e8c8cc;--bright:#f8eaec;
-  --gold:#d44060;--goldb:#e85870;
-  --crimson:#800020;--blood:#b02040;--ember:#e04060;--ice:#6090b0;--sage:#508068;
-}
+
 [data-theme="arcane"]{--edge-soft:rgba(44,48,104,.35);--edge:rgba(44,48,104,.55);--edge-strong:rgba(44,48,104,.75);--edge-gold:rgba(160,96,232,.4);--edge-gold-strong:rgba(160,96,232,.55);
   --void:#020308;--deep:#050610;--surface:#090b1a;--raised:#0e1024;--panel:#13162e;--rim:#1e2248;--border:#2c3068;
-  --muted:#5858a0;--dim:#8080c8;--text:#c0c0f0;--bright:#e8e8ff;
+  --muted:#7b7bb6;--dim:#8080c8;--text:#c0c0f0;--bright:#e8e8ff;
   --gold:#a060e8;--goldb:#b878f8;
-  --crimson:#3a1080;--blood:#5820b0;--ember:#7830e0;--ice:#4090d8;--sage:#309890;
+  --crimson:#3a1080;--blood:#cc5a86;--ember:#d9803f;--ice:#4090d8;--sage:#309890;
 }
-[data-theme="parchment"]{--edge-soft:rgba(120,94,48,.35);--edge:rgba(120,94,48,.55);--edge-strong:rgba(120,94,48,.75);--edge-gold:rgba(200,148,30,.4);--edge-gold-strong:rgba(200,148,30,.55);
-  --void:#1a1408;--deep:#221c0c;--surface:#2e2410;--raised:#3a2e14;--panel:#48381a;--rim:#5e4a24;--border:#785e30;
-  --muted:#9a8060;--dim:#b89a78;--text:#e8d8b8;--bright:#f8edd8;
-  --gold:#c8941e;--goldb:#dea832;
-  --crimson:#6e2810;--blood:#9a3c18;--ember:#c85020;--ice:#5888a0;--sage:#507848;
-}
+
+
 
 /* ── Inline style helpers (extracted from repeated inline styles) ── */
 .is-field-note{font-family:var(--fb);font-size:var(--fs-sm);color:var(--dim);text-transform:none;letter-spacing:0;font-style:italic;font-weight:400}
@@ -2169,6 +2182,21 @@ body.port-border-none .port-card-edit{
 .wiz-apick.sel .wiz-apick-v{color:var(--gold)}
 .wiz-cuenta{display:block;margin:8px 0 6px;font-family:var(--fm);
   font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.05em}
+
+/* Retrato en el asistente: miniatura y acciones al lado */
+.wiz-port{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+.wiz-port-img{width:76px;height:96px;object-fit:cover;flex-shrink:0;
+  border-radius:var(--r);border:1px solid var(--edge-gold);background:var(--panel)}
+.wiz-port-side{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+
+/* Convicción: nueve etiquetas en rejilla de tres, que es como se leen
+   —dos ejes— y no como una lista de nueve cosas sueltas. */
+.wiz-conv{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:4px}
+.wiz-conv-b{cursor:pointer;padding:8px 4px;text-align:center;
+  border-radius:var(--r);background:var(--panel);border:1px solid var(--edge-soft);
+  color:var(--muted);font-family:var(--fd);font-size:var(--fs-xs);line-height:1.3}
+.wiz-conv-b.sel{border-color:var(--edge-gold);background:rgba(200,169,110,.06);
+  color:var(--goldb)}
 
 /* Atributos */
 .wiz-metodos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
@@ -2978,8 +3006,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
    El dorado de las piezas de identidad —el marco del retrato, su nombre,
    las insignias de Linaje/Arquetipo/Trasfondo y las tarjetas del roster—
    baja un 10% de intensidad. Se hace con color-mix sobre los tokens de
-   tema (no con hex fijos) para que los temas alternativos —blood, arcane,
-   parchment, que redefinen --gold/--goldb— se atenúen igual.
+   tema (no con hex fijos) para que los temas alternativos —Vacío y Arcano,
+   que redefinen --gold/--goldb— se atenúen igual.
    Los hex literales que preceden a cada color-mix son el respaldo para
    navegadores sin color-mix: mismos valores, calculados al 90% del tema
    por defecto.                                                            */

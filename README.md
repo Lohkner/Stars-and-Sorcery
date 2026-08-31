@@ -1,4 +1,50 @@
-# S&S Companion — v54.0
+# S&S Companion — v54.1
+
+## Novedades v54.1 — Convicción y retrato en el asistente · dos temas menos y mejores · tipografía
+
+`CACHE_VERSION` sube a `ss-companion-v69`.
+
+### En el asistente
+
+**Convicción.** Faltaba entera. Las nueve etiquetas del Apéndice D, en rejilla de tres —que es como se leen, dos ejes— dentro del Paso 6. Al crear se marca también en la ficha.
+
+**Retrato.** El Paso 6 muestra la miniatura con «Elegir retrato» y «Quitar». Reutiliza el mismo `#img_input` y el mismo recorte que la ficha, así que no hay dos caminos que mantener; el diálogo de recorte es un `<dialog>` modal y sale por encima del asistente sin tocar z-index. El retrato se reaplica **después** de limpiar la ficha, que es cuando volvía al marcador por defecto.
+
+**La armadura se nombra siempre.** Antes solo aparecía dentro de la elección del Arquetipo, así que el Sagaz no veía la palabra «armadura» por ningún lado y parecía que faltaba el control. Ahora el Paso 7 tiene bloque propio: el Audaz elige entre Cota de malla y Cota de escamas y ve su Escudo incluido, el Versátil ve su Cuero tachonado como fijo, y el Sagaz lee que empieza sin armadura y por qué. El aviso de validación también nombra lo que falta de verdad — «Elige tu armadura», no «el equipo de tu Arquetipo».
+
+### El retrato nace con esquinas suaves
+
+La forma por defecto pasa de **Recto** a **Suave**, en los seis sitios donde estaba puesta. «Recto» sigue disponible.
+
+### Dos temas menos, tres mejores
+
+**Sangre** y **Pergamino** se retiran, con sus botones. Quien tuviera uno guardado vuelve al predeterminado: `setTheme` valida contra la lista de temas vigentes en vez de aceptar cualquier cadena, que antes dejaba la app con los tokens del `:root` y ningún botón marcado.
+
+Los tres que quedan se corrigen por contraste medido, no por gusto. El caso grave era **Vacío**: `--sage` y `--ice` eran **literalmente el mismo `#444444`**, y los cuatro colores semánticos estaban por debajo de 2.4:1, así que «Te falta» en rojo y «✓ Requisitos» en verde se leían idénticos. Ahora todos pasan de 4:1 y se distinguen entre sí, sin romper el monocromo.
+
+| | Vacío antes | Vacío ahora | Arcano antes | Arcano ahora |
+|---|---|---|---|---|
+| sage | 1.82 | **5.87** | 5.09 | 5.09 |
+| ice | 1.82 | **4.45** | 5.24 | 5.24 |
+| blood | 1.41 | **4.34** | 1.90 | **4.55** |
+| ember | 2.38 | **4.27** | 2.79 | **6.02** |
+| muted | 3.09 | **4.56** | 2.81 | **4.53** |
+
+En **Art Déco** suben `muted` (3.47 → 4.53) y `blood` (2.47 → 4.21).
+
+### Tipografía
+
+Selector nuevo en **Apariencia**, separado del tamaño porque son dos ejes distintos:
+
+- **Clásica** — Cinzel y Spectral, la de siempre.
+- **Sobria** — Palatino y Georgia.
+- **Legible** — la tipografía del sistema, con letras más abiertas para pantallas pequeñas.
+
+Ninguna alternativa descarga nada: usan pilas del sistema, así que el cambio es instantáneo y funciona sin conexión. En «Legible» se reduce el espaciado de las mayúsculas de los títulos, calibrado para Cinzel y que en una sans queda suelto.
+
+### Verificado
+
+Los tres temas y las tres tipografías se aplican, se guardan y se restauran; un tema retirado guardado a mano cae a Art Déco. En el asistente: retrato recogido del recorte y presente en la ficha creada, Convicción marcada en `app.alignment` y en los botones de la ficha, bloque de armadura correcto en los tres Arquetipos, y creación completa con Guardia 14. Consola limpia.
 
 ## Novedades v54.0 — Compendio de Sendas 1.0: el rebalance de requisitos
 
