@@ -1,4 +1,199 @@
-# S&S Companion — v52.5
+# S&S Companion — v54.0
+
+## Novedades v54.0 — Compendio de Sendas 1.0: el rebalance de requisitos
+
+`RULES_DATA_VERSION` pasa a `1.0-manual-sendas-axiomas` y `CACHE_VERSION` a `ss-companion-v68`.
+
+Actualización desde `Compendio_de_Sendas_1_0.docx` y `Stars_and_Sorcery_Manual_Basico_1_0.docx`. **230 de los 253 talentos cambian**, pero ninguno cambia de nombre: es un rebalance sistemático de dos ejes.
+
+### Todos los umbrales de atributo bajan a 13+
+
+| Umbral | Antes | Ahora |
+|---|---|---|
+| 12+ | 52 | 0 |
+| **13+** | **184** | **408** |
+| 14+ | 45 | 0 |
+| 15+ | 23 | 0 |
+| 16+ | 2 | 0 |
+
+Ya no hay talentos que pidan 14, 15 o 16 en un atributo. Varios además se reescriben como alternativa en vez de exigencia doble: *Furia Primal* pasa de `FUE 14+ · CON 14+` a `FUE 13+ o CON 13+ · CON 13+`.
+
+### Los Niveles mínimos de Grado se concentran
+
+El Grado 2 se agrupa en **Nivel 4+** (de 63 a 124 talentos) y el Grado 3 en **Nivel 6+** (de 41 a 123). Desaparecen los Grados 2 a Nivel 2 y 3, y los Grados 3 a Nivel 5. La cola alta se aligera: los Grados 3 a Nivel 9 bajan de 42 a 11.
+
+En la práctica, un personaje de Nivel 1 con atributos normales pasa de ~51 a **54 talentos elegibles**, y sobre todo llega antes a los Grados altos de los que ya tiene.
+
+### Un talento retirado
+
+**Corona Rota** (Juramento) desaparece del Compendio y no tiene sustituto, así que no se mapea: una ficha que lo tuviera lo mostrará como «⚠ No encontrado» conservando su texto guardado. Ningún requisito lo nombraba, así que no bloquea nada más.
+
+### Lo que NO cambia
+
+El **Manual** solo mueve una línea —el paquete de inicio «El Baluarte» pide ahora `CON o FUE 13+` en vez de `15+`, coherente con el nuevo *Defensor Implacable*—. Comprobado uno a uno que Linajes, Arquetipos, Trasfondos, Salvaciones, tabla de modificadores y equipo inicial siguen literalmente iguales, así que `descriptors`, `archetypes` y `backgrounds` no se tocan.
+
+El **Catálogo de Axiomas** no se ha modificado desde la importación anterior: los 351 Axiomas quedan intactos.
+
+### Verificado
+
+253 talentos en 23 Sendas, 699 Grados: cero grados duplicados, desordenados, vacíos o fundidos; cero textos de Grado repetidos entre talentos; cero nombres o ids duplicados. Los 253 requisitos pasan por el evaluador sin una sola excepción, y el vocabulario de átomos es el mismo de antes, así que no hizo falta tocarlo. Los 15 renombres de `TALENT_ID_RENAMES` siguen apuntando a talentos existentes. Creación completa con el asistente tras la importación —Enano Audaz, PV 24, Guardia 14, tres talentos, equipo y 200 pp—. Consola limpia.
+
+## Novedades v53.4 — El asistente se puede apagar
+
+`CACHE_VERSION` sube a `ss-companion-v67`.
+
+Interruptor nuevo en **Ajustes & Datos → Interfaz**, junto a «Recordar posición al volver»:
+
+> **Asistente de creación**
+> Activado: «Nuevo personaje» abre los siete pasos guiados. Desactivado: abre la ficha entera para rellenarla a mano.
+
+Viene **activado** por defecto. Apagarlo devuelve el comportamiento anterior a la v53.0 — la ficha completa en modo edición— sin quitar nada: el botón «A mano» de la cabecera del asistente sigue estando para salirse de un caso suelto sin cambiar la preferencia.
+
+Es una preferencia de quien juega, no del personaje: vive en `localStorage` (`ss_asistente`) y no viaja en el JSON de la ficha, así que no cambia de un personaje a otro ni se exporta con ellos.
+
+### Verificado
+
+Por defecto activado y «Nuevo personaje» abre el asistente. Apagándolo, el aria-pressed pasa a `false`, se guarda `0`, y «Nuevo personaje» abre la ficha en edición. Sobrevive a recargar la página, y al reabrir Ajustes el interruptor aparece en su estado real. Volviéndolo a encender, el asistente regresa. Cada cambio confirma con un aviso que dice qué va a pasar la próxima vez. Consola limpia.
+
+## Novedades v53.3 — Paso de Equipo, y las elecciones del Linaje bajo su tarjeta
+
+`CACHE_VERSION` sube a `ss-companion-v66`.
+
+### Las elecciones del Linaje cuelgan de su tarjeta
+
+El Arquetipo y el Trasfondo ya desplegaban sus habilidades debajo de la opción elegida, pero el **Descriptor** seguía con el bloque viejo: elegías Enano arriba y su Bono de Linaje, su Experiencia y su Truco aparecían al fondo, después de los once linajes. Ahora cuelgan de su propia tarjeta, con el mismo sangrado y filo dorado que los otros dos pasos.
+
+### Paso 7 · Equipo
+
+El asistente terminaba sin equipar nada. El manual dedica a esto el final del Cap.6 —«después eliges con qué sales por la puerta, que es la última decisión de la creación»—, así que ahora hay un séptimo paso.
+
+**Arma.** La regla es «1 arma de tu competencia (o 2 armas simples)», y el paso la aplica: si eliges una simple, el tope sube a dos y el título lo dice; si eliges una marcial, baja a una y el resto se apaga. La lista sale de la competencia del Arquetipo — el Sagaz solo ve las siete simples, el Audaz las ve todas.
+
+**La elección de cada Arquetipo**, tal cual la lista el manual:
+
+| | |
+|---|---|
+| Audaz | Cota de malla **o** Cota de escamas · más Escudo estándar |
+| Versátil | Cuero tachonado · más ganzúas **o** un arma ligera adicional |
+| Sagaz | Foco Mixto Desalineado **o** Kit de primeros auxilios |
+
+Si el Versátil escoge el arma adicional, se le pide **cuál**.
+
+**Monedas iniciales**, con su tirada: Audaz 5d6×10 · Versátil 4d6×10 · Sagaz 3d6×10, y botón para volver a tirar.
+
+**Y lo que llevan todos**, sin preguntarlo: Morral, 5 Raciones, 5 Antorchas, cantimplora, cuerda de 50 pies y ropa de viaje.
+
+Al crear, todo eso entra en el inventario y **queda equipado**. Los desplegables de combate se rellenan desde el inventario y su valor es el `uid` del objeto, no la clave de la base: primero se añaden las cosas, luego se sincronizan las listas y solo entonces se equipa.
+
+### Verificado
+
+Los tres Arquetipos de punta a punta. Un Enano Audaz sale con Espada larga equipada, Cota de Malla (RD 3), Escudo, Guardia 14, 220 pp y nueve objetos; guardar y recargar lo devuelve idéntico. El Sagaz solo ve armas simples, sale sin armadura y con su Foco. El Versátil sale con Cuero tachonado, Garrote y la Daga adicional en la segunda mano. La regla de las dos simples probada en los dos sentidos. Consola limpia.
+
+## Novedades v53.2 — Salvaciones y Guardia en el asistente (y un modificador mal calculado)
+
+`CACHE_VERSION` sube a `ss-companion-v65`.
+
+El Paso 6 del Manual Cap.6 no son solo números derivados: incluye **tres elecciones permanentes** que el asistente se saltaba y dejaba sin poner.
+
+- **Salvación Común** — DES / CON / SAB
+- **Salvación Poco Común** — FUE / INT / CAR
+- **Atributo defensivo de la Guardia** — DES / SAB / CON
+
+Las tres se eligen ahora en el Paso 6, con las opciones a la vista y de un toque. Cada botón enseña **el número que se está comparando**: en las Salvaciones, el bono total con el PB (`Constitución +4`); en la Guardia, la Guardia resultante con ese atributo (`Constitución 14`). Y «Crear personaje» no se activa hasta elegir las dos Salvaciones.
+
+La ficha ya tenía sus controles, pero un personaje creado con el asistente llegaba sin Salvaciones marcadas. Ahora se marcan al volcar.
+
+De paso, la ficha decía «Infrecuentes» donde el manual dice **«Poco Comunes»**.
+
+### El fallo que esto destapó
+
+Al comprobar que la vista previa cuadraba con la ficha, no cuadraba: el asistente anunciaba **Guardia 15** y la ficha ponía **14**.
+
+La culpa era mía. El asistente calculaba el modificador con `floor((v−10)/2)` —la fórmula de D&D— y **S&S usa su propia tabla**, que va de −3 a +4 con tramos desiguales:
+
+```
+3 → −3   ·  4–5 → −2  ·  6–8 → −1  ·  9–11 → 0
+12–14 → +1  ·  15–16 → +2  ·  17–18 → +3  ·  19–20 → +4
+```
+
+Con CON 16, D&D da +3 y S&S da +2. La app siempre lo tuvo bien en `app.getMod()`; el asistente llevaba su propia copia equivocada. Ahora usa la de la app, que es la única fuente.
+
+Afectaba a los modificadores del Paso 1 y a la Guardia del Paso 6. **No** a PV, Flesh, Adrenalina ni Ingenio, que se calculan con la puntuación completa y no con el modificador.
+
+### Verificado
+
+Enano Audaz con FUE 16 · CON 16, Salvaciones CON y FUE, Guardia con CON: la vista previa da **PV 24 · Flesh 16 · Adrenalina 25 · Ingenio 15 · Guardia 14**, y la ficha creada da exactamente lo mismo, con las dos Salvaciones marcadas y `sel_guard_attr` en Constitución. El botón queda bloqueado mientras falte una Salvación. Consola limpia.
+
+## Novedades v53.1 — Cuatro arreglos en el asistente
+
+`CACHE_VERSION` sube a `ss-companion-v64`.
+
+**Ya no salta arriba en cada toque.** Elegir una opción repinta el paso, y el repintado devolvía el scroll a cero: para llegar al Trasfondo número once había que bajar once veces. Ahora la posición solo se reinicia al **cambiar de paso**, que es cuando el contenido es otro.
+
+**Buscador de Talentos.** Busca por nombre, leyenda y texto de los Grados, igual que el Gestor, y con un contador vivo — *«51 disponibles»* → *«3 disponibles»* al teclear "sombra". La lista de Talentos vive ahora en su propio contenedor y se refresca sola, así que el buscador no pierde el foco entre teclas y elegir un Talento no mueve la página.
+
+**Las habilidades cuelgan de la tarjeta elegida.** Antes aparecían al final de la lista: elegías Audaz arriba y sus habilidades salían debajo de Sagaz. Ahora se despliegan **justo debajo** del Arquetipo o Trasfondo seleccionado, sangradas y con un filo dorado que las ata a él.
+
+**El Trasfondo avisa de lo que ya tienes.** En la propia tarjeta, las habilidades que ya cubres salen con `✓`, así que se ve de un vistazo qué Trasfondo te repite y cuál te amplía. Y al desplegarlo, cada una dice de dónde viene: *«Ya la tienes por tu Arquetipo: elegirla aquí la sube a Grado 1»* (Manual Cap.5). Cuenta tanto el Arquetipo como el **Linaje** — un Medio Elfo con *Empatía Experta* llega con Perspicacia e Influencia, y se marcan también en el Paso 3.
+
+Para saber qué concede el Linaje se reconocen los nombres de habilidad contra la lista canónica de `SKILL_ATTR` dentro de las líneas que mencionan un Grado, en vez de analizar la frase — cada Linaje la redacta a su manera.
+
+### Verificado
+
+Scroll conservado al elegir Linaje (614 → 614) y Talento (62 → 62). Buscador: filtra a 3 resultados, conserva el foco y actualiza el contador. Las habilidades salen como hijo inmediato de la tarjeta seleccionada, con los otros Arquetipos aún visibles debajo. Un Medio Elfo con *Empatía Experta* marca Perspicacia en el Paso 3, y un Versátil con Sigilo y Engaño los marca con `✓` en la tarjeta del Ladrón y con su nota dentro. Creación completa tras los cambios: la ficha llega entera. Consola limpia.
+
+## Novedades v53.0 — Asistente de creación guiada
+
+`CACHE_VERSION` sube a `ss-companion-v63`. Módulo nuevo: `js/asistente.js`.
+
+Crear un personaje abría de golpe las ocho secciones de la ficha en modo edición. Ahora **«Nuevo personaje» abre un asistente de seis pasos**, uno por pantalla, con barra de progreso y un botón que no deja avanzar hasta que la decisión está tomada — y te dice qué falta.
+
+El orden y los tiempos son los del **Manual Básico Cap.3**, no un invento:
+
+| Paso | | |
+|---|---|---|
+| 1 | Atributos | 5 min |
+| 2 | Descriptor | 5 min |
+| 3 | Arquetipo | 3 min |
+| 4 | Trasfondo | 5 min |
+| 5 | Talentos | 10 min |
+| 6 | Ficha | 5 min |
+
+Los atributos van primero **a propósito**: así el Paso 3 puede enseñar el PV real de cada Arquetipo con tu CON ya repartida — *Audaz 22 · Versátil 20 · Sagaz 18* — en vez de una fórmula.
+
+### Las opciones son tarjetas, no un desplegable
+
+Cada Linaje, Arquetipo, Trasfondo y Talento se ve con su nombre, su etiqueta y su descripción, todos a la vez y comparables. En el Linaje, la etiqueta es el bono (`+2 CAR, +1 INT o DES`) y una línea marca la Afinidad y qué Fuente abre.
+
+### Los cuatro métodos de atributos
+
+Los del manual, completos: **B Arreglo Estándar** (toca un valor, tócalo en un atributo), **C Compra de puntos** (24 puntos, tope 18, con el contador de lo que queda), **A 4d6 descartando el menor** y **D 3d6 en orden**. A y D traen «Volver a tirar».
+
+### Lo que el asistente sabe de las reglas v5.0
+
+No es un formulario tonto: usa la base real y el evaluador de requisitos real.
+
+- **Filtra los Talentos** por lo que puedes tomar ahora. De 254, con unos atributos normales a Nivel 1 quedan unos 84 — y elegir *Iniciado en Pacto* desbloquea al momento los que lo exigen.
+- **Afinidad del Linaje**: si tu Linaje abre una Fuente, te pide su Truco, y esa Fuente ya cuenta para los requisitos de los Talentos del Paso 5.
+- **El Mutante** pide sus **dos** Expresiones, distintas entre sí, y si una es *Afinidad Psiónica* aparece el Truco.
+- **Habilidad repetida en Arquetipo y Trasfondo**: se avisa en la tarjeta y en el resumen sale a **Grado 1**, no dos veces (Manual Cap.5).
+- El Paso 6 muestra **PV, Flesh, Adrenalina, Ingenio, Guardia y PB** ya calculados antes de crear nada.
+
+### Cómo encaja con lo que ya había
+
+`newChar()` pasa a abrir el asistente; el flujo antiguo sigue entero en **`newCharManual()`** y hay un botón **«A mano»** en la cabecera para salirse en cualquier momento. Editar un personaje existente no cambia en nada.
+
+El asistente **no calcula la ficha**: al terminar rellena los mismos campos que rellenarías tú y deja que `calc()` derive lo demás. Por eso el resultado es idéntico a crearlo a mano.
+
+Para que el evaluador de requisitos funcione con un personaje que aún no existe, `_parseTalentReq` y `_fuentesIniciadas` aceptan un contexto de borrador (`_wizCtx`). Fuera del asistente vale `null` y nada cambia.
+
+### Verificado
+
+Recorrido completo dos veces —un Infernal Sagaz y un Mutante Versátil— comprobando en cada paso qué falta y qué desbloquea. Al crear, la ficha llega con atributos, Linaje, Arquetipo, Trasfondo, bono elegido, Experiencia, Truco, habilidades marcadas, tres Talentos a Grado 1 y el nombre, con las secciones ya cerradas en resumen y los derivados coincidiendo con la vista previa. Guardar y recargar conserva todo. Probados los cuatro métodos de atributos, «Atrás» dentro y fuera del asistente, y «A mano». Consola limpia.
+
+### Respaldo
+
+`_backup_pre_asistente_v52.5/` guarda la app entera tal como estaba antes de esto, con instrucciones en su `RESTAURAR.md`.
 
 ## Novedades v52.5 — Las Pericias ya se pueden bajar a cero
 

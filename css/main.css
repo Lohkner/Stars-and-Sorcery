@@ -2102,6 +2102,115 @@ body.port-border-none .port-card-edit{
 /* Body */
 .fs-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 
+/* ══ ASISTENTE DE CREACIÓN ═══════════════════════════════════════
+   Vive dentro de un .fs-panel, así que hereda su entrada lateral y su
+   cabecera. Lo propio es el cuerpo: un paso por pantalla, con las
+   opciones como tarjetas comparables en vez de un desplegable. */
+#wiz_panel .fs-body{overflow-y:auto;padding:4px 16px 16px;display:block}
+
+.wiz-bars{flex-shrink:0;display:flex;gap:4px;padding:0 16px 10px}
+.wiz-bar{flex:1;height:3px;border-radius:2px;background:var(--line-dim);
+  transition:background .2s}
+.wiz-bar.done{background:var(--edge-gold-strong)}
+.wiz-bar.on{background:var(--gold)}
+
+.wiz-foot{flex-shrink:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line-dim);background:var(--raised)}
+.wiz-why{display:block;text-align:center;margin-top:6px;min-height:1em;
+  font-family:var(--fm);font-size:var(--fs-2xs);color:var(--dim)}
+
+.wiz-hint{font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);
+  font-style:italic;line-height:1.55;margin:6px 0 12px}
+.wiz-lbl{display:block;margin:12px 0 5px;font-family:var(--fd);
+  font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;
+  color:var(--dim)}
+
+/* Tarjeta de opción */
+.wiz-opt{display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel);border:1px solid var(--edge-soft);
+  border-left:2px solid var(--line-dim);border-radius:var(--r);
+  padding:10px 12px;margin-bottom:7px;
+  transition:border-color .15s,background .15s}
+.wiz-opt.sel{border-color:var(--edge-gold);border-left-color:var(--gold);
+  background:rgba(200,169,110,.06)}
+@media(hover:hover){.wiz-opt:hover{border-color:var(--edge)}}
+.wiz-opt-h{display:flex;align-items:baseline;gap:8px}
+.wiz-opt-n{flex:1;min-width:0;font-family:var(--fd);font-size:var(--fs-lg);
+  color:var(--bright)}
+.wiz-opt.sel .wiz-opt-n{color:var(--goldb)}
+.wiz-opt-tag{flex-shrink:0;font-family:var(--fm);font-size:var(--fs-2xs);
+  color:var(--gold)}
+.wiz-opt-t{display:block;margin-top:4px;font-size:var(--fs-sm);
+  color:var(--muted);line-height:1.5}
+.wiz-opt-sub{display:block;margin-top:4px;font-family:var(--fm);
+  font-size:var(--fs-2xs);color:var(--ice)}
+
+.wiz-sub{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-dim)}
+.wiz-sub select,#wiz_body>select,#wiz_body>input{width:100%}
+/* Sub-bloque que cuelga de la tarjeta elegida: sangrado y con un filo
+   dorado que lo ata visualmente a ella, para que no parezca otra sección. */
+.wiz-sub.wiz-inline{
+  margin:0 0 12px 10px;padding:10px 0 2px 12px;
+  border-top:none;border-left:2px solid var(--edge-gold);
+}
+.wiz-buscar{margin-bottom:6px}
+/* Elección excluyente de atributo (Salvaciones y Guardia): las tres
+   opciones a la vista y de un toque, con el número que se compara. */
+.wiz-attrpick{display:flex;gap:6px;margin-bottom:4px}
+.wiz-apick{flex:1;min-width:0;cursor:pointer;padding:8px 6px;text-align:center;
+  border-radius:var(--r);background:var(--panel);
+  border:1px solid var(--edge-soft);transition:border-color .15s,background .15s}
+.wiz-apick.sel{border-color:var(--edge-gold);background:rgba(200,169,110,.06)}
+.wiz-apick-n{display:block;font-family:var(--fd);font-size:var(--fs-sm);
+  color:var(--bright);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wiz-apick.sel .wiz-apick-n{color:var(--goldb)}
+.wiz-apick-v{display:block;margin-top:2px;font-family:var(--fm);
+  font-size:var(--fs-md);color:var(--dim);font-variant-numeric:tabular-nums}
+.wiz-apick.sel .wiz-apick-v{color:var(--gold)}
+.wiz-cuenta{display:block;margin:8px 0 6px;font-family:var(--fm);
+  font-size:var(--fs-2xs);color:var(--dim);letter-spacing:.05em}
+
+/* Atributos */
+.wiz-metodos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.wiz-met{flex:1 1 46%;cursor:pointer;text-align:left;padding:8px 10px;
+  border-radius:var(--r);background:var(--panel);
+  border:1px solid var(--edge-soft);color:var(--muted);
+  font-family:var(--fm);font-size:var(--fs-xs);line-height:1.45}
+.wiz-met.sel{border-color:var(--edge-gold);color:var(--goldb);
+  background:rgba(200,169,110,.06)}
+.wiz-pool{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.wiz-chip{min-width:46px;padding:9px 0;text-align:center;cursor:pointer;
+  border-radius:var(--r);background:var(--panel);
+  border:1px solid var(--edge-soft);color:var(--bright);
+  font-family:var(--fm);font-size:var(--fs-lg);font-variant-numeric:tabular-nums}
+.wiz-chip.sel{border-color:var(--gold);color:var(--goldb);
+  background:rgba(200,169,110,.1)}
+.wiz-chip.used{opacity:.28;cursor:default}
+.wiz-attr{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  cursor:pointer;background:var(--panel);border:1px solid var(--edge-soft);
+  border-radius:var(--r);padding:9px 12px;margin-bottom:6px}
+.wiz-attr.on{border-color:var(--edge-gold)}
+.wiz-attr-n{flex:1;font-family:var(--fd);font-size:var(--fs-md);color:var(--bright)}
+.wiz-attr-b,.wiz-attr-t{font-family:var(--fm);color:var(--goldb);
+  font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
+.wiz-attr-t{font-family:var(--fd);font-size:var(--fs-xl)}
+.wiz-attr-m{font-family:var(--fm);font-size:var(--fs-xs);color:var(--dim);
+  min-width:3ch;text-align:right}
+
+/* Resumen final */
+.wiz-derived{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.wiz-der{flex:1 1 30%;padding:8px;text-align:center;border-radius:var(--r);
+  background:var(--panel);border:1px solid var(--edge-soft)}
+.wiz-der-l{display:block;font-family:var(--fd);font-size:var(--fs-2xs);
+  text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.wiz-der-v{display:block;margin-top:2px;font-family:var(--fm);
+  font-size:var(--fs-xl);color:var(--goldb);font-variant-numeric:tabular-nums}
+.wiz-sum{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;
+  margin-top:6px;font-size:var(--fs-sm)}
+.wiz-sum dt{padding-top:2px;font-family:var(--fd);font-size:var(--fs-2xs);
+  text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.wiz-sum dd{margin:0;color:var(--bright)}
+
 /* Footer */
 .fs-footer{
   flex-shrink:0;display:flex;align-items:center;justify-content:space-between;

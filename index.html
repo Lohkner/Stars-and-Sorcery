@@ -521,7 +521,7 @@
                   <label class="skill-opt"><input type="radio" name="save_common" value="SAB" onchange="app.calc()"> Sabiduría</label>
                 </div>
                 <div>
-                  <h3 class="sub" style="font-size:var(--fs-md)">Infrecuentes</h3>
+                  <h3 class="sub" style="font-size:var(--fs-md)">Poco Comunes</h3>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="FUE" onchange="app.calc()"> Fuerza</label>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="INT" onchange="app.calc()"> Inteligencia</label>
                   <label class="skill-opt"><input type="radio" name="save_uncommon" value="CAR" onchange="app.calc()"> Carisma</label>
@@ -829,6 +829,13 @@
         </div>
         <button id="scroll_preserve_btn" class="toggle-btn" data-action="toggleScrollPreserve" aria-pressed="false" title="Activar/desactivar recordar posición de scroll" aria-label="Activar recordar posición al volver"></button>
       </div>
+      <div class="set-row">
+        <div class="set-row-txt">
+          <span class="set-lbl">Asistente de creación</span>
+          <span class="set-hint">Activado: «Nuevo personaje» abre los siete pasos guiados. Desactivado: abre la ficha entera para rellenarla a mano.</span>
+        </div>
+        <button id="wiz_toggle_btn" class="toggle-btn" data-action="toggleAsistente" aria-pressed="true" title="Activar/desactivar el asistente de creación" aria-label="Usar el asistente al crear un personaje"></button>
+      </div>
     </section>
 
     <!-- ── APARIENCIA ──────────────────────────────────────────── -->
@@ -889,6 +896,27 @@
     <button class="bcnf" style="width:100%;margin-top:4px" data-action="closeSettings"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Listo</button>
   </div>
 </dialog>
+<!-- ── Asistente de creación guiada ─────────────────────────────────
+     Los seis pasos del Manual Básico Cap.3, uno por pantalla. Todo su
+     contenido lo pinta js/asistente.js; aquí solo va el armazón. -->
+<div id="wiz_panel" class="fs-panel" role="region" aria-label="Crear personaje paso a paso">
+  <div class="fs-hdr">
+    <button class="fs-hdr-back" id="wiz_back" aria-label="Paso anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="fs-hdr-center">
+      <span class="fs-hdr-ttl" id="wiz_ttl">Crear personaje</span>
+      <span class="fs-hdr-sub" id="wiz_sub"></span>
+    </div>
+    <div class="fs-hdr-actions">
+      <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px;color:var(--dim)" id="wiz_manual">A mano</button>
+    </div>
+  </div>
+  <div class="wiz-bars" id="wiz_bars" aria-hidden="true"></div>
+  <div class="fs-body" id="wiz_body"></div>
+  <div class="wiz-foot">
+    <button class="btn btn-gold" id="wiz_next" style="width:100%;min-height:48px"></button>
+    <span class="wiz-why" id="wiz_why"></span>
+  </div>
+</div>
 <div id="db_panel" class="fs-panel" role="region" aria-label="Editor de reglas">
   <div class="fs-hdr" style="background:linear-gradient(180deg,rgba(10,8,24,.97) 0%,var(--raised) 100%)">
     <button class="fs-hdr-back" data-action="closeDatabaseEditor" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1024,6 +1052,7 @@
 <script defer src="js/progresion.js"></script>
 <script defer src="js/origen.js"></script>
 <script defer src="js/plegables.js"></script>
+<script defer src="js/asistente.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
 </html>

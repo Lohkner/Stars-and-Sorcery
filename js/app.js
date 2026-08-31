@@ -2669,17 +2669,25 @@ const app = {
   _parseTalentReq(reqText) {
     const out = { atoms: [], met: true, unmet: [] };
     if (!reqText) return out;
-    // Ensure final stats are available
-    const stats = this._finalStats || (() => {
+    // `_wizCtx` es el borrador del Asistente de creación: mientras dura, el
+    // personaje todavía no está en la ficha, así que los requisitos se
+    // evalúan contra lo que se lleva elegido en vez de contra un DOM vacío
+    // (o peor, contra los restos del personaje anterior). Fuera del
+    // asistente vale null y no cambia nada.
+    const ctx = this._wizCtx;
+    const stats = ctx?.stats || this._finalStats || (() => {
       const s = {}; STATS.forEach(k => s[k] = parseInt(document.getElementById('base_'+k)?.value)||8); return s;
     })();
-    const lvl = parseInt(document.getElementById('char_lvl')?.value) || 1;
+    const lvl = ctx?.lvl ?? (parseInt(document.getElementById('char_lvl')?.value) || 1);
     // Talents the character currently has (by name + id)
+    const hidden = [...document.querySelectorAll('input[name="chk_talents_hidden"]')];
     const haveNames = new Set(
-      [...document.querySelectorAll('input[name="chk_talents_hidden"]')].map(h => (h.value||'').toLowerCase())
+      (ctx ? ctx.talentos.map(t => t.name) : hidden.map(h => h.value || ''))
+        .map(v => v.toLowerCase())
     );
     const haveIds = new Set(
-      [...document.querySelectorAll('input[name="chk_talents_hidden"]')].map(h => h.getAttribute('data-id')).filter(Boolean)
+      (ctx ? ctx.talentos.map(t => t.id) : hidden.map(h => h.getAttribute('data-id')))
+        .filter(Boolean)
     );
     // Split on · / • first; then split remaining chunks on commas that
     // separate distinct requirements (a comma followed by a Level/attr token),
@@ -2904,6 +2912,18 @@ const app = {
       X\u00bb o por la Afinidad de su Linaje. Devuelve nombres normalizados. */
   _fuentesIniciadas() {
     const out = new Set();
+    // Durante el Asistente, la Afinidad y los Talentos salen de su borrador:
+    // el Linaje todavía no está en `sel_desc` ni los Talentos en el DOM.
+    const ctx = this._wizCtx;
+    if (ctx) {
+      if (ctx.afinidad) out.add(this._normSource(ctx.afinidad));
+      ctx.talentos.forEach(t => {
+        const m = (t.name || '').match(/^Iniciad[oa]\s+en\s+(.+)$/i);
+        if (m) out.add(this._normSource(m[1]));
+      });
+      out.delete('');
+      return out;
+    }
     const af = this._afinidadFuente();
     if (af) out.add(this._normSource(af));
     [...document.querySelectorAll('input[name="chk_talents_hidden"]')].forEach(h => {
