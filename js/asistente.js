@@ -867,7 +867,9 @@
       if (!data) return null;
       const item = {
         uid: app._nextUid(), name: data.name, slots: data.slots || 1,
-        type: cat === 'shields' ? 'shields' : cat, dbKey: key, dbData: data,
+        // Copia de los datos de juego, no referencia a la entrada de la base
+        // (mismo criterio que addFromDB).
+        type: cat === 'shields' ? 'shields' : cat, dbKey: key, dbData: { ...data },
       };
       app.inventory.push(item);
       return item;

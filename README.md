@@ -1,4 +1,27 @@
-# S&S Companion — v54.1
+# S&S Companion — v54.2
+
+## Novedades v54.2 — Renombrar un arma ya llega a Equipo de Combate
+
+`CACHE_VERSION` sube a `ss-companion-v70`.
+
+Cambiar el nombre de un arma en **Equipo y Tesoro** no se reflejaba en **Equipo de Combate**: la lista y el desplegable mostraban el nombre nuevo, pero la tarjeta de ataque seguía con el viejo.
+
+La causa: hay **dos caminos** para renombrar y solo uno estaba completo.
+
+- El **lápiz** abre el formulario de objeto y `saveCustomItem` reescribe los datos de juego enteros, nombre incluido. Funcionaba.
+- El **campo de nombre de la fila** llama a `updateInvItem`, que cambiaba solo `item.name`. Pero la tarjeta de ataque lee el nombre de los **datos de juego** (`dbData.name`), que se quedaba como estaba.
+
+Ahora `updateInvItem` mantiene los dos en paso, y suelta el `dbKey` cuando el objeto deja de ser la entrada de la base — el mismo criterio que ya seguía `saveCustomItem`.
+
+### Un fallo peor que esto destapó
+
+`addFromDB` guardaba `dbData: data`, es decir **una referencia viva a la entrada de la base de reglas**, no una copia. Comprobado: un arma recién añadida compartía objeto con `DB.weapons.daga`. Escribir el nombre nuevo ahí dentro se lo habría cambiado a esa arma **para todos los personajes**, y de forma permanente si las reglas se guardaban después.
+
+Se copia al añadir (`{ ...data }`), en `addFromDB` y en el volcado del asistente. Verificado que tras renombrar, `DB.weapons['espada_larga'].name` sigue siendo *Espada larga*.
+
+### Verificado
+
+Renombrado en línea de un arma equipada: lista, desplegable, tarjeta de ataque, resumen de Equipo de Combate y tarjeta de Ataques del Perfil muestran los cuatro el nombre nuevo. Igual con el arma secundaria. La base de reglas queda intacta. Guardar y recargar conserva ambos nombres en sus dos ranuras. El camino del lápiz sigue funcionando. Consola limpia.
 
 ## Novedades v54.1 — Convicción y retrato en el asistente · dos temas menos y mejores · tipografía
 

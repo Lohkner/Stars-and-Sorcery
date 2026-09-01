@@ -1814,7 +1814,10 @@ const app = {
       slots: data.slots || 1,
       type: cat === 'shields' ? 'shields' : cat,
       dbKey: key,
-      dbData: data
+      // Copia, no referencia: con `dbData: data` el objeto del inventario
+      // apuntaba a la entrada viva de la base de reglas, y cualquier cambio
+      // sobre él se lo hacía a esa entrada para todos los personajes.
+      dbData: { ...data }
     };
     this.inventory.push(item);
     this.renderInventory();
@@ -1946,7 +1949,21 @@ const app = {
   },
   updateInvItem(idx, field, value) {
     if (field==='slots') value = parseInt(value)||0;
-    this.inventory[idx][field] = value;
+    const item = this.inventory[idx];
+    if (!item) return;
+    item[field] = value;
+    // Renombrar en la lista solo cambiaba `name`, y la tarjeta de Equipo de
+    // Combate lee el nombre de los DATOS DE JUEGO (`dbData`), así que el
+    // ataque seguía llamándose como antes. Se mantienen en paso.
+    if (field === 'name') {
+      // dbData puede ser la MISMA referencia que la entrada de la base
+      // (addFromDB la asigna tal cual): se clona antes de tocarla, o
+      // renombrar un arma se lo cambiaría a ese arma para todos.
+      if (item.dbData) item.dbData = { ...item.dbData, name: value };
+      // Con datos propios ya no es la entrada de la base — mismo criterio
+      // que saveCustomItem, para que nada la vuelva a resolver desde ahí.
+      if (item.dbKey) delete item.dbKey;
+    }
     if (field==='name'||field==='type') this.syncCombatOptions();
     this.calc();
   },
