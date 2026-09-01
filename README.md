@@ -1,4 +1,33 @@
-# S&S Companion — v54.4
+# S&S Companion — v54.5
+
+## Novedades v54.5 — El flotante de Ventaja/Desventaja deja de estorbar
+
+`CACHE_VERSION` sube a `ss-companion-v73`.
+
+El botón ocupa poco —48 px, el 0,8 % de la pantalla— pero está **fijo**, así que a 375 px se sienta encima de controles reales según dónde estés:
+
+| Página | Controles tapados | Con el menú desplegado |
+|---|---|---|
+| Perfil | 4 | **8** — `char_name`, `char_xp`, `char_concept`, `sel_arq`, `sel_bg` |
+| Stats | 2 | 2 — incluida una casilla de Salvación, que es en sí un botón de tirada |
+| Equipo | 1 | 2 |
+| Aptitudes | 1 | 1 |
+| Detalle | 0 | 1 |
+
+El desajuste de fondo: es un elemento permanente en pantalla para un estado que el 95 % del tiempo está en **Normal**, donde no dice nada.
+
+Así que ahora **en Normal se aparta**:
+
+- El círculo pasa de 48 a **36 px** (−44 % de área) y baja a opacidad 0,5.
+- Al **desplazar hacia abajo desaparece**. Vuelve al subir, al parar (0,9 s), al cambiar de página y al cambiar de estado.
+
+Y **activo no se esconde nunca**: con Ventaja o Desventaja recupera 48 px y opacidad completa, en verde o en rojo. Olvidarse de que está puesto falsearía todas las tiradas siguientes, así que ese estado se queda gritando. Con el menú desplegado tampoco se va.
+
+El círculo encoge, **el objetivo táctil no**: un pseudoelemento invisible (`inset:-6px`) le devuelve los 48 px. Medido: 47 px de diámetro tocable con un círculo visible de 36, y un clic en el borde de esa zona abre el menú.
+
+### Verificado
+
+Normal en reposo: 36 px, opacidad 0,5. Al bajar: fuera (opacidad 0). Al subir, al parar y al cambiar de página: vuelve. Ventaja: 48 px, verde, opacidad 1, y sigue ahí tras desplazar; igual en Desventaja, en rojo. Menú abierto: 48 px y no se esconde al desplazar. Elegir una opción cierra el menú y fija el estado (`app._advantage`). Consola limpia.
 
 ## Novedades v54.4 — Trucos y Conjuros también se pliegan
 

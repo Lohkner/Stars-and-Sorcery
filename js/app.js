@@ -99,6 +99,7 @@ const app = {
     this._restoreBgImages();
     // Long-press repeat on resource +/- buttons
     this._initResLongPress();
+    this._initAdvFabAutoOcultar();
 
     // Mark unsaved on manual resource edits (type directly in cur_pv etc.)
     ['cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id => {
@@ -2111,6 +2112,50 @@ const app = {
       this._advFabOutside = (e) => { if (!fab.contains(e.target)) this._closeAdvFab(); };
       setTimeout(() => document.addEventListener('pointerdown', this._advFabOutside, true), 0);
     }
+  },
+
+  /** El flotante de Ventaja/Desventaja está fijo sobre el contenido: medido
+      a 375 px, en Normal llega a sentarse sobre 4 controles en Perfil (8 con
+      el menú abierto), campos de texto y desplegables incluidos. Pero en
+      Normal está el 95 % del tiempo, así que en ese estado se aparta:
+      encoge, se apaga y se va al desplazar hacia abajo. Activo —Ventaja o
+      Desventaja— nunca se esconde: olvidarse de que está puesto falsearía
+      todas las tiradas siguientes. */
+  _initAdvFabAutoOcultar() {
+    const fab = document.getElementById('adv_fab');
+    if (!fab) return;
+    let ultimo = 0, temporizador = 0;
+
+    const mostrar = () => {
+      fab.classList.remove('adv-fab--fuera');
+      clearTimeout(temporizador);
+    };
+    const esconder = () => {
+      // Solo en Normal, y nunca con el menú desplegado.
+      if (this._advantage || fab.classList.contains('open')) return;
+      fab.classList.add('adv-fab--fuera');
+    };
+
+    const alDesplazar = (e) => {
+      const y = (e.target && e.target.scrollTop) || 0;
+      const baja = y > ultimo + 4;
+      const sube = y < ultimo - 4;
+      ultimo = y;
+      if (baja) esconder(); else if (sube) mostrar();
+      // Al parar de desplazar siempre vuelve: nunca queda fuera de alcance.
+      clearTimeout(temporizador);
+      temporizador = setTimeout(mostrar, 900);
+    };
+
+    // Cada página tiene su propio contenedor con scroll, y `scroll` no
+    // burbujea: hay que escuchar en fase de captura.
+    document.addEventListener('scroll', alDesplazar, true);
+    // Cambiar de página o de estado lo devuelve a la vista.
+    ['goToPage', 'setAdvantage'].forEach(m => {
+      const orig = this[m];
+      if (typeof orig !== 'function') return;
+      this[m] = function () { const r = orig.apply(this, arguments); mostrar(); return r; };
+    });
   },
 
   _closeAdvFab() {

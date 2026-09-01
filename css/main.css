@@ -1128,6 +1128,41 @@ input[type=radio]:checked::after{transform:scale(1)}
 .adv-fab-main:active{transform:scale(.9)}
 .adv-fab[data-state="1"] .adv-fab-main{color:var(--sage);border-color:rgba(122,158,110,.6)}
 .adv-fab[data-state="-1"] .adv-fab-main{color:#d06070;border-color:rgba(168,42,58,.6)}
+/* En Normal —el estado del 95 % del tiempo— el flotante se hace discreto:
+   encoge y se apaga, para dejar de competir con el contenido que tiene
+   debajo. Al tocarlo o desplegarlo recupera su tamaño, así que sigue
+   siendo un objetivo cómodo. Activo, ni encoge ni se apaga: el color es
+   el aviso de que las tiradas no son normales. */
+.adv-fab[data-state="0"] .adv-fab-main{
+  width:36px;height:36px;font-size:.82rem;opacity:.5;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
+  transition:width .15s,height .15s,font-size .15s,opacity .15s,
+             transform .12s,border-color .15s,color .15s;
+}
+.adv-fab[data-state="0"].open .adv-fab-main,
+.adv-fab[data-state="0"] .adv-fab-main:active{
+  width:48px;height:48px;font-size:1.05rem;opacity:1;
+}
+/* El círculo encoge, el objetivo táctil no: un pseudoelemento invisible lo
+   devuelve a 48 px. Encoger el área de toque por estética sería cambiar un
+   estorbo por un botón que falla. */
+.adv-fab-main{position:relative}
+.adv-fab[data-state="0"] .adv-fab-main::after{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+}
+.adv-fab[data-state="0"].open .adv-fab-main::after{content:none}
+@media(hover:hover){.adv-fab[data-state="0"] .adv-fab-main:hover{opacity:1}}
+/* Fuera de la vista mientras se desplaza hacia abajo. Vuelve al subir, al
+   parar, al cambiar de página y al cambiar de estado; y nunca se va si hay
+   Ventaja o Desventaja puesta (js/app.js, _initAdvFabAutoOcultar). */
+.adv-fab--fuera{
+  opacity:0;transform:translateY(18px) scale(.85);pointer-events:none;
+  transition:opacity .18s,transform .18s;
+}
+.adv-fab{transition:opacity .18s,transform .18s}
+@media(prefers-reduced-motion:reduce){
+  .adv-fab,.adv-fab--fuera,.adv-fab[data-state="0"] .adv-fab-main{transition:none}
+}
 .adv-fab-opts{display:flex;flex-direction:column;gap:7px;
   opacity:0;transform:translateY(10px) scale(.85);pointer-events:none;
   transition:opacity .15s,transform .15s}
