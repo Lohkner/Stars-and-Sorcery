@@ -66,6 +66,8 @@
     arqSkills: [], bgSkills: [], talentos: [], nombre: '', cat: '', q: '',
     savCom: '', savPoco: '', guardAttr: 'DES',
     armas: [], opcArq: '', armaExtra: '', monedas: null,
+    armaQ: '', armaF: [],
+    descUlt: '', arqUlt: '', bgUlt: '',
     alineamiento: '', retrato: '',
   });
 
@@ -229,6 +231,21 @@
     return btn;
   }
 
+  /** Un toque abre la opción, otro la cierra. Cerrar NO borra lo que ya
+      habías elegido dentro: volver a abrir la misma opción lo devuelve
+      tal cual, y solo se reinicia al pasarte a otra distinta. Por eso
+      hace falta recordar cuál fue la última (`<campo>Ult`): tras cerrar,
+      `S[campo]` está vacío y no bastaría con compararlo. */
+  function alternar(campo, k, reiniciar) {
+    if (S[campo] === k) { S[campo] = ''; }
+    else {
+      if (S[campo + 'Ult'] !== k) reiniciar();
+      S[campo] = k;
+      S[campo + 'Ult'] = k;
+    }
+    pintar();
+  }
+
   /* ── Paso 2 · Descriptor ──────────────────────────────────────── */
   function pasoDescriptor(b) {
     b.appendChild(el('p', 'wiz-hint',
@@ -239,7 +256,9 @@
       else if (d.afinidadOpcional)
         sub = '◇ Puede abrir ' + d.afinidadOpcional.fuente + ' gastando una Expresión';
       b.appendChild(tarjeta(d.name, d.bonus || '', d.txt || '', sub, S.desc === k,
-        () => { S.desc = k; S.descPick = []; S.descExps = []; S.descTruco = ''; pintar(); }));
+        () => alternar('desc', k, () => {
+          S.descPick = []; S.descExps = []; S.descTruco = '';
+        })));
       // Las elecciones del Linaje cuelgan de SU tarjeta, igual que las
       // habilidades del Arquetipo y del Trasfondo: al fondo de once linajes
       // no se veía que lo elegido arriba tuviera nada pendiente debajo.
@@ -354,7 +373,7 @@
     Object.entries(app.DB.archetypes).forEach(([k, a]) => {
       b.appendChild(tarjeta(a.name, 'PV ' + (a.pv + con), a.txt || '',
         `Adr +${a.adr_bonus} · Ing +${a.ing_bonus} · ${a.skills_count} habilidades · ${a.sustrato_nombre} / ${a.permiso_nombre}`,
-        S.arq === k, () => { S.arq = k; S.arqSkills = []; pintar(); }));
+        S.arq === k, () => alternar('arq', k, () => { S.arqSkills = []; })));
       if (S.arq !== k) return;
       const sub = el('div', 'wiz-sub wiz-inline');
       sub.appendChild(el('span', 'wiz-lbl',
@@ -385,7 +404,7 @@
       const lista = (g.skills || [])
         .map(n => fuentes.some(f => f.lista.includes(n)) ? '✓ ' + n : n).join(' · ');
       b.appendChild(tarjeta(g.name, ud ? ud[0] : '', g.defecto || '', lista, S.bg === k,
-        () => { S.bg = k; S.bgSkills = []; pintar(); }));
+        () => alternar('bg', k, () => { S.bgSkills = []; })));
       if (S.bg !== k) return;
       const sub = el('div', 'wiz-sub wiz-inline');
       sub.appendChild(el('span', 'wiz-lbl',
@@ -623,27 +642,118 @@
   }
   const topeArmas = () => S.armas.length && esSimple(app.DB.weapons[S.armas[0]]) ? 2 : 1;
 
-  function pasoEquipo(b) {
-    const arq = app.DB.archetypes[S.arq] || {};
-    b.appendChild(el('p', 'wiz-hint',
-      'Con lo que sales por la puerta. El equipo pesado —Coraza, Placas, armas de fuego— se gana en juego, no en la creación.'));
+  /* Las propiedades de un arma viven dentro de `notes`, separadas por «·»
+     («Marcial · Versátil (2 manos: 1d10) · Cortante»). La lista es curada
+     a mano y no sacada de los datos porque ahí hay ruido que no filtra
+     nada —alcances como «150/600», «Munición Ud10», «Área 15 pies»—. */
+  const FILTROS_ARMA = ['Simple', 'Marcial', 'Ligera', 'Pesada', 'Versátil',
+                        'Dos Manos', 'Sutil', 'Arrojadiza', 'A distancia',
+                        'Cortante', 'Perforante', 'Contundente', 'Magitec'];
 
-    // 1 · Armas
-    const dos = S.armas.length === 1 && esSimple(app.DB.weapons[S.armas[0]]);
-    b.appendChild(el('span', 'wiz-lbl',
-      dos ? 'Arma — has elegido una simple, puedes llevar una segunda'
-          : `Arma de tu competencia (${S.armas.length} de ${topeArmas()})`));
-    armasPermitidas().forEach(([id, w]) => {
+  /** Propiedades de un arma, ya normalizadas y sin los paréntesis. */
+  const propsArma = w => String(w.notes || '').split('·').map(t => norm(t).trim());
+  const tieneProp = (w, tag) => propsArma(w).some(t => t.includes(norm(tag)));
+
+  /** Las que pasan búsqueda y filtros. Los filtros suman condiciones: dos
+      chips piden las dos cosas, no una u otra. */
+  function armasFiltradas() {
+    const q = norm(S.armaQ).split(/\s+/).filter(Boolean);
+    return armasPermitidas().filter(([, w]) => {
+      if (!S.armaF.every(tag => tieneProp(w, tag))) return false;
+      if (!q.length) return true;
+      const heno = norm(w.name + ' ' + (w.notes || '') + ' ' + (w.dmg || ''));
+      return q.every(t => heno.includes(t));
+    });
+  }
+
+  function pintarListaArmas() {
+    const host = document.getElementById('wiz_arm_list');
+    if (!host) return;
+    host.textContent = '';
+    const lista = armasFiltradas();
+    lista.forEach(([id, w]) => {
       const on = S.armas.includes(id);
       const lleno = !on && S.armas.length >= topeArmas();
       const card = tarjeta(w.name, w.dmg, w.notes || '', '', on, () => {
         if (on) S.armas = S.armas.filter(x => x !== id);
         else if (!lleno) S.armas.push(id);
-        pintar();
+        // Solo la lista y el pie: repintar el paso entero le quitaría el
+        // foco al buscador y mandaría la vista arriba.
+        pintarListaArmas();
+        pintarChipsArmas();
+        pie();
       });
       if (lleno) card.disabled = true;
-      b.appendChild(card);
+      host.appendChild(card);
     });
+    if (!lista.length) host.appendChild(el('p', 'wiz-hint',
+      'Ninguna arma de tu competencia cumple esos filtros.'));
+    const cuenta = document.getElementById('wiz_arm_count');
+    if (cuenta) cuenta.textContent = `${lista.length} de ${armasPermitidas().length}`;
+    const lbl = document.getElementById('wiz_arm_lbl');
+    if (lbl) lbl.textContent = etiquetaArmas();
+  }
+
+  function etiquetaArmas() {
+    const dos = S.armas.length === 1 && esSimple(app.DB.weapons[S.armas[0]]);
+    return dos ? 'Arma — has elegido una simple, puedes llevar una segunda'
+               : `Arma de tu competencia (${S.armas.length} de ${topeArmas()})`;
+  }
+
+  function pintarChipsArmas() {
+    const host = document.getElementById('wiz_arm_chips');
+    if (!host) return;
+    host.textContent = '';
+    const pool = armasPermitidas();
+    // Un chip que no puede encontrar nada en tu competencia no se pinta:
+    // al Sagaz no le sirve un «Marcial» que siempre da cero.
+    FILTROS_ARMA.filter(tag => pool.some(([, w]) => tieneProp(w, tag)))
+      .forEach(tag => {
+        const on = S.armaF.includes(tag);
+        const c = el('button', 'wiz-fchip' + (on ? ' on' : ''), tag);
+        c.type = 'button';
+        c.setAttribute('aria-pressed', String(on));
+        c.onclick = () => {
+          S.armaF = on ? S.armaF.filter(x => x !== tag) : S.armaF.concat(tag);
+          pintarChipsArmas();
+          pintarListaArmas();
+        };
+        host.appendChild(c);
+      });
+    if (S.armaF.length) {
+      const q = el('button', 'wiz-fchip wiz-fchip--limpiar', 'Quitar filtros');
+      q.type = 'button';
+      q.onclick = () => { S.armaF = []; pintarChipsArmas(); pintarListaArmas(); };
+      host.appendChild(q);
+    }
+  }
+
+  function pasoEquipo(b) {
+    const arq = app.DB.archetypes[S.arq] || {};
+    b.appendChild(el('p', 'wiz-hint',
+      'Con lo que sales por la puerta. El equipo pesado —Coraza, Placas, armas de fuego— se gana en juego, no en la creación.'));
+
+    // 1 · Armas. Con buscador y filtros: la lista completa son 31 entradas
+    //     y bajarla entera para comparar dos dagas no es elegir, es hojear.
+    const lbl = el('span', 'wiz-lbl', etiquetaArmas());
+    lbl.id = 'wiz_arm_lbl';
+    b.appendChild(lbl);
+
+    const busca = el('input');
+    busca.type = 'search';
+    busca.placeholder = 'Buscar arma por nombre o propiedad…';
+    busca.value = S.armaQ; busca.className = 'wiz-buscar';
+    busca.addEventListener('input', () => { S.armaQ = busca.value; pintarListaArmas(); });
+    b.appendChild(busca);
+
+    const chips = el('div', 'wiz-chips'); chips.id = 'wiz_arm_chips';
+    b.appendChild(chips);
+    const cuenta = el('span', 'wiz-cuenta'); cuenta.id = 'wiz_arm_count';
+    b.appendChild(cuenta);
+    const listaArm = el('div'); listaArm.id = 'wiz_arm_list';
+    b.appendChild(listaArm);
+    pintarChipsArmas();
+    pintarListaArmas();
 
     // 2 · Armadura. Se nombra SIEMPRE, aunque el Arquetipo no dé a elegir:
     //     antes el Sagaz no veía la palabra «armadura» por ninguna parte y
@@ -811,10 +921,16 @@
   /* ── Volcado final a la ficha real ────────────────────────────── */
   /* No se inventa ningún cálculo: se rellenan los mismos campos que
      rellenaría una persona y se deja que calc() derive lo demás. */
-  function crear() {
+  /** `completo` = se ha terminado el asistente: la ficha se cierra en modo
+      resumen. Si se sale «a mano» a medias, se vuelca lo mismo pero las
+      secciones quedan ABIERTAS, que es justo lo que se ha pedido al salir:
+      seguir rellenando a mano. */
+  function volcar(completo) {
     app.newCharManual();                       // ficha limpia y en edición
 
-    ATTRS.forEach(k => {
+    // Sin nada repartido no se toca: dejar ochos por todas partes sería
+    // peor que el estado inicial de una ficha nueva.
+    if (Object.keys(S.asign).length) ATTRS.forEach(k => {
       const e = $('base_' + k);
       if (e) { e.value = base(k) || 8; e.dispatchEvent(new Event('input', { bubbles: true })); }
     });
@@ -874,8 +990,11 @@
       app.inventory.push(item);
       return item;
     };
-    const armasItems = S.armas.map(k => meter('weapons', k)).filter(Boolean);
-    const eq = EQUIPO_ARQ[S.arq];
+    // Solo si se llegó al paso de Equipo: a quien se sale en el Arquetipo
+    // no se le mete en la mochila un macuto que no ha visto.
+    const hayEquipo = S.paso >= 6;
+    const armasItems = hayEquipo ? S.armas.map(k => meter('weapons', k)).filter(Boolean) : [];
+    const eq = hayEquipo ? EQUIPO_ARQ[S.arq] : null;
     let armorItem = null, shieldItem = null;
     if (eq) {
       if (eq.fijo.armors)  armorItem  = meter('armors',  eq.fijo.armors);
@@ -890,9 +1009,11 @@
         if (o.armaLigera && S.armaExtra) armasItems.push(meter('weapons', S.armaExtra));
       }
     }
-    PAQUETE.forEach(k => meter('misc', k));
-    app.inventory.push({ uid: app._nextUid(), name: 'Ropa de viaje', slots: 1, type: 'misc' });
-    app.gold = S.monedas || 0;
+    if (hayEquipo) {
+      PAQUETE.forEach(k => meter('misc', k));
+      app.inventory.push({ uid: app._nextUid(), name: 'Ropa de viaje', slots: 1, type: 'misc' });
+      app.gold = S.monedas || 0;
+    }
 
     app.renderInventory();
     app.syncCombatOptions();
@@ -911,14 +1032,30 @@
     app.calc();
     app.showTalentSummary(); app.updateTalentCount();
     app.buildDetailPage && app.buildDetailPage();
-    // «personal» no está en confirmSection: tiene su propio confirmPersonal,
-    // y sin él la ficha quedaba cerrada pero con el nombre sin pintar.
-    app.confirmPersonal();
-    ['identity','stats','saves','skills','guard','combat','equipment']
-      .forEach(s => app.confirmSection(s));
+    if (completo) {
+      // «personal» no está en confirmSection: tiene su propio confirmPersonal,
+      // y sin él la ficha quedaba cerrada pero con el nombre sin pintar.
+      app.confirmPersonal();
+      ['identity','stats','saves','skills','guard','combat','equipment']
+        .forEach(x => app.confirmSection(x));
+    }
     cerrar();
     app.goToPage(0);
-    app.toast(`${S.nombre.trim()} listo — revisa la ficha y guarda`, 'ok');
+    if (completo) {
+      app.toast(`${S.nombre.trim()} listo — revisa la ficha y guarda`, 'ok');
+    } else {
+      const hechos = PASOS.filter((_, i) => i < S.paso).length;
+      app.toast(hechos
+        ? `A mano — conservados los ${hechos} primeros pasos; sigue en la ficha`
+        : 'A mano — ficha en blanco', 'ok');
+    }
+  }
+
+  const crear = () => volcar(true);
+
+  /** Salida de emergencia a media creación: lo diligenciado se queda. */
+  function pasarAMano() {
+    volcar(false);
   }
 
   /* ── Abrir / cerrar ───────────────────────────────────────────── */
@@ -947,7 +1084,7 @@
   };
   // Salida de emergencia: quien prefiera la ficha entera abierta de golpe
   // —o quiera cambiar algo que el asistente no pregunta— no queda atrapado.
-  $('wiz_manual').onclick = () => { cerrar(); app.newCharManual(); };
+  $('wiz_manual').onclick = () => pasarAMano();
 
   /* ── Interruptor en Ajustes & Datos ───────────────────────────── */
   /* Preferencia de quien juega, no del personaje: vive en localStorage y no

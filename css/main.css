@@ -3605,3 +3605,23 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 @media(prefers-reduced-motion:reduce){
   .rac-step,.rac-lata,.rac-lata__cuerpo,.rac-lata__tapa{transition:none}
 }
+
+/* Filtros de arma del asistente. Clase propia y no .wiz-chip: esa es la
+   del pool de atributos —números anchos y estado .sel— y aquí son
+   etiquetas de texto que se encienden y apagan. */
+.wiz-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 4px}
+.wiz-fchip{
+  padding:7px 11px;min-height:34px;cursor:pointer;
+  border-radius:var(--r);background:var(--panel);
+  border:1px solid var(--edge-soft);color:var(--muted);
+  font-family:var(--fm);font-size:var(--fs-2xs);
+  letter-spacing:.04em;touch-action:manipulation;
+  transition:border-color .12s,color .12s,background .12s;
+}
+.wiz-fchip.on{
+  border-color:var(--edge-gold);color:var(--goldb);
+  background:rgba(200,169,110,.1);
+}
+.wiz-fchip--limpiar{color:var(--dim);border-style:dashed}
+@media(hover:hover){.wiz-fchip:hover{border-color:var(--edge-gold)}}
+@media(prefers-reduced-motion:reduce){.wiz-fchip{transition:none}}

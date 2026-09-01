@@ -1,4 +1,36 @@
-# S&S Companion — v55.0
+# S&S Companion — v55.1
+
+## Novedades v55.1 — Asistente: cerrar con el mismo toque · buscador y filtros de arma · «A mano» conserva lo hecho
+
+`CACHE_VERSION` sube a `ss-companion-v79`.
+
+### Un toque abre, otro cierra
+
+En Descriptor, Arquetipo y Trasfondo, volver a tocar la opción abierta la cierra. Cerrar **no borra lo elegido dentro**: reabrir la misma opción lo devuelve tal cual, y solo se reinicia al pasarte a otra distinta. Por eso hace falta recordar cuál fue la última abierta —tras cerrar, el campo está vacío y compararlo no bastaría—.
+
+### La lista de armas tiene buscador y filtros
+
+Eran 31 entradas seguidas. Ahora hay un buscador (nombre, propiedades y dado de daño) y una fila de chips: **Simple · Marcial · Ligera · Pesada · Versátil · Dos Manos · Sutil · Arrojadiza · A distancia · Cortante · Perforante · Contundente · Magitec**, con el recuento vivo «N de M» debajo.
+
+Los chips **suman** condiciones: `Arrojadiza` da 4 y `Arrojadiza + Ligera` da 2. Un chip que no encuentra nada dentro de tu competencia no se pinta —al Sagaz no le sirve un «Marcial» que siempre da cero— y aparece «Quitar filtros» en cuanto hay alguno puesto.
+
+Las propiedades salen de `notes`, que las lleva separadas por «·». La lista de chips es curada a mano y no sacada de los datos, porque ahí hay ruido que no filtra nada: alcances como `150/600`, `Munición Ud10`, `Área 15 pies`.
+
+Elegir un arma repinta **solo la lista y el pie**, no el paso entero: si no, el buscador perdería el foco a cada toque y la vista se iría arriba — el mismo criterio que ya seguía la lista de Talentos.
+
+### «A mano» conserva lo diligenciado
+
+Salir por «A mano» a media creación ya no tira el trabajo. Vuelca a la ficha lo que llevabas —atributos, Linaje, Arquetipo, Trasfondo, habilidades, Talentos, Salvaciones, nombre, Convicción, retrato— y deja las secciones **abiertas** en modo edición, que es justo lo que se ha pedido al salir: seguir rellenando a mano.
+
+Dos detalles: sin nada repartido no se tocan los atributos (dejar ochos por todas partes sería peor que una ficha nueva en blanco), y el macuto de partida solo se mete si se llegó al paso de Equipo — a quien se sale en el Arquetipo no se le añade a la mochila un equipo que no ha visto.
+
+### Verificado
+
+Abrir/cerrar: tocar el Linaje abierto lo cierra, el pie vuelve a «Elige un Linaje» y el bloque de elecciones desaparece; reabrir el mismo devuelve los bonos ya elegidos (`FUE`, `CON`); pasarse a otro los reinicia. Igual en Arquetipo, donde reabrir conserva las habilidades marcadas.
+
+Armas: 30 de 30 al entrar; `Arrojadiza` → 4 (Daga, Lanza corta, Hacha de mano, Jabalina); `+ Ligera` → 2; «Quitar filtros» vuelve a 30 y apaga los chips; buscar «arco» → 2, buscar «sutil» → 6; una combinación imposible da «0 de 30» con su aviso. Al elegir un arma se conservan búsqueda, filtros, posición y **el foco del buscador**, y la etiqueta pasa a «has elegido una simple, puedes llevar una segunda».
+
+«A mano»: nada más abrir deja la ficha en blanco; parando en Trasfondo conserva 15/14/13/12/10/8, `humano`/`audaz`/`soldado`, 4 habilidades marcadas, secciones en edición y **sin** equipo; parando en Equipo con un arma elegida trae el arma, el escudo fijo del Arquetipo, el macuto y el nombre, y deja pendiente la armadura que aún no habías elegido. Sin desbordamiento horizontal a 375 px. Consola limpia.
 
 ## Novedades v55.0 — El equipo fija el máximo de Raciones · las Raciones no van por Ud · la Cantimplora va por Vigilias
 
