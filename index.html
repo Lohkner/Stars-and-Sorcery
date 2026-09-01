@@ -655,6 +655,26 @@
             </div>
           </div>
 
+          <!-- Raciones — Manual Básico 1.0, Cap. 10 «Recuperación y descanso».
+               Cada Respiro y cada Descanso Largo gasta 1 Ración; sin Ración no
+               hay recuperación. El recuento no es un dato aparte del personaje:
+               sale de las Raciones del inventario (js/raciones.js). -->
+          <div class="panel" id="rac_panel">
+            <div class="ph">
+              <span class="pt">Raciones</span>
+              <div class="pill-badge"><span id="rac_count" style="color:var(--ice);font-weight:700">0</span></div>
+            </div>
+            <div class="rac-row">
+              <button type="button" class="rac-step" id="rac_minus" aria-label="Gastar una Ración">&minus;</button>
+              <div class="rac-num"><span id="rac_val">0</span><span class="rac-sub" id="rac_sub">raciones</span></div>
+              <button type="button" class="rac-step rac-step--mas" id="rac_plus" aria-label="Añadir una Ración">+</button>
+            </div>
+            <input type="number" id="rac_cur" value="0" min="0" style="display:none" aria-hidden="true" tabindex="-1">
+            <div class="rac-pips" id="rac_pips" role="group" aria-label="Raciones restantes"></div>
+            <span class="rac-extra" id="rac_extra" style="display:none"></span>
+            <p class="rac-note" id="rac_note"></p>
+          </div>
+
           <div class="panel">
             <div class="ph"><span class="pt">Equipo &amp; Tesoro</span></div>
             <div id="equipment_edit_view">
@@ -1069,6 +1089,7 @@
 <script defer src="js/progresion.js"></script>
 <script defer src="js/origen.js"></script>
 <script defer src="js/plegables.js"></script>
+<script defer src="js/raciones.js"></script>
 <script defer src="js/asistente.js"></script>
 <script defer src="js/boot.js"></script>
 </body>

@@ -3524,3 +3524,84 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* Trucos y Conjuros llevan un contador en la cabecera; no debe
    encogerse ni partirse cuando la tarjeta se pliega. */
 .panel.fold > summary > .pill-badge{flex:0 0 auto}
+
+/* ══════════════════════════════════════════
+   RACIONES (Equipo · Manual 1.0 Cap. 10)
+   El número es el dato, así que manda en tamaño; los pips están para
+   leer de un vistazo cuánto queda y para ajustar de un toque sin
+   contar. Los tres huecos del final son el «+3 rápido».
+══════════════════════════════════════════ */
+.rac-row{
+  display:grid;grid-template-columns:56px 1fr 56px;gap:10px;
+  align-items:center;margin-top:2px;
+}
+.rac-step{
+  min-height:48px;border-radius:var(--rl);cursor:pointer;
+  background:var(--raised);border:1px solid var(--edge-strong);
+  color:var(--goldb);font-family:var(--fm);font-size:var(--fs-2xl);
+  font-weight:700;line-height:1;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+  transition:border-color .12s,transform .08s,background .12s;
+}
+.rac-step:active{transform:scale(.9);border-color:var(--edge-gold-strong)}
+@media(hover:hover){.rac-step:hover{border-color:var(--edge-gold)}}
+.rac-step:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.rac-step--mas{color:var(--sage);border-color:rgba(122,158,110,.45)}
+.rac-num{
+  text-align:center;font-family:var(--fm);line-height:1;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.rac-num > span:first-child{
+  font-size:2.1rem;font-weight:700;color:var(--bright);
+  font-variant-numeric:tabular-nums;
+}
+.rac-sub{
+  font-family:var(--fd);font-size:var(--fs-2xs);color:var(--muted);
+  letter-spacing:.14em;text-transform:uppercase;
+}
+/* Cada ración es una latica. El objetivo táctil es de 28×32 aunque la
+   lata pintada sea menor: contar raciones no debería exigir puntería. */
+.rac-pips{display:flex;flex-wrap:wrap;gap:2px;margin-top:10px;justify-content:center}
+.rac-pip{
+  width:28px;height:32px;padding:0;border:none;background:none;
+  cursor:pointer;touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.rac-lata{
+  width:16px;height:22px;display:block;overflow:visible;
+  transition:transform .08s;
+}
+.rac-lata__cuerpo,.rac-lata__tapa{
+  fill:none;stroke:var(--edge-strong);stroke-width:1;
+  transition:fill .12s,stroke .12s;
+}
+.rac-lata__banda{fill:none}
+/* Llena: lata de metal cerrada, con la etiqueta oscura cruzándola. */
+.rac-pip--llena .rac-lata__cuerpo{fill:var(--gold);stroke:var(--goldb)}
+.rac-pip--llena .rac-lata__tapa{fill:var(--goldb);stroke:var(--goldb)}
+.rac-pip--llena .rac-lata__banda{fill:rgba(28,22,14,.42)}
+/* Gastada: el hueco que dejó una lata que ya te comiste. Se pintan
+   todas las establecidas en Equipo, así que lo que se lee de un vistazo
+   no es solo cuánto queda, sino cuánto has consumido. */
+.rac-pip--hueco .rac-lata{opacity:.5}
+.rac-pip--hueco .rac-lata__cuerpo,
+.rac-pip--hueco .rac-lata__tapa{stroke:var(--rim);stroke-dasharray:2 2}
+.rac-pip:active .rac-lata{transform:scale(.82)}
+@media(hover:hover){
+  .rac-pip:hover .rac-lata__cuerpo,
+  .rac-pip:hover .rac-lata__tapa{stroke:var(--edge-gold)}
+}
+.rac-extra{
+  display:block;text-align:center;margin-top:4px;
+  font-family:var(--fm);font-size:var(--fs-2xs);color:var(--dim);
+}
+.rac-note{
+  margin:9px 0 0;font-size:var(--fs-md);color:var(--muted);
+  line-height:1.45;text-align:center;
+}
+.rac-note--vacio{color:#d06070}
+.rac-panel--vacio{border-color:rgba(168,42,58,.45)}
+@media(prefers-reduced-motion:reduce){
+  .rac-step,.rac-lata,.rac-lata__cuerpo,.rac-lata__tapa{transition:none}
+}

@@ -6246,7 +6246,7 @@ const app = {
     const armors = Object.entries(this.DB.armors||{}).filter(([k])=>k!=='laminar');
     if (armors.length) { const [k,v]=armors[Math.floor(Math.random()*armors.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'armors',dbKey:k,dbData:v}); }
     if (weapons.length) { const [k,v]=weapons[Math.floor(Math.random()*weapons.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'weapons',dbKey:k,dbData:v}); }
-    this.inventory.push({uid:this._nextUid(),name:'Raciones (×5) · Ud8',slots:1,type:'misc'});
+    this.inventory.push({uid:this._nextUid(),name:'Raciones',qty:5,racion:true,dbKey:'raciones',slots:1,type:'misc'});
     this.inventory.push({uid:this._nextUid(),name:'Antorchas (×5) · Ud6',slots:1,type:'misc'});
     this.inventory.push({uid:this._nextUid(),name:'Morral / Mochila (+5 slots)',slots:1,type:'misc'});
     // Monedas iniciales por Arquetipo (v5.2): Audaz 5d6, Versatil 4d6, Sagaz 3d6 — ×10 pp
