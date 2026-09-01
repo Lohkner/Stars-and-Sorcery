@@ -1,5 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
-   Tarjetas plegables de Perfil: Estado · Guardia · Ataques.
+   Tarjetas plegables de Perfil: Estado · Guardia · Ataques ·
+   Trucos · Conjuros.
    Módulo aparte; se carga entre app.js y boot.js.
 
    Van ABIERTAS por defecto —se usan cada turno, al contrario que las
@@ -8,8 +9,10 @@
    preferencia de quien juega en esa mesa, no un dato de la ficha, así
    que no debe viajar en el JSON ni marcar el personaje como no guardado.
 
-   Plegada, cada cabecera muestra un resumen de una línea con lo esencial
-   de la tarjeta, para que plegar no signifique perder el dato de vista.
+   Estado, Guardia y Ataques muestran plegadas un resumen de una línea con
+   lo esencial, para que plegar no signifique perder el dato de vista.
+   Trucos y Conjuros no: su cabecera enseña solo el título y el contador
+   que ya llevaba.
 ══════════════════════════════════════════════════════════════ */
 (function () {
   const CLAVE = 'ss_folds';

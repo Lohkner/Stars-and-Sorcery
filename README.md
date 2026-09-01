@@ -1,4 +1,47 @@
-# S&S Companion — v54.2
+# S&S Companion — v54.4
+
+## Novedades v54.4 — Trucos y Conjuros también se pliegan
+
+`CACHE_VERSION` sube a `ss-companion-v72`.
+
+Las tarjetas de **Trucos** y **Conjuros** de Aptitudes ya se pliegan como Estado, Guardia y Ataques: se toca la cabecera y la tarjeta se cierra. Van **abiertas** por defecto, y el estado se recuerda en `localStorage` junto con el de las otras tres — es una preferencia de quien juega, no un dato de la ficha, así que no viaja en el JSON del personaje ni marca el personaje como no guardado.
+
+Plegadas enseñan **solo el título** y el contador que ya llevaban. Estado, Guardia y Ataques mantienen su resumen de una línea; estas dos no lo tienen.
+
+### Verificado
+
+Ambas son `<details>` y responden al clic en la cabecera. El contador sigue vivo (3 Trucos, 4 Conjuros tras elegirlos en el Gestor) y no se encoge al plegar. Ningún título se recorta, ni el suyo ni el de las otras tres tarjetas. El botón «Gestionar» del cuerpo abre el Gestor sin plegar la tarjeta. El estado plegado sobrevive a abrir y volver a cerrar, y queda en `ss_folds`. Sin desbordamiento horizontal a 375 px. Consola limpia.
+
+## Novedades v54.3 — El Gestor de Axiomas deja de ser una lista de 327
+
+`CACHE_VERSION` sube a `ss-companion-v71`.
+
+El Gestor de Talentos tenía buscador, 23 chips de Senda y dos filtros. El de Axiomas tenía un buscador y **327 tarjetas**. Para un Sagaz Iniciado en Erudición, 291 de esas 327 eran ruido: de otra Fuente, o de un Nivel que no puede lanzar.
+
+Ahora la cabecera del gestor lleva dos chips y una fila de Niveles:
+
+- **Mi Fuente** — deja solo los Axiomas de la Fuente que el personaje tiene abierta (por Afinidad del Descriptor o por Talento). Viene **activado** al abrir, si hay Fuente.
+- **A mi alcance** — aplica el techo de Nivel que da la Iniciación: Maestría 9, Adepto 6, Iniciado 3.
+- **Nivel** — `Todos` y `1`–`9`, para mirar un escalón concreto.
+
+Bajo los filtros, un recuento vivo: **«N de M»**.
+
+Los dos chips se **apagan** — no filtran a cero — cuando el personaje no tiene Fuente o no tiene Iniciación. En la sección de **Trucos** la fila de filtros no aparece: los Trucos no tienen Fuente ni Nivel, y por la misma razón nunca los oculta un filtro de Fuente o de Nivel cuando aparecen mezclados.
+
+### Medido
+
+Elfo (Afinidad Erudición) / Sagaz, Iniciado, techo de Nivel 3:
+
+| Estado | Disponibles |
+|---|---|
+| Sin filtros | 327 |
+| Al abrir (Mi Fuente) | **89** |
+| + A mi alcance | **36** |
+| + Nivel 2 | 11 |
+
+### Verificado
+
+Personaje sin Fuente: ambos chips salen `disabled` y la lista muestra las 327 sin mentir. Trucos: fila de filtros oculta, 0 chips de Nivel, 24 disponibles. Los chips de Nivel filtran de verdad (los 11 visibles en `2` son todos de Nivel 2). El buscador se combina con los filtros. Al seleccionar un Axioma la tarjeta cambia de columna y el recuento se recalcula (36 → 35 de 326) en vez de quedarse desfasado. Sin desbordamiento horizontal a 375 px. Consola limpia.
 
 ## Novedades v54.2 — Renombrar un arma ya llega a Equipo de Combate
 

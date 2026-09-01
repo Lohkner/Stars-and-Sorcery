@@ -129,7 +129,19 @@
           <input class="apt-search" id="apt_search" type="search"
             placeholder="Buscar…" autocomplete="off" spellcheck="false"
             oninput="app._aptFilter(this.value)">
+          <div class="tm-filters" id="apt_filters">
+            <button type="button" class="tm-fchip" id="apt_filter_source"
+              onclick="app._toggleAptFilter('source', this)" aria-pressed="false">
+              <span class="tm-fchip-dot"></span>Mi Fuente
+            </button>
+            <button type="button" class="tm-fchip" id="apt_filter_reach"
+              onclick="app._toggleAptFilter('reach', this)" aria-pressed="false">
+              <span class="tm-fchip-dot"></span>A mi alcance
+            </button>
+          </div>
+          <div class="apt-lvls" id="apt_levels"></div>
         </div>
+        <span class="apt-count" id="apt_avail_count"></span>
         <div class="apt-col-body" id="apt_available_list"></div>
       </div>
       <!-- RIGHT: Selected -->
@@ -570,13 +582,13 @@
           </div>
 
           <!-- Trucos panel -->
-          <div class="panel">
-            <div class="ph">
+          <details class="panel fold" id="fold_trucos" data-fold="trucos" open>
+            <summary class="ph">
               <span class="pt">Trucos</span>
               <div class="pill-badge">
                 <span id="tricks_count" style="color:var(--ice);font-weight:700">0</span>
               </div>
-            </div>
+            </summary>
             <!-- Summary (default) -->
             <div id="tricks_summary_view">
               <div id="tricks_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin trucos</span><div class="es-hint">El Gestor te espera</div></div></div>
@@ -584,15 +596,15 @@
                 <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('tricks')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Trucos</button>
               </div>
             </div>
-          </div>
+          </details>
           <!-- Conjuros panel -->
-          <div class="panel">
-            <div class="ph">
+          <details class="panel fold" id="fold_conjuros" data-fold="conjuros" open>
+            <summary class="ph">
               <span class="pt">Conjuros</span>
               <div class="pill-badge">
                 <span id="spells_count" style="color:var(--ice);font-weight:700">0</span>
               </div>
-            </div>
+            </summary>
             <!-- Summary (default) -->
             <div id="spells_summary_view">
               <div id="spells_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin conjuros</span><div class="es-hint">El Gestor te espera</div></div></div>
@@ -600,7 +612,7 @@
                 <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('spells')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Conjuros</button>
               </div>
             </div>
-          </div>
+          </details>
         </div><!-- /page 2 -->
         <div class="page" id="page_3">
           <div class="panel">

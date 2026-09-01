@@ -3653,6 +3653,25 @@ const app = {
   openAptManager(sec) {
     this._tapShield();  // anti-traspaso de toques
     this._aptMode = sec;
+    // Cada apertura empieza en limpio: un filtro de Nivel heredado de la
+    // visita anterior parece una lista vacía sin motivo.
+    this._aptLevel = 0;
+    this._aptFilterQuery = '';
+    const bq = document.getElementById('apt_search'); if (bq) bq.value = '';
+    // «Mi Fuente» viene activado si hay Fuente: es lo que se quiere el 99%
+    // de las veces, y el chip queda a la vista para apagarlo.
+    const hayFuente = !!this._normSource(this._powerSource || '');
+    this._aptFilters = { source: hayFuente, reach: false };
+    ['apt_filter_source', 'apt_filter_reach'].forEach(id => {
+      const b = document.getElementById(id);
+      if (!b) return;
+      const on = this._aptFilters[id === 'apt_filter_source' ? 'source' : 'reach'];
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    // Los Trucos no tienen Fuente ni Nivel: sus filtros no pintan nada.
+    const filtros = document.getElementById('apt_filters');
+    if (filtros) filtros.style.display = sec === 'tricks' ? 'none' : '';
     this._modalOpener = document.activeElement;
     const panel   = document.getElementById('apt_panel');
     const title   = document.getElementById('apt_manager_title');
@@ -3680,15 +3699,97 @@ const app = {
     this._attachPanelSwipeBack(panel, () => this.closeAptManager());
   },
 
+  /* ── Filtros del Gestor de Aptitudes ──────────────────────────────
+     El catálogo tiene 327 Axiomas de cinco Fuentes y nueve Niveles. Sin
+     filtros, alguien iniciado en Erudición a Nivel 1 recorre las 327 para
+     encontrar las 36 que puede aprender: el 89% es ruido. Estos filtros
+     usan lo que la ficha YA sabe —la Fuente y el techo de Axioma— en vez
+     de pedírselo otra vez.                                              */
+
+  /** Techo de Nivel de Axioma: lo fija la inversión, no el Nivel de
+      personaje (Manual: Iniciación 3 · Adepto 6 · Maestría 9). Sin
+      Iniciación no hay techo que valga: devuelve 0. */
+  _techoAxioma() {
+    const nombres = [...document.querySelectorAll('input[name="chk_talents_hidden"]')]
+      .map(h => (h.value || '').toLowerCase());
+    if (nombres.some(n => n.startsWith('maestría de fuente') || n.startsWith('maestria de fuente'))) return 9;
+    if (nombres.some(n => n.startsWith('adepto de fuente'))) return 6;
+    if (this._channelOpen()) return 3;
+    return 0;
+  },
+
+  _toggleAptFilter(which, btn) {
+    this._aptFilters = this._aptFilters || { source: false, reach: false };
+    this._aptFilters[which] = !this._aptFilters[which];
+    if (btn) {
+      btn.classList.toggle('active', this._aptFilters[which]);
+      btn.setAttribute('aria-pressed', String(this._aptFilters[which]));
+    }
+    this._aptFilter();
+  },
+
+  /** Chips de Nivel: uno por Nivel presente en el catálogo de la sección. */
+  _buildAptLevels() {
+    const host = document.getElementById('apt_levels');
+    if (!host) return;
+    host.textContent = '';
+    if (this._aptMode === 'tricks') return;      // los Trucos no tienen Nivel
+    const niveles = [...new Set(this._aptKeysForSection('spells')
+      .map(k => this.DB.spells[k].level).filter(n => n > 0))].sort((a, b) => a - b);
+    this._aptLevel = this._aptLevel || 0;        // 0 = todos
+    const chip = (n, txt) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'apt-lvl' + (this._aptLevel === n ? ' active' : '');
+      b.textContent = txt;
+      b.setAttribute('aria-label', n ? 'Solo Axiomas de Nivel ' + n : 'Todos los Niveles');
+      b.addEventListener('click', () => { this._aptLevel = n; this._buildAptLevels(); this._aptFilter(); });
+      host.appendChild(b);
+    };
+    chip(0, 'Todos');
+    niveles.forEach(n => chip(n, String(n)));
+  },
+
   _aptFilter(query) {
-    this._aptFilterQuery = (query || '').toLowerCase().trim();
+    if (query !== undefined) this._aptFilterQuery = (query || '').toLowerCase().trim();
+    const q = this._aptFilterQuery || '';
+    const f = this._aptFilters = this._aptFilters || { source: false, reach: false };
     const avail = document.getElementById('apt_available_list');
     if (!avail) return;
+    const miFuente = this._normSource(this._powerSource || '');
+    const techo = this._techoAxioma();
+    let visibles = 0, total = 0;
     avail.querySelectorAll('.apt-card').forEach(card => {
+      const s = this.DB.spells[card.dataset.key] || {};
+      total++;
       const name = (card.querySelector('.apt-card__name')?.textContent || '').toLowerCase();
       const desc = (card.querySelector('.apt-card__desc')?.textContent  || '').toLowerCase();
-      card.style.display = (!this._aptFilterQuery || name.includes(this._aptFilterQuery) || desc.includes(this._aptFilterQuery)) ? '' : 'none';
+      let ok = !q || name.includes(q) || desc.includes(q);
+      // Los Trucos son transversales a todas las Fuentes: nunca se ocultan
+      // por Fuente ni por Nivel, o «Mi Fuente» dejaría al personaje sin los
+      // 24 Trucos que sí puede usar.
+      const esTruco = s.type === 'trick';
+      if (ok && f.source && miFuente && !esTruco) {
+        ok = this._normSource(s.source || '') === miFuente;
+      }
+      if (ok && f.reach && !esTruco) {
+        ok = techo > 0 && (s.level || 0) <= techo;
+      }
+      if (ok && this._aptLevel && !esTruco) ok = (s.level || 0) === this._aptLevel;
+      card.style.display = ok ? '' : 'none';
+      if (ok) visibles++;
     });
+    const cuenta = document.getElementById('apt_avail_count');
+    if (cuenta) {
+      cuenta.textContent = visibles === total
+        ? `${total} disponibles`
+        : `${visibles} de ${total}`;
+    }
+    // Avisos honestos cuando un filtro no puede hacer su trabajo.
+    const chipF = document.getElementById('apt_filter_source');
+    if (chipF) chipF.disabled = !miFuente;
+    const chipR = document.getElementById('apt_filter_reach');
+    if (chipR) chipR.disabled = techo === 0;
   },
 
   _aptClearAll() {
@@ -3719,6 +3820,9 @@ const app = {
       const s    = this.DB.spells[k];
       const card = document.createElement('div');
       card.className = 'apt-card' + (isSelected ? ' apt-card--sel' : '');
+      // La clave viaja en la tarjeta para que los filtros lean Fuente y
+      // Nivel del dato, no del texto pintado.
+      card.dataset.key = k;
 
       const topRow = document.createElement('div');
       topRow.className = 'apt-card__row';
@@ -3775,6 +3879,11 @@ const app = {
           selCount.classList.add('pulse');
         }
         if (selEmpty) selEmpty.style.display = count ? 'none' : 'block';
+        // La tarjeta cambia de columna sin repintar la lista, así que el
+        // recuento «N de M» hay que recalcularlo o se queda una unidad
+        // desfasado. Y una tarjeta que vuelve a Disponibles debe pasar por
+        // los filtros vigentes en vez de aparecer siempre visible.
+        this._aptFilter();
         this._renderAptSummary(sec);
       });
 
@@ -3800,6 +3909,10 @@ const app = {
     isSel.forEach(k => selList.appendChild(makeCard(k, true)));
     if (selEmpty) selEmpty.style.display = isSel.length ? 'none' : 'block';
     if (selCount) selCount.textContent = isSel.length;
+    // Repintar la lista descarta el display:none de las tarjetas, así que
+    // los filtros vigentes hay que volver a aplicarlos aquí.
+    this._buildAptLevels();
+    this._aptFilter();
   },
 
   closeAptManager() {
