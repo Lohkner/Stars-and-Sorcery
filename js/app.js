@@ -6081,18 +6081,15 @@ const app = {
       const el = document.getElementById('leth_'+i);
       if (el) el.classList.toggle('active', i === n);
     });
-    // Update summary badge
-    // El índice es el sumando FIJO; el MOD de CON se añade encima.
-    const TIERS = {
-      1: { label:'Letalidad 1 — +1 + MOD CON por nivel', tier:'1' },
-      2: { label:'Letalidad 2 — +2 + MOD CON por nivel', tier:'2' },
-      3: { label:'Letalidad 3 — +3 + MOD CON por nivel', tier:'3' },
-    };
-    const t = TIERS[n] || TIERS[LETHALITY_DEFAULT];
+    /* El distintivo del resumen dice solo el nivel: «Letalidad 2». La
+       fórmula —el sumando fijo más el MOD de CON— es la explicación de la
+       opción y ya está en las tarjetas del modo edición; repetirla aquí
+       llenaba dos líneas con algo que no se consulta en mesa. */
+    const tier = String([1,2,3].includes(n) ? n : LETHALITY_DEFAULT);
     const badge = document.getElementById('campana_leth_badge');
     const lbl   = document.getElementById('campana_leth_label');
-    if (badge) badge.dataset.tier = t.tier;
-    if (lbl)   lbl.textContent    = t.label;
+    if (badge) badge.dataset.tier = tier;
+    if (lbl)   lbl.textContent    = 'Letalidad ' + tier;
     this.calc();
   },
 

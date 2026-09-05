@@ -1,4 +1,31 @@
-# S&S Companion — v56.0
+# S&S Companion — v56.1
+
+## Novedades v56.1 — El resumen de Letalidad dice solo el nivel
+
+`CACHE_VERSION` sube a `ss-companion-v93`.
+
+El distintivo del resumen de Campaña decía **«Letalidad 2 — +2 + MOD CON por
+nivel»** y ocupaba 353 px en dos líneas. Ahora dice **«Letalidad 2»** y ocupa
+129. La fórmula sigue donde se consulta —en las tarjetas del modo edición—;
+repetirla en el resumen llenaba dos líneas con algo que en mesa no se mira.
+
+### Verificado
+
+Los tres niveles dan «Letalidad 1», «Letalidad 2» y «Letalidad 3», con el
+`data-tier` correcto para el color. El cálculo no se ha tocado: a nivel 5 los
+PV siguen dando 31 · 35 · 39 según el nivel de Letalidad —+1, +2 y +3 por
+nivel—, y a nivel 1 los tres coinciden porque aún no hay ningún nivel ganado
+al que aplicar la bonificación. Autodiagnóstico: 9 de 9. Consola limpia.
+
+### Y una corrección a lo que dije en v55.5
+
+Afirmé que «Nuevo personaje» ya no partía en dos líneas en la pantalla de
+Inicio. **Era falso**: comprobé que no se *recortara*, que no es lo mismo que
+no *partir*. El texto pide 151 px y la columna solo le daba 116, así que
+seguía en dos líneas. La rejilla pasa de `1fr 1fr` a `1.45fr 1fr` —la acción
+principal necesita más sitio que «Importar»— y el acolchado lateral baja de 14
+a 10 px. Medido ahora con `Range.getClientRects()`, que cuenta líneas de
+verdad: **una línea** cada botón.
 
 ## Novedades v56.0 — La Carne es un pool de vida · Respiro completo · autodiagnóstico · todo plegable
 
