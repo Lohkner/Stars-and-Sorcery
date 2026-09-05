@@ -19,7 +19,7 @@
    `sel_filo` NO es una elección del jugador: está oculto y es un campo
    DERIVADO, sincronizado con la Pericia de mayor grado. Existe solo como
    puente de compatibilidad — fichas guardadas antes de los grados, el
-   respaldo de buildDetailPage y randomize()— y nada de lo que se ve en
+   respaldo de buildDetailPage— y nada de lo que se ve en
    pantalla depende de él: el coste por NE sale del grado de cada Pericia,
    y la tarjeta Estado las lista todas. No hay «Pericia activa» única: el
    Manual da un grado por dominio, y solo el Versátil declara cada turno a
@@ -138,7 +138,7 @@
   app.calc = function () {
     const r = _calc.apply(this, arguments);
     const grades = readGrades();
-    // Migración: fichas guardadas antes de los grados —y randomize()— sólo
+    // Migración: fichas guardadas antes de los grados sólo
     // fijan sel_filo. Si no hay ningún grado, la Pericia elegida vale 1.
     // SOLO durante la ventana que abre clearCharData: sin esa guarda, la
     // condición «no hay ningún grado» se volvía a cumplir cada vez que el

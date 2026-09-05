@@ -1,4 +1,127 @@
-# S&S Companion — v55.8
+# S&S Companion — v55.10
+
+## Novedades v55.10 — Los rótulos de Guardia dentro de su caja, y un barrido de textos desbordados
+
+`CACHE_VERSION` sube a `ss-companion-v89`.
+
+### La tira de la fórmula de Guardia
+
+Medido a 375 px: las cajas son de 61 px con 51 de hueco interior, y los
+rótulos pedían más.
+
+| Rótulo | Pedía | Se salía |
+|---|---|---|
+| `Atributo` | 70 px | **19 px** |
+| `Escudo` | 58 px | **7 px** |
+| `Comp.` | 51 px | justo al límite |
+
+Dos causas: las palabras y el espaciado entre letras de `.1em`. Se abrevian a
+**`Esc.`** y **`Atrib.`** —como sugeriste— y el espaciado baja a `.03em`.
+Ahora el más largo se queda en 53 px dentro de 53. Ninguno se sale.
+
+Con la quinta parte —el segundo atributo— la tira no cabe en una fila: entre
+los cuatro `+` y los huecos quedan unos 50 px por caja y los rótulos piden 53.
+Se deja envolver, pero con **tope de ancho**: antes la quinta se estiraba sola
+a los 309 px de la tira y parecía un fallo; ahora sale centrada y de ancho
+normal, como una segunda línea deliberada.
+
+### Barrido de textos desbordados
+
+Los barridos anteriores buscaban texto **recortado** (`overflow:hidden` con
+contenido de más). Eso no ve el caso de Guardia, donde el texto se sale de su
+caja con `overflow:visible`. El detector nuevo compara el ancho real del texto
+con el de su caja, y descuenta un falso positivo importante: los botones ± de
+Estado dan `scrollWidth` de 35 sobre 25 por el pseudoelemento de 44 px que les
+da área táctil —su texto mide 9—.
+
+Un hallazgo real además de Guardia: la insignia **`DMG`** de los botones de
+ataque medía 30×30 con borde y el texto pedía 32, así que cruzaba el marco.
+Pasa a ancho elástico con suelo de 30.
+
+### Verificado
+
+Con el detector corregido, **cero textos desbordados** en: las cinco páginas en
+modo edición y en modo confirmado, el Gestor de Axiomas, el de Talentos,
+Ajustes & Datos, la pantalla de Inicio, tres pasos del asistente —incluido un
+Linaje abierto con su sub-bloque—, el formulario de objeto personalizado y el
+editor de reglas. Probado además con un nombre de personaje deliberadamente
+largo. Sin desbordamiento horizontal del cuerpo. Consola limpia.
+
+## Novedades v55.9 — Limpieza: fuera el segundo generador aleatorio y 4 300 bytes de CSS muerto
+
+`CACHE_VERSION` sube a `ss-companion-v88`.
+
+Auditoría con evidencia —nada se quitó «porque parecía»—: un análisis estático
+localizó candidatos y cada uno se confirmó contra el DOM vivo antes de tocarlo.
+
+### La inconsistencia de fondo: había dos generadores aleatorios
+
+El menú lateral de la ficha llamaba a `randomize()` y el asistente al suyo.
+**Solo el segundo respeta las reglas.** El de `randomize()` sorteaba los tres
+Talentos de golpe sin mirar `req`, elegía arma y armadura sin comprobar la
+competencia del Arquetipo ni el requisito de FUE, y dejaba las elecciones de
+Linaje en blanco —tanto, que `js/origen.js` le había puesto un parche encima
+para rellenarlas a posteriori—.
+
+El botón del menú apunta ahora al generador del asistente, y con él se van:
+
+| Fuera | Líneas |
+|---|---|
+| `randomize()` en `js/app.js` | 140 |
+| el parche de `randomize()` en `js/origen.js` | 22 |
+
+Verificado antes de borrar nada: 8 tiradas seguidas desde el menú, con el
+asistente **desactivado**, sin un solo Talento con requisitos sin cumplir, sin
+armas fuera de competencia ni por debajo del requisito de FUE, sin elecciones
+de Linaje en blanco y con los recursos al máximo.
+
+### Código muerto
+
+- **`_sourceAttrMod()`** en `app.js`: su propio comentario decía «lo usa la
+  Conducción Arcana del Sagaz», y ese Rasgo desapareció al reescribir el
+  Arquetipo para el Manual v5.0. Cero llamadas.
+- **31 clases CSS** de la tarjeta de Estado anterior al rediseño `est4` —la
+  familia `res-box`, `res-ctrl`, `res-lbl`, `res-max`, los `res-btn-*` de
+  color, `res-fill-*`— más `sc-clickable`, `sc-lbl`, `g3c`, `mb4`, `mb5` y
+  `mft`. **43 reglas fuera, 4 317 bytes menos.**
+
+  Comprobado en el DOM real antes de borrar: se recorrieron las cinco páginas,
+  los tres gestores, Ajustes, las vistas de edición, la pantalla de Inicio, el
+  formulario de objeto personalizado, el editor de reglas y el asistente —381
+  clases distintas en uso— y ninguna de las 31 aparecía.
+
+### Una colisión de cascada mía
+
+`.est4 .e4-num` estaba declarado dos veces: la primera con
+`align-items:baseline` y la segunda —el parche que añadí en v55.2 al subir los
+campos a 44 px— con `center`. La primera nunca se aplicaba. Fusionadas en una
+sola regla, con el motivo escrito al lado.
+
+### Lo que NO se tocó, y por qué
+
+Hay más selectores con propiedades declaradas dos veces (`.char-lvl-badge`,
+`.home-body`, `.char-port`…): son secciones de rediseño que pisan a propósito
+a las anteriores. Reordenarlas es churn con riesgo de regresión y ninguna
+ganancia funcional, así que quedan anotadas y en su sitio.
+
+Tres «funciones invocadas sin definir» que marcó el análisis —`checkForUpdate`,
+`forceUpdate`, `personajeAleatorio`— y una «definida sin uso» —`saveCustomItem`—
+son ceguera del detector: las dos primeras se declaran con `async`, la tercera
+se asigna por identificador y la cuarta se invoca desde un `data-action`
+generado en JS. Verificadas a mano una por una.
+
+### Verificado tras la limpieza
+
+Arranque limpio; las cinco páginas con las **mismas alturas exactas** que antes
+(1712 · 841 · 1303 · 962 · 1711 con las secciones confirmadas) y **cero
+recortes**; los tres gestores abren con su contenido (327 Axiomas, 21
+Talentos); Ajustes abre; el dado del menú y el del asistente producen
+personajes legales; guardar y cargar funciona y deja la etiqueta limpia. La
+tarjeta de Estado conserva sus áreas táctiles (campos 44–45 px, ± 45×45) y la
+fila de PV alinea número, separador y máximo con **0 px** de desvío. Sin
+desbordamiento horizontal. Consola limpia.
+
+`css/main.css`: 3 583 líneas. `js/app.js`: 6 212.
 
 ## Novedades v55.8 — Los tres bonos de Guardia, alineados
 

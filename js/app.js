@@ -1216,7 +1216,7 @@ const app = {
   },
 
   /** uid monotónico para items de inventario. Date.now() a secas colisiona
-      cuando se añaden varios items en el mismo milisegundo (randomize,
+      cuando se añaden varios items en el mismo milisegundo (el generador
       toques rápidos) y un uid duplicado hace que _getInventoryItem y los
       <select> de combate resuelvan al item EQUIVOCADO. */
   _uidSeq: 0,
@@ -2925,23 +2925,6 @@ const app = {
     return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
   },
 
-  /** MOD del atributo gobernante de la Fuente de Poder elegida. Devuelve el mejor
-      MOD entre los atributos de esa Fuente, o null si no hay Fuente seleccionada.
-      Erudici\u00f3n\u2192INT \u00b7 Pacto/Herencia/Juramento\u2192CAR \u00b7 Divinidad\u2192mejor de SAB/CAR \u00b7
-      Naturaleza\u2192SAB \u00b7 Psi\u00f3nica\u2192mejor de INT/SAB (tabla de Fuentes v5.5.2).
-      Lo usa la Conducci\u00f3n Arcana del Sagaz. */
-  _sourceAttrMod(mods) {
-    const src = this._normSource(this._powerSource || '');
-    if (!src) return null;
-    const MAP = {
-      erudicion:['INT'], pacto:['CAR'], herencia:['CAR'],
-      divinidad:['SAB','CAR'], juramento:['CAR'], naturaleza:['SAB'],
-      psionica:['INT','SAB'],
-    };
-    const attrs = MAP[src];
-    if (!attrs) return null;
-    return Math.max(...attrs.map(a => mods[a] || 0));
-  },
 
   /** Las siete Fuentes, en la forma normalizada que usan las comparaciones. */
   FUENTES: ['Erudici\u00f3n', 'Psi\u00f3nica', 'Divinidad', 'Naturaleza', 'Pacto', 'Herencia', 'Juramento'],
@@ -6212,146 +6195,6 @@ const app = {
         this.toast(`"${this._esc(name)}" eliminado`, 'ok');
       }
     );
-  },
-
-  randomize() {
-    if (!this.DB.archetypes) { this.toast('Carga reglas primero','err'); return; }
-    // Anclar vista en página 0 y suprimir _markUnsaved durante la generación
-    this._charLoading = true;
-    this.clearCharData();
-    this.unlockApp();
-    this.goToPage(0);
-    this._pageScrolls = {}; // limpiar posiciones guardadas obsoletas
-
-    // 1. Stats — Método A (v5.2): 4d6, descarta el menor
-    STATS.forEach(s => {
-      const dice = [0,0,0,0].map(() => Math.floor(Math.random()*6)+1).sort((a,b)=>a-b);
-      const roll = dice[1] + dice[2] + dice[3]; // suma los 3 mayores
-      const el = document.getElementById('base_'+s); if(el) el.value = roll;
-    });
-
-    // 2. Nombre aleatorio
-    const NAMES = ['Aldric','Bryna','Castan','Delara','Elowen','Fendrel','Gwyn','Hadria','Iskar','Jalinda','Kestrel','Lyara','Morden','Nyla','Oswin','Petra','Quillon','Ressa','Solen','Tindra','Ulvar','Vessa','Wren','Xera','Ylan','Zora'];
-    document.getElementById('char_name').value = NAMES[Math.floor(Math.random()*NAMES.length)];
-
-    // 3. Nivel 1, XP 0
-    document.getElementById('char_lvl').value = 1;
-    document.getElementById('char_xp').value = 0;
-
-    // 4. Selecciones aleatorias (después de unlockApp que llena los selects)
-    const randSelect = (id, db) => {
-      const el = document.getElementById(id); if (!el) return;
-      const keys = Object.keys(db||{});
-      if (keys.length) el.value = keys[Math.floor(Math.random()*keys.length)];
-    };
-    randSelect('sel_desc', this.DB.descriptors);
-    randSelect('sel_arq', this.DB.archetypes);
-    randSelect('sel_bg', this.DB.backgrounds);
-
-    // 5. Alineamiento aleatorio
-    const ali = ALIGNMENTS[Math.floor(Math.random()*ALIGNMENTS.length)];
-    this.alignment = ali;
-    this._syncAlignmentUI();
-
-    // 6. updateOptions para construir filos y habilidades (ya tiene arq/desc/bg en los selects)
-    this.updateOptions(true);
-
-    // 7. Pericia aleatoria (ahora los options ya existen)
-    const filoSel = document.getElementById('sel_filo');
-    if (filoSel.options.length > 1) filoSel.value = filoSel.options[Math.floor(Math.random()*(filoSel.options.length-1))+1].value;
-    this.calc(); // sync res_filo_val immediately
-
-    // 7b. Atributo defensivo de la Guardia: no se sortea a ciegas — se toma el
-    // mejor de los tres elegibles (DES/SAB/CON) con las puntuaciones ya
-    // tiradas, que es lo que haría cualquier jugador al construir la ficha.
-    const guardSel = document.getElementById('sel_guard_attr');
-    if (guardSel) {
-      const best = ['DES','SAB','CON']
-        .map(k => ({ k, v: this._statFinal(k).final }))
-        .sort((a,b) => b.v - a.v)[0];
-      if (best) guardSel.value = best.k;
-    }
-
-    // 8. Salvaciones aleatorias
-    const saveCommon = ['DES','CON','SAB']; const saveUncommon = ['FUE','INT','CAR'];
-    const sc = saveCommon[Math.floor(Math.random()*saveCommon.length)];
-    const su = saveUncommon[Math.floor(Math.random()*saveUncommon.length)];
-    const rsc = document.querySelector(`input[name="save_common"][value="${sc}"]`); if(rsc)rsc.checked=true;
-    const rsu = document.querySelector(`input[name="save_uncommon"][value="${su}"]`); if(rsu)rsu.checked=true;
-
-    // 9. Habilidades aleatorias (del arquetipo y trasfondo)
-    const randCheck = (name, lim) => {
-      const boxes = Array.from(document.querySelectorAll(`input[name="${name}"]`));
-      boxes.sort(()=>Math.random()-.5).slice(0,lim).forEach(b=>b.checked=true);
-    };
-    const arqLimitRand = this.DB.archetypes?.[document.getElementById('sel_arq').value]?.skills_count || 2;
-    randCheck('chk_arq', arqLimitRand);
-    randCheck('chk_bg', 2);
-
-    // 10. Talentos aleatorios (3)
-    const allTalents = [];
-    Object.values(this.DB.talents||{}).forEach(arr=>arr.forEach(t=>allTalents.push(t)));
-    allTalents.sort(()=>Math.random()-.5).slice(0,3).forEach(t=>{
-      const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';
-      h.value=t.name;h.setAttribute('data-desc',t.desc||'');if(t.id)h.setAttribute('data-id',t.id);
-      document.body.appendChild(h);
-    });
-    this.updateTalentCount();
-
-    // 10b. La Fuente sale de las que el personaje TIENE abiertas —un Talento
-    // de Iniciación o la Afinidad de su Linaje—, no de una tirada aparte.
-    // Antes se sorteaba entre las siete y salían fichas incoherentes: «Fuente
-    // de Poder: Naturaleza» en alguien iniciado solo en Pacto.
-    const abiertas = [...this._fuentesIniciadas()];
-    if (abiertas.length) {
-      const norm = abiertas[Math.floor(Math.random() * abiertas.length)];
-      this._powerSource = this.FUENTES.find(f => this._normSource(f) === norm) || '';
-    } else {
-      this._powerSource = '';
-    }
-    this.showTalentSummary();
-
-    // 11. Inventario básico
-    const weapons = Object.entries(this.DB.weapons||{});
-    const armors = Object.entries(this.DB.armors||{}).filter(([k])=>k!=='laminar');
-    if (armors.length) { const [k,v]=armors[Math.floor(Math.random()*armors.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'armors',dbKey:k,dbData:v}); }
-    if (weapons.length) { const [k,v]=weapons[Math.floor(Math.random()*weapons.length)]; this.inventory.push({uid:this._nextUid(),name:v.name,slots:v.slots||1,type:'weapons',dbKey:k,dbData:v}); }
-    this.inventory.push({uid:this._nextUid(),name:'Raciones',qty:5,racion:true,dbKey:'raciones',slots:1,type:'misc'});
-    this.inventory.push({uid:this._nextUid(),name:'Antorchas (×5) · Ud6',slots:1,type:'misc'});
-    this.inventory.push({uid:this._nextUid(),name:'Morral / Mochila (+5 slots)',slots:1,type:'misc'});
-    // Monedas iniciales por Arquetipo (v5.2): Audaz 5d6, Versatil 4d6, Sagaz 3d6 — ×10 pp
-    const arqKeyRand = document.getElementById('sel_arq')?.value || 'sutil';
-    const coinDice = { audaz:5, sutil:4, sagaz:3 }[arqKeyRand] || 4;
-    let coinRoll = 0; for (let c=0;c<coinDice;c++) coinRoll += Math.floor(Math.random()*6)+1;
-    this.gold = coinRoll * 10;
-    this.syncCombatOptions();
-
-    // 12. Equipar
-    if (this.inventory[0]?.type==='armors') { const s=document.getElementById('sel_armor'); if(s)s.value=this.inventory[0].uid; }
-    if (this.inventory[1]?.type==='weapons') { const s=document.getElementById('sel_weapon'); if(s)s.value=this.inventory[1].uid; }
-    this.onWeaponChange('w1'); this.onWeaponChange('w2');
-
-    // 13. Calc
-    this.calc();
-    const pv=document.getElementById('max_pv'); const cpv=document.getElementById('cur_pv'); if(pv&&cpv)cpv.value=pv.textContent;
-    const adr=document.getElementById('max_adr'); const cadr=document.getElementById('cur_adr'); if(adr&&cadr)cadr.value=adr.textContent;
-    const ing=document.getElementById('max_ing'); const cing=document.getElementById('cur_ing'); if(ing&&cing)cing.value=ing.textContent;
-    /* La Carne arranca en 0, no al máximo: el campo cuenta Daño de Carne
-       —así lo dice su propia etiqueta— y un personaje recién tirado no
-       llega con ninguno. Los otros tres sí van llenos porque son reservas
-       que se gastan. Antes salía «14/14», que se leía como daño máximo. */
-    const ccarne=document.getElementById('cur_carne'); if(ccarne)ccarne.value=0;
-    // Los cur_* se escriben DESPUÉS de calc(): refrescar las barras de Estado
-    this._updateResBars();
-    this.renderInventory();
-
-    // 14. Cerrar TODAS las secciones en modo resumen
-    this.confirmPersonal();
-    ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.confirmSection(s));
-
-    this.buildDetailPage();
-    this._charLoading = false;
-    this.toast('Personaje aleatorio listo','ok');
   },
 
   /* ── DEBOUNCE HELPER ──

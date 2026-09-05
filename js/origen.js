@@ -274,26 +274,4 @@
     return r;
   };
 
-  /* randomize() es anterior a estos campos, así que dejaba las elecciones
-     en blanco: un Cambiante aleatorio se quedaba sin su +2 de atributo y
-     sin Experiencia. Se rellenan al azar, respetando las exclusiones
-     («distintos», opciones que ocupan varias ranuras) porque se hace a
-     través de los mismos selects y repintando entre uno y otro. */
-  const _randomize = app.randomize;
-  app.randomize = function () {
-    const r = _randomize.apply(this, arguments);
-    pintar();
-    let vueltas = 0;
-    while (vueltas++ < 8) {
-      const vacio = [...document.querySelectorAll('#desc_choices select')]
-        .find(s => !s.value && s.options.length > 1);
-      if (!vacio) break;
-      const ops = [...vacio.options].filter(o => o.value);
-      vacio.value = ops[Math.floor(Math.random() * ops.length)].value;
-      pintar();
-    }
-    this.calc();
-    this._renderTraits && this._renderTraits();
-    return r;
-  };
 })();
