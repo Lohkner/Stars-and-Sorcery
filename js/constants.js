@@ -68,8 +68,8 @@ const HITOS_NIVEL = {
 const DESCANSOS = [
   { id:'respiro',     nombre:'Respiro',                  dur:'10 min',
     coste:'1 Ración',
-    txt:'1d8 + MOD CON en PV. Las Reservas no se recuperan.',
-    pv:'1d8+con', reservas:0 },
+    txt:'1d8 + MOD CON en PV y un cuarto de cada Reserva, redondeando arriba.',
+    pv:'1d8+con', reservas:.25 },
   { id:'largo_inseg', nombre:'Descanso Largo — Inseguro', dur:'6 h',
     coste:'1 Ración',
     txt:'Mitad de PV máximos y mitad de Reservas. No elimina Fatiga.',

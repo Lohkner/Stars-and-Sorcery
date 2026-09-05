@@ -132,13 +132,19 @@
 
     // Reservas
     if (o.reservas > 0) {
+      /* `reservas` es la fracción del MÁXIMO que devuelve el descanso: 1
+         llena, .5 media, .25 un cuarto —el Respiro del Manual 1.0, que
+         redondea hacia ARRIBA—. Antes solo se entendían 1 y .5: cualquier
+         otra fracción se trataba como mitad. */
       [['cur_adr', 'max_adr'], ['cur_ing', 'max_ing']].forEach(([c, m]) => {
         const max = txt(m);
-        const val = o.reservas === 1 ? max
-                                     : Math.min(max, num(c) + Math.floor(max / 2));
+        const val = o.reservas >= 1 ? max
+                                    : Math.min(max, num(c) + Math.ceil(max * o.reservas));
         if ($(c)) $(c).value = val;
       });
-      parte.push(o.reservas === 1 ? 'Reservas al completo' : 'Reservas a la mitad');
+      parte.push(o.reservas >= 1 ? 'Reservas al completo'
+               : o.reservas === .5 ? 'Reservas a la mitad'
+               : `+${Math.ceil(txt('max_adr') * o.reservas)} Adr · +${Math.ceil(txt('max_ing') * o.reservas)} Ing`);
     } else {
       parte.push('Reservas sin cambios');
     }

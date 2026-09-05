@@ -3452,12 +3452,19 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
    `margin-left:auto`; en el navegador de escritorio quedaba dentro a
    320 y 375 px, pero en móvil se salía de la tarjeta. Anclado al inicio
    no depende del espacio sobrante, así que no puede desbordar. */
+/* UN solo símbolo por título. En una tarjeta plegable el triángulo hace de
+   marcador —el rombo de .pt sobraba: eran dos— y en vez de cambiar de glifo
+   ▸/▾ gira, que es lo que da la sensación de abrir y cerrar. */
 .panel.fold > summary::before{
-  content:'▾';flex:0 0 auto;
+  content:'▸';flex:0 0 auto;display:inline-block;
   color:var(--gold);font-size:var(--fs-xs);
+  transform:rotate(90deg);transform-origin:50% 50%;
+  transition:transform .18s ease, color .15s;
 }
-.panel.fold:not([open]) > summary::before{content:'▸'}
+.panel.fold:not([open]) > summary::before{transform:rotate(0deg)}
+.panel.fold > summary > .pt::before{content:none}
 @media(hover:hover){.panel.fold > summary:hover::before{color:var(--goldb)}}
+@media(prefers-reduced-motion:reduce){.panel.fold > summary::before{transition:none}}
 /* El título cede espacio antes que empujar nada fuera */
 .panel.fold > summary > .pt{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .panel.fold > summary{flex-wrap:nowrap}

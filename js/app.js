@@ -1709,7 +1709,6 @@ const app = {
       set('guard_attr2_lbl', attr2Key);
       set('guard_attr2_val', (attr2Mod >= 0 ? '+' : '') + attr2Mod);
     }
-    set('res_guardia', total);
     set('guard_total_live', total);
     const noteEl = $('guard_alt_note');
     if (noteEl) noteEl.textContent = altNote ? `Fórmula alternativa activa: ${altNote}` : '';
@@ -3648,10 +3647,13 @@ const app = {
   _aptMode: 'tricks',
 
   /** Returns true if the spell entry is classified as a trick (not a full spell). */
+  /** Un Truco se reconoce por su `type`, y solo por eso. Antes valía
+      también un coste que empezara por «adr»: hoy esa rama no clasifica
+      nada —los 24 Trucos ya traen `type:'trick'` y ningún Axioma tiene un
+      coste así— pero el día que uno lo tuviera se colaría en la sección de
+      Trucos sin avisar. */
   _isTrickEntry(s) {
-    // Match type flag OR cost that starts with "adr" as a standalone token
-    // (e.g. "Adr 1", "ADR", "adr") — avoids false positives like "Reduce ADR del enemigo".
-    return s.type === 'trick' || (s.cost && /^adr\b/i.test(s.cost.trim()));
+    return !!s && s.type === 'trick';
   },
 
   /** Returns all DB spell keys that belong to the given section ('tricks' | 'spells'). */

@@ -370,9 +370,9 @@
               <div class="e4-row">
                 <span class="e4-name">Carne</span>
                 <span class="e4-ctl">
-                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir daño de carne">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Daño de carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
-                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar daño de carne">+</button>
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir Carne">&minus;</button>
+                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar Carne">+</button>
                 </span>
               </div>
             </div>
@@ -509,8 +509,8 @@
 
         </div><!-- /page 0 -->
         <div class="page" id="page_1">
-          <div class="panel">
-            <div class="ph"><span class="pt">Los Seis Pilares</span></div>
+          <details class="panel fold" id="fold_pilares" data-fold="pilares" open>
+            <summary class="ph"><span class="pt">Los Seis Pilares</span></summary>
             <div id="stats_edit_view">
               <!-- Tarjeta consolidada por atributo: puntuación editable a la
                    izquierda, modificador protagonista a la derecha (tocar el
@@ -530,10 +530,10 @@
               <div id="stats_summary_boxes" class="g6"></div>
               <button class="bedit" onclick="app.editSection('stats')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
-          </div>
+          </details>
 
-          <div class="panel">
-            <div class="ph"><span class="pt">Tiradas de Salvación</span></div>
+          <details class="panel fold" id="fold_salvaciones" data-fold="salvaciones" open>
+            <summary class="ph"><span class="pt">Tiradas de Salvación</span></summary>
             <div id="saves_edit_view">
               <div class="g2">
                 <div>
@@ -556,10 +556,10 @@
               <div id="saves_summary_text" class="saves-grid" style="margin-top:0;border-top:none;padding-top:0"></div>
               <button class="bedit" onclick="app.editSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
-          </div>
+          </details>
 
-          <div class="panel">
-            <div class="ph"><span class="pt">Habilidades</span></div>
+          <details class="panel fold" id="fold_habilidades" data-fold="habilidades" open>
+            <summary class="ph"><span class="pt">Habilidades</span></summary>
             <div id="skills_edit_view">
               <div class="g2">
                 <div><h3 class="sub">Por Arquetipo (Elige <span id="limit_arq">2</span>)</h3><div id="skills_arq" class="skill-area"></div></div>
@@ -572,19 +572,19 @@
               <div id="final_skills_list" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px 0"></div>
               <button class="bedit" onclick="app.editSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
-          </div>
+          </details>
         </div><!-- /page 1 -->
         <div class="page" id="page_2">
-          <div class="panel">
-            <div class="ph">
+          <details class="panel fold" id="fold_talentos" data-fold="talentos" open>
+            <summary class="ph">
               <span class="pt">Talentos</span>
               <div class="pill-badge">
                 <span id="talent_count_main" style="color:var(--gold);font-weight:700">0</span><span style="color:var(--rim)">/3</span>
               </div>
-            </div>
+            </summary>
             <div style="text-align:center;margin-bottom:6px"><button class="btn btn-g" data-action="openTalentManager">Abrir Gestor de Talentos</button></div>
             <div id="talents_summary_view" style="display:none"><div id="talents_summary_list" style="display:flex;flex-direction:column;gap:4px"></div></div>
-          </div>
+          </details>
 
           <details class="panel fold" id="fold_rasgos" data-fold="rasgos" open>
             <summary class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">por linaje &amp; origen</span></summary>
@@ -625,8 +625,8 @@
           </details>
         </div><!-- /page 2 -->
         <div class="page" id="page_3">
-          <div class="panel">
-            <div class="ph"><span class="pt">Equipo de Combate</span></div>
+          <details class="panel fold" id="fold_combate" data-fold="combate" open>
+            <summary class="ph"><span class="pt">Equipo de Combate</span></summary>
             <div id="combat_edit_view">
               <div class="g2">
                 <div><span class="fl">Armadura</span><select id="sel_armor" aria-label="Armadura equipada" onchange="app.calc()"></select>
@@ -663,17 +663,17 @@
                    en cada calc(). Render completo desde estado: no puede divergir
                    de los valores calculados. -->
             </div>
-          </div>
+          </details>
 
           <!-- Raciones — Manual Básico 1.0, Cap. 10 «Recuperación y descanso».
                Cada Respiro y cada Descanso Largo gasta 1 Ración; sin Ración no
                hay recuperación. El recuento no es un dato aparte del personaje:
                sale de las Raciones del inventario (js/raciones.js). -->
-          <div class="panel" id="rac_panel">
-            <div class="ph">
+          <details class="panel fold" id="rac_panel" data-fold="raciones" open>
+            <summary class="ph">
               <span class="pt">Raciones</span>
               <div class="pill-badge"><span id="rac_count" style="color:var(--ice);font-weight:700">0</span></div>
-            </div>
+            </summary>
             <div class="rac-row">
               <button type="button" class="rac-step" id="rac_minus" aria-label="Gastar una Ración">&minus;</button>
               <div class="rac-num"><span id="rac_val">0</span><span class="rac-sub" id="rac_sub">raciones</span></div>
@@ -683,10 +683,10 @@
             <div class="rac-pips" id="rac_pips" role="group" aria-label="Raciones restantes"></div>
             <span class="rac-extra" id="rac_extra" style="display:none"></span>
             <p class="rac-note" id="rac_note"></p>
-          </div>
+          </details>
 
-          <div class="panel">
-            <div class="ph"><span class="pt">Equipo &amp; Tesoro</span></div>
+          <details class="panel fold" id="fold_tesoro" data-fold="tesoro" open>
+            <summary class="ph"><span class="pt">Equipo &amp; Tesoro</span></summary>
             <div id="equipment_edit_view">
               <div style="background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:6px 8px;margin-bottom:8px">
                 <div style="display:grid;grid-template-columns:auto auto 1fr auto;gap:4px;align-items:end">
@@ -713,14 +713,14 @@
               </div>
               <button class="bedit" onclick="app.editSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
-          </div>
+          </details>
         </div><!-- /page 3 -->
         <div class="page" id="page_4">
           <!-- Configuración de Campaña -->
-          <div class="panel">
-            <div class="ph">
+          <details class="panel fold" id="fold_campana" data-fold="campana" open>
+            <summary class="ph">
               <span class="pt">Configuración de Campaña</span>
-            </div>
+            </summary>
             <!-- Summary view -->
             <div id="campana_summary" style="padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
               <span class="leth-summary-badge" id="campana_leth_badge" data-tier="2">
@@ -754,10 +754,10 @@
               <p style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV que se ganan por cada nivel a partir del 2, sumados al MOD de CON. El Manual v1.8 fija la Letalidad 2 como estándar. No afectan al Nivel 1.</p>
               <button class="bcnf" data-action="confirmCampana"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
-          </div>
+          </details>
           <details class="panel fold" id="fold_linaje" data-fold="linaje" open><summary class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></summary><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></details>
           <details class="panel fold" id="fold_arquetipo" data-fold="arquetipo" open><summary class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></summary><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></details>
-          <div class="panel"><div class="ph"><span class="pt">Talentos Activos</span></div><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></div>
+          <details class="panel fold" id="fold_talentos_activos" data-fold="talentos_activos" open><summary class="ph"><span class="pt">Talentos Activos</span></summary><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></details>
         </div><!-- /page 4 -->
 
       </div><!-- /pages-track -->
@@ -1105,6 +1105,7 @@
 <script defer src="js/plegables.js"></script>
 <script defer src="js/raciones.js"></script>
 <script defer src="js/asistente.js"></script>
+<script defer src="js/autocheck.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
 </html>

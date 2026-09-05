@@ -1,4 +1,87 @@
-# S&S Companion — v55.11
+# S&S Companion — v56.0
+
+## Novedades v56.0 — La Carne es un pool de vida · Respiro completo · autodiagnóstico · todo plegable
+
+`CACHE_VERSION` sube a `ss-companion-v91`.
+
+### La Carne, corregida al revés de lo que hicimos en v55.4
+
+El Manual 1.0 es tajante: **«Flesh (Carne) — Segundo umbral vital = puntuación
+completa de CON. Al llegar a 0: Muerte»**, y «el Flesh solo baja por efectos
+que lo ataquen expresamente». Es un **segundo pool de vida**, no un contador de
+daño: nace lleno y baja.
+
+En v55.4 la puse a 0 al crear personaje, siguiendo la etiqueta del campo
+—«Daño de carne actual»— que era justamente lo que estaba mal. Ahora:
+
+- Nace **llena**, como PV, Adrenalina e Ingenio.
+- Las etiquetas dicen «Carne», no «Daño de carne».
+- El reposo prolongado que sumaba +1 hacia el máximo **ya era correcto**: es
+  curación (1 punto por semana completa de reposo, Cap. 10).
+
+### El Respiro recupera Reservas
+
+Manual 1.0: «1d8 + MOD CON en PV **y un cuarto de cada Reserva máxima
+(Adrenalina e Ingenio), redondeando hacia arriba**». La app tenía
+`reservas:0`. Además, el motor de descanso solo entendía «toda» y «la mitad»:
+cualquier otra fracción se trataba como mitad. Ahora `reservas` es la fracción
+real y el aviso dice cuánto ha devuelto.
+
+### Autodiagnóstico: `?check=1`
+
+Abre la app con `?check=1` y en cinco segundos te dice si la versión está sana.
+No toca ningún personaje guardado: monta uno de prueba en memoria y termina en
+Inicio. Nueve comprobaciones, y ninguna es decorativa —cada una corresponde a
+algo que se rompió de verdad estas semanas—:
+
+- los elementos que la ficha necesita para calcular existen (36 ids);
+- Guardia contra su fórmula, con los dos atributos y los bonos;
+- Carne = puntuación de CON; PV con la base del Arquetipo;
+- ningún texto se sale de su caja, en las cinco páginas;
+- ningún texto por debajo de 12 px;
+- sin desbordamiento horizontal;
+- las 17 tarjetas plegables abren y cierran;
+- sin errores de consola durante la pasada.
+
+**Encontró un fallo en su primera ejecución**: `res_guardia` no existe en el
+marcado. `_calcGuardia` le escribía —con guarda, así que no rompía nada— y
+`plegables.js` lo usaba como respaldo que nunca llegaba a leerse. Es un id de
+una maqueta anterior; fuera de los tres sitios.
+
+### Todo lo plegable
+
+Se pliegan ahora **17 tarjetas**: las tres de Perfil que ya lo eran, más las de
+Stats (Pilares, Salvaciones, Habilidades), Aptitudes (Talentos, Rasgos, Trucos,
+Conjuros), Equipo (Combate, Raciones, Tesoro) y Detalle (Campaña, Linaje,
+Arquetipo, Talentos Activos). Sin resúmenes nuevos: las que ya tenían uno lo
+conservan y el resto enseña solo su título.
+
+Quedan sin plegar el retrato y «Identidad & Origen», que son la portada.
+
+### Un solo símbolo por título, y gira
+
+Las tarjetas plegables llevaban **dos** marcas: el rombo `◆` de todo título de
+panel y el triángulo del plegado. Ahora en las plegables el triángulo sustituye
+al rombo, y en vez de cambiar de glifo `▸`/`▾` **gira 90°** con transición —que
+es lo que da la sensación de abrir y cerrar—. Los paneles no plegables
+conservan su rombo, así que sigue habiendo exactamente un símbolo por título.
+
+### Limpieza
+
+Los dos respaldos (2,4 MB) salen del árbol de la app a
+`../SS-Companion-respaldos/`, y `_isTrickEntry` pierde la rama que clasificaba
+por un coste que empezara con «adr»: hoy no clasificaba nada, pero el día que
+un Axioma tuviera ese coste se habría colado entre los Trucos sin avisar.
+
+### Verificado
+
+Autodiagnóstico: **9 de 9** en 4,8 s. Carne = CON (15) y nace llena; el reposo
+semanal la sube de 9 a 10. Respiro con Adrenalina 25 e Ingenio 15 devuelve
+exactamente 7 y 4 —los techos de `ceil(max/4)`— y lo dice en el aviso. Las 14
+tarjetas nuevas existen, pliegan y **ninguna añade resumen**; con todas
+plegadas, las cuatro páginas caben en 686 px. El triángulo gira de 0° a 90° y
+el rombo desaparece solo en las plegables. Sin `?check=1` no se pinta nada del
+informe. Consola limpia y sin desbordamiento horizontal.
 
 ## Novedades v55.11 — Tres tarjetas más que se pliegan
 

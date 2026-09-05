@@ -1059,8 +1059,11 @@
     /* Un personaje recién creado empieza entero. calc() deja los máximos,
        pero los actuales se quedaban en el 0 con el que newCharManual() limpia
        la ficha, así que salía del asistente inconsciente. Se rellenan DESPUÉS
-       de calc(), que es cuando los máximos ya están escritos. */
-    [['cur_pv','max_pv'], ['cur_adr','max_adr'], ['cur_ing','max_ing']]
+       de calc(), que es cuando los máximos ya están escritos.
+       La Carne va aquí igual que los demás: es un segundo pool de vida
+       —«Flesh = puntuación completa de CON; al llegar a 0, muerte», Manual
+       1.0— y solo baja ante efectos que la ataquen. */
+    [['cur_pv','max_pv'], ['cur_adr','max_adr'], ['cur_ing','max_ing'], ['cur_carne','res_carne']]
       .forEach(([cur, max]) => {
         const c = $(cur), m = $(max);
         if (c && m) c.value = parseInt(m.textContent, 10) || 0;
