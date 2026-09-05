@@ -1,4 +1,32 @@
-# S&S Companion — v55.10
+# S&S Companion — v55.11
+
+## Novedades v55.11 — Tres tarjetas más que se pliegan
+
+`CACHE_VERSION` sube a `ss-companion-v90`.
+
+Se pliegan ahora, igual que las demás:
+
+- **Aptitudes** → Rasgos
+- **Detalle** → Linaje · Arquetipo
+
+**Sin texto de resumen**, como se pidió: plegadas enseñan solo su título. No
+hizo falta código para conseguirlo —basta con no darles entrada en el mapa
+`RESUMEN` de `js/plegables.js`, porque `pintarPeek()` se retira sola cuando la
+clave no está—.
+
+Van abiertas por defecto y su estado se recuerda en `localStorage` junto al de
+las otras, como preferencia de quien juega: no viaja en el JSON del personaje
+ni lo marca como no guardado.
+
+### Verificado
+
+Las tres son `<details>` con su `<summary>`, y el clic en la cabecera abre y
+cierra. Plegadas no muestran resumen y sus títulos no se recortan. Los títulos
+dinámicos de Detalle siguen actualizándose dentro del `<summary>`: cambiar de
+Linaje da «Linaje: Dracónido» y de Arquetipo, «Arquetipo: Audaz»; los cuerpos
+se siguen pintando enteros (8 bloques cada uno). Sin textos desbordados en
+Aptitudes ni en Detalle, sin desbordamiento horizontal, y el estado plegado
+queda guardado en `ss_folds`. Consola limpia.
 
 ## Novedades v55.10 — Los rótulos de Guardia dentro de su caja, y un barrido de textos desbordados
 

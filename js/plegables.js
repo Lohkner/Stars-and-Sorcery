@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
-   Tarjetas plegables de Perfil: Estado · Guardia · Ataques ·
-   Trucos · Conjuros.
+   Tarjetas plegables. En Perfil: Estado · Guardia · Ataques. En
+   Aptitudes: Trucos · Conjuros · Rasgos. En Detalle: Linaje · Arquetipo.
    Módulo aparte; se carga entre app.js y boot.js.
 
    Van ABIERTAS por defecto —se usan cada turno, al contrario que las
@@ -11,8 +11,9 @@
 
    Estado, Guardia y Ataques muestran plegadas un resumen de una línea con
    lo esencial, para que plegar no signifique perder el dato de vista.
-   Trucos y Conjuros no: su cabecera enseña solo el título y el contador
-   que ya llevaba.
+   Las demás no llevan resumen: su cabecera enseña solo el título —y el
+   contador, donde ya lo había—. Basta con NO darles entrada en RESUMEN:
+   pintarPeek() se retira sola si la clave no está.
 ══════════════════════════════════════════════════════════════ */
 (function () {
   const CLAVE = 'ss_folds';

@@ -586,10 +586,10 @@
             <div id="talents_summary_view" style="display:none"><div id="talents_summary_list" style="display:flex;flex-direction:column;gap:4px"></div></div>
           </div>
 
-          <div class="panel">
-            <div class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">por linaje &amp; origen</span></div>
+          <details class="panel fold" id="fold_rasgos" data-fold="rasgos" open>
+            <summary class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">por linaje &amp; origen</span></summary>
             <div id="traits_list" style="display:flex;flex-wrap:wrap;gap:3px;padding:2px 0"></div>
-          </div>
+          </details>
 
           <!-- Trucos panel -->
           <details class="panel fold" id="fold_trucos" data-fold="trucos" open>
@@ -755,8 +755,8 @@
               <button class="bcnf" data-action="confirmCampana"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
           </div>
-          <div class="panel"><div class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></div><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></div>
-          <div class="panel"><div class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></div><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></div>
+          <details class="panel fold" id="fold_linaje" data-fold="linaje" open><summary class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></summary><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></details>
+          <details class="panel fold" id="fold_arquetipo" data-fold="arquetipo" open><summary class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></summary><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></details>
           <div class="panel"><div class="ph"><span class="pt">Talentos Activos</span></div><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></div>
         </div><!-- /page 4 -->
 
