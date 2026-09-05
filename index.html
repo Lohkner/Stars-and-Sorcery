@@ -447,10 +447,17 @@
                   <option value="CON">Constitución</option>
                 </select>
               </div>
-              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:6px">
-                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono de Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
-                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+              <!-- Los tres bonos comparten un rótulo: así cada etiqueta cabe en
+                   UNA línea y las tres cajas arrancan a la misma altura. Con
+                   «Bono de Atributo» y «Bono Mágico» partiendo en dos líneas y
+                   «Otro Bono» en una, la tercera caja subía 18 px. -->
+              <div style="margin-top:8px">
+                <span class="fl">Bonos a la Guardia</span>
+                <div class="guard-bonos">
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Otro</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+                </div>
               </div>
               <div class="ccard"><span class="clbl">Desprevenido</span><span class="cval" id="guard_unaware_val">—</span></div>
               <div id="guard_alt_note" class="infobox"></div>

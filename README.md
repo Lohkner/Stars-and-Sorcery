@@ -1,4 +1,55 @@
-# S&S Companion — v55.6
+# S&S Companion — v55.8
+
+## Novedades v55.8 — Los tres bonos de Guardia, alineados
+
+`CACHE_VERSION` sube a `ss-companion-v86`.
+
+En móvil la caja de «Otro Bono» quedaba 18 px más alta que las otras dos. No
+era el tamaño de las cajas: eran las **etiquetas**. A 375 px, «Bono de
+Atributo» y «Bono Mágico» partían en dos líneas (36 px) y «Otro Bono» cabía en
+una (18 px), así que su desplegable arrancaba justo esa línea más arriba.
+
+Los tres comparten ahora un rótulo —**«Bonos a la Guardia»**— y cada etiqueta
+se queda en una palabra: `Atributo · Mágico · Otro`. Ninguna parte, las tres
+cajas arrancan a la misma altura y el bloque ocupa una línea menos.
+
+Y por si alguna etiqueta acabara partiendo de todos modos —otro idioma, un
+texto más largo—, cada celda es una columna flex con el desplegable pegado
+abajo: quedan alineadas por su base pase lo que pase con el rótulo.
+
+### Verificado
+
+A 375 px: desalineación **0 px** —las tres cajas en la misma coordenada—,
+ninguna etiqueta partida ni recortada, cajas de 97×43 y sin desbordamiento
+horizontal. La Guardia sigue sumando bien: 14 sin bonos, 15 con SAB (+1), 17
+añadiendo +2 mágico y 18 con +1 de otro. Consola limpia.
+
+## Novedades v55.7 — Apagar el Borde Premium quita el dorado de verdad
+
+`CACHE_VERSION` sube a `ss-companion-v85`.
+
+En v55.6 arreglé que el ajuste **se quedara puesto**, pero no que se **viera**:
+apagado seguía habiendo dorado alrededor del retrato. Esta vez, en lugar de
+mirar las dos clases que yo conocía, escaneé toda la cadena de elementos que
+envuelve la imagen buscando cualquier cosa que pintara oro. Aparecieron dos:
+
+| Elemento | Qué seguía pintando |
+|---|---|
+| `.port-card` | borde `rgba(200,169,110,.18)` — oro rebajado, pero oro |
+| `.panel-accent` | borde `rgba(200,169,110,.25)`, halo dorado y un filete superior en degradado |
+
+El segundo es el marco del bloque entero —retrato más identidad— y **no lo
+tocaba ninguna regla del modo apagado**: era el que más se veía. Ahora los tres
+—marco, panel y filete— pasan a `var(--edge)` y `var(--rim)` cuando el Borde
+Premium está apagado.
+
+### Verificado
+
+Escaneando la cadena completa desde el `<img>` hasta el `<body>`: con el borde
+apagado quedan **cero** elementos pintando dorado —ni borde, ni halo, ni
+pseudoelementos—, tanto con el retrato confirmado como en modo edición.
+Encendido vuelven los dos. Comprobado también en captura: el marco dorado del
+retrato y el del panel desaparecen y quedan en gris neutro. Consola limpia.
 
 ## Novedades v55.6 — Segundo atributo a la Guardia · «sin guardar» que sí avisa · retrato y fuente que se quedan puestos
 

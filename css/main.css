@@ -788,6 +788,12 @@ textarea{resize:vertical;min-height:52px;line-height:1.5;color:var(--text)}
    controles que se tocan en mesa. `.ap` es `width:auto` porque en otros
    sitios va suelto junto a un número. */
 #guard_edit_view .ap{width:100%;min-height:44px}
+/* Y aunque una etiqueta acabe partiendo —otro idioma, un texto más largo—,
+   la caja se va al fondo de su celda: las tres quedan alineadas por abajo
+   pase lo que pase con el rótulo. */
+.guard-bonos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:5px}
+.guard-bonos > div{display:flex;flex-direction:column;min-width:0}
+.guard-bonos > div > .ap{margin-top:auto}
 
 /* Checkboxes */
 input[type=radio],input[type=checkbox]{
@@ -2071,10 +2077,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
   border:1px solid var(--edge-gold-strong);
   box-shadow:0 0 0 1px rgba(200,169,110,.12),0 0 16px rgba(200,169,110,.1),0 8px 40px rgba(0,0,0,.65);
 }
-/* Subtle (legacy) — applied when body has .port-border-subtle */
+/* Apagado — con .port-border-subtle en el body.
+   «Quitar el borde dorado» tiene que quitarlo DE VERDAD: antes el marco
+   seguía en oro rebajado (.18 de alfa) y, sobre todo, el panel que envuelve
+   retrato e identidad —.panel-accent— no lo tocaba ninguna regla y seguía
+   con su borde dorado, su halo y su filete superior. Eran los dos que se
+   veían. Aquí se neutralizan los tres: marco, panel y filete. */
 body.port-border-subtle .port-card{
-  border:1px solid rgba(200,169,110,.18);
+  border:1px solid var(--edge);
   box-shadow:0 4px 20px rgba(0,0,0,.45);
+}
+body.port-border-subtle .panel-accent{
+  border-color:var(--edge);
+  box-shadow:0 2px 20px rgba(0,0,0,.4);
+}
+body.port-border-subtle .panel-accent::before{
+  background:linear-gradient(90deg,transparent,var(--rim) 25%,var(--rim) 75%,transparent);
 }
 body.port-border-subtle .port-card-edit{
   /* Sin relleno dorado ni halo: la diferencia tiene que verse también
