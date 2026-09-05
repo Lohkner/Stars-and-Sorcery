@@ -1,4 +1,195 @@
-# S&S Companion — v55.1
+# S&S Companion — v55.4
+
+## Novedades v55.4 — La Carne arranca en 0
+
+`CACHE_VERSION` sube a `ss-companion-v82`.
+
+El generador aleatorio de la pantalla de Inicio rellenaba la Carne al máximo y
+la ficha salía con **«14/14»**. Ahora arranca en **0**, con el máximo intacto:
+`0/14`. Los otros tres recursos siguen llenos, que sí son reservas que se
+gastan.
+
+Era el único sitio que la poblaba: el dado del asistente y la creación a mano
+ya la dejaban en 0.
+
+### Verificado
+
+Los tres caminos de creación dan Carne en 0 con su máximo correcto —aleatorio
+de Inicio `0/10`, dado del asistente `0/15`, personaje nuevo a mano `0/8`— y
+PV, Adrenalina e Ingenio siguen llenos donde corresponde. Guardar y recargar
+conserva el 0.
+
+### Una contradicción que esto deja a la vista
+
+El campo se llama **«Daño de carne actual»** en su propia etiqueta, y con eso
+0 significa sano — que es justo lo que se acaba de arreglar. Pero
+`progresion.js` trata la Carne como una reserva que se cura hacia arriba: el
+reposo prolongado hace `cur_carne + 1` con tope en el máximo. Comprobado:
+partiendo de `0/13`, una semana de reposo deja `1/13` y dos semanas `2/13`.
+Es decir, **descansar añade daño**.
+
+Antes no se notaba porque el aleatorio te dejaba ya al máximo y el reposo no
+movía nada. No se ha tocado: cuál de las dos lecturas es la buena —contador de
+daño o reserva que se recupera— es una decisión de reglas.
+
+## Novedades v55.3 — Resumen de Ataques solo con el daño · dado de personaje aleatorio en el asistente
+
+`CACHE_VERSION` sube a `ss-companion-v81`.
+
+### La tarjeta de Ataques, plegada, enseña solo el daño
+
+El bono de ataque se consulta al tirar, con la tarjeta abierta; el dado de
+daño es lo que se quiere tener a la vista sin desplegar nada. `Ataque +6 ·
+Daño 1d8+4` pasa a `1d8+4`.
+
+### Dado de personaje aleatorio, junto a «A mano»
+
+Botón nuevo en la cabecera del asistente. Lo importante es **cómo** genera:
+no sortea sobre la ficha, sino que rellena el **mismo borrador** que
+rellenaría una persona y lo vuelca con `volcar()`. Así pasa por los mismos
+filtros que el asistente en vez de tener su propia idea de qué es legal —si el
+asistente no te deja tomar algo, el dado tampoco—.
+
+En concreto:
+
+- **Talentos**: se eligen de uno en uno **re-evaluando** con
+  `app._parseTalentReq` tras cada elección, porque tomar una Iniciación abre
+  los Talentos que la exigen. Sortear los tres de golpe daba fichas con
+  requisitos sin cumplir.
+- **Armas**: salen de `armasPermitidas()`, que ya filtra por competencia del
+  Arquetipo, más el requisito de FUE del arma —que el Audaz ignora, como dice
+  su entrada—. El tope de dos armas se consulta con `topeArmas()`, que depende
+  de si la primera es simple.
+- **Atributos**: método A (4d6 descartando el menor) repartidos por prioridad
+  del Arquetipo, con el atributo de la Fuente colado en segundo lugar si el
+  Linaje abre una. Un Sagaz no sale con INT 8.
+- **Elecciones de Linaje**: bono de atributo (respetando `distinct`),
+  Expresiones y el Truco de la Afinidad, que se guarda por **nombre** y con el
+  mismo criterio (`type === 'trick'`) que usa el desplegable del paso.
+- **Guardia**: no se sortea. Se toma el mejor de los tres atributos
+  elegibles, que es lo que haría cualquiera al construir.
+
+Antes de volcar, el borrador pasa por `queFalta()` **paso a paso** — el mismo
+juez que enciende el botón «Continuar»—. Si algo no cuadra no se crea a
+medias: se abre el asistente en el paso que falla, ya relleno, y el aviso dice
+qué falta.
+
+### Un fallo que esto destapó
+
+El asistente entregaba los personajes con **0 PV**: `calc()` deja los máximos,
+pero los actuales se quedaban en el 0 con el que `newCharManual()` limpia la
+ficha. Afectaba también a la creación normal, no solo al dado. Ahora los tres
+recursos se rellenan al máximo después de `calc()`.
+
+### Verificado
+
+**16 tiradas seguidas, cero incidencias**: ningún Talento con requisitos sin
+cumplir —evaluados contra la ficha ya volcada, sin el contexto prestado del
+asistente—, ninguna arma fuera de la competencia del Arquetipo (Sagaz solo
+simples, Versátil ligeras o medias), ningún arma con FUE insuficiente salvo en
+el Audaz que la ignora, ningún Linaje con Afinidad sin Truco resuelto, y
+ninguno arrancando herido. 5 de las 16 abrieron Fuente por Afinidad. El
+resumen de Ataques da `1d8+4`; los de Estado y Guardia siguen igual. Consola
+limpia y sin desbordamiento horizontal.
+
+Nota sobre los Trucos: hoy los 24 son un fondo común (`source: "Trucos"`), así
+que la rama que prefiere un Truco de la propia Fuente no llega a activarse y
+se sortea sobre todos, igual que hace el desplegable. Queda escrita por si el
+Catálogo los reparte por Fuente más adelante.
+
+## Novedades v55.2 — Revamp de sistema: suelo tipográfico, contraste y objetivos táctiles
+
+`CACHE_VERSION` sube a `ss-companion-v80`. Respaldo previo en
+`_backup_pre_revamp_ux_v55.1/`.
+
+Se aplica la **capa de sistema** del revamp de UX/UI: tipografía, color y
+tamaño de control. **No** se toca la arquitectura: el retrato conserva sus
+tokens (`--port-w: 288px`, `--port-h: 410px`), Perfil sigue siendo la portada
+del personaje y la navegación sigue con sus cinco pestañas.
+
+### El suelo tipográfico sube de 9 a 12 px
+
+Los siete pasos de la escala conservan sus nombres —así que ningún componente
+cambia— y se recalibran para que el más bajo sea 12 px:
+
+| Token | Antes | Ahora |
+|---|---|---|
+| `--fs-2xs` | .56rem · 9 px | .75rem · **12 px** |
+| `--fs-xs` | .6rem · 9,6 px | .78rem · 12,5 px |
+| `--fs-sm` | .66rem · 10,6 px | .8125rem · 13 px |
+| `--fs-md` | .72rem · 11,5 px | .875rem · 14 px |
+| `--fs-lg` | .78rem · 12,5 px | .9375rem · 15 px |
+| `--fs-xl` | .85rem · 13,6 px | 1rem · 16 px |
+| `--fs-2xl` | .92rem · 14,7 px | 1.0625rem · 17 px |
+
+La rampa es plana a propósito: aquí los pasos marcan **rol** —rótulo, dato,
+cifra—, no jerarquía; la jerarquía la hacen los números grandes, que van en px
+explícitos y no se han tocado.
+
+### El rojo se parte en dos
+
+`--blood` daba **4,21:1** sobre el panel, por debajo del 4,5 de AA para texto
+normal, y es el color de los avisos. Ahora:
+
+- `--blood: #e07a88` — el color de **texto** (6,2:1).
+- `--blood-fill: #d45363` — el relleno saturado de barras, botones y
+  distintivos, donde el contraste de texto no aplica porque encima va blanco.
+
+Cinco sitios pasan al relleno: el fondo de borrar personaje, el check de
+Letalidad 1, el degradado de Guardar y la línea decorativa. Los temas Vacío y
+Arcano reciben su propio `--blood-fill`.
+
+### Objetivos táctiles
+
+- Las filas de recurso pasan de `min-height: 33px` a **44**. Los ± de
+  Adrenalina, Ingenio y Carne medían 45×33 de área efectiva; ahora 44×43.
+- El campo numérico de cada recurso medía **27×21** —el control más pequeño de
+  la app siendo de los que más se usan— y ahora mide 44 de alto. El ancho lo
+  fija la rejilla de `.e4-ctl` y sigue en 26–34 px: el hueco central de 74 px
+  lo comparte con el separador y el máximo.
+
+### Dos ajustes que el tamaño nuevo obligó
+
+- **El logotipo de cabecera** partía en dos líneas y el encabezado crecía a
+  88 px, justo en la página que hace de portada. El logotipo cede: baja a
+  `--fs-md` y su espaciado de `.16em` a `.04em` —169 px de una línea que solo
+  tiene 124—. Cabecera de vuelta a 64 px.
+- **Las cajas de atributo** tenían 74 px fijos con `overflow:hidden` y el
+  contenido pasó a pedir 85. Suben a 88.
+
+### Verificado
+
+Barrido de las cinco páginas a 375×812: **cero texto por debajo de 12 px** en
+toda la app, cabecera y navegación incluidas, y **cero recortes** (excluyendo
+los truncados a propósito con `text-overflow: ellipsis`). Sin desbordamiento
+horizontal del cuerpo. Los ± de PV dan 44×44 y los de Adrenalina 44×43. El
+Gestor de Talentos, el de Axiomas y los siete pasos del asistente no recortan
+nada; los 13 chips de filtro de arma pasan de 3 filas a 4. Consola limpia.
+
+El retrato mide 276×393 a 375 px de ancho — **el mismo valor que antes del
+cambio**, comprobado contra el respaldo: a ese viewport ya lo escalaba una
+media query desde los 288×410 del token.
+
+### El precio, medido
+
+Las páginas crecen, que es la contrapartida de subir el suelo:
+
+| Página | Antes | Ahora |
+|---|---|---|
+| Perfil | 1 609 px | 1 712 px (+6 %) |
+| Stats | 768 px | 841 px (+10 %) |
+| Aptitudes | 1 103 px | 1 303 px (+18 %) |
+| Equipo | 888 px | 962 px (+8 %) |
+| Detalle | 1 379 px | 1 711 px (+24 %) |
+
+### Una corrección al diagnóstico
+
+En la propuesta dije que la app cargaba cinco familias tipográficas «una de
+ellas Arial, un fallback colándose». Es falso: Arial solo aparece dentro de
+`[data-font="legible"]`, que es una de las tres tipografías que ofrece Ajustes
+y está puesta a propósito. En el tema por defecto son tres familias —Cinzel,
+Spectral y JetBrains Mono— más Cinzel Decorative para el logotipo. No se ha
+tocado nada de eso.
 
 ## Novedades v55.1 — Asistente: cerrar con el mismo toque · buscador y filtros de arma · «A mano» conserva lo hecho
 

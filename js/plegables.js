@@ -34,10 +34,10 @@
   const RESUMEN = {
     estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`,
     guardia: () => `Guardia ${txt('guard_total_live', txt('res_guardia', '—'))}`,
-    ataques: () => {
-      const a = txt('atk_bonus_1', ''), d = txt('atk_dmg_1', '');
-      return a || d ? `Ataque ${a} · Daño ${d}` : '—';
-    },
+    /* Solo el daño: el bono de ataque se consulta al tirar, con la tarjeta
+       abierta, mientras que el dado de daño es lo que se quiere tener a la
+       vista sin desplegar nada. */
+    ataques: () => txt('atk_dmg_1', '') || '—',
   };
 
   function pintarPeek(det) {

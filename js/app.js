@@ -6266,7 +6266,11 @@ const app = {
     const pv=document.getElementById('max_pv'); const cpv=document.getElementById('cur_pv'); if(pv&&cpv)cpv.value=pv.textContent;
     const adr=document.getElementById('max_adr'); const cadr=document.getElementById('cur_adr'); if(adr&&cadr)cadr.value=adr.textContent;
     const ing=document.getElementById('max_ing'); const cing=document.getElementById('cur_ing'); if(ing&&cing)cing.value=ing.textContent;
-    const carne=document.getElementById('res_carne'); const ccarne=document.getElementById('cur_carne'); if(carne&&ccarne)ccarne.value=carne.textContent;
+    /* La Carne arranca en 0, no al máximo: el campo cuenta Daño de Carne
+       —así lo dice su propia etiqueta— y un personaje recién tirado no
+       llega con ninguno. Los otros tres sí van llenos porque son reservas
+       que se gastan. Antes salía «14/14», que se leía como daño máximo. */
+    const ccarne=document.getElementById('cur_carne'); if(ccarne)ccarne.value=0;
     // Los cur_* se escriben DESPUÉS de calc(): refrescar las barras de Estado
     this._updateResBars();
     this.renderInventory();

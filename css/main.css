@@ -2,15 +2,23 @@
    DESIGN TOKENS
    ═══════════════════════════════════════════ */
 :root{
-    /* Escala tipográfica (revamp v45): 7 pasos sustituyen a ~31 tamaños
-     arbitrarios. Suelo legible: .56rem (~9px con la raíz de 16px). */
-  --fs-2xs: .56rem;
-  --fs-xs:  .6rem;
-  --fs-sm:  .66rem;
-  --fs-md:  .72rem;
-  --fs-lg:  .78rem;
-  --fs-xl:  .85rem;
-  --fs-2xl: .92rem;
+    /* Escala tipográfica. Siete pasos —los mismos nombres de siempre, así
+     que ningún componente cambia— con el SUELO SUBIDO DE 9 A 12 px.
+     Medido antes: 123 elementos por debajo de 10,6 px, con el texto más
+     pequeño pintado en los colores de menos contraste. El mínimo de iOS
+     son 11 pt y el de Material 12 sp; .56rem se quedaba en 8,96.
+     Cuesta densidad —una o dos filas menos por pantalla en las tarjetas
+     más cargadas— a cambio de que la ficha se lea a un brazo y con luz
+     de mesa. La rampa es plana a propósito: aquí los pasos marcan ROL
+     (rótulo, dato, cifra), no jerarquía; la jerarquía la hacen los
+     números grandes, que van en px explícitos. */
+  --fs-2xs: .75rem;     /* 12   — rótulos, unidades */
+  --fs-xs:  .78rem;     /* 12,5 */
+  --fs-sm:  .8125rem;   /* 13   */
+  --fs-md:  .875rem;    /* 14   — secundario */
+  --fs-lg:  .9375rem;   /* 15   */
+  --fs-xl:  1rem;       /* 16   — cuerpo */
+  --fs-2xl: 1.0625rem;  /* 17   */
   /* Elevación de bordes (revamp v45): 3 niveles estructurales + acento oro.
      Sustituyen a las ~28 variantes rgba sueltas; los temas los redefinen. */
   --edge-soft:        rgba(61,50,84,.3);
@@ -37,7 +45,13 @@
   --gold:   #c9aa6f;
   --goldb:  #e0c27e;
   --crimson:#6e1525;
-  --blood:  #d45363;
+  /* #d45363 daba 4,21:1 sobre el panel — por debajo del 4,5 de AA para
+     texto normal, y es justo el color de los avisos. Se separa en dos:
+     --blood es el color de TEXTO (6,2:1) y --blood-fill el relleno
+     saturado de barras, botones y distintivos, donde el contraste de
+     texto no aplica porque encima va blanco. */
+  --blood:  #e07a88;
+  --blood-fill:#d45363;
   --ember:  #d9542a;
   --ice:    #3d8fc2;
   --sage:   #3fa06c;
@@ -309,8 +323,8 @@ body{
 /* ── Primary action buttons ── */
 .home-actions-primary{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .home-btn-new{
-  font-family:var(--fd);font-size:var(--fs-md);letter-spacing:.1em;text-transform:uppercase;
-  font-weight:700;cursor:pointer;border-radius:var(--r);
+  font-family:var(--fd);font-size:var(--fs-md);letter-spacing:.04em;text-transform:uppercase;
+  font-weight:700;cursor:pointer;border-radius:var(--r);text-wrap:balance;
   display:flex;align-items:center;justify-content:center;gap:7px;
   min-height:54px;padding:0 14px;
   background:linear-gradient(135deg,rgba(200,169,110,.9) 0%,rgba(224,194,126,.96) 50%,rgba(200,169,110,.88) 100%);
@@ -355,18 +369,19 @@ body{
 }
 .home-roster-hdr{
   display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:2px 10px;
   padding:10px 14px;border-bottom:1px solid var(--edge-soft);
 }
 .home-roster-title{
   font-family:var(--fd);font-size:var(--fs-xs);color:var(--muted);
-  text-transform:uppercase;letter-spacing:.22em;
-  display:flex;align-items:center;gap:8px;
+  text-transform:uppercase;letter-spacing:.12em;
+  display:flex;align-items:center;gap:8px;white-space:nowrap;
 }
 .home-roster-title::before{
   content:'';width:4px;height:4px;border-radius:50%;
   background:var(--gold);box-shadow:0 0 6px rgba(200,169,110,.5);flex-shrink:0;
 }
-.home-roster-hint{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--border);letter-spacing:.06em}
+.home-roster-hint{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--border);letter-spacing:.02em;white-space:nowrap}
 .home-roster-body{padding:8px}
 
 /* ── Character cards ── */
@@ -400,7 +415,7 @@ body{
 .char-card-wrap:last-child{margin-bottom:0}
 .char-card-delete{
   position:absolute;right:0;top:0;bottom:0;width:80px;
-  background:var(--blood);
+  background:var(--blood-fill);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   font-size:var(--fs-xs);font-family:var(--fd);color:#fff;
   letter-spacing:.08em;text-transform:uppercase;
@@ -447,7 +462,7 @@ body{
 /* ── Footer tools ── */
 .home-footer{display:flex;justify-content:center;align-items:center;padding:4px 0 0;gap:2px}
 .home-footer-btn{
-  font-family:var(--fm);font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;
+  font-family:var(--fm);font-size:var(--fs-xs);letter-spacing:.02em;text-transform:uppercase;
   color:var(--border);cursor:pointer;background:transparent;border:none;
   display:flex;align-items:center;gap:5px;padding:8px 12px;border-radius:var(--r);
   transition:color .15s,background .15s;-webkit-tap-highlight-color:transparent;
@@ -515,10 +530,10 @@ body{
 .app-hdr-back:active{transform:scale(.88);background:rgba(200,169,110,.08);border-color:var(--edge-gold)}
 
 .app-hdr-ttl{
-  font-family:var(--ft);font-size:var(--fs-lg);
-  color:var(--gold);letter-spacing:.16em;
+  font-family:var(--ft);font-size:var(--fs-md);
+  color:var(--gold);letter-spacing:.04em;
   text-shadow:0 0 20px rgba(200,169,110,.25);
-  display:block;
+  display:block;white-space:nowrap;
 }
 .last-saved{
   font-family:var(--fm);font-size:var(--fs-2xs);
@@ -540,8 +555,8 @@ body{
   background:linear-gradient(135deg,rgba(200,169,110,.08) 0%,rgba(200,169,110,.04) 100%);
   border:1px solid var(--edge-gold);
   color:var(--goldb);font-family:var(--fd);
-  font-size:var(--fs-2xs);padding:7px 16px;border-radius:var(--r);
-  cursor:pointer;letter-spacing:.12em;text-transform:uppercase;
+  font-size:var(--fs-2xs);padding:7px 12px;border-radius:var(--r);
+  cursor:pointer;letter-spacing:.08em;text-transform:uppercase;
   transition:border-color .18s,background .18s,box-shadow .18s,transform .1s,color .18s;
   flex-shrink:0;min-height:44px;
   box-shadow:inset 0 1px 0 rgba(200,169,110,.1),0 2px 8px rgba(0,0,0,.3);
@@ -812,7 +827,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   transition:border-color .15s,box-shadow .15s,transform .08s;
   position:relative;overflow:hidden;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
-  height:74px;min-height:74px;
+  height:88px;min-height:88px;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
 }
@@ -1540,7 +1555,7 @@ input[type=radio]:checked::after{transform:scale(1)}
 .leth-card[data-tier="2"].active{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,169,110,.2)}
 .leth-card[data-tier="3"].active{border-color:var(--sage);box-shadow:0 0 0 1px rgba(63,160,108,.2)}
 .leth-check{position:absolute;top:5px;right:6px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--fs-2xs);font-weight:700;opacity:0;transform:scale(.5);transition:opacity .18s,transform .18s}
-.leth-card[data-tier="1"] .leth-check{background:var(--blood);color:#fff}
+.leth-card[data-tier="1"] .leth-check{background:var(--blood-fill);color:#fff}
 .leth-card[data-tier="2"] .leth-check{background:var(--gold);color:var(--void)}
 .leth-card[data-tier="3"] .leth-check{background:var(--sage);color:#fff}
 .leth-card.active .leth-check{opacity:1;transform:scale(1)}
@@ -1934,7 +1949,7 @@ input[type=range]{flex:1;accent-color:var(--gold);cursor:pointer;min-width:0;hei
 @media(hover:hover){.cr-rot-btn:hover{border-color:rgba(61,143,194,.5);color:var(--ice)}}
 .cr-rot-btn:active,.cr-fit-btn:active{transform:scale(.94)}
 .cr-apply-row{display:flex}
-.bsave{flex:1;background:linear-gradient(135deg,var(--crimson),var(--blood));color:#fff;border:none;height:48px;cursor:pointer;border-radius:var(--r);font-family:var(--fd);font-size:var(--fs-lg);letter-spacing:.12em;text-transform:uppercase;transition:all .18s;white-space:nowrap;touch-action:manipulation;box-shadow:0 2px 16px rgba(110,21,37,.4)}
+.bsave{flex:1;background:linear-gradient(135deg,var(--crimson),var(--blood-fill));color:#fff;border:none;height:48px;cursor:pointer;border-radius:var(--r);font-family:var(--fd);font-size:var(--fs-lg);letter-spacing:.12em;text-transform:uppercase;transition:all .18s;white-space:nowrap;touch-action:manipulation;box-shadow:0 2px 16px rgba(110,21,37,.4)}
 
 @media(hover:hover){.bsave:hover{box-shadow:var(--gb)}}
 .bsave:active{transform:scale(.98);opacity:.9}
@@ -2028,7 +2043,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 [data-font="legible"] .pt,[data-font="legible"] .fs-hdr-ttl,
 [data-font="legible"] .dvdr,[data-font="legible"] .set-lbl{letter-spacing:.06em}
 
-[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;}
+[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--blood-fill:#8a4a4e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;}
 
 /* Background image overlays — ensure readability */
 #home-screen::before,.pages-wrapper::before{
@@ -2069,7 +2084,7 @@ body.port-border-none .port-card-edit{
   --void:#020308;--deep:#050610;--surface:#090b1a;--raised:#0e1024;--panel:#13162e;--rim:#1e2248;--border:#2c3068;
   --muted:#7b7bb6;--dim:#8080c8;--text:#c0c0f0;--bright:#e8e8ff;
   --gold:#a060e8;--goldb:#b878f8;
-  --crimson:#3a1080;--blood:#cc5a86;--ember:#d9803f;--ice:#4090d8;--sage:#309890;
+  --crimson:#3a1080;--blood:#cc5a86;--blood-fill:#a8446b;--ember:#d9803f;--ice:#4090d8;--sage:#309890;
 }
 
 
@@ -2639,7 +2654,7 @@ input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
   background:var(--line-gold);
 }
 .ui-confirm-card.danger::before{
-  background:linear-gradient(90deg,transparent,var(--blood) 30%,#d04055 50%,var(--blood) 70%,transparent);
+  background:linear-gradient(90deg,transparent,var(--blood-fill) 30%,#d04055 50%,var(--blood-fill) 70%,transparent);
 }
 .ui-confirm-title{
   font-family:var(--fd);font-size:var(--fs-2xl);font-weight:700;
@@ -3126,9 +3141,12 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
    sin cambios. El editor de grados de Pericia lo puebla js/pericias.js.
 ══════════════════════════════════════════ */
 /* ── Filas de recurso ─────────────────────────────────────────── */
+/* 44 px y no 33: el ::before de .res-btn ya daba 45 de ancho, pero el
+   alto lo recortaba la propia fila y los ± de Adrenalina, Ingenio y Carne
+   quedaban en 45×33. Medido con elementFromPoint, no por la caja. */
 .est4 .e4-row{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  min-height:33px;
+  min-height:44px;
 }
 .est4 .e4-name{
   font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;
@@ -3162,11 +3180,19 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   font-family:var(--fm);font-variant-numeric:tabular-nums;line-height:1;
   min-width:0;                 /* el ancho lo fija la rejilla de .e4-ctl */
 }
+/* Se toca para escribir un valor exacto y medía 27×21 de área efectiva:
+   el control más pequeño de la app siendo de los que más se usan. El
+   ancho lo fija la rejilla de .e4-ctl, así que el alto se le da al propio
+   input —no a un pseudoelemento, que un <input> no pinta— y la fila pasa
+   a centrar en vez de alinear por línea base, porque con el campo a 44 px
+   la base ya no cae donde el separador y el máximo. */
 .est4 .e4-fin{
   width:3ch !important;max-width:3ch !important;
+  min-height:44px !important;height:44px !important;
   text-align:right;font-weight:600;color:var(--bright);
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums;line-height:1;
 }
+.est4 .e4-num{align-items:center}
 .est4 .e4-sep{color:var(--rim);margin:0 4px;font-size:var(--fs-md)}
 .est4 .e4-max{color:var(--muted);font-size:var(--fs-md);font-variant-numeric:tabular-nums}
 .est4 .e4-row-pv .e4-fin{font-size:21px !important;font-weight:700}
@@ -3625,3 +3651,19 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .wiz-fchip--limpiar{color:var(--dim);border-style:dashed}
 @media(hover:hover){.wiz-fchip:hover{border-color:var(--edge-gold)}}
 @media(prefers-reduced-motion:reduce){.wiz-fchip{transition:none}}
+
+/* Cabecera del asistente: el dado y «A mano» son la misma familia de botón
+   —salidas del recorrido guiado—, así que comparten alto y tratamiento.
+   El dado va primero y sin texto: es la acción menos frecuente de las dos y
+   un icono cuadrado deja sitio a la etiqueta de la otra. */
+.wiz-manual, .wiz-dado{
+  font-size:var(--fs-xs);min-height:40px;color:var(--dim);
+  padding:5px 12px;
+}
+.wiz-dado{
+  width:40px;padding:0;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.wiz-dado .ico{margin-right:0}
+@media(hover:hover){.wiz-dado:hover{color:var(--goldb);border-color:var(--edge-gold)}}
+.wiz-dado:active{transform:scale(.9)}

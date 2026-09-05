@@ -1030,6 +1030,16 @@
     if (S.retrato) app._syncPortrait(S.retrato);
     app.updateOptions(false);                  // refleja habilidades y Pericias
     app.calc();
+    /* Un personaje recién creado empieza entero. calc() deja los máximos,
+       pero los actuales se quedaban en el 0 con el que newCharManual() limpia
+       la ficha, así que salía del asistente inconsciente. Se rellenan DESPUÉS
+       de calc(), que es cuando los máximos ya están escritos. */
+    [['cur_pv','max_pv'], ['cur_adr','max_adr'], ['cur_ing','max_ing']]
+      .forEach(([cur, max]) => {
+        const c = $(cur), m = $(max);
+        if (c && m) c.value = parseInt(m.textContent, 10) || 0;
+      });
+    app._updateResBars && app._updateResBars();
     app.showTalentSummary(); app.updateTalentCount();
     app.buildDetailPage && app.buildDetailPage();
     if (completo) {
@@ -1052,6 +1062,176 @@
   }
 
   const crear = () => volcar(true);
+
+  /* ══════════════════════════════════════════════════════════════
+     Personaje aleatorio.
+     No se sortea sobre la ficha: se rellena el MISMO borrador `S` que
+     rellenaría una persona y se vuelca con volcar(). Así el aleatorio pasa
+     por los mismos filtros que el asistente —competencia de arma según el
+     Arquetipo, requisitos de Talento evaluados con app._parseTalentReq,
+     elecciones de Linaje, tope de armas— en vez de tener su propia idea de
+     qué es legal. Si el asistente no te deja tomar algo, el dado tampoco.
+  ══════════════════════════════════════════════════════════════ */
+  const NOMBRES = ['Aldric','Bryna','Castan','Delara','Elowen','Fendrel','Gwyn',
+    'Hadria','Iskar','Jalinda','Kestrel','Lyara','Morden','Nyla','Oswin','Petra',
+    'Quillon','Ressa','Solen','Tindra','Ulvar','Vessa','Wren','Xera','Ylan','Zora'];
+
+  const CONVICCIONES = ['Legal Bueno','Neutral Bueno','Caótico Bueno',
+    'Legal Neutral','Neutral','Caótico Neutral',
+    'Legal Maligno','Neutral Maligno','Caótico Maligno'];
+
+  /** Atributo de cada Fuente, para no dejar a un lanzador con su Fuente en 8. */
+  const ATTR_FUENTE = { 'Erudición':'INT', 'Psiónica':'INT', 'Divinidad':'SAB',
+    'Naturaleza':'SAB', 'Pacto':'CAR', 'Herencia':'CAR', 'Juramento':'CAR' };
+
+  /** Orden en que cada Arquetipo quiere sus puntuaciones. */
+  const PRIORIDAD = {
+    audaz: ['FUE','CON','DES','SAB','CAR','INT'],
+    sutil: ['DES','CON','CAR','SAB','INT','FUE'],
+    sagaz: ['INT','DES','CON','SAB','CAR','FUE'],
+  };
+
+  const azar = a => a[Math.floor(Math.random() * a.length)];
+  const barajar = a => a.slice().sort(() => Math.random() - .5);
+
+  function aleatorio() {
+    S = nuevoEstado();
+
+    // 1 · Arquetipo y Linaje primero: mandan sobre el reparto de atributos.
+    S.arq = azar(Object.keys(app.DB.archetypes));  S.arqUlt = S.arq;
+    S.desc = azar(Object.keys(app.DB.descriptors)); S.descUlt = S.desc;
+    const d = app.DB.descriptors[S.desc];
+    const a = app.DB.archetypes[S.arq];
+
+    // 2 · Elecciones del Linaje. Las Expresiones van ANTES del reparto porque
+    //     una de ellas puede abrir Fuente (el Mutante).
+    const g = grupoEleccion(d);
+    if (g) {
+      const trozos = barajar(g.opciones.split(' / ').map(o => o.trim()));
+      S.descExps = trozos.slice(0, g.n).map(t => t.split(' (')[0].trim());
+    }
+
+    // 3 · Atributos: método A, repartidos por prioridad del Arquetipo con la
+    //     Fuente colada en segundo lugar si el Linaje abre una.
+    const pool = poolInicial('A');                    // ya viene de mayor a menor
+    const orden = (PRIORIDAD[S.arq] || ATTRS).slice();
+    const fu = ATTR_FUENTE[fuenteAfinidad()];
+    if (fu) { const i = orden.indexOf(fu); if (i > 1) { orden.splice(i, 1); orden.splice(1, 0, fu); } }
+    orden.forEach((k, i) => { S.asign[k] = pool[i]; });
+
+    // 4 · Bono de atributo del Linaje: al que ya va primero, respetando
+    //     `distinct` cuando el Linaje pide dos distintos.
+    if (d.pick) {
+      const n = d.pick.n || 1;
+      const origen = d.pick.from || ATTRS;
+      const cola = orden.filter(k => origen.includes(k));
+      S.descPick = [];
+      for (let i = 0; i < n; i++) {
+        const libre = cola.length ? cola[0] : origen[0];
+        S.descPick.push(libre);
+        if (d.pick.distinct) cola.shift();
+      }
+    }
+
+    // 5 · Truco de la Fuente que abra la Afinidad. El campo guarda el NOMBRE
+    //     y el desplegable del paso ofrece `type === 'trick'`: se usa el mismo
+    //     criterio, o el valor no casaría con ninguna opción. Hoy los 24
+    //     Trucos son un fondo común (`source: "Trucos"`), así que la rama de
+    //     preferencia no llega a activarse y se sortea sobre todos, igual que
+    //     el desplegable; queda escrita por si el Catálogo los reparte por
+    //     Fuente más adelante.
+    const fuente = fuenteAfinidad();
+    if (fuente) {
+      const todos = Object.values(app.DB.spells || {}).filter(x => x.type === 'trick');
+      const propios = todos.filter(x =>
+        app._normSource(x.source || '') === app._normSource(fuente));
+      const lista = propios.length ? propios : todos;
+      if (lista.length) S.descTruco = azar(lista).name;
+    }
+
+    // 6 · Habilidades
+    S.arqSkills = barajar(a.skills || []).slice(0, a.skills_count || 2);
+    S.bg = azar(Object.keys(app.DB.backgrounds)); S.bgUlt = S.bg;
+    S.bgSkills = barajar(app.DB.backgrounds[S.bg].skills || []).slice(0, 2);
+
+    // 7 · Talentos: uno a uno y RE-EVALUANDO, porque tomar una Iniciación abre
+    //     los Talentos que la exigen. Sortear los tres de golpe daba fichas
+    //     con requisitos sin cumplir.
+    S.talentos = [];
+    for (let i = 0; i < 3; i++) {
+      const posibles = [];
+      conContexto(() => {
+        Object.values(app.DB.talents).forEach(arr => arr.forEach(t => {
+          if (S.talentos.some(x => x.name === t.name)) return;
+          if (app._parseTalentReq(t.req).met) posibles.push(t);
+        }));
+      });
+      if (!posibles.length) break;
+      const t = azar(posibles);
+      S.talentos.push({ name: t.name, id: t.id || '', desc: t.desc || '' });
+    }
+
+    // 8 · Salvaciones y Guardia. La Guardia no se sortea: se toma el mejor de
+    //     los tres elegibles, que es lo que haría cualquiera al construir.
+    S.savCom = azar(SAV_COMUN);
+    S.savPoco = azar(SAV_POCO);
+    S.guardAttr = GUARD_ATTR.slice().sort((x, y) => total(y) - total(x))[0];
+    S.nombre = azar(NOMBRES);
+    S.alineamiento = azar(CONVICCIONES);
+
+    // 9 · Equipo. armasPermitidas() ya filtra por competencia del Arquetipo;
+    //     aquí se añade el requisito de FUE del arma, que el Audaz ignora.
+    const fuerza = total('FUE');
+    const puede = w => a.ignoresGearReq || !w.req_FUE || fuerza >= w.req_FUE;
+    const pool2 = barajar(armasPermitidas().filter(par => puede(par[1])));
+    S.armas = [];
+    if (pool2.length) {
+      S.armas.push(pool2[0][0]);
+      // El tope depende de si la primera es simple: se consulta, no se asume.
+      if (topeArmas() > 1 && pool2[1]) S.armas.push(pool2[1][0]);
+    }
+    const eq = EQUIPO_ARQ[S.arq];
+    if (eq && eq.opciones.length) {
+      const o = azar(eq.opciones);
+      S.opcArq = o.v;
+      if (o.armaLigera) {
+        const ligeras = Object.entries(app.DB.weapons)
+          .filter(par => par[0] !== 'desarmado' && esLigera(par[1]) && puede(par[1]));
+        if (ligeras.length) S.armaExtra = azar(ligeras)[0];
+      }
+    }
+    let m = 0; const nd = MONEDAS[S.arq] || 3;
+    for (let i = 0; i < nd; i++) m += d6();
+    S.monedas = m * 10;
+
+    // 10 · Antes de volcar se pasa por queFalta() paso a paso: el mismo juez
+    //      que decide si el botón Continuar se enciende. Si algo no cuadra no
+    //      se crea a medias — se abre el asistente donde falla, ya relleno.
+    let falla = -1, motivo = '';
+    for (let i = 0; i <= ULTIMO; i++) {
+      S.paso = i;
+      const f = queFalta();
+      if (f) { falla = i; motivo = f; break; }
+    }
+    if (falla >= 0) {
+      S.paso = falla;
+      abrirConEstado();
+      app.toast('Aleatorio incompleto — ' + motivo, 'info');
+      return;
+    }
+    S.paso = ULTIMO;
+    volcar(true);
+  }
+
+  /** Abre el panel sin reiniciar `S`, que es lo que hace abrir(). */
+  function abrirConEstado() {
+    const p = $('wiz_panel');
+    p.classList.add('fs-open');
+    document.body.style.overflow = 'hidden';
+    pintar();
+  }
+
+  app.personajeAleatorio = aleatorio;
 
   /** Salida de emergencia a media creación: lo diligenciado se queda. */
   function pasarAMano() {
@@ -1085,6 +1265,8 @@
   // Salida de emergencia: quien prefiera la ficha entera abierta de golpe
   // —o quiera cambiar algo que el asistente no pregunta— no queda atrapado.
   $('wiz_manual').onclick = () => pasarAMano();
+  const _dado = $('wiz_dado');
+  if (_dado) _dado.onclick = () => aleatorio();
 
   /* ── Interruptor en Ajustes & Datos ───────────────────────────── */
   /* Preferencia de quien juega, no del personaje: vive en localStorage y no
