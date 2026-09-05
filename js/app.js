@@ -100,6 +100,7 @@ const app = {
     // Long-press repeat on resource +/- buttons
     this._initResLongPress();
     this._initAdvFabAutoOcultar();
+    this._initUnsavedWatch();
 
     // Mark unsaved on manual resource edits (type directly in cur_pv etc.)
     ['cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id => {
@@ -1687,19 +1688,33 @@ const app = {
     const shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
     const magicBonus  = parseInt($('sel_guard_magic')?.value) || 0;
     const otherBonus  = parseInt($('sel_guard_other')?.value) || 0;
-    const total = 10 + prof + shieldGuard + defMod + magicBonus + otherBonus;
+    /* Segundo atributo a la Guardia. Hay Talentos que suman el MOD de otro
+       atributo —Defensa sin Forma es el caso claro: 10 + PB + MOD DES + MOD
+       SAB, la única fórmula del sistema con dos—. Antes no había dónde
+       declararlo y había que falsearlo con «Otro Bono», que es un número
+       fijo y no seguía al atributo cuando subía. */
+    const attr2Key = $('sel_guard_attr2')?.value || '';
+    const attr2Mod = attr2Key ? (mods[attr2Key] || 0) : 0;
+    const total = 10 + prof + shieldGuard + defMod + magicBonus + otherBonus + attr2Mod;
 
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     set('guard_base_val', 10);
     set('guard_prof_val', (prof >= 0 ? '+' : '') + prof);
     set('guard_shield_val', (shieldGuard >= 0 ? '+' : '') + shieldGuard);
     set('guard_attr_val', (defMod >= 0 ? '+' : '') + defMod);
+    const op2 = $('guard_attr2_op'), part2 = $('guard_attr2_part');
+    if (op2)   op2.style.display   = attr2Key ? '' : 'none';
+    if (part2) part2.style.display = attr2Key ? '' : 'none';
+    if (attr2Key) {
+      set('guard_attr2_lbl', attr2Key);
+      set('guard_attr2_val', (attr2Mod >= 0 ? '+' : '') + attr2Mod);
+    }
     set('res_guardia', total);
     set('guard_total_live', total);
     const noteEl = $('guard_alt_note');
     if (noteEl) noteEl.textContent = altNote ? `Fórmula alternativa activa: ${altNote}` : '';
     // Desprevenido (§3d): sin PB ni escudo, conserva el atributo defensivo.
-    set('guard_unaware_val', 10 + defMod + magicBonus + otherBonus);
+    set('guard_unaware_val', 10 + defMod + attr2Mod + magicBonus + otherBonus);
 
     this._combat.guardia = total;
     this._combat.guardAttr = altNote ? altNote : defKey;
@@ -1824,6 +1839,7 @@ const app = {
     this.renderInventory();
     this.syncCombatOptions();
     this.calc();
+    this._markUnsaved();
     this.toast(`${data.name} añadido`,'ok');
   },
 
@@ -1941,7 +1957,7 @@ const app = {
     this.toast(isEdit?'Actualizado':'Añadido','ok');
   },
 
-  removeInvItem(idx) { this.inventory.splice(idx,1); this.renderInventory(); this.syncCombatOptions(); this.calc(); },
+  removeInvItem(idx) { this.inventory.splice(idx,1); this.renderInventory(); this.syncCombatOptions(); this.calc(); this._markUnsaved(); },
   moveInvItem(idx, dir) {
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= this.inventory.length) return;
@@ -3228,6 +3244,7 @@ const app = {
       card?.classList.add('sel');
     } else { hidden?.remove(); card?.classList.remove('sel'); }
     this.updateTalentCount(); this.calc();
+    this._markUnsaved();
     // Re-render so requirement states that depend on other talents (prereqs) refresh
     if (document.getElementById('talent_panel')?.classList.contains('fs-open')) {
       this._renderTalentList();
@@ -3248,6 +3265,7 @@ const app = {
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     document.querySelectorAll('#tm_list input[type="checkbox"]').forEach(c=>{c.checked=false;c.closest('.tc')?.classList.remove('sel')});
     this.updateTalentCount(); this.calc();
+    this._markUnsaved();
   },
 
   updateTalentCount() {
@@ -3924,6 +3942,7 @@ const app = {
           selCount.classList.add('pulse');
         }
         if (selEmpty) selEmpty.style.display = count ? 'none' : 'block';
+        this._markUnsaved();
         // La tarjeta cambia de columna sin repintar la lista, así que el
         // recuento «N de M» hay que recalcularlo o se queda una unidad
         // desfasado. Y una tarjeta que vuelve a Disponibles debe pasar por
@@ -5093,14 +5112,21 @@ const app = {
       skillBonus: { ...(this._skillBonus || {}) },
       skillAttr:  { ...(this._skillAttrPick || {}) },
       powerSource: this._powerSource || '',
-      _prefs: {
-        // Se serializa lo CONFIRMADO con "✓ Aplicar al Personaje"
-        // (_charPrefs), nunca una vista previa sin aplicar.
-        portSize:   this._charPrefs?.portSize   || this._portSize        || 'm',
-        portShape:  this._charPrefs?.portShape  || this._portShape       || 'rounded',
-        portBorder: this._charPrefs?.portBorder || this._portBorderMode  || 'premium',
-        fontSize:  localStorage.getItem(STORAGE.KEYS.font) || 'normal'
-      }
+      /* Prefs de retrato PROPIAS del personaje. `propias` distingue «las
+         eligió el jugador con Aplicar a este personaje» de «se copiaron
+         solas del global al guardar». Antes no existía esa marca: cada
+         guardado hacía una foto del global y al reabrir el personaje esa
+         foto lo pisaba, así que apagar el Borde Premium en Ajustes no
+         servía de nada —volvía en cuanto abrías la ficha—.
+         El TAMAÑO DE FUENTE ya no viaja aquí: es tamaño de la interfaz,
+         no un dato del personaje, y tenerlo por ficha obligaba a
+         reajustarlo uno por uno. Vive solo en el global. */
+      _prefs: this._charPrefsPropias ? {
+        propias:    true,
+        portSize:   this._charPrefs?.portSize   || this._portSize       || 'm',
+        portShape:  this._charPrefs?.portShape  || this._portShape      || 'rounded',
+        portBorder: this._charPrefs?.portBorder || this._portBorderMode || 'premium',
+      } : { propias: false }
     };
     document.querySelectorAll('input[type=text]:not(.inm),input[type=number]:not(.isl):not(#gold_coins_edit)').forEach(el=>{if(el.id)data.inputs[el.id]=el.value});
     document.querySelectorAll('select:not(#inv_db_category):not(#inv_db_item):not(.ityp)').forEach(el=>{if(el.id)data.selects[el.id]=el.value});
@@ -5142,17 +5168,25 @@ const app = {
     // _charPrefs es el estado CONFIRMADO del personaje: ausencias caen al
     // predeterminado global, sin que cargar este personaje lo modifique.
     const prefs = (data._prefs && typeof data._prefs === 'object') ? data._prefs : {};
+    /* Fichas anteriores a la marca `propias` traen prefs que en realidad son
+       una copia del global. Se dan por NO propias: heredan lo global, que es
+       lo que el jugador espera al cambiarlo en Ajustes. Quien quiera un
+       retrato distinto para un personaje lo vuelve a aplicar una vez. */
+    this._charPrefsPropias = prefs.propias === true;
     this._charPrefs = {
       portSize:   prefs.portSize   || localStorage.getItem(STORAGE.KEYS.portSize)  || 'm',
       portShape:  prefs.portShape  || localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded',
       portBorder: prefs.portBorder || localStorage.getItem('ss_port_border')        || 'premium',
     };
-    if (this._perCharPrefs) {
+    if (this._perCharPrefs && this._charPrefsPropias) {
       this.setPortraitSize(this._charPrefs.portSize);     // _charOpen() ⇒ no persiste global
       this.setPortraitShape(this._charPrefs.portShape);
       this._portBorderMode = this._charPrefs.portBorder;
       this._applyPortraitBorder();
-      if (prefs.fontSize) this.setFontSize(prefs.fontSize, false); // no contaminar el global
+    } else {
+      // Sin prefs propias, manda el global: se reaplica por si el personaje
+      // anterior había dejado puesta su vista previa.
+      this._restorePortraitSettings();
     }
     if (data.concept) document.getElementById('char_concept').value = data.concept;
     if (data.notes) document.getElementById('char_notes').value = data.notes;
@@ -5234,10 +5268,35 @@ const app = {
     if (this._charLoading) return;
     const lbl = document.getElementById('last_saved_lbl');
     if (!lbl) return;
-    if (!lbl.classList.contains('fresh') && !lbl.classList.contains('unsaved')) {
-      lbl.classList.add('unsaved');
-      lbl.textContent = 'sin guardar';
-    }
+    if (lbl.classList.contains('unsaved')) return;   // ya avisado
+    /* `fresh` es la marca de «guardado hace un momento» y dura 3,5 s. Antes
+       también bloqueaba este aviso, así que cualquier cambio hecho justo
+       después de guardar no marcaba nada y la ficha parecía al día. */
+    lbl.classList.remove('fresh');
+    lbl.classList.add('unsaved');
+    lbl.textContent = 'sin guardar';
+  },
+
+  /** Un solo sitio del que cuelgan TODOS los controles de la ficha: antes
+      cada acción tenía que acordarse de llamar a _markUnsaved() y varias no
+      lo hacían —los talentos, el inventario, los desplegables de Guardia y
+      de combate, los atributos—. Los cambios que no pasan por un evento del
+      DOM (talentos por input oculto, inventario, aptitudes) siguen avisando
+      a mano. */
+  _initUnsavedWatch() {
+    const raiz = document.getElementById('app-screen') || document;
+    const marcar = (e) => {
+      const t = e.target;
+      if (!t || !t.tagName) return;
+      if (!/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)) return;
+      // Los desplegables del catálogo de objetos solo eligen qué añadir:
+      // no son datos del personaje hasta que se pulsa «+ Añadir».
+      if (t.id === 'inv_db_category' || t.id === 'inv_db_item') return;
+      if (t.closest('#settings_modal')) return;      // preferencias, no ficha
+      this._markUnsaved();
+    };
+    raiz.addEventListener('change', marcar, true);
+    raiz.addEventListener('input',  marcar, true);
   },
 
   /** @param {string} name  @param {Object} [roster]  Pre-loaded roster to avoid a second localStorage read */
@@ -5353,6 +5412,7 @@ const app = {
     const ga = document.getElementById('sel_guard_attr'); if(ga)ga.value='DES';
     const gm = document.getElementById('sel_guard_magic'); if(gm)gm.value='0';
     const go = document.getElementById('sel_guard_other'); if(go)go.value='0';
+    const ga2 = document.getElementById('sel_guard_attr2'); if(ga2)ga2.value='';
     const wd1 = document.getElementById('w1_dmg_attr'); if(wd1)wd1.value='FUE';
     const wd2 = document.getElementById('w2_dmg_attr'); if(wd2)wd2.value='FUE';
     this.showTalentSummary(); this.updateTalentCount();
@@ -5374,25 +5434,34 @@ const app = {
   /* ── FONT SIZE ──
      Todos los tamaños del CSS usan rem, que escalan desde el font-size de <html>.
      Cambiando document.documentElement.style.fontSize toda la interfaz responde. */
+  /* El tamaño es de la INTERFAZ, no del personaje: uno solo para toda la
+     app. Antes cada ficha guardaba el suyo y al abrirla lo imponía, así que
+     había que reajustarlo personaje por personaje. */
   setFontSize(size, persist = true) {
     // Normal = 16px (1rem base estándar del navegador).
-    // Las opciones desplazan ±2px desde esa base.
     const map = {small:'13px', normal:'16px', large:'18px', xlarge:'20px'};
+    const NOMBRES = {small:'Pequeña', normal:'Normal', large:'Grande', xlarge:'Muy grande'};
     const px = map[size] || '16px';
     // Cambiar el font-size del <html> escala todos los rem de la UI de golpe
     document.documentElement.style.fontSize = px;
-    // persist=false al restaurar la preferencia de UN personaje, para no
-    // convertirla en el predeterminado global de todos.
     if (persist) localStorage.setItem(STORAGE.KEYS.font, size);
     ['small','normal','large','xlarge'].forEach(s=>{
       const el = document.getElementById('fs_'+s);
-      if (el) el.classList.toggle('active', s===size);
+      if (el) {
+        el.classList.toggle('active', s===size);
+        el.setAttribute('aria-pressed', String(s===size));
+      }
     });
+    const eco = document.getElementById('fs_eco');
+    if (eco) eco.textContent = `${NOMBRES[size] || 'Normal'} · ${px} · toda la app`;
+    // Sin aviso al restaurar al arrancar: solo cuando lo toca una persona.
+    if (persist && this._fontSizeListo) this.toast(`Tamaño de fuente: ${NOMBRES[size] || size}`, 'ok');
   },
 
   _restoreFontSize() {
     const saved = localStorage.getItem(STORAGE.KEYS.font)||'normal';
     this.setFontSize(saved);
+    this._fontSizeListo = true;   // a partir de ahora los cambios son del usuario
   },
 
   _restoreScrollPreserve() {
@@ -5962,10 +6031,11 @@ const app = {
     //    Así "Aplicar" sobrevive aunque luego no pulsen "Guardar".
     const name = document.getElementById('char_name')?.value.trim();
     let persisted = false;
+    this._charPrefsPropias = true;   // a partir de aquí son SUYAS, no una copia
     if (name) {
       const roster = STORAGE.loadRoster();
       if (roster[name]) {
-        roster[name]._prefs = { ...(roster[name]._prefs || {}), ...this._charPrefs };
+        roster[name]._prefs = { ...(roster[name]._prefs || {}), ...this._charPrefs, propias: true };
         persisted = STORAGE.saveRoster(roster);
       }
     }

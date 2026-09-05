@@ -783,6 +783,11 @@ textarea{resize:vertical;min-height:52px;line-height:1.5;color:var(--text)}
   appearance:none;width:auto;min-height:32px;
 }
 .ap:focus{outline:none;border-color:var(--gold)}
+/* Los tres bonos de la Guardia van en una rejilla de tres columnas: que
+   llenen su celda y lleguen al mínimo táctil de 44, como el resto de
+   controles que se tocan en mesa. `.ap` es `width:auto` porque en otros
+   sitios va suelto junto a un número. */
+#guard_edit_view .ap{width:100%;min-height:44px}
 
 /* Checkboxes */
 input[type=radio],input[type=checkbox]{
@@ -2057,7 +2062,11 @@ input:focus-visible,textarea:focus-visible{outline:none}
 .pages-wrapper{background-image:var(--bg-app,none);background-size:cover;background-position:center top}
 
 /* ── Portrait border states ── */
-/* Premium (default) */
+/* Premium (default). El halo va también en la tarjeta de edición: sin él,
+   premium y sutil se veían casi igual al configurar. */
+.port-card-edit{
+  box-shadow:0 0 0 1px rgba(200,169,110,.1),0 0 14px rgba(200,169,110,.08);
+}
 .port-card{
   border:1px solid var(--edge-gold-strong);
   box-shadow:0 0 0 1px rgba(200,169,110,.12),0 0 16px rgba(200,169,110,.1),0 8px 40px rgba(0,0,0,.65);
@@ -2068,7 +2077,11 @@ body.port-border-subtle .port-card{
   box-shadow:0 4px 20px rgba(0,0,0,.45);
 }
 body.port-border-subtle .port-card-edit{
-  border:1px dashed rgba(200,169,110,.22);
+  /* Sin relleno dorado ni halo: la diferencia tiene que verse también
+     mientras el retrato está en modo edición, no solo confirmado. */
+  border:1px dashed var(--edge);
+  box-shadow:none;
+  background:var(--surface);
 }
 /* Hidden — applied when body has .port-border-none */
 body.port-border-none .port-card{

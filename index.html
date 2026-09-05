@@ -436,6 +436,8 @@
                 <div class="guard-part"><span class="guard-part-lbl">Escudo</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
                 <span class="guard-op">+</span>
                 <div class="guard-part"><span class="guard-part-lbl">Atributo</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
+                <span class="guard-op" id="guard_attr2_op" style="display:none">+</span>
+                <div class="guard-part" id="guard_attr2_part" style="display:none"><span class="guard-part-lbl" id="guard_attr2_lbl">Atr. 2</span><span class="guard-part-val" id="guard_attr2_val">+0</span></div>
               </div>
               <div style="margin-top:8px">
                 <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
@@ -445,7 +447,8 @@
                   <option value="CON">Constitución</option>
                 </select>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:6px">
+                <div><span class="fl" style="font-size:var(--fs-2xs)">Bono de Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
                 <div><span class="fl" style="font-size:var(--fs-2xs)">Bono Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
                 <div><span class="fl" style="font-size:var(--fs-2xs)">Otro Bono</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
               </div>
@@ -846,7 +849,10 @@
     <section aria-labelledby="dvdr_ui">
       <div class="dvdr" id="dvdr_ui">Interfaz</div>
       <div class="set-row" style="margin-bottom:10px">
-        <span class="set-lbl">Tamaño de Fuente</span>
+        <div class="set-row-txt">
+          <span class="set-lbl">Tamaño de Fuente</span>
+          <span class="set-hint" id="fs_eco">Normal · 16px · toda la app</span>
+        </div>
         <div style="display:flex;gap:5px;align-items:center">
           <button class="fs-btn" id="fs_small"  onclick="app.setFontSize('small')"  title="Pequeño"    style="font-size:11px">A</button>
           <button class="fs-btn" id="fs_normal" onclick="app.setFontSize('normal')" title="Normal"     style="font-size:14px">A</button>

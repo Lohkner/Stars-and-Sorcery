@@ -1,4 +1,77 @@
-# S&S Companion — v55.5
+# S&S Companion — v55.6
+
+## Novedades v55.6 — Segundo atributo a la Guardia · «sin guardar» que sí avisa · retrato y fuente que se quedan puestos
+
+`CACHE_VERSION` sube a `ss-companion-v84`.
+
+### 1 · Bono de Atributo en la Guardia
+
+Desplegable nuevo junto a Bono Mágico. Hay Talentos que suman el MOD de un
+segundo atributo —Defensa sin Forma es el caso claro: `10 + PB + MOD DES +
+MOD SAB`, la única fórmula del sistema con dos— y no había dónde declararlo.
+Se falseaba con «Otro Bono», que es un número fijo y no seguía al atributo
+cuando subía.
+
+El término entra en el total y en Desprevenido, y aparece en la tira de la
+fórmula con el nombre del atributo elegido. Sin elegir nada, ni se pinta.
+
+### 2 · El aviso «sin guardar»
+
+Dos fallos, uno encima del otro:
+
+- **`_markUnsaved` se bloqueaba a sí mismo.** La marca `fresh` («guardado hace
+  un momento») dura 3,5 s y también impedía el aviso, así que cualquier cambio
+  hecho justo después de guardar dejaba la ficha con cara de estar al día.
+- **Media app no avisaba.** Cada acción tenía que acordarse de llamar a
+  `_markUnsaved()` y varias no lo hacían: los talentos —el caso que se
+  reportó—, el inventario, las aptitudes, los desplegables de Guardia y de
+  combate, los atributos.
+
+Ahora hay **un solo sitio** del que cuelgan todos los controles de la ficha: un
+listener delegado sobre `#app-screen` para `change` e `input`. Los cambios que
+no pasan por un evento del DOM —talentos por input oculto, inventario,
+aptitudes— siguen avisando a mano. El panel de Ajustes queda fuera: son
+preferencias, no datos del personaje.
+
+### 3 y 4 · Retrato y tamaño de fuente: la misma causa
+
+Cada guardado hacía una **foto del ajuste global** y la metía en el `_prefs`
+del personaje, aunque el jugador nunca hubiera pedido ajustes propios. Al
+reabrir la ficha esa foto pisaba lo global. De ahí las dos quejas: apagar el
+Borde Premium no servía de nada —volvía al abrir el personaje— y el tamaño de
+fuente había que ponerlo uno por uno.
+
+- `_prefs` lleva ahora la marca **`propias`**, que solo pone «Aplicar a este
+  personaje». Sin ella, el personaje hereda lo global. Las fichas antiguas se
+  dan por no propias, que es lo que el jugador espera.
+- **El tamaño de fuente sale de `_prefs`**: es tamaño de la interfaz, no un
+  dato del personaje. Uno solo para toda la app.
+- Y se nota que se aplicó: la fila de Ajustes dice **«Grande · 18px · toda la
+  app»** y sale un aviso al tocarlo.
+
+**El interruptor del borde también se veía igual encendido que apagado** en la
+vista de edición del retrato: 0,4 → 0,22 de alfa sobre el mismo trazo. Ahora el
+premium lleva halo dorado y el sutil ninguno, así que la diferencia se ve al
+configurarlo y no solo con la ficha confirmada.
+
+### Verificado
+
+**Guardia**: con SAB (+1) el total pasa de 14 a 15 y Desprevenido de 12 a 13;
+la parte extra aparece con su etiqueta y desaparece al quitarla; la tira no
+desborda y los tres desplegables llenan su columna a 44 px de alto.
+
+**«Sin guardar»**: avisa en las ocho acciones probadas —Descriptor, atributo
+base, 2.º atributo de Guardia, añadir objeto, quitar objeto, elegir talento,
+elegir conjuro y un cambio justo después de guardar—. Y **no** avisa donde no
+debe: cargar un personaje por su camino real deja la etiqueta limpia, y tocar
+el tamaño de fuente no ensucia la ficha.
+
+**Retrato y fuente**: apagar el Borde Premium y guardarlo como global sobrevive
+a recargar el personaje; un personaje nuevo hereda el global; y uno con prefs
+propias conserva las suyas sin contaminar el global. El tamaño de fuente
+aguanta el cambio de personaje (18 px, «Grande», eco correcto).
+
+Consola limpia, sin desbordamiento horizontal a 375 px.
 
 ## Novedades v55.5 — El bono de Linaje ya no se come el nombre
 
