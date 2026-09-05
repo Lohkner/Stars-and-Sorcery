@@ -96,6 +96,32 @@
     return null;
   }
 
+  /** Bono de atributos del Linaje, comprimido para la etiqueta de la tarjeta.
+      El texto largo de `bonus` —«+1 a dos Atributos distintos a elección»— no
+      cabe junto al nombre en un móvil y se le montaba encima. Se reduce a lo
+      que hay que decidir:
+
+        +1 a dos Atributos distintos a elección  →  Elegir +1, +1
+        +2 a un Atributo a elección, +1 CON      →  Elegir +2 · +1 CON
+        +2 CAR, +1 INT o DES                     →  +2 CAR · +1 INT/DES
+
+      El orden importa: primero se separan las cláusulas con «·», y solo
+      después se expanden las elecciones, que meten sus propias comas. */
+  const CUANTOS = { un:1, una:1, dos:2, tres:3, cuatro:4 };
+  function bonoCorto(txt) {
+    if (!txt) return '';
+    return String(txt)
+      .replace(/,\s*\+/g, ' · +')
+      .replace(/\+(\d+)\s+a\s+(un|una|dos|tres|cuatro)\s+Atributos?\s*(?:distintos?\s*)?a\s+elecci[oó]n/gi,
+        (_, n, palabra) => {
+          const veces = CUANTOS[palabra.toLowerCase()] || 1;
+          return 'Elegir ' + Array.from({ length: veces }, () => '+' + n).join(', ');
+        })
+      .replace(/\b([A-Z]{3})\s+o\s+([A-Z]{3})\b/g, '$1/$2')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
   const el = (t, c, txt) => { const e = document.createElement(t);
     if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
   // La tabla de S&S NO es floor((v−10)/2) —va de −3 a +4, con tramos de dos
@@ -255,7 +281,7 @@
       if (d.afinidad) sub = '◆ Afinidad — Acceso a ' + d.afinidad;
       else if (d.afinidadOpcional)
         sub = '◇ Puede abrir ' + d.afinidadOpcional.fuente + ' gastando una Expresión';
-      b.appendChild(tarjeta(d.name, d.bonus || '', d.txt || '', sub, S.desc === k,
+      b.appendChild(tarjeta(d.name, bonoCorto(d.bonus), d.txt || '', sub, S.desc === k,
         () => alternar('desc', k, () => {
           S.descPick = []; S.descExps = []; S.descTruco = '';
         })));

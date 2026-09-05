@@ -2197,7 +2197,11 @@ body.port-border-none .port-card-edit{
 .wiz-opt.sel{border-color:var(--edge-gold);border-left-color:var(--gold);
   background:rgba(200,169,110,.06)}
 @media(hover:hover){.wiz-opt:hover{border-color:var(--edge)}}
-.wiz-opt-h{display:flex;align-items:baseline;gap:8px}
+/* La etiqueta no encoge, así que sin `wrap` un texto largo empujaba el
+   nombre a cero de ancho y se le montaba encima en móvil. Con wrap cae
+   a su propia línea, que es feo pero legible; el texto corto de
+   bonoCorto() hace que casi nunca haga falta. */
+.wiz-opt-h{display:flex;align-items:baseline;gap:2px 8px;flex-wrap:wrap}
 .wiz-opt-n{flex:1;min-width:0;font-family:var(--fd);font-size:var(--fs-lg);
   color:var(--bright)}
 .wiz-opt.sel .wiz-opt-n{color:var(--goldb)}

@@ -1,4 +1,40 @@
-# S&S Companion — v55.4
+# S&S Companion — v55.5
+
+## Novedades v55.5 — El bono de Linaje ya no se come el nombre
+
+`CACHE_VERSION` sube a `ss-companion-v83`.
+
+En el paso de Descriptor, la etiqueta del bono iba con el texto largo de
+`bonus` —«+1 a dos Atributos distintos a elección»— y en móvil se montaba
+encima del nombre del Linaje. Ahora se comprime a lo que hay que decidir:
+
+| Antes | Ahora |
+|---|---|
+| `+1 a dos Atributos distintos a elección` | `Elegir +1, +1` |
+| `+2 a un Atributo a elección, +1 CON` | `Elegir +2 · +1 CON` |
+| `+2 CAR, +1 INT o DES` | `+2 CAR · +1 INT/DES` |
+| `+2 FUE o DES, +1 CON` | `+2 FUE/DES · +1 CON` |
+
+Tres pasos, y el orden importa: primero se separan las cláusulas con «·»,
+después se expanden las elecciones —que meten sus propias comas— y por último
+las alternativas de atributo pasan a barra.
+
+El texto de la ficha no se toca: `bonus` sigue igual en `js/data.js` y la
+compresión vive solo en la tarjeta del asistente.
+
+### Y la cabecera de la tarjeta deja de poder aplastarse
+
+La etiqueta lleva `flex-shrink:0`, así que sin `flex-wrap` un texto largo
+empujaba el nombre a cero de ancho y se le montaba encima. Ahora `.wiz-opt-h`
+envuelve: si algún día una etiqueta no cabe, cae a su propia línea en vez de
+pisar nada.
+
+### Verificado
+
+Los once Linajes a 375 px: **ninguno solapa**, ninguno parte en dos líneas y
+ningún nombre queda recortado. `Humano` y `Medio Elfo` dan `Elegir +1, +1`;
+`Mutante`, `Elegir +2 · +1 CON`; `Infernal`, `+2 CAR · +1 INT/DES`;
+`Cambiante`, `+2 FUE/DES · +1 CON`. Consola limpia.
 
 ## Novedades v55.4 — La Carne arranca en 0
 
