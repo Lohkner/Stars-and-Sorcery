@@ -1,4 +1,96 @@
-# S&S Companion — v56.1
+# S&S Companion — v56.2
+
+## Novedades v56.2 — Manuales actualizados · el fondo de pantalla confirma y se puede quitar
+
+`CACHE_VERSION` sube a `ss-companion-v94`; `RULES_DATA_VERSION` a
+`1.0-manual-sendas-axiomas-r4`, así que la copia de reglas guardada se
+refresca sola.
+
+### Cómo se localizaron los cambios
+
+Se comparó cada talento de `data.js` con el Compendio actual **palabra por
+palabra**, sin fijarse en cómo se reparte el texto entre descripción, Grados y
+notas. Así solo aparecen cambios de contenido. Cada edición se hizo sobre el
+objeto de su talento, con una comprobación de que todo lo demás del archivo
+queda byte a byte igual: ningún texto ha pasado de un talento a otro.
+
+### Compendio de Sendas
+
+- **12 Sinergias nuevas**, cada una en su talento y en la posición del libro:
+  Magia de Guerra (Presión), La Pregunta Correcta (Deducción), Golpe de Gracia
+  (Presión, tras la de Postura), Defensor Implacable (Intervención), Golpe
+  Furtivo (Enfoque), Preparación Meticulosa (Preparación), Experto en Todo
+  (Enfoque), Maestro del Escudo (Intervención, antes de «Respuesta»), El
+  Improvisador (Improvisar), Torsión Arcana (Ejecución, antes de sus dos
+  notas), Enemigo Predilecto (Deducción) y Trepador Imposible (Enfoque).
+- **Sangre de Gigante**, reescrito: pasa de 4 Grados a 3 (Talla Grande ·
+  Gigante a Nivel 4+ · Coloso a Nivel 6+).
+- **Galería de Entidades**: el requisito pasa de «atributo clave 15+» a «el
+  atributo de tu Fuente 13+».
+- Las etiquetas **«Grado Único» → «GRADO ÚNICO»** (26) y **«Acumulable» →
+  «ACUMULABLE»** (1).
+- Se dejan igual los Nueve Dominios y los Ocho Orígenes de Herencia: están
+  igual en todas las versiones del Compendio. Que la app los muestre dentro de
+  cada talento es una decisión de presentación anterior, no un cambio del libro.
+
+### Manual Básico
+
+- **Tabla de XP** nueva: 1.500 · 4.500 · 9.000 · 15.000 · 22.500 · 31.500 ·
+  42.000 · 54.000 · 67.000. Un personaje guardado **conserva su nivel**; solo
+  cambia la cifra que necesita para el siguiente.
+- **PD por nivel**: 2 en cada nivel, más 1 en los niveles 5 y 9 (Hito de
+  Estilo). Total al Nivel 10: **20 PD**, antes 14.
+- **Versátil**: Adrenalina e Ingenio pasan de +5 a **+6** cada una.
+- **Rasgos de Arquetipo**, al texto actual:
+  - Audaz: desaparece *Lectura de Campo*; *Inercia de Guerra* pasa a formar
+    parte de Presión; *Intervención* tiene dos formas definidas: Interponerte
+    y Cerrar el paso.
+  - Versátil: el *Enfoque* se elige en cada turno, abarata el Esfuerzo de su
+    categoría y lleva la tabla de qué abarca cada una. Cambia el ejemplo de
+    *Improvisar*.
+  - Sagaz: *Deducción* pierde «Ya sabía eso» y «El eslabón», y gana Analizar
+    un lugar, umbral o rastro fuera de combate. *Preparación* pierde «Plan B».
+    *Ejecución* se queda en Excluir y Reencuadrar (Aplazar y Contener viven
+    ahora en la Sinergia de Torsión Arcana).
+  - Los apodos pasan a «El que se planta», «El que se las arregla» y «El que
+    lo vio venir».
+- Selector de Fuente: **Psiónica (INT/SAB)** y **Divinidad (SAB/CAR)**, como
+  dicen el Manual y el Compendio.
+- El intercambio de habilidades iniciales (Versátil 3, Sagaz 4) ya estaba así
+  en la app.
+
+### Guía del Director
+
+Es idéntica a la entregada la vez anterior. No hay nada que cambiar.
+
+### Fondo de pantalla
+
+**Causa.** `localStorage` tiene un cupo (≈5 MB) que comparte con los
+personajes y sus retratos. Al llenarse, `setItem` lanzaba una excepción que
+cortaba la función **antes** de mostrar el botón de quitar y el aviso. El fondo
+se veía, pero no se guardaba y se perdía al recargar. Aunque se guardara bien,
+el aviso «Fondo actualizado» salía **debajo** del panel de Ajustes, que es un
+`<dialog>` modal, así que nunca se veía.
+
+**Arreglo.**
+- La confirmación está ahora dentro del propio panel: una miniatura del fondo
+  guardado y una línea de estado («Procesando imagen…», «Guardada en este
+  dispositivo» en dorado, o el aviso de falta de espacio en rojo).
+- El botón de quitar aparece siempre que haya fondo, se haya podido guardar o
+  no.
+- Si no cabe, se prueba con versiones más ligeras (1400 → 1100 → 860 → 640 px)
+  antes de rendirse, y se libera primero el fondo anterior.
+
+### Verificado
+
+En el navegador, con la caché limpia:
+- Datos: 253 talentos, las 12 Sinergias en su sitio, Sangre de Gigante con 3
+  Grados, Galería con el requisito nuevo, 27 etiquetas en mayúsculas y
+  ninguna en el formato viejo, XP y PD nuevos, Versátil 6/6.
+- Fondo: subir, confirmar, miniatura, botón visible y quitar funcionan. El
+  almacenamiento lleno se simuló: hubo 4 intentos, aviso rojo, fondo visible
+  durante la sesión y botón de quitar presente.
+- Autodiagnóstico: 9 de 9. Consola limpia.
 
 ## Novedades v56.1 — El resumen de Letalidad dice solo el nivel
 

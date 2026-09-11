@@ -1467,6 +1467,13 @@ input[type=radio]:checked::after{transform:scale(1)}
 /* Legibilidad: la pista era var(--border) (#3d3254), casi invisible. */
 .mbd .set-hint{color:var(--muted)}
 .mbd .set-lbl{color:var(--dim)}
+/* Fondo de pantalla: miniatura de lo guardado y línea de estado. Van
+   dentro del panel porque el toast queda por debajo del <dialog>. */
+.bg-prev{height:46px;margin-top:6px;border:1px solid var(--edge);border-radius:6px;background:center/cover no-repeat}
+.bg-prev[hidden]{display:none}
+.mbd .bg-estado{margin-top:4px}
+.mbd .bg-estado.is-ok{color:var(--gold)}
+.mbd .bg-estado.is-err{color:var(--blood)}
 /* Fila de tamaños del retrato: la tipografía crece de XS a XL para
    comunicar la escala de un vistazo (la inline-style se elimina en el HTML). */
 .ps-row{display:flex;gap:6px}

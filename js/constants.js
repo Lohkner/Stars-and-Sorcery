@@ -33,7 +33,7 @@ const SKILL_SPECIALIZED = new Set([
 const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro'];
 
 /** XP required to reach each level (index = current level) */
-const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
+const XP_TABLE = [0, 1500, 4500, 9000, 15000, 22500, 31500, 42000, 54000, 67000];
 
 /* Índice de Letalidad: el sumando FIJO de los PV que se ganan por nivel,
    sobre el que se añade el MOD de CON. El Manual v1.8 da «2 + MOD CON»
@@ -41,12 +41,13 @@ const XP_TABLE = [0, 300, 900, 2100, 4500, 9000, 16000, 28000, 44000, 62000];
    defecto; la 1 hace la campaña más mortal y la 3, más heroica. */
 const LETHALITY_DEFAULT = 2;
 
-/* ── Progresión por nivel (Expert v1.0, «Tabla de progresión completa»)
+/* ── Progresión por nivel (Manual Básico 1.0, «Tabla de progresión completa»)
    Índice = nivel, así que la posición 0 no se usa. Total al Nivel 10:
-   7 Talentos · 1 Epítome · 14 PD · PB +4.                              */
+   7 Talentos · 1 Epítome · 20 PD · PB +4.                              */
 
-/** PD ganados AL ALCANZAR cada nivel. El Nivel 1 no otorga ninguno. */
-const PD_POR_NIVEL = [0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+/** PD ganados AL ALCANZAR cada nivel: 2 por nivel, más 1 en los niveles
+    de Hito de Estilo (5 y 9). El Nivel 1 no otorga ninguno. */
+const PD_POR_NIVEL = [0, 0, 2, 2, 2, 3, 2, 2, 2, 3, 2];
 
 /** Espacios de Talento disponibles en cada nivel (3 iniciales + 1 en los
     niveles impares a partir del 3). El Epítome del Nivel 10 va aparte. */

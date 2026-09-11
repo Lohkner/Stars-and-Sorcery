@@ -3362,8 +3362,8 @@ const app = {
     const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
     const sel = document.createElement('select'); sel.className = 'fuente-sel'; sel.setAttribute('aria-label', 'Fuente de Poder');
     const opts = [['', '— Elige Fuente —'], ['Erudición', 'Erudición (INT)'], ['Pacto', 'Pacto (CAR)'],
-      ['Herencia', 'Herencia (CAR)'], ['Divinidad', 'Divinidad (SAB)'], ['Juramento', 'Juramento (CAR)'],
-      ['Naturaleza', 'Naturaleza (SAB)'], ['Psiónica', 'Psiónica (INT/SAB/CAR)']];
+      ['Herencia', 'Herencia (CAR)'], ['Divinidad', 'Divinidad (SAB/CAR)'], ['Juramento', 'Juramento (CAR)'],
+      ['Naturaleza', 'Naturaleza (SAB)'], ['Psiónica', 'Psiónica (INT/SAB)']];
     const afin = this._afinidadFuente();
     opts.forEach(([v, t]) => {
       const o = document.createElement('option'); o.value = v;
@@ -4457,8 +4457,8 @@ const app = {
       if (!name) { this.toast('Nombre requerido','err'); return; }
       const grades = [];
       // Se recorren todos los campos de Grado que el formulario haya
-      // pintado, no [1,2,3] fijo: «Sangre de Gigante» tiene cuatro y
-      // el cuarto se borraba en cada guardado.
+      // pintado, no [1,2,3] fijo: un talento con cuatro Grados —los ha
+      // habido— perdía el cuarto en cada guardado.
       for (let n = 1; document.getElementById('db_g'+n); n++) {
         const d = document.getElementById('db_g'+n).value.trim();
         if (d) grades.push({g:n, d});
@@ -5632,63 +5632,106 @@ const app = {
     this.setTheme(localStorage.getItem('ss_theme') || 'deco');
   },
 
-  /** Set background image for home or app. src = base64 data URL or '' to clear */
-  setBgImage(target, src) {
+  /** Fondo de Inicio o de la ficha. `src` = data URL, o '' para quitarlo.
+      Devuelve si quedó guardado.
+      localStorage tiene un cupo por origen (≈5 MB) que comparte con los
+      personajes, y `setItem` lanza al llenarse. Antes esa excepción cortaba
+      la función ANTES de mostrar el botón de quitar y el aviso: el fondo se
+      veía, pero se perdía al recargar y el panel no daba ninguna señal.
+      `guardar:false` es para la restauración al arrancar, que no reescribe. */
+  setBgImage(target, src, { guardar = true } = {}) {
     const prop = target === 'home' ? '--bg-home' : '--bg-app';
     const key  = target === 'home' ? 'ss_bg_home' : 'ss_bg_app';
+    const root = document.documentElement.style;
+    let guardado = true;
     if (src) {
-      document.documentElement.style.setProperty(prop, 'url("' + src + '")');
-      document.documentElement.style.setProperty('--bg-overlay-op', '1');
-      localStorage.setItem(key, src);
-    } else {
-      document.documentElement.style.setProperty(prop, 'none');
-      // Only remove overlay if both are clear
-      const otherKey = target === 'home' ? 'ss_bg_app' : 'ss_bg_home';
-      if (!localStorage.getItem(otherKey)) {
-        document.documentElement.style.setProperty('--bg-overlay-op', '0');
+      root.setProperty(prop, 'url("' + src + '")');
+      root.setProperty('--bg-overlay-op', '1');
+      if (guardar) {
+        // Primero se suelta la imagen anterior: cuando el cupo va justo,
+        // su hueco es precisamente el que necesita la nueva.
+        try { localStorage.removeItem(key); localStorage.setItem(key, src); }
+        catch (e) { guardado = false; }
       }
-      localStorage.removeItem(key);
+    } else {
+      root.setProperty(prop, 'none');
+      // Only remove overlay if both are clear
+      if (!this._bgGuardado(target === 'home' ? 'app' : 'home')) {
+        root.setProperty('--bg-overlay-op', '0');
+      }
+      try { localStorage.removeItem(key); } catch (e) {}
     }
+    this._pintarBgEstado(target, src, guardado ? 'ok' : 'sin-espacio');
+    return guardado;
+  },
+
+  _bgGuardado(target) {
+    try { return localStorage.getItem(target === 'home' ? 'ss_bg_home' : 'ss_bg_app') || ''; }
+    catch (e) { return ''; }
+  },
+
+  /** Estado del fondo DENTRO del panel de Ajustes: miniatura, botón de
+      quitar y una línea de texto. El panel es un <dialog> modal y los
+      avisos flotantes quedan por debajo de él, así que confirmar solo con
+      un toast era no confirmar nada mientras el panel está abierto. */
+  _pintarBgEstado(target, src, estado = 'ok') {
     const btn = document.getElementById('bg_' + target + '_clear');
     if (btn) btn.style.display = src ? 'inline-flex' : 'none';
+    const prev = document.getElementById('bg_' + target + '_prev');
+    if (prev) {
+      prev.hidden = !src;
+      prev.style.backgroundImage = src ? 'url("' + src + '")' : '';
+    }
+    const est = document.getElementById('bg_' + target + '_estado');
+    if (!est) return;
+    const TXT = { procesando: 'Procesando imagen…', error: 'No se pudo leer esa imagen',
+                  'sin-espacio': 'Sin espacio: se verá hasta cerrar la app' };
+    est.textContent = TXT[estado] || (src ? 'Guardada en este dispositivo' : 'Sin imagen');
+    est.classList.toggle('is-ok',  estado === 'ok' && !!src);
+    est.classList.toggle('is-err', estado === 'error' || estado === 'sin-espacio');
   },
 
   loadBgImage(target, input) {
-    if (!input.files?.[0]) return;
-    const file = input.files[0];
-    // Accept any size — we compress client-side before storing
-    this.toast('Procesando imagen…', 'info');
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this._pintarBgEstado(target, this._bgGuardado(target), 'procesando');
     const r = new FileReader();
     r.onload = e => {
       const img = new Image();
       img.onload = () => {
-        // Resize to max 1400px on longest side, compress to JPEG 72%
-        const MAX = 1400;
-        let w = img.naturalWidth, h = img.naturalHeight;
-        if (w > MAX || h > MAX) {
-          if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
-          else        { w = Math.round(w * MAX / h); h = MAX; }
+        // De mayor a menor calidad hasta que quepa en el cupo. El primer
+        // paso es el de siempre (1400 px, JPEG 72 %); los siguientes solo
+        // se usan si el almacenamiento va lleno.
+        const PASOS = [[1400, .72], [1100, .66], [860, .6], [640, .55]];
+        let ok = false;
+        for (const [MAX, q] of PASOS) {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if (w > MAX || h > MAX) {
+            if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+            else        { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          if (this.setBgImage(target, cv.toDataURL('image/jpeg', q))) { ok = true; break; }
         }
-        const cv = document.createElement('canvas');
-        cv.width = w; cv.height = h;
-        const ctx = cv.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        const compressed = cv.toDataURL('image/jpeg', 0.72);
-        this.setBgImage(target, compressed);
-        this.toast('Fondo actualizado', 'ok');
+        this.toast(ok ? 'Fondo guardado' : 'Sin espacio para guardar el fondo', ok ? 'ok' : 'err');
       };
-      img.onerror = () => this.toast('No se pudo cargar la imagen', 'err');
+      img.onerror = () => {
+        this._pintarBgEstado(target, this._bgGuardado(target), 'error');
+        this.toast('No se pudo cargar la imagen', 'err');
+      };
       img.src = e.target.result;
     };
     r.readAsDataURL(file);
-    input.value = '';
   },
 
   _restoreBgImages() {
-    const home = localStorage.getItem('ss_bg_home');
-    const app  = localStorage.getItem('ss_bg_app');
-    if (home) this.setBgImage('home', home);
-    if (app)  this.setBgImage('app',  app);
+    ['home', 'app'].forEach(t => {
+      const src = this._bgGuardado(t);
+      if (src) this.setBgImage(t, src, { guardar: false });
+    });
   },
 
   /* ══════════════════════════════════════════

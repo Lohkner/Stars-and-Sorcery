@@ -905,15 +905,19 @@
           <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Inicio</div>
           <div style="display:flex;gap:4px">
             <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_home_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
-            <button id="bg_home_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+            <button id="bg_home_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
           </div>
+          <div id="bg_home_prev" class="bg-prev" hidden></div>
+          <span id="bg_home_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
         </div>
         <div>
           <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Personaje</div>
           <div style="display:flex;gap:4px">
             <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_app_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
-            <button id="bg_app_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+            <button id="bg_app_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
           </div>
+          <div id="bg_app_prev" class="bg-prev" hidden></div>
+          <span id="bg_app_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
         </div>
       </div>
     </section>
