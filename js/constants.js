@@ -94,6 +94,8 @@ const AXIOM_ID_RENAMES = {
   invisibilidad_9_m:      'invisibilidad_30_pies',
   proteccion_del_mal_9_m: 'proteccion_del_mal_30_pies',
   sordera:                'ensordecido',
+  // Catálogo 1.0 «Ultimate»: solo cambia la grafía, el efecto es idéntico.
+  telekinesis_menor:      'telequinesis_menor',
 };
 
 /* ── Migración de ids de Talento (reglas v5.5.2) ─────────────────
@@ -165,6 +167,13 @@ const TALENT_ID_RENAMES = {
   canal_compartido:            'fuente_compartida',
   resonancia_del_canal:        'oido_abierto',
   trascendencia_mistica:       'maestria_de_fuente',
+
+  /* ── Compendio de Sendas 1.0 «Ultimate» ─────────────────────────
+     Gadgeteer pasa a Maestro de Artilugios («gadget» → «artilugio»,
+     mismas mecánicas); Legado del Bestias pasa a Legado de la Manada
+     con el texto idéntico. */
+  gadgeteer:                   'maestro_de_artilugios',
+  legado_del_bestias:          'legado_de_la_manada',
 };
 
 /** Inventory slots per card cap */

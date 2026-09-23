@@ -1,4 +1,59 @@
-# S&S Companion — v56.2
+# S&S Companion — v56.3
+
+## Novedades v56.3 — Reglas a la edición «Ultimate» de los cuatro libros
+
+`CACHE_VERSION` sube a `ss-companion-v95`; `RULES_DATA_VERSION` a
+`1.0-manual-sendas-axiomas-r5`.
+
+Los cuatro documentos nuevos cambian mucho de **formato** (estilos propios en
+el Compendio, tablas nuevas en el Catálogo, glifos ◆✦⚡◈ retirados,
+referencias «Cap. N» → «p. N», comillas «»), pero poco de **reglas**. Se
+compararon palabra por palabra contra la app —no contra la versión anterior
+del libro— y solo se tocó lo que cambia el juego.
+
+### Compendio de Sendas
+- **Renombrados**: *Gadgeteer* → **Maestro de Artilugios** («gadget» →
+  «artilugio» en todo su texto) y *Legado del Bestias* → **Legado de la
+  Manada**. Los personajes guardados se migran solos, conservando el Grado
+  (`TALENT_ID_RENAMES`).
+- **«TRIGGER» → «DISPARADOR»** en los 26 talentos de ese tipo, y
+  «Pasivos/Triggers» → «Pasivos/Disparadores» en Procesamiento Acelerado. La
+  app conserva el glifo ⚡ como icono.
+- **Lo Prohibido**: pasa a Nivel 3, y sus Grados 2 y 3 a Nivel 6 y 8 (antes 9).
+- **Maestría de Fuente**: Grado 2 a Nivel 9 (antes 10).
+- **Los nueve Dominios**: el Signo a Nivel 4+ (antes 3+) y la Prerrogativa a
+  Nivel 6+ (antes 5+).
+- **Sangre Vinculada**: gana la etiqueta GRADO ÚNICO y su epígrafe.
+- **Gracia del Rompejuramentos**: nota reescrita («al romper tu Voto, tu
+  Gracia pasa a ser Gracia del Rompejuramentos con el mismo Grado»).
+
+### Catálogo de Axiomas
+- *Telekinesis Menor* → **Telequinesis Menor** (migración en
+  `AXIOM_ID_RENAMES`).
+- Armadura de Mago y Armadura Infernal: «DES sustituye a tu atributo
+  defensivo» en lugar de «aunque no lleves armadura». Luz: «uses» por
+  «lances».
+- **Los 18 Axiomas de Dominio** entran en la lista de Divinidad. El Catálogo
+  dice que cualquier usuario de Divinidad puede aprenderlos por las vías
+  normales, y la app no los tenía. Cada uno lleva «Dominio de X» en su texto,
+  así que se encuentran buscando «dominio».
+
+### Manual Básico y Guía del Director
+Sin cambios que afecten a la ficha. Del Manual cambian abreviaturas (AoO →
+AdO, DoT → DeT), el glosario y una regla nueva: con armadura Media o Pesada
+sin competencia, los Axiomas cuestan el doble. La app no aplica penalizaciones
+por armadura sin competencia (tampoco las aplicaba antes), porque no puede
+saber qué Talentos te la conceden. La Guía solo cambia terminología (Tags →
+Etiquetas) y añade un capítulo de criterios para el Director.
+
+### Verificado
+- Tras el cambio, la app coincide con los libros: 253 talentos y 369
+  Axiomas, sin diferencias salvo las decisiones de presentación ya conocidas
+  (Dominios, Orígenes de Herencia, rótulos de Grado).
+- Un personaje guardado con *Gadgeteer* G2, *Legado del Bestias* y
+  *Telekinesis Menor* se abre con los nombres nuevos y el mismo Grado.
+- El gestor de Axiomas de un personaje de Divinidad muestra los 18 de Dominio.
+- Autodiagnóstico a 390 px: 9 de 9. Consola limpia.
 
 ## Novedades v56.2 — Manuales actualizados · el fondo de pantalla confirma y se puede quitar
 

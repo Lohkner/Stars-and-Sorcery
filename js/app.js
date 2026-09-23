@@ -3148,8 +3148,8 @@ const app = {
         tag.textContent = cat.charAt(0).toUpperCase()+cat.slice(1);
         infoDiv.appendChild(tag);
       }
-      // Tipo del talento (◆ PASIVO, ✦ HABILITADOR, ⚡ TRIGGER, ◈ MODIFICADOR)
-      // con sus etiquetas (FUNDACIONAL, Grado Único, Acumulable). Dice cómo
+      // Tipo del talento (◆ PASIVO, ✦ HABILITADOR, ⚡ DISPARADOR, ◈ MODIFICADOR)
+      // con sus etiquetas (FUNDACIONAL, GRADO ÚNICO, ACUMULABLE). Dice cómo
       // entra en juego, que es lo primero que se busca al comparar dos.
       if (t.tipo) {
         const tp = document.createElement('span');
