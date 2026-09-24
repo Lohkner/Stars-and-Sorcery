@@ -1,4 +1,35 @@
-# S&S Companion — v56.8
+# S&S Companion — v56.9
+
+## Novedades v56.9 — Historial de tiradas
+
+`CACHE_VERSION` sube a `ss-companion-v102`.
+
+- **Las 10 últimas tiradas** del personaje abierto, la más reciente arriba.
+  Cada una muestra su nombre, su total, la hora y el detalle de los dados.
+  Los críticos se marcan en dorado y los fallos totales en rojo.
+- **Dónde se ven:**
+  - bajo cada resultado, en el desplegable «Últimas tiradas», que sale
+    plegado para no adelantar el total mientras ruedan los dados;
+  - desde el **menú de acciones** (engranaje de la cabecera), en el botón del
+    d20, que abre solo la lista sin tirar nada.
+- **Cómo funciona** (`js/historial.js`): se envuelve `showDiceRoll`, por donde
+  pasan todas las tiradas de la ficha (atributos, salvaciones, habilidades,
+  iniciativa, ataque y daño), así que ninguna tirada cambia.
+- Se guarda solo en memoria: al crear, cargar o importar otro personaje
+  (todo pasa por `clearCharData`) empieza de cero. Con el asistente de
+  creación abierto sigues con el personaje anterior, y su historial se
+  conserva hasta que termines.
+- Arrastrar la lista no activa el «desliza para cerrar» de la tarjeta.
+
+### Verificado
+A 390 px:
+- 12 tiradas de los seis tipos: quedan 10, en orden, y el total de la
+  primera coincide con el de la tarjeta.
+- Con la lista abierta, la tarjeta cabe en la pantalla.
+- El modo «solo lista» oculta los dados. La siguiente tirada vuelve al modo
+  normal.
+- Otro personaje empieza con la lista vacía y su aviso.
+- Autodiagnóstico: 9 de 9.
 
 ## Novedades v56.8 — Estilo de letra: Clásico o Moderno
 

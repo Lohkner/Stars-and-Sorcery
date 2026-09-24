@@ -3909,3 +3909,49 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .estilo-t{font-size:var(--fs-xl);color:var(--text);line-height:1.1}
 .estilo-b{font-size:var(--fs-sm);color:var(--muted);line-height:1.2}
 .estilo-btn.active .estilo-t{color:var(--goldb)}
+
+/* ══════════════════════════════════════════
+   HISTORIAL DE TIRADAS (v56.9) — js/historial.js
+══════════════════════════════════════════ */
+.dice-hist{width:100%;margin-top:4px;text-align:left}
+.dice-hist[hidden]{display:none}
+.dice-hist-sum{
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:40px;
+  cursor:pointer;list-style:none;touch-action:manipulation;
+  font-family:var(--fd);font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.dice-hist-sum::-webkit-details-marker{display:none}
+.dice-hist-sum::before{content:'▸';color:var(--gold);transition:transform .18s ease}
+.dice-hist[open] > .dice-hist-sum::before{content:'▸';transform:rotate(90deg)}
+.dice-hist-n{
+  font-family:var(--fn);font-variant-numeric:lining-nums tabular-nums;letter-spacing:0;
+  min-width:22px;padding:1px 6px;border:1px solid var(--edge);border-radius:10px;color:var(--dim);
+}
+.dice-hist-list{
+  list-style:none;margin:2px 0 0;padding:0;max-height:min(26vh,220px);overflow-y:auto;
+  overscroll-behavior:contain;display:flex;flex-direction:column;gap:5px;
+}
+.dice-hist-it{
+  padding:6px 10px;border:1px solid var(--edge);border-left:3px solid var(--rim);border-radius:var(--r);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 5%,transparent),transparent 70%);
+}
+.dice-hist-it.is-actual{border-left-color:var(--gold)}
+.dice-hist-it.is-crit{border-left-color:var(--goldb)}
+.dice-hist-it.is-fallo{border-left-color:var(--res-pv)}
+.dice-hist-cab{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.dice-hist-nm{font-family:var(--fd);font-size:var(--fs-sm);color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dice-hist-tot{
+  font-family:var(--fn);font-variant-numeric:lining-nums tabular-nums;font-weight:700;
+  font-size:var(--fs-xl);color:var(--goldb);flex:0 0 auto;
+}
+.dice-hist-it.is-crit .dice-hist-tot{color:var(--goldb);text-shadow:0 0 8px color-mix(in srgb,var(--gold) 60%,transparent)}
+.dice-hist-it.is-fallo .dice-hist-tot{color:var(--res-pv-ink)}
+.dice-hist-det{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);margin-top:2px;line-height:1.35}
+.dice-hist-vacia{font-family:var(--fb);font-style:italic;color:var(--muted);text-align:center;padding:10px 0}
+.dice-hist-vacia[hidden]{display:none}
+
+/* Entrada desde el menú de acciones: solo la lista, sin dados */
+.dice-card.solo-hist .dice-faces-row,.dice-card.solo-hist .dice-deco-line,
+.dice-card.solo-hist .dice-detail,.dice-card.solo-hist .dice-total-row,
+.dice-card.solo-hist .dice-badge,.dice-card.solo-hist .dice-hist-sum{display:none!important}
+.dice-card.solo-hist .dice-hist-list{max-height:min(60vh,460px)}
