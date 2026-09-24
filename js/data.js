@@ -265,7 +265,7 @@ const DEFAULT_DB = {
     "exoesqueleto": {name:"Exoesqueleto Táctico",rd:3,type:"medium",slots:2,notes:"Magitec · Armadura 3. Req.INT 11. Asistido: ignora req. de FUE y +10 pies velocidad. Sin penalizaciones. 4.000 pp."},
     "nanoplacas":   {name:"Armadura de Nanoplacas",rd:4,type:"heavy",slots:3,notes:"Magitec · Armadura 4. Req.INT 13. Adaptativa (Ud8): −2 al daño de tipos repetidos (máx 3). 12.000 pp."},
     "traje_sombra": {name:"Traje de Sombra",   rd:2,type:"light", slots:1,notes:"Magitec · Armadura 2. Req.DES 14. Camuflaje activo (Ud6): Ventaja en Sigilo mientras no ataques. 8.000 pp.",req_DES:14},
-    "coraza_cristal":{name:"Coraza de Cristal de Éter",rd:4,type:"medium",slots:2,notes:"Magitec · Armadura 4. Req.SAB 13. Canal Arcano: Resistencia a daño de Axiomas, sin penalización de lanzamiento. 6.000 pp.",req_SAB:13}
+    "coraza_cristal":{name:"Coraza Resonante",rd:4,type:"medium",slots:2,notes:"Magitec · Armadura 4. Req.SAB 13. Resonante (propiedad Fuente): Resistencia al daño de Axiomas y sin penalización al usar Axiomas. 6.000 pp.",req_SAB:13}
   },
 
   /* ══ ESCUDOS — Apéndice A v8.3 ══

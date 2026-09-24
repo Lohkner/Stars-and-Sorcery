@@ -30,7 +30,7 @@ const SKILL_SPECIALIZED = new Set([
   'Artesanía','Conocimiento',
 ]);
 /** Nombre del Grado de Maestría (Manual Cap.VI §1) */
-const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro'];
+const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro','Maestría Absoluta'];
 
 /** XP required to reach each level (index = current level) */
 const XP_TABLE = [0, 1500, 4500, 9000, 15000, 22500, 31500, 42000, 54000, 67000];

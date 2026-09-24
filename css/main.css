@@ -3762,3 +3762,74 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .bedit:has(use[href="#i-quill"]){border-color:transparent;box-shadow:none;background:none}
 .bedit:has(use[href="#i-quill"]) .ico{color:color-mix(in srgb,var(--gold) 75%,transparent)}
 @media(hover:hover){.bedit:has(use[href="#i-quill"]):hover{border-color:var(--edge)}}
+
+/* ══════════════════════════════════════════
+   v56.6 — Grado 5, armadura sin competencia, títulos y retoques
+══════════════════════════════════════════ */
+
+/* Grado de habilidad: en móvil los puntos de 6 px no se distinguían.
+   Caja más ancha, puntos de 8 px, y el Grado 5 es una medalla. */
+.sk-g-badge.sk-pips{width:78px;min-width:78px;padding:0;gap:6px;justify-content:center}
+.sk-pip{width:8px;height:8px;flex:0 0 8px;border-width:1.5px}
+.sk-g-badge.sk-medalla{
+  color:var(--goldb);border-color:var(--edge-gold-strong);
+  background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--gold) 22%,transparent),transparent 70%);
+}
+.sk-g-badge.sk-medalla .ico{
+  width:24px;height:24px;margin:0;vertical-align:0;
+  filter:drop-shadow(0 0 4px color-mix(in srgb,var(--gold) 55%,transparent));
+}
+
+/* Aviso de armadura sin competencia */
+.armor-pen{
+  display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:7px 10px;
+  font-family:var(--fb);font-size:var(--fs-md);line-height:1.45;color:var(--text);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--res-adr) 12%,transparent),transparent 75%);
+  border:1px solid var(--edge);border-left:3px solid var(--res-adr);border-radius:var(--r);
+}
+.armor-pen[hidden]{display:none}
+#armor_pen_alert{margin-top:6px}
+.armor-pen > span{flex:1;min-width:0}
+.armor-pen-ign{
+  flex:0 0 auto;min-height:34px;padding:0 12px;border-radius:var(--r);cursor:pointer;
+  background:none;border:1px solid var(--edge-strong);color:var(--dim);
+  font-family:var(--fd);font-size:var(--fs-xs);letter-spacing:.1em;text-transform:uppercase;
+}
+@media(hover:hover){.armor-pen-ign:hover{border-color:var(--edge-gold);color:var(--goldb)}}
+.armor-prof-ign{
+  display:flex;align-items:center;gap:8px;margin-top:6px;min-height:40px;cursor:pointer;
+  font-family:var(--fb);font-size:var(--fs-md);color:var(--dim);
+}
+.armor-prof-ign[hidden]{display:none}
+.armor-prof-ign input{width:18px;height:18px;accent-color:var(--gold);flex:0 0 auto}
+
+/* Fuente de Poder: del recuadro azul al trato de los Rasgos */
+.fuente-row,.fuente-row.readonly{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 8%,transparent),transparent 70%);
+  border:1px solid var(--edge);border-left:3px solid var(--gold);border-style:solid;
+}
+.fuente-lbl{color:var(--muted)}
+.fuente-val{color:var(--goldb)}
+.fuente-sel:focus{border-color:var(--edge-gold-strong)}
+
+/* Grados de talento: prosa en la letra del cuerpo, con filete */
+.js-grade-block{
+  font-family:var(--fb);font-size:var(--fs-md);line-height:1.5;color:var(--text);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 5%,transparent),transparent 70%);
+  border-left:3px solid var(--rim);border-radius:var(--r);padding:5px 10px;margin-top:4px;
+}
+.js-grade-block.grade-on{color:var(--text);border-left:3px solid var(--edge-gold-strong);padding-left:10px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 9%,transparent),transparent 70%)}
+.js-grade-block.grade-active{color:var(--bright);border-left:3px solid var(--gold);font-weight:400;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent 75%)}
+.js-grade-block.grade-off{opacity:.5;font-style:italic}
+.js-grade-block.tc-nota{background:none;border-left:3px solid var(--rim);color:var(--muted)}
+
+/* Letra de los títulos: IM Fell English en lugar de Cinzel. Más
+   específico que [data-font], así que vale con cualquier familia. */
+:root[data-titulos="fell"]{
+  --ft:'IM Fell English',Georgia,'Times New Roman',serif;
+  --fd:'IM Fell English',Georgia,'Times New Roman',serif;
+}
+:root[data-titulos="fell"] .pt,:root[data-titulos="fell"] .dvdr,
+:root[data-titulos="fell"] .set-lbl{letter-spacing:.08em}

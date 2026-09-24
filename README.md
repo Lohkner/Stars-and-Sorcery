@@ -1,4 +1,74 @@
-# S&S Companion — v56.5
+# S&S Companion — v56.6
+
+## Novedades v56.6 — Copia de seguridad · letras sin conexión · IM Fell English · armadura sin competencia · Grado 5
+
+`CACHE_VERSION` sube a `ss-companion-v99`; `RULES_DATA_VERSION` a
+`1.0-manual-sendas-axiomas-r6`.
+
+### Copia de seguridad de todos los personajes
+En **Ajustes → Datos → Todos los personajes**:
+- **Crear copia** descarga un solo archivo
+  `ss-companion-respaldo-AAAA-MM-DD.json` con todos los personajes guardados,
+  retratos incluidos.
+- **Restaurar** lo lee y añade sus personajes. Si alguno ya existe con el mismo
+  nombre, pregunta antes de reemplazarlo; si cancelas, no se toca nada. Los
+  personajes dañados se omiten y se avisa.
+- El resultado se muestra en la línea de estado bajo los botones, porque el
+  toast queda tapado por el panel de Ajustes.
+- Código en `js/respaldo.js`. Un JSON de un solo personaje sigue entrando por
+  «Importar JSON».
+
+### Letras instaladas en la app
+Cinzel, Cinzel Decorative, Spectral, JetBrains Mono e IM Fell English viven
+ahora en `fonts/` (11 archivos woff2, 311 KB, solo alfabeto latino, licencia
+OFL) con sus reglas en `css/fuentes.css`. El service worker las guarda con el
+resto de la app, así que se ven igual con o sin conexión. La app ya no pide
+nada a Google Fonts.
+
+### Letra de los títulos: Cinzel o IM Fell English
+En **Ajustes → Apariencia → Letra de los títulos**. Cambia títulos, nombres y
+rótulos (`--fd` y `--ft`); el texto sigue con la familia elegida arriba, sea
+Clásica, Sobria o Legible.
+
+### Aviso de armadura sin competencia
+Manual 1.0, Ap. A: con armadura **Media o Pesada sin competencia**, los
+Axiomas se tiran con Desventaja (ataque y Concentración) y cuestan el doble
+de Reserva. Equipo de Combate lo avisa cuando se dan las tres condiciones: la
+armadura es Media o Pesada, tu Arquetipo no tiene esa competencia, y el
+personaje usa Axiomas (tiene alguna Fuente iniciada). No avisa con las
+armaduras avanzadas, que el Manual exime.
+- **Ignorar** (en el aviso) o la casilla «Tengo competencia por un Talento»
+  (en edición) lo silencian. Se guarda con el personaje.
+- De paso: la «Coraza de Cristal de Éter» pasa a llamarse **Coraza
+  Resonante**, como en el Manual, con su propiedad Fuente descrita.
+
+### Grado 5 de habilidad
+- Se puede subir una habilidad a **Grado 5 (Maestría Absoluta)** con el +. El
+  Grado automático sigue llegando como mucho a 4: el 5 solo se pone a mano,
+  como en el Manual (Maestría Absoluta o Hito de Legado).
+- En modo lectura, el Grado 5 se muestra como una **medalla** en lugar de los
+  puntos.
+- La caja de los puntos es más ancha (78 px) y los puntos pasan de 6 a 8 px,
+  para distinguirlos bien en el móvil.
+
+### Retoques visuales
+- **Fuente de Poder** deja el recuadro azul y usa el filete dorado de los
+  Rasgos.
+- **Grados de talento**: el texto pasa de letra de máquina a la letra del
+  cuerpo, con filete (dorado para el Grado que tienes, tenue para los que aún
+  no).
+
+### Verificado
+A 390 px:
+- Aviso de armadura con un Sagaz con Afinidad y Cota de Malla. «Ignorar» lo
+  quita, y se conserva al guardar y cargar.
+- Grado 5 con medalla, y las seis cajas de Grado miden 78 px.
+- Copia: exportada (se intercepta la descarga) y restaurada con un nombre
+  repetido y uno dañado: pregunta, reemplaza, y omite el dañado.
+- Letras: 0 peticiones a Google, y las 11 en la caché sin conexión.
+- Autodiagnóstico 9 de 9 con Cinzel y 9 de 9 con IM Fell English.
+
+## Novedades v56.5 — Sin esquinas doradas · Ataques resume el bono
 
 ## Novedades v56.5 — Sin esquinas doradas · Ataques resume el bono
 

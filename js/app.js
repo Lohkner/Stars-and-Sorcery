@@ -96,6 +96,7 @@ const app = {
     this._restorePortraitSettings();
     this._restoreTheme();
     this._restoreFontFamily();
+    this._restoreTitulos();
     this._restoreBgImages();
     // Long-press repeat on resource +/- buttons
     this._initResLongPress();
@@ -1071,10 +1072,16 @@ const app = {
       badge.title = `Grado ${grade} · ${SKILL_GRADE_NAMES[grade] || ''}`;
       badge.setAttribute('role', 'img');
       badge.setAttribute('aria-label', badge.title);
-      for (let i = 1; i <= 4; i++) {
-        const dot = document.createElement('span');
-        dot.className = 'sk-pip' + (i <= grade ? ' on' : '');
-        badge.appendChild(dot);
+      if (grade >= 5) {
+        // Grado 5 (Maestría Absoluta): una medalla en lugar de los puntos.
+        badge.classList.add('sk-medalla');
+        badge.innerHTML = '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-medalla"/></svg>';
+      } else {
+        for (let i = 1; i <= 4; i++) {
+          const dot = document.createElement('span');
+          dot.className = 'sk-pip' + (i <= grade ? ' on' : '');
+          badge.appendChild(dot);
+        }
       }
 
       row.append(btn, badge);
@@ -1131,7 +1138,7 @@ const app = {
       badge.title = SKILL_GRADE_NAMES[grade] || '';
       const up = document.createElement('button');
       up.type='button'; up.className='sk-g-btn'; up.textContent='+';
-      up.disabled = grade >= 4;
+      up.disabled = grade >= 5;
       up.setAttribute('aria-label', `Subir Grado de ${sk}`);
       up.addEventListener('click', () => this.adjustSkillBonus(sk, 1));
       gc.append(dn, badge, up);
@@ -1198,9 +1205,27 @@ const app = {
         <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_shield">${this._esc(c.shieldName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_shield_bonus">${this._esc(shieldLine)}</span></div></div>
       </div>
       ${c.rdCapped ? `<div class="calert" style="display:block">Armadura limitada por el techo del sistema (5 + PB = ${c.rdCap})</div>` : ''}
+      ${c.armorPenalty && !c.armorPenaltyIgnored ? `<div class="armor-pen">
+        <span>${this._esc(this._textoPenalizacionArmadura(c.armorType))}</span>
+        <button type="button" class="armor-pen-ign" onclick="app.ignorarPenalizacionArmadura(true)" aria-label="Ignorar el aviso: tengo competencia por un Talento">Ignorar</button>
+      </div>` : ''}
       ${card(1, 'Principal', '')}
       ${card(2, 'Secundaria', ' secondary')}
       <button class="bedit" onclick="app.editSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
+  },
+
+  _textoPenalizacionArmadura(tipo) {
+    const t = { medium: 'Media', heavy: 'Pesada' }[tipo] || '';
+    return `Sin competencia con armadura ${t}: tus Axiomas se tiran con Desventaja (ataque y Concentración) y cuestan el doble de Reserva.`;
+  },
+
+  /** «Ignorar»: el jugador declara que un Talento le da la competencia.
+      Vive en una casilla de la ficha, así que se guarda con el personaje. */
+  ignorarPenalizacionArmadura(v) {
+    const chk = document.getElementById('armor_prof_ignore');
+    if (chk) chk.checked = !!v;
+    this._markUnsaved();
+    this.calc();
   },
 
   /** Modo lectura de Guardia. Igual que el de combate: se regenera entero
@@ -1599,6 +1624,30 @@ const app = {
     this._combat.shieldName = shieldData?.name || 'Sin Escudo';
     this._combat.shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
     this._combat.shieldBlock = shieldData ? (shieldData.block || 0) : 0;
+
+    // Penalización al usar Axiomas (Manual 1.0, Ap. A): armadura Media o
+    // Pesada SIN competencia → Desventaja en las tiradas de Axioma y el doble
+    // de su Coste. No aplica a las armaduras avanzadas («Magitec»: su
+    // ingeniería lo compensa, y la Coraza resonante tiene la propiedad
+    // Fuente) ni a quien no usa Axiomas. La competencia que da un Talento
+    // no se puede leer de la ficha: por eso existe «Ignorar».
+    {
+      const pesa = armorType === 'medium' || armorType === 'heavy';
+      const avanzada = /^\s*Magitec\b/i.test(armorData?.notes || '');
+      const compet = (arq?.armorProf || []).includes(armorType);
+      const usaAxiomas = typeof this._fuentesIniciadas === 'function'
+        ? this._fuentesIniciadas().size > 0 : true;
+      this._combat.armorPenalty = pesa && !avanzada && !compet && usaAxiomas;
+      this._combat.armorPenaltyIgnored = !!$('armor_prof_ignore')?.checked;
+      const pen = $('armor_pen_alert');
+      if (pen) {
+        const activa = this._combat.armorPenalty && !this._combat.armorPenaltyIgnored;
+        pen.hidden = !activa;
+        pen.textContent = activa ? this._textoPenalizacionArmadura(armorType) : '';
+      }
+      const ign = $('armor_prof_ignore_row');
+      if (ign) ign.hidden = !this._combat.armorPenalty;
+    }
     // El nombre de la armadura ya no se repite en Estado (basta el puntaje);
     // sigue en Equipo de Combate vía _combat.armorName y #armor_desc.
 
@@ -2294,11 +2343,13 @@ const app = {
     return acq > 0 ? Math.max(0, Math.min(4, acq - 1)) : 0;
   },
 
-  /** Grado efectivo = mínimo automático + puntos extra manuales (clamp 0–4). */
+  /** Grado efectivo = mínimo automático + puntos extra manuales (clamp 0–5).
+      El 5 solo existe por Maestría Absoluta o un Hito de Legado (Manual 1.0):
+      el mínimo automático sigue topando en 4, así que solo se llega a mano. */
   _skillGrade(skill, counts, grants) {
     const min = this._skillMinGrade(skill, counts, grants);
     const bonus = Math.max(0, this._skillBonus?.[skill] || 0);
-    return Math.max(0, Math.min(4, min + bonus));
+    return Math.max(0, Math.min(5, min + bonus));
   },
 
   /** Atributo sugerido: el de mayor modificador entre los candidatos del manual. */
@@ -2321,7 +2372,7 @@ const app = {
   adjustSkillBonus(skill, delta) {
     if (!this._skillBonus) this._skillBonus = {};
     const cur = Math.max(0, this._skillBonus[skill] || 0);
-    const maxBonus = 4 - this._skillMinGrade(skill);
+    const maxBonus = 5 - this._skillMinGrade(skill);   // Grado 5: Maestría Absoluta
     const next = Math.max(0, Math.min(maxBonus, cur + delta));
     if (next === cur) return;
     this._skillBonus[skill] = next;
@@ -5677,6 +5728,25 @@ const app = {
     document.querySelectorAll('.font-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.font === fid));
     try { localStorage.setItem('ss_font_family', fid); } catch (e) {}
+  },
+
+  /** Letra de los títulos, independiente de la familia: Cinzel (la de
+      siempre) o IM Fell English. Se aplica como atributo en <html> con más
+      especificidad que [data-font], así que manda en las tres familias. */
+  setTitulos(id) {
+    const tid = id === 'fell' ? 'fell' : 'cinzel';
+    const root = document.documentElement;
+    if (tid === 'cinzel') root.removeAttribute('data-titulos');
+    else root.setAttribute('data-titulos', tid);
+    document.querySelectorAll('.tit-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.tit === tid));
+    try { localStorage.setItem('ss_titulos', tid); } catch (e) {}
+  },
+
+  _restoreTitulos() {
+    let v = 'cinzel';
+    try { v = localStorage.getItem('ss_titulos') || 'cinzel'; } catch (e) {}
+    this.setTitulos(v);
   },
 
   _restoreFontFamily() {

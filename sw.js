@@ -13,7 +13,7 @@
 /* REGLA DE DESPLIEGUE: sube SIEMPRE esta versión al publicar cualquier
    cambio. El navegador solo detecta actualizaciones si sw.js cambia en
    bytes — con la misma versión, la app queda congelada para siempre. */
-const CACHE_VERSION = 'ss-companion-v97';
+const CACHE_VERSION = 'ss-companion-v99';
 const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
@@ -21,6 +21,18 @@ const APP_SHELL = [
   './index.html',
   './manifest.json',
   './css/main.css',
+  './css/fuentes.css',
+  './fonts/cinzel-decorative-400.woff2',
+  './fonts/cinzel-decorative-700.woff2',
+  './fonts/cinzel-var.woff2',
+  './fonts/im-fell-english-400-italic.woff2',
+  './fonts/im-fell-english-400.woff2',
+  './fonts/jetbrains-mono-var.woff2',
+  './fonts/spectral-300-italic.woff2',
+  './fonts/spectral-300.woff2',
+  './fonts/spectral-400-italic.woff2',
+  './fonts/spectral-400.woff2',
+  './fonts/spectral-600.woff2',
   './js/data.js',
   './js/constants.js',
   './js/storage.js',
@@ -32,6 +44,7 @@ const APP_SHELL = [
   './js/plegables.js',
   './js/raciones.js',
   './js/asistente.js',
+  './js/respaldo.js',
   './js/autocheck.js',
   './js/boot.js',
   './Bind_Pact_Weapon.webp',

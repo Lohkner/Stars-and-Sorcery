@@ -23,25 +23,12 @@
 <meta name="application-name" content="S&amp;S Companion">
 <meta name="msapplication-TileColor" content="#07060a">
 <meta name="color-scheme" content="dark">
+<!-- Letras instaladas en la propia app (css/fuentes.css + /fonts): se ven igual
+     con o sin conexión. Se precargan las dos que pintan la primera pantalla. -->
+<link rel="preload" href="fonts/cinzel-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/spectral-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fuentes.css">
 <link rel="stylesheet" href="css/main.css">
-<!-- Fonts injected via JS so they never block window.load or app init.
-     OFFLINE/SELF-HOST: to guarantee the display fonts work with no connection,
-     download the .woff2 files for Cinzel, Cinzel Decorative, Spectral and
-     JetBrains Mono, place them next to this file, add @font-face rules, and
-     cache them in sw.js. Until then, the CSS fallback stacks above keep the
-     serif/display character intact offline. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script>
-(function(){
-  const l = document.createElement('link');
-  l.rel = 'stylesheet';
-  l.media = 'print';
-  l.onload = function(){ this.media = 'all'; };
-  l.href = 'https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;600&display=swap';
-  document.head.appendChild(l);
-})();
-</script>
 </head>
 <body>
 <!-- Sprite de iconos unificados (trazo 1.5px, hereda color). Uso: <svg class="ico"><use href="#i-nombre"/></svg> -->
@@ -60,6 +47,8 @@
   <!-- Ataque y daño (tarjetas de Ataques) -->
   <symbol id="i-sword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v4.5L10.5 18l-4.5-4.5L15.5 4z"/><path d="M4.5 12l7.5 7.5"/><path d="M7 17l-3 3"/></symbol>
   <symbol id="i-d20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 7.5l4.5 7.5h-9z"/><path d="M12 2.5v5M3.5 7.3L7.5 15M20.5 7.3L16.5 15M7.5 15l4.5 6.5 4.5-6.5"/></symbol>
+  <!-- Grado 5 de habilidad (Maestría Absoluta) -->
+  <symbol id="i-medalla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 2.5h3l1 4.2-2.6.9zM16 2.5h-3l-1 4.2 2.6.9z"/><circle cx="12" cy="14.5" r="6.5"/><path d="M12 10.6l1.2 2.5 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="currentColor" stroke="none"/></symbol>
   <!-- Objetos del inventario (resumen de Equipo & Tesoro) -->
   <symbol id="i-eq-escudo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></symbol>
   <symbol id="i-eq-armadura" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4h8l3.5 3-2.5 3.5V20H7v-9.5L4.5 7z"/><path d="M12 4v5M7 14h10"/></symbol>
@@ -191,6 +180,7 @@
 <input type="file" id="bg_home_input" accept="image/*" style="display:none" onchange="app.loadBgImage('home',this)">
 <input type="file" id="bg_app_input"  accept="image/*" style="display:none" onchange="app.loadBgImage('app',this)">
 <input type="file" id="json_char_input" accept=".json" style="display:none" onchange="app.loadJSON(this)">
+<input type="file" id="respaldo_input" accept=".json,application/json" style="display:none" onchange="app.restaurarRespaldo(this)">
 <input type="file" id="json_rules_input" accept=".json" style="display:none" onchange="app.loadRulesFile(this)">
 <div id="home-screen" class="screen" role="main">
   <!-- ── Header: title + deco (identidad visual preservada) ── -->
@@ -655,6 +645,11 @@
                   </div>
                   <div class="ccard"><span class="clbl">Armadura de la pieza</span><span class="cval" id="armor_base_val">—</span></div>
                   <div id="armor_desc" class="infobox"></div>
+                  <div id="armor_pen_alert" class="armor-pen" hidden></div>
+                  <label class="armor-prof-ign" id="armor_prof_ignore_row" hidden>
+                    <input type="checkbox" id="armor_prof_ignore" onchange="app.calc()">
+                    <span>Tengo competencia por un Talento (no avisar)</span>
+                  </label>
                 </div>
                 <div><span class="fl">Escudo</span><select id="sel_shield" aria-label="Escudo equipado" onchange="app.calc()"></select>
                   <div id="shield_desc" class="infobox" style="margin-top:5px"></div>
@@ -918,6 +913,12 @@
         <button class="fs-btn font-btn" data-font="legible" onclick="app.setFontFamily('legible')" title="Tipografía del sistema" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Legible</button>
       </div>
       <span class="set-hint" style="display:block;margin-bottom:12px">Cambia la familia, no el tamaño. «Legible» usa la tipografía del sistema, con letras más abiertas para pantallas pequeñas.</span>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Letra de los títulos</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
+        <button class="fs-btn tit-btn" data-tit="cinzel" onclick="app.setTitulos('cinzel')" style="flex:1;padding:6px 2px;font-size:var(--fs-sm);font-family:'Cinzel',Georgia,serif">Cinzel</button>
+        <button class="fs-btn tit-btn" data-tit="fell" onclick="app.setTitulos('fell')" style="flex:1;padding:6px 2px;font-size:var(--fs-md);font-family:'IM Fell English',Georgia,serif">IM Fell English</button>
+      </div>
+      <span class="set-hint" style="display:block;margin-bottom:12px">Solo cambia los títulos, nombres y rótulos; el texto sigue con la familia de arriba.</span>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Fondo de Pantalla</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div>
@@ -950,6 +951,12 @@
         <button class="btn btn-g" data-action="exportJSON"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar JSON</button>
         <button class="btn btn-g" style="grid-column:1 / -1" data-action="triggerLoadJSON"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar JSON</button>
       </div>
+      <span class="set-lbl" style="display:block;margin-bottom:7px">Todos los personajes</span>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:4px">
+        <button class="btn btn-g" data-action="exportarRespaldo" aria-label="Crear copia de seguridad de todos los personajes"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Crear copia</button>
+        <button class="btn btn-g" onclick="document.getElementById('respaldo_input').click()" aria-label="Restaurar una copia de seguridad"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Restaurar</button>
+      </div>
+      <span class="set-hint bg-estado" id="respaldo_estado" aria-live="polite" style="display:block;margin-bottom:12px">Guarda todos tus personajes en un solo archivo. Úsalo antes de cambiar de móvil o de borrar los datos del navegador.</span>
       <span class="set-lbl" style="display:block;margin-bottom:7px">Reglas del Juego</span>
       <div style="display:flex;flex-direction:column;gap:6px">
         <button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar Reglas (JSON)</button>
@@ -1128,6 +1135,7 @@
 <script defer src="js/plegables.js"></script>
 <script defer src="js/raciones.js"></script>
 <script defer src="js/asistente.js"></script>
+<script defer src="js/respaldo.js"></script>
 <script defer src="js/autocheck.js"></script>
 <script defer src="js/boot.js"></script>
 </body>
