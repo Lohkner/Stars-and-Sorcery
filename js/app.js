@@ -917,7 +917,7 @@ const app = {
     tl.innerHTML = '';
     [...this._grantFijos(desc), ...(bg?.grant || [])].forEach(g => {
       const b = document.createElement('span');
-      b.className = 'tbadge'; b.textContent = '✦ ' + g;
+      b.className = 'tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); b.textContent = '✦ ' + g;
       tl.appendChild(b);
     });
     const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
@@ -949,6 +949,8 @@ const app = {
         || /^Elige\s+\S+\s+[^:]+:/i.test(g);
   },
   _grantFijos(d)      { return (d?.grant || []).filter(g => !this._esEleccion(g)); },
+  /** Solo para pintar: los Inconvenientes llevan otro color de filete. */
+  _esInconveniente(g) { return /^\s*Inconveniente\b/i.test(String(g || '')); },
   _grantElecciones(d) { return (d?.grant || []).filter(g =>  this._esEleccion(g)); },
 
   _descMods(descKey) {
@@ -1061,10 +1063,19 @@ const app = {
                     + `<span class="sk-meta">2d10 · ${attr}</span>`;
       btn.addEventListener('click', () => this.rollSkill(sk));
 
+      // Cuatro puntos que se llenan hasta el Grado. Grado 0 = los cuatro
+      // vacíos. El nombre del Grado va en el title y en el aria-label.
       const badge = document.createElement('span');
-      badge.className = 'sk-g-badge read';
-      badge.textContent = 'G' + grade;
-      badge.title = SKILL_GRADE_NAMES[grade] || '';
+      badge.className = 'sk-g-badge read sk-pips';
+      badge.dataset.grade = grade;
+      badge.title = `Grado ${grade} · ${SKILL_GRADE_NAMES[grade] || ''}`;
+      badge.setAttribute('role', 'img');
+      badge.setAttribute('aria-label', badge.title);
+      for (let i = 1; i <= 4; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'sk-pip' + (i <= grade ? ' on' : '');
+        badge.appendChild(dot);
+      }
 
       row.append(btn, badge);
       c.appendChild(row);
@@ -1163,12 +1174,12 @@ const app = {
         ${w.alert ? `<div class="calert" style="display:block">${this._esc(w.alert)}</div>` : ''}
         <div class="atk-btns">
           <button class="abtn abtn-a" onclick="app.rollWeaponAtk(${n})" aria-label="Tirar ataque arma ${role.toLowerCase()}">
-            <span class="abtn-icon">ATK</span>
+            <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
             <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="sum_atk${n}_bonus">${this._esc(w.atk)}</span></span>
           </button>
           <div class="atk-btn-sep"></div>
           <button class="abtn abtn-d" onclick="app.rollWeaponDmg(${n})" aria-label="Tirar daño arma ${role.toLowerCase()}">
-            <span class="abtn-icon">DMG</span>
+            <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
             <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="sum_atk${n}_dmg">${this._esc(w.dmg)}</span></span>
           </button>
         </div>
@@ -2040,9 +2051,16 @@ const app = {
     if (sumList) {
       sumList.innerHTML = this.inventory.length ? '' : '<div style="font-style:italic;color:var(--muted);text-align:center;padding:8px">Mochila vacía.</div>';
       this.inventory.forEach(item => {
-        const row = document.createElement('div'); row.className = 'irow';
-        const nm = document.createElement('span'); nm.textContent = String(item.name||'');
-        const sl = document.createElement('span'); sl.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xl);color:var(--gold)'; sl.textContent = String(item.slots||0);
+        const row = document.createElement('div'); row.className = 'irow irow-ico';
+        const nm = document.createElement('span'); nm.className = 'irow-nm';
+        const ic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        ic.setAttribute('class', 'ico irow-i'); ic.setAttribute('aria-hidden', 'true');
+        const us = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        us.setAttribute('href', '#i-' + this._iconoObjeto(item));
+        ic.appendChild(us);
+        const tx = document.createElement('span'); tx.textContent = String(item.name||'');
+        nm.append(ic, tx);
+        const sl = document.createElement('span'); sl.className = 'num-fig'; sl.style.cssText = 'font-size:var(--fs-xl);color:var(--gold)'; sl.textContent = String(item.slots||0);
         row.appendChild(nm); row.appendChild(sl);
         sumList.appendChild(row);
       });
@@ -2053,6 +2071,42 @@ const app = {
     // renderInventory is always followed by calc() in its callers (addFromDB,
     // saveCustomItem, syncCombatOptions chain, applyCharData, etc.).
     // Calling it here would double-calculate on every inventory operation.
+  },
+
+  /** Icono del sprite para un objeto del inventario. Solo decide el
+      dibujo: por tipo de dato y, si es un objeto suelto, por su nombre. */
+  _iconoObjeto(item) {
+    const t = item?.type || '';
+    if (t === 'weapons') return 'sword';
+    if (t === 'armors')  return 'eq-armadura';
+    if (t === 'shields') return 'eq-escudo';
+    const n = String(item?.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const R = [
+      [/racion|comida|viveres|provision/, 'eq-comida'],
+      [/antorcha|linterna|lampara|vela|aceite|farol/, 'eq-luz'],
+      [/cantimplora|odre|agua|pocion|frasco|vial/, 'eq-agua'],
+      [/cuerda|escalada|garfio|gancho|cadena/, 'eq-cuerda'],
+      [/kit|herramient|ganzua|botiquin|instrumento|balanza|util/, 'eq-kit'],
+      [/morral|mochila|saco|alforja/, 'eq-mochila'],
+      [/ropa|capa|tunica|vestido|abrigo|botas/, 'eq-ropa'],
+      [/foco|cristal|orbe|varita|baston|amuleto|simbolo|reliquia|gema/, 'eq-foco'],
+      [/brujula|astrolabio|mapa|catalejo/, 'eq-brujula'],
+      [/espada|daga|hacha|lanza|arco|ballesta|maza|martillo|pistola|rifle|sable/, 'sword'],
+      [/escudo/, 'eq-escudo'],
+      [/armadura|coraza|cota|peto/, 'eq-armadura'],
+    ];
+    for (const [rx, ico] of R) if (rx.test(n)) return ico;
+    return 'eq-bolsa';
+  },
+
+  /** Clase visual del tipo de talento a partir de su glifo o su palabra. */
+  _tipoTalento(tipo) {
+    const t = String(tipo || '');
+    if (/^\s*◆|pasivo/i.test(t)) return 'pasivo';
+    if (/^\s*✦|habilitador/i.test(t)) return 'habilitador';
+    if (/^\s*⚡|disparador|trigger|reacci[óo]n/i.test(t)) return 'disparador';
+    if (/^\s*◈|modificador/i.test(t)) return 'modificador';
+    return '';
   },
 
   calcInventory() {
@@ -3154,6 +3208,7 @@ const app = {
       if (t.tipo) {
         const tp = document.createElement('span');
         tp.className = 'tc-tipo';
+        tp.dataset.tipo = this._tipoTalento(t.tipo);
         tp.textContent = t.tipo;
         infoDiv.appendChild(tp);
       }
@@ -3321,6 +3376,7 @@ const app = {
     }
     if (tal?.tipo) {
       const tp = document.createElement('div'); tp.className = 'tc-tipo';
+      tp.dataset.tipo = this._tipoTalento(tal.tipo);
       tp.textContent = this._sanitize(String(tal.tipo));
       dcb.appendChild(tp);
     }
@@ -3436,7 +3492,7 @@ const app = {
         gl.className = 'js-section-lbl';
         gl.textContent='Rasgos'; db.appendChild(gl);
         const gw = document.createElement('div'); gw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge'; s.textContent='✦ '+this._sanitize(String(g)); gw.appendChild(s); });
+        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); s.textContent='✦ '+this._sanitize(String(g)); gw.appendChild(s); });
         db.appendChild(gw);
       }
 
@@ -3555,6 +3611,7 @@ const app = {
         if (tipo) {
           const tp = document.createElement('span');
           tp.className = 'arq-rasgo-t';
+          tp.dataset.tipo = this._tipoTalento(tipo);
           tp.textContent = this._sanitize(tipo);
           sum.appendChild(tp);
         }

@@ -268,8 +268,11 @@
       (app.inventory || []).forEach(it => {
         const fila = sum.children[i++];
         if (!fila || !esRacion(it)) return;
+        // El nombre va en el último hijo: el primero puede ser el icono
+        // del objeto, y escribir en la fila entera lo borraba.
         const nm = fila.firstChild;
-        if (nm) nm.textContent = `${it.name} ×${parseInt(it.qty, 10) || 0}`;
+        const txt = nm && nm.lastElementChild ? nm.lastElementChild : nm;
+        if (txt) txt.textContent = `${it.name} ×${parseInt(it.qty, 10) || 0}`;
       });
     }
     pintar();

@@ -1,4 +1,54 @@
-# S&S Companion — v56.3
+# S&S Companion — v56.5
+
+## Novedades v56.5 — Sin esquinas doradas · Ataques resume el bono
+
+`CACHE_VERSION` sube a `ss-companion-v97`.
+
+- Se retiran las escuadras doradas de las esquinas de las tarjetas (punto 7
+  de v56.4). El grano de la textura se queda.
+- La tarjeta **Ataques** plegada ya no muestra el daño, sino el **bono de
+  ataque del arma principal** («Ataques +4»).
+
+## Novedades v56.4 — Acabado gráfico
+
+`CACHE_VERSION` sube a `ss-companion-v96`. Solo cambia la pintura: nada se
+mueve de sitio ni hace algo distinto. Todo el CSS nuevo va en un bloque al
+final de `css/main.css` («ACABADO GRÁFICO»), con tokens propios que el tema
+Vacío redefine en gris.
+
+1. **Rasgos e Inconvenientes**: se acabó la letra de máquina azul. Ahora van
+   en la serif del cuerpo, en marfil, con un filete dorado a la izquierda. Los
+   Inconvenientes llevan el filete en rojo apagado.
+2. **Estado**: cada recurso tiene su color y su barra. PV en rojo, Adrenalina
+   en brasa, Ingenio en violeta y Carne en granate, repetido en el punto del
+   nombre, en la cifra y en los botones − y +.
+3. **Ataques**: los recuadros «ATK» y «DMG» pasan a ser una espada y un d20
+   dibujados. El bono de ataque ya no sale en rojo, sino en marfil.
+4. **Retrato vacío**: un emblema grabado (estrella de cuatro puntas en un
+   círculo) en lugar de la silueta. Se reconoce por el propio retrato por
+   defecto, así que no cambia ningún dato guardado.
+5. **Grado de habilidad**: cuatro puntos que se llenan en lugar de «G0». El
+   nombre del Grado aparece al pasar el dedo y lo lee el lector de pantalla.
+6. **Tipo de talento**: Pasivo en dorado, Habilitador en verde salvia,
+   Disparador en brasa y Modificador en violeta.
+7. **Tarjetas**: el grano baja suave por toda la tarjeta, no solo por arriba,
+   y hay dos escuadras doradas en las esquinas superiores.
+8. **Cifras**: una sola familia para los números (la del cuerpo, con cifras
+   de ancho fijo), que sigue a la tipografía elegida en Ajustes.
+9. **«Sin guardar»** en ámbar, no en rojo.
+10. **Equipo & Tesoro**: cada objeto lleva un icono (arma, escudo, armadura,
+    mochila, comida, luz, agua, cuerda, herramientas, ropa, foco, brújula o
+    bolsa). Se elige por el tipo de dato y, si no, por el nombre.
+11. **Raciones**: el − y el + tienen el mismo trato, y el contador pasa de
+    azul a dorado.
+12. **Editar**: sin marco y con el lápiz en oro tenue. «+ Objeto
+    Personalizado» conserva su marco, porque es una acción de edición.
+
+### Verificado
+A 390 px, en las cinco pestañas, con un personaje aleatorio y en los tres
+temas (Art Déco, Vacío y Arcano). Autodiagnóstico: 9 de 9. Consola sin errores
+de la app: los avisos de `navigator.vibrate` los provoca el generador
+aleatorio sin un toque real, y ya salían antes.
 
 ## Novedades v56.3 — Reglas a la edición «Ultimate» de los cuatro libros
 

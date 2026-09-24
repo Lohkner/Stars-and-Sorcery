@@ -57,6 +57,22 @@
   <symbol id="i-adv-up" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 5l8 14H4z"/></symbol>
   <symbol id="i-adv-down" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 19L4 5h16z"/></symbol>
   <symbol id="i-adv-eq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9.5h12M6 14.5h12"/></symbol>
+  <!-- Ataque y daño (tarjetas de Ataques) -->
+  <symbol id="i-sword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v4.5L10.5 18l-4.5-4.5L15.5 4z"/><path d="M4.5 12l7.5 7.5"/><path d="M7 17l-3 3"/></symbol>
+  <symbol id="i-d20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 7.5l4.5 7.5h-9z"/><path d="M12 2.5v5M3.5 7.3L7.5 15M20.5 7.3L16.5 15M7.5 15l4.5 6.5 4.5-6.5"/></symbol>
+  <!-- Objetos del inventario (resumen de Equipo & Tesoro) -->
+  <symbol id="i-eq-escudo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></symbol>
+  <symbol id="i-eq-armadura" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4h8l3.5 3-2.5 3.5V20H7v-9.5L4.5 7z"/><path d="M12 4v5M7 14h10"/></symbol>
+  <symbol id="i-eq-mochila" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6.5 9a5.5 5.5 0 0 1 11 0v11h-11z"/><path d="M9 14h6v3.5H9zM10 4.5V3h4v1.5"/></symbol>
+  <symbol id="i-eq-comida" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6.5" rx="6" ry="2.5"/><path d="M6 6.5v10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-10"/><path d="M6 11.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></symbol>
+  <symbol id="i-eq-luz" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c2.6 3 4 5.2 4 7.5a4 4 0 0 1-8 0C8 8.2 9.4 6 12 3z"/><path d="M10.5 14.5L11 21h2l.5-6.5"/></symbol>
+  <symbol id="i-eq-agua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="14.5" r="6"/><path d="M10.5 8.5V4.5h3v4"/></symbol>
+  <symbol id="i-eq-cuerda" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><circle cx="11" cy="11" r="3.5"/><path d="M18 11c0 4 1.2 6.5 3 9"/></symbol>
+  <symbol id="i-eq-kit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="11" rx="1.5"/><path d="M9 8V5.5h6V8M3.5 12.5h17M11 12.5v2h2v-2"/></symbol>
+  <symbol id="i-eq-ropa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8.5 4L3.5 7l2 4.2L8 10v10h8V10l2.5 1.2 2-4.2-5-3c-.8 1.4-2 2-3.5 2s-2.7-.6-3.5-2z"/></symbol>
+  <symbol id="i-eq-foco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M12 20L8.5 9 12 4l3.5 5z"/></symbol>
+  <symbol id="i-eq-brujula" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5L13 13l-4.5 2.5L11 11z"/></symbol>
+  <symbol id="i-eq-bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 7.5h8l3 5v4.5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-4.5z"/><path d="M9 3.5l3 4 3-4"/></symbol>
 </svg>
 <div id="ss-loader" aria-hidden="true">
 
@@ -351,7 +367,7 @@
 
             <!-- Adrenalina · Ingenio · Carne -->
             <div class="e4-res">
-              <div class="e4-row">
+              <div class="e4-row e4-row-adr">
                 <span class="e4-name">Adrenalina</span>
                 <span class="e4-ctl">
                   <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="-1" aria-label="Reducir adrenalina">&minus;</button>
@@ -359,7 +375,8 @@
                   <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="1" aria-label="Aumentar adrenalina">+</button>
                 </span>
               </div>
-              <div class="e4-row">
+              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
+              <div class="e4-row e4-row-ing">
                 <span class="e4-name">Ingenio</span>
                 <span class="e4-ctl">
                   <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="-1" aria-label="Reducir ingenio">&minus;</button>
@@ -367,7 +384,8 @@
                   <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="1" aria-label="Aumentar ingenio">+</button>
                 </span>
               </div>
-              <div class="e4-row">
+              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
+              <div class="e4-row e4-row-carne">
                 <span class="e4-name">Carne</span>
                 <span class="e4-ctl">
                   <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir Carne">&minus;</button>
@@ -375,6 +393,7 @@
                   <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar Carne">+</button>
                 </span>
               </div>
+              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
             </div>
 
             <!-- Fila de referencia: Armadura · Iniciativa · Velocidad · Comp. · Pericia -->
@@ -478,12 +497,12 @@
               </div>
               <div class="atk-btns">
                 <button class="abtn abtn-a" onclick="app.rollWeaponAtk(1)" aria-label="Tirar ataque arma principal">
-                  <span class="abtn-icon">ATK</span>
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
                   <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="atk_bonus_1">+0</span></span>
                 </button>
                 <div class="atk-btn-sep"></div>
                 <button class="abtn abtn-d" onclick="app.rollWeaponDmg(1)" aria-label="Tirar daño arma principal">
-                  <span class="abtn-icon">DMG</span>
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
                   <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="atk_dmg_1">1</span></span>
                 </button>
               </div>
@@ -495,12 +514,12 @@
               </div>
               <div class="atk-btns">
                 <button class="abtn abtn-a" onclick="app.rollWeaponAtk(2)" aria-label="Tirar ataque arma secundaria">
-                  <span class="abtn-icon">ATK</span>
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
                   <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="atk_bonus_2">+0</span></span>
                 </button>
                 <div class="atk-btn-sep"></div>
                 <button class="abtn abtn-d" onclick="app.rollWeaponDmg(2)" aria-label="Tirar daño arma secundaria">
-                  <span class="abtn-icon">DMG</span>
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
                   <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="atk_dmg_2">1</span></span>
                 </button>
               </div>
@@ -672,7 +691,7 @@
           <details class="panel fold" id="rac_panel" data-fold="raciones" open>
             <summary class="ph">
               <span class="pt">Raciones</span>
-              <div class="pill-badge"><span id="rac_count" style="color:var(--ice);font-weight:700">0</span></div>
+              <div class="pill-badge"><span id="rac_count" class="num-fig" style="color:var(--goldb);font-weight:700">0</span></div>
             </summary>
             <div class="rac-row">
               <button type="button" class="rac-step" id="rac_minus" aria-label="Gastar una Ración">&minus;</button>
@@ -704,12 +723,12 @@
             <div id="equipment_summary_view" style="display:none">
               <div style="display:flex;justify-content:space-between;align-items:center;background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:5px 8px;margin-bottom:6px">
                 <span style="font-family:var(--fd);font-size:var(--fs-sm);color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Tesoro</span>
-                <span style="font-family:var(--fm);color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> PO</span>
+                <span class="num-fig" style="color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> PO</span>
               </div>
               <div id="inv_summary_list" style="display:flex;flex-direction:column;gap:2px"></div>
               <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--rim);display:flex;justify-content:space-between">
                 <span style="font-family:var(--fd);font-size:var(--fs-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Carga Total</span>
-                <span id="load_summary_display" style="font-family:var(--fm);font-weight:600;color:var(--gold)">0/0</span>
+                <span id="load_summary_display" class="num-fig" style="font-weight:600;color:var(--gold)">0/0</span>
               </div>
               <button class="bedit" onclick="app.editSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
