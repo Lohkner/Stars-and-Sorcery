@@ -1,4 +1,23 @@
-# S&S Companion — v56.9
+# S&S Companion — v56.9.1
+
+## Novedades v56.9.1 — Cifras legibles en el Clásico · nombre · «Editar»
+
+`CACHE_VERSION` sube a `ss-companion-v103`.
+
+- **Cifras en el estilo Clásico.** IM Fell English solo tiene números
+  antiguos, a media altura: el 0 parecía un «°» y «G2» se leía «G₂» en la
+  tirada de habilidad, los títulos y los dados. Las familias del Clásico son
+  ahora combinadas (`'SS Fell'` y `'SS Fell SC'` en `css/fuentes.css`): las
+  letras son de Fell y las cifras (0–9) de EB Garamond, de altura completa.
+  Medido: el «0» pasa de 16 a 26 px de altura en un cuerpo de 40 px, con la
+  «H» a 27 px. El texto no cambia.
+- **Nombre del personaje** (portada): tiene la misma negrita y espaciado que
+  los títulos de talento. Ya era 1 px más grande que ellos, pero sin negrita
+  se leía más pequeño.
+- **Botones «Editar»**: pasan al tamaño mínimo de la app (12 px), sin
+  versales ni espaciado ancho y en un tono más apagado. El área táctil sigue
+  siendo de 44 px.
+- Autodiagnóstico: 9 de 9 en Clásico y en Moderno.
 
 ## Novedades v56.9 — Historial de tiradas
 

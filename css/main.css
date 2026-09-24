@@ -1970,8 +1970,10 @@ input:focus-visible,textarea:focus-visible{outline:none}
    rótulos, y EB Garamond en el texto, las cifras y los metadatos (lo que
    en el Moderno va en letra de máquina). Todas instaladas en /fonts. */
 :root[data-estilo="clasico"]{
-  --ft:'IM Fell English SC','IM Fell English',Georgia,'Times New Roman',serif;
-  --fd:'IM Fell English',Georgia,'Times New Roman',serif;
+  /* 'SS Fell' y 'SS Fell SC' = Fell con las cifras de EB Garamond
+     (css/fuentes.css): los números antiguos de Fell no se leían. */
+  --ft:'SS Fell SC','IM Fell English SC',Georgia,'Times New Roman',serif;
+  --fd:'SS Fell','IM Fell English',Georgia,'Times New Roman',serif;
   --fb:'EB Garamond',Garamond,Georgia,'Times New Roman',serif;
   --fm:'EB Garamond',Garamond,Georgia,'Times New Roman',serif;
 }
@@ -3744,6 +3746,19 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .bedit:has(use[href="#i-quill"]){border-color:transparent;box-shadow:none;background:none}
 .bedit:has(use[href="#i-quill"]) .ico{color:color-mix(in srgb,var(--gold) 75%,transparent)}
 @media(hover:hover){.bedit:has(use[href="#i-quill"]):hover{border-color:var(--edge)}}
+/* v56.9: aún destacaba más que el contenido. Pasa al tamaño mínimo de la
+   app (12 px, el suelo tipográfico), sin versales ni espaciado ancho y en
+   un tono más apagado. El área táctil de 44 px la sigue dando ::before. */
+.bedit:has(use[href="#i-quill"]){
+  font-size:var(--fs-2xs);text-transform:none;letter-spacing:.03em;
+  min-height:28px;padding:3px 10px;margin-top:5px;
+  color:color-mix(in srgb,var(--muted) 80%,transparent);
+}
+.bedit:has(use[href="#i-quill"]) .ico{width:12px;height:12px}
+
+/* Nombre del personaje (portada): con la misma negrita y espaciado que
+   los títulos de talento, que a igual tamaño se leían más grandes. */
+.port-name{font-weight:600;letter-spacing:.04em}
 
 /* ══════════════════════════════════════════
    v56.6 — Grado 5, armadura sin competencia, títulos y retoques

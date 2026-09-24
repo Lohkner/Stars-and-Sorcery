@@ -95,3 +95,41 @@
   src:url('../fonts/im-fell-english-sc-400.woff2') format('woff2');
   unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* ── Familias combinadas del estilo Clásico (v56.9) ─────────────────
+   IM Fell English solo tiene números antiguos: el 0 queda a media altura
+   y parece un «°», y «G2» se lee «G₂». En los títulos, los rótulos y los
+   dados eso confunde, así que las familias del Clásico toman las letras
+   de Fell y las CIFRAS (0–9) de EB Garamond, que son de altura completa.
+   Con rangos solapados gana la cara declarada después: por eso la de
+   las cifras va al final de cada familia. */
+@font-face{
+  font-family:'SS Fell';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../fonts/im-fell-english-400.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'SS Fell';font-style:italic;font-weight:400;font-display:swap;
+  src:url('../fonts/im-fell-english-400-italic.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'SS Fell';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url('../fonts/eb-garamond-var.woff2') format('woff2');
+  unicode-range:U+0030-0039;
+}
+@font-face{
+  font-family:'SS Fell';font-style:italic;font-weight:400 700;font-display:swap;
+  src:url('../fonts/eb-garamond-var-italic.woff2') format('woff2');
+  unicode-range:U+0030-0039;
+}
+@font-face{
+  font-family:'SS Fell SC';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../fonts/im-fell-english-sc-400.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'SS Fell SC';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url('../fonts/eb-garamond-var.woff2') format('woff2');
+  unicode-range:U+0030-0039;
+}
