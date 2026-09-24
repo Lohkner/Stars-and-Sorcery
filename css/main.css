@@ -3645,10 +3645,17 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .res-fill-adr{background:var(--res-adr)}
 .res-fill-ing{background:var(--res-ing)}
 .res-fill-carne{background:var(--res-carne)}
-.est4 .e4-track .res-fill-pv{box-shadow:0 0 9px color-mix(in srgb,var(--res-pv) 50%,transparent)}
-.est4 .e4-track .res-fill-adr{box-shadow:0 0 8px color-mix(in srgb,var(--res-adr) 45%,transparent)}
-.est4 .e4-track .res-fill-ing{box-shadow:0 0 8px color-mix(in srgb,var(--res-ing) 45%,transparent)}
-.est4 .e4-track .res-fill-carne{box-shadow:0 0 8px color-mix(in srgb,var(--res-carne) 45%,transparent)}
+/* Brillo (v56.9.2): el carril recortaba todo lo que salía de él
+   (overflow:hidden), así que el resplandor apenas se veía. En Estado se
+   deja salir: la barra nunca pasa del 100 %, no hay nada más que recortar.
+   Dos capas —un halo cercano intenso y otro amplio y suave— en PV,
+   Adrenalina e Ingenio. La Carne va sin brillo a propósito. */
+.est4 .e4-track{overflow:visible}
+.est4 .e4-track .res-fill-pv{box-shadow:0 0 4px color-mix(in srgb,var(--res-pv) 85%,transparent),0 0 12px color-mix(in srgb,var(--res-pv) 55%,transparent)}
+.est4 .e4-track .res-fill-pv.res-low{box-shadow:0 0 4px color-mix(in srgb,var(--ember) 85%,transparent),0 0 12px color-mix(in srgb,var(--ember) 55%,transparent)}
+.est4 .e4-track .res-fill-adr{box-shadow:0 0 4px color-mix(in srgb,var(--res-adr) 85%,transparent),0 0 12px color-mix(in srgb,var(--res-adr) 55%,transparent)}
+.est4 .e4-track .res-fill-ing{box-shadow:0 0 4px color-mix(in srgb,var(--res-ing) 85%,transparent),0 0 12px color-mix(in srgb,var(--res-ing) 55%,transparent)}
+.est4 .e4-track .res-fill-carne{box-shadow:none}
 .est4 .e4-track-sm{height:3px;margin:-5px 0 5px;opacity:.9}
 .est4 .e4-row-pv    .e4-fin{color:var(--res-pv-ink)}
 .est4 .e4-row-adr   .e4-fin{color:var(--res-adr-ink)}

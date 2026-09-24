@@ -1,4 +1,18 @@
-# S&S Companion — v56.9.1
+# S&S Companion — v56.9.2
+
+## Novedades v56.9.2 — Brillo en las barras de Estado
+
+`CACHE_VERSION` sube a `ss-companion-v104`.
+
+- **PV, Adrenalina e Ingenio** brillan en su color, con dos capas: un halo
+  cercano intenso y otro amplio y suave. Con los PV bajos, el brillo pasa a
+  brasa, igual que la barra.
+- **Carne** va sin brillo, a propósito.
+- **Por qué casi no se veía antes:** las barras ya tenían un brillo tenue,
+  pero el carril las recortaba (`overflow:hidden`). En Estado ahora se deja
+  salir; la barra nunca pasa del 100 %, así que no hay nada más que
+  recortar.
+- Autodiagnóstico: 9 de 9.
 
 ## Novedades v56.9.1 — Cifras legibles en el Clásico · nombre · «Editar»
 
