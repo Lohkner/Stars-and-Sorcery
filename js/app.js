@@ -95,8 +95,7 @@ const app = {
     this._restoreScrollPreserve();
     this._restorePortraitSettings();
     this._restoreTheme();
-    this._restoreFontFamily();
-    this._restoreTitulos();
+    this._restoreEstiloLetra();
     this._restoreBgImages();
     // Long-press repeat on resource +/- buttons
     this._initResLongPress();
@@ -5720,44 +5719,38 @@ const app = {
     localStorage.setItem('ss_theme', tid);
   },
 
-  /** Familia tipográfica. Independiente del TAMAÑO, que vive en setFontSize:
-      son dos ejes distintos y mezclarlos obligaba a elegir entre leer bien y
-      que la ficha tuviera el aire que toca. «clasica» no pone atributo: es
-      la del :root, así que no hay que duplicar sus pilas. */
-  setFontFamily(id) {
-    const fid = ['clasica', 'sobria', 'legible'].includes(id) ? id : 'clasica';
+  /** Estilo de letra: un pack coherente de títulos, texto, cifras y
+      rótulos. «moderno» (Cinzel + Spectral + JetBrains Mono) es el del
+      :root y no pone atributo; «clasico» (IM Fell English + EB Garamond)
+      redefine las cuatro familias con [data-estilo] en <html>.
+      Sustituye a la «Familia de letra» y a la «Letra de los títulos» de
+      v56.6, que se podían mezclar y dejaban Fell sobre un cuerpo moderno. */
+  setEstiloLetra(id) {
+    const eid = id === 'clasico' ? 'clasico' : 'moderno';
     const root = document.documentElement;
-    if (fid === 'clasica') root.removeAttribute('data-font');
-    else root.setAttribute('data-font', fid);
-    this._fontFamily = fid;
-    document.querySelectorAll('.font-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.font === fid));
-    try { localStorage.setItem('ss_font_family', fid); } catch (e) {}
+    if (eid === 'moderno') root.removeAttribute('data-estilo');
+    else root.setAttribute('data-estilo', eid);
+    document.querySelectorAll('.estilo-btn').forEach(b => {
+      const on = b.dataset.estilo === eid;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    try { localStorage.setItem('ss_estilo_letra', eid); } catch (e) {}
   },
 
-  /** Letra de los títulos, independiente de la familia: Cinzel (la de
-      siempre) o IM Fell English. Se aplica como atributo en <html> con más
-      especificidad que [data-font], así que manda en las tres familias. */
-  setTitulos(id) {
-    const tid = id === 'fell' ? 'fell' : 'cinzel';
-    const root = document.documentElement;
-    if (tid === 'cinzel') root.removeAttribute('data-titulos');
-    else root.setAttribute('data-titulos', tid);
-    document.querySelectorAll('.tit-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.tit === tid));
-    try { localStorage.setItem('ss_titulos', tid); } catch (e) {}
-  },
-
-  _restoreTitulos() {
-    let v = 'cinzel';
-    try { v = localStorage.getItem('ss_titulos') || 'cinzel'; } catch (e) {}
-    this.setTitulos(v);
-  },
-
-  _restoreFontFamily() {
-    let v = 'clasica';
-    try { v = localStorage.getItem('ss_font_family') || 'clasica'; } catch (e) {}
-    this.setFontFamily(v);
+  _restoreEstiloLetra() {
+    let v = null;
+    try {
+      v = localStorage.getItem('ss_estilo_letra');
+      // Migración desde v56.6: quien tenía IM Fell en los títulos pasa al
+      // Clásico. Las familias Sobria y Legible desaparecen: van al Moderno.
+      if (!v) v = localStorage.getItem('ss_titulos') === 'fell' ? 'clasico' : 'moderno';
+      localStorage.removeItem('ss_titulos');
+      localStorage.removeItem('ss_font_family');
+    } catch (e) {}
+    document.documentElement.removeAttribute('data-font');
+    document.documentElement.removeAttribute('data-titulos');
+    this.setEstiloLetra(v || 'moderno');
   },
 
   _restoreTheme() {

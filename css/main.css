@@ -1963,27 +1963,22 @@ input:focus-visible,textarea:focus-visible{outline:none}
 /* Per-shape gold border match */
 .crfr.arch{border-radius:140px 140px 2px 2px / 160px 160px 2px 2px}
 
-/* ── Tipografías ────────────────────────────────────────────────
-   Solo cambian la FAMILIA; la escala de tamaños (--fs-*) es aparte y la
-   controla el selector de tamaño de fuente. Ninguna de las alternativas
-   descarga nada: usan pilas del sistema, así que cambiar de tipografía es
-   instantáneo y funciona sin conexión. */
-[data-font="sobria"]{
-  --ft:'Palatino Linotype','Book Antiqua',Palatino,'Iowan Old Style',Georgia,serif;
-  --fd:'Palatino Linotype','Book Antiqua',Palatino,'Iowan Old Style',Georgia,serif;
-  --fb:Georgia,'Times New Roman',serif;
-  --fm:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+/* ── Estilo de letra: Clásico ─────────────────────────────────────
+   El Moderno (Cinzel · Spectral · JetBrains Mono) es el del :root. El
+   Clásico cambia las cuatro familias a la vez para que no se mezclen
+   épocas: IM Fell English SC en el logotipo, IM Fell English en títulos y
+   rótulos, y EB Garamond en el texto, las cifras y los metadatos (lo que
+   en el Moderno va en letra de máquina). Todas instaladas en /fonts. */
+:root[data-estilo="clasico"]{
+  --ft:'IM Fell English SC','IM Fell English',Georgia,'Times New Roman',serif;
+  --fd:'IM Fell English',Georgia,'Times New Roman',serif;
+  --fb:'EB Garamond',Garamond,Georgia,'Times New Roman',serif;
+  --fm:'EB Garamond',Garamond,Georgia,'Times New Roman',serif;
 }
-[data-font="legible"]{
-  --ft:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  --fd:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  --fb:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  --fm:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
-}
-/* Las mayúsculas espaciadas de los títulos están calibradas para Cinzel;
-   en una sans del sistema quedan sueltas. */
-[data-font="legible"] .pt,[data-font="legible"] .fs-hdr-ttl,
-[data-font="legible"] .dvdr,[data-font="legible"] .set-lbl{letter-spacing:.06em}
+/* Las mayúsculas espaciadas están calibradas para Cinzel; en Fell piden
+   algo menos de aire. */
+:root[data-estilo="clasico"] .pt,:root[data-estilo="clasico"] .dvdr,
+:root[data-estilo="clasico"] .set-lbl,:root[data-estilo="clasico"] .set-sum{letter-spacing:.08em}
 
 [data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--blood-fill:#8a4a4e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;}
 
@@ -3812,14 +3807,6 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .js-grade-block.grade-off{opacity:.5;font-style:italic}
 .js-grade-block.tc-nota{background:none;border-left:3px solid var(--rim);color:var(--muted)}
 
-/* Letra de los títulos: IM Fell English en lugar de Cinzel. Más
-   específico que [data-font], así que vale con cualquier familia. */
-:root[data-titulos="fell"]{
-  --ft:'IM Fell English',Georgia,'Times New Roman',serif;
-  --fd:'IM Fell English',Georgia,'Times New Roman',serif;
-}
-:root[data-titulos="fell"] .pt,:root[data-titulos="fell"] .dvdr,
-:root[data-titulos="fell"] .set-lbl{letter-spacing:.08em}
 
 /* ══════════════════════════════════════════
    PANEL DE AJUSTES (v56.7)
@@ -3916,3 +3903,9 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);letter-spacing:.02em;
 }
 .set-vers b{font-weight:600;color:var(--dim);word-break:break-all}
+
+/* Estilo de letra: cada botón muestra su propio pack */
+.set-opts .estilo-btn{flex-direction:column;gap:3px;min-height:60px;padding:8px 6px;letter-spacing:0;text-transform:none}
+.estilo-t{font-size:var(--fs-xl);color:var(--text);line-height:1.1}
+.estilo-b{font-size:var(--fs-sm);color:var(--muted);line-height:1.2}
+.estilo-btn.active .estilo-t{color:var(--goldb)}

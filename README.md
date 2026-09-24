@@ -1,4 +1,39 @@
-# S&S Companion — v56.7
+# S&S Companion — v56.8
+
+## Novedades v56.8 — Estilo de letra: Clásico o Moderno
+
+`CACHE_VERSION` sube a `ss-companion-v101`.
+
+«Familia de letra» (Clásica/Sobria/Legible) y «Letra de los títulos»
+(Cinzel/IM Fell English) se sustituyen por una sola opción, **Estilo de
+letra**, que cambia las cuatro familias a la vez para que no se mezclen
+épocas:
+
+| | Logotipo (`--ft`) | Títulos y rótulos (`--fd`) | Texto y cifras (`--fb`) | Metadatos (`--fm`) |
+|---|---|---|---|---|
+| **Clásico** | IM Fell English SC | IM Fell English | EB Garamond | EB Garamond |
+| **Moderno** | Cinzel Decorative | Cinzel | Spectral | JetBrains Mono |
+
+- El Moderno es el aspecto de siempre y el predeterminado. El Clásico se
+  aplica con `data-estilo="clasico"` en `<html>`.
+- **Migración**: si tenías IM Fell English en los títulos, pasas al Clásico;
+  cualquier otra combinación, al Moderno. Las claves `ss_titulos` y
+  `ss_font_family` se borran.
+- **Letras nuevas** en `fonts/`: EB Garamond (normal y cursiva, variables) e
+  IM Fell English SC. Son 146 KB, solo alfabeto latino y licencia OFL, y
+  están en la caché sin conexión.
+- Fuera: `setFontFamily`, `setTitulos` y las reglas CSS `[data-font]` y
+  `[data-titulos]`. Las familias Sobria y Legible usaban letras del sistema
+  y desaparecen con la opción.
+- Cada botón del selector está escrito con su propio pack, para ver el
+  resultado antes de elegir.
+
+### Verificado
+- Migración simulada (IM Fell + Sobria guardados): arranca en Clásico y
+  borra las claves viejas.
+- Las 7 familias se cargan desde `fonts/`.
+- Revisados Inicio, Estado, Talentos y Ajustes en Clásico.
+- Autodiagnóstico a 390 px: 9 de 9 en Clásico y 9 de 9 en Moderno.
 
 ## Novedades v56.7 — Panel de Ajustes reorganizado
 
@@ -123,8 +158,6 @@ A 390 px:
   repetido y uno dañado: pregunta, reemplaza, y omite el dañado.
 - Letras: 0 peticiones a Google, y las 11 en la caché sin conexión.
 - Autodiagnóstico 9 de 9 con Cinzel y 9 de 9 con IM Fell English.
-
-## Novedades v56.5 — Sin esquinas doradas · Ataques resume el bono
 
 ## Novedades v56.5 — Sin esquinas doradas · Ataques resume el bono
 
@@ -1003,4 +1036,3 @@ Sin Raciones: `0/0`, ambos botones apagados, «sin existencias». Comprar 5 → 
 Cantimplora: tras invalidar la copia de reglas, la nota que sirve la app es la corregida, y no queda ningún «Guardia» usado como unidad de tiempo en `DB.misc`.
 
 Descanso: a 0 restantes, Respiro, Largo Inseguro y Largo Seguro dejan PV, Adrenalina e Ingenio **exactamente igual** y el menú se queda abierto; el Confortable cura a cero Raciones. Con Raciones, el Respiro gasta 1 —«−1 Ración (quedan 4)» en el mismo aviso, sin apilar un segundo— y **no toca** la cantidad del inventario. Sin desbordamiento horizontal a 375 px. Consola limpia.
-

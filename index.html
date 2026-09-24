@@ -832,19 +832,18 @@
           <span class="set-hint" id="fs_eco">Normal · 16px · toda la app</span>
         </div>
         <div class="set-field">
-          <span class="set-lbl">Familia de letra</span>
-          <div class="set-opts set-opts-3">
-            <button class="fs-btn font-btn" data-font="clasica" onclick="app.setFontFamily('clasica')" title="Cinzel y Spectral">Clásica</button>
-            <button class="fs-btn font-btn" data-font="sobria" onclick="app.setFontFamily('sobria')" title="Palatino y Georgia">Sobria</button>
-            <button class="fs-btn font-btn" data-font="legible" onclick="app.setFontFamily('legible')" title="Letra del sistema, más abierta">Legible</button>
-          </div>
-        </div>
-        <div class="set-field">
-          <span class="set-lbl">Letra de los títulos</span>
+          <span class="set-lbl">Estilo de letra</span>
           <div class="set-opts set-opts-2">
-            <button class="fs-btn tit-btn" data-tit="cinzel" onclick="app.setTitulos('cinzel')" style="font-family:'Cinzel',Georgia,serif">Cinzel</button>
-            <button class="fs-btn tit-btn" data-tit="fell" onclick="app.setTitulos('fell')" style="font-family:'IM Fell English',Georgia,serif;font-size:var(--fs-lg)">IM Fell English</button>
+            <button class="fs-btn estilo-btn" data-estilo="clasico" onclick="app.setEstiloLetra('clasico')" aria-label="Estilo clásico: IM Fell English y EB Garamond">
+              <span class="estilo-t" style="font-family:'IM Fell English',Georgia,serif">Clásico</span>
+              <span class="estilo-b" style="font-family:'EB Garamond',Georgia,serif">Fell · Garamond</span>
+            </button>
+            <button class="fs-btn estilo-btn" data-estilo="moderno" onclick="app.setEstiloLetra('moderno')" aria-label="Estilo moderno: Cinzel y Spectral">
+              <span class="estilo-t" style="font-family:'Cinzel',Georgia,serif">Moderno</span>
+              <span class="estilo-b" style="font-family:'Spectral',Georgia,serif">Cinzel · Spectral</span>
+            </button>
           </div>
+          <span class="set-hint">Cambia títulos, texto, números y rótulos a la vez, con letras de la misma época.</span>
         </div>
         <div class="set-field">
           <span class="set-lbl">Fondo de pantalla</span>

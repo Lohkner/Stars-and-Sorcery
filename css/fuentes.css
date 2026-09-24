@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   LETRAS INSTALADAS EN LA APP (v56.6)
+   LETRAS INSTALADAS EN LA APP (v56.6 · Clásico en v56.8)
    Antes se pedían a Google Fonts: sin conexión, la primera vez que se
    abría la app salía la letra de respaldo. Ahora viven en /fonts y el
    service worker las guarda con el resto de la app.
@@ -75,5 +75,23 @@
 @font-face{
   font-family:'Spectral';font-style:normal;font-weight:600;font-display:swap;
   src:url('../fonts/spectral-600.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Estilo Clásico (v56.8): EB Garamond para el cuerpo e IM Fell English SC
+   para el logotipo. EB Garamond es variable: un archivo por estilo. */
+@font-face{
+  font-family:'EB Garamond';font-style:italic;font-weight:400 700;font-display:swap;
+  src:url('../fonts/eb-garamond-var-italic.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'EB Garamond';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url('../fonts/eb-garamond-var.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'IM Fell English SC';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../fonts/im-fell-english-sc-400.woff2') format('woff2');
   unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }

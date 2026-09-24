@@ -13,7 +13,7 @@
 /* REGLA DE DESPLIEGUE: sube SIEMPRE esta versión al publicar cualquier
    cambio. El navegador solo detecta actualizaciones si sw.js cambia en
    bytes — con la misma versión, la app queda congelada para siempre. */
-const CACHE_VERSION = 'ss-companion-v100';
+const CACHE_VERSION = 'ss-companion-v101';
 const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
@@ -25,8 +25,11 @@ const APP_SHELL = [
   './fonts/cinzel-decorative-400.woff2',
   './fonts/cinzel-decorative-700.woff2',
   './fonts/cinzel-var.woff2',
+  './fonts/eb-garamond-var-italic.woff2',
+  './fonts/eb-garamond-var.woff2',
   './fonts/im-fell-english-400-italic.woff2',
   './fonts/im-fell-english-400.woff2',
+  './fonts/im-fell-english-sc-400.woff2',
   './fonts/jetbrains-mono-var.woff2',
   './fonts/spectral-300-italic.woff2',
   './fonts/spectral-300.woff2',
