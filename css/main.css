@@ -1449,21 +1449,8 @@ input[type=radio]:checked::after{transform:scale(1)}
 .set-lbl{font-family:var(--fd);font-size:var(--fs-md);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .set-hint{display:block;font-family:var(--fm);font-size:var(--fs-xs);color:var(--border);margin-top:2px;line-height:1.45}
 
-/* ── Settings & Data — agrupación, legibilidad y controles ── */
-/* Cada sección se vuelve una tarjeta sutil: agrupa sus controles y da ritmo. */
-.mbd > section{
-  background:linear-gradient(180deg,rgba(200,169,110,.022),transparent 65%);
-  border:1px solid var(--edge);
-  border-radius:var(--rl);
-  padding:11px 14px 14px;
-}
-/* Título de sección: de divisor centrado a encabezado a la izquierda con regla. */
-.mbd > section > .dvdr{
-  margin:0 0 11px;justify-content:flex-start;gap:9px;
-  color:var(--goldb);font-size:var(--fs-sm);letter-spacing:.16em;
-}
-.mbd > section > .dvdr::before{display:none}
-.mbd > section > .dvdr::after{background:linear-gradient(90deg,rgba(200,169,110,.28),transparent)}
+/* ── Ajustes — legibilidad (el panel se describe en «PANEL DE AJUSTES»,
+   al final de la hoja) ── */
 /* Legibilidad: la pista era var(--border) (#3d3254), casi invisible. */
 .mbd .set-hint{color:var(--muted)}
 .mbd .set-lbl{color:var(--dim)}
@@ -3833,3 +3820,99 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 }
 :root[data-titulos="fell"] .pt,:root[data-titulos="fell"] .dvdr,
 :root[data-titulos="fell"] .set-lbl{letter-spacing:.08em}
+
+/* ══════════════════════════════════════════
+   PANEL DE AJUSTES (v56.7)
+   Cinco secciones plegables, cada una con sus campos en rejilla. Todo
+   por clase: el marcado ya no lleva estilos en línea salvo lo que es
+   dato (la muestra de color de cada tema, el tamaño de cada «A»).
+══════════════════════════════════════════ */
+.set-body{display:flex;flex-direction:column;gap:8px}
+
+/* Sección: tarjeta con cabecera que pliega */
+.set-sec{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 3%,transparent),transparent 70%);
+  border:1px solid var(--edge);border-radius:var(--rl);
+}
+.set-sec[open]{border-color:var(--edge-strong)}
+.set-sum{
+  display:flex;align-items:center;gap:9px;min-height:46px;padding:0 14px;
+  cursor:pointer;list-style:none;touch-action:manipulation;
+  font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--goldb);
+}
+.set-sum::-webkit-details-marker{display:none}
+.set-sum::before{
+  content:'▸';color:var(--gold);font-size:var(--fs-xs);
+  transform:rotate(0deg);transition:transform .18s ease;
+}
+/* Un solo glifo que gira: la regla general details[open] lo cambiaría a ▾. */
+.set-sec[open] > .set-sum::before{content:'▸';transform:rotate(90deg)}
+.set-sum::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 28%,transparent),transparent);
+}
+@media(hover:hover){.set-sum:hover{color:var(--bright)}}
+@media(prefers-reduced-motion:reduce){.set-sum::before{transition:none}}
+.set-sec-bd{padding:2px 14px 14px;display:flex;flex-direction:column;gap:14px}
+
+/* Campo: rótulo + controles + ayuda */
+.set-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.set-field > .set-hint{margin-top:0}
+.set-sublbl{
+  display:block;margin-bottom:5px;font-family:var(--fm);font-size:var(--fs-2xs);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+}
+.set-row{margin-bottom:0}
+
+/* Rejilla de opciones del mismo ancho */
+.set-opts{display:grid;gap:6px}
+.set-opts-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.set-opts-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.set-opts-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.set-opts .fs-btn,.ps-row .ps-btn{min-height:42px;padding:6px 4px;font-size:var(--fs-sm);gap:6px}
+.set-opts .fs-btn .ico{margin-right:0}
+.fs-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* Acciones de Datos y Aplicación: mismo botón, con icono */
+.set-act{font-family:var(--fd);letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+
+/* Muestra de color del tema */
+.set-sw{
+  width:12px;height:12px;border-radius:50%;flex:0 0 12px;
+  background:radial-gradient(circle at 35% 35%,var(--sw) 0 45%,var(--sw2) 46%);
+  border:1px solid var(--sw);
+}
+
+/* Forma del retrato dibujada */
+.set-shape{width:11px;height:14px;border:1.5px solid currentColor;flex:0 0 auto}
+.set-shape[data-f="rect"]{border-radius:1px}
+.set-shape[data-f="rounded"]{border-radius:4px}
+.set-shape[data-f="arch"]{border-radius:6px 6px 1px 1px}
+.set-shape[data-f="circle"]{width:13px;height:13px;border-radius:50%}
+.set-opts .psh-btn{flex-direction:column;gap:4px;font-size:var(--fs-xs)}
+
+/* Fondo de pantalla */
+.set-bgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.set-bg-btns{display:flex;gap:5px}
+.set-bg-btns .fs-btn{flex:1;min-height:40px;font-size:var(--fs-sm);gap:5px}
+.set-bg-btns .fs-btn .ico{margin-right:0}
+.set-bg-btns .set-bg-x{flex:0 0 40px;color:var(--blood);border-color:color-mix(in srgb,var(--res-pv) 40%,transparent)}
+
+/* Retrato: botón de aplicar y enlace de volver */
+.set-apply{margin:2px 0 0 !important;width:100%}
+.set-link{
+  align-self:center;background:none;border:0;cursor:pointer;min-height:36px;padding:0 6px;
+  font-family:var(--fb);font-size:var(--fs-md);color:var(--dim);
+  text-decoration:underline;text-decoration-color:var(--edge-gold);text-underline-offset:3px;
+}
+.set-link[hidden]{display:none}
+@media(hover:hover){.set-link:hover{color:var(--goldb)}}
+.mbd .set-hint.is-ok{color:var(--gold)}
+
+/* Versiones en una sola línea (se parte si no cabe) */
+.set-vers{
+  display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;
+  font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);letter-spacing:.02em;
+}
+.set-vers b{font-weight:600;color:var(--dim);word-break:break-all}

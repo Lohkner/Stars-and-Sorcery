@@ -797,183 +797,191 @@
 <dialog id="settings_modal" class="modal" aria-labelledby="settings_modal_title">
   <div class="mhd">
     <div class="mhd-left">
-      <div class="mhd-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+      <div class="mhd-icon"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-gear"/></svg></div>
       <div>
-        <span class="mttl" id="settings_modal_title">Ajustes &amp; Datos</span>
-        <span class="mttl-sub">Configuración del personaje y la app</span>
+        <span class="mttl" id="settings_modal_title">Ajustes</span>
+        <span class="mttl-sub">Apariencia, retrato y datos</span>
       </div>
     </div>
     <button class="bcls" data-action="closeSettings" aria-label="Cerrar ajustes"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
   </div>
-  <div class="mbd" style="display:flex;flex-direction:column;gap:11px">
-
-    <!-- ── RETRATO ─────────────────────────────────────────────── -->
-    <section aria-labelledby="dvdr_port">
-      <div class="dvdr" id="dvdr_port">Retrato</div>
-
-      <!-- Master: prefs individuales por personaje -->
-      <div class="set-row">
-        <div class="set-row-txt">
-          <span class="set-lbl">Ajustes individuales por personaje</span>
-          <span class="set-hint">Activado: cada personaje conserva su propio retrato (tamaño, forma y borde). Desactivado: todos usan el predeterminado global.</span>
-        </div>
-        <button id="per_char_prefs_btn" class="toggle-btn" data-action="togglePerCharPrefs" aria-pressed="true" aria-label="Guardar ajustes de retrato por personaje"></button>
-      </div>
-
-      <!-- Ámbito de aplicación -->
-      <div style="margin-bottom:12px">
-        <span class="set-lbl" style="display:block;margin-bottom:7px">Aplicar a</span>
-        <div class="seg" role="group" aria-label="Ámbito de los ajustes de retrato">
-          <button type="button" class="seg-btn" id="port_scope_char" onclick="app.setPortraitScope('char')" aria-pressed="false">Este personaje</button>
-          <button type="button" class="seg-btn active" id="port_scope_global" onclick="app.setPortraitScope('global')" aria-pressed="true">Global (todos)</button>
-        </div>
-      </div>
-
-      <!-- Tamaño -->
-      <div style="margin-bottom:10px">
-        <span class="set-lbl" style="display:block;margin-bottom:7px">Tamaño</span>
-        <div class="ps-row">
-          <button class="fs-btn ps-btn" data-size="xs" onclick="app.setPortraitSize('xs')" title="Muy pequeño">XS</button>
-          <button class="fs-btn ps-btn" data-size="s"  onclick="app.setPortraitSize('s')"  title="Pequeño">S</button>
-          <button class="fs-btn ps-btn active" data-size="m" onclick="app.setPortraitSize('m')" title="Mediano">M</button>
-          <button class="fs-btn ps-btn" data-size="l"  onclick="app.setPortraitSize('l')"  title="Grande">L</button>
-          <button class="fs-btn ps-btn" data-size="xl" onclick="app.setPortraitSize('xl')" title="Muy grande">XL</button>
-        </div>
-      </div>
-
-      <!-- Forma -->
-      <div style="margin-bottom:10px">
-        <span class="set-lbl" style="display:block;margin-bottom:7px">Forma</span>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
-          <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular"  style="font-size:var(--fs-xs);padding:5px 2px">Rect</button>
-          <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado"   style="font-size:var(--fs-xs);padding:5px 2px">Suave</button>
-          <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior" style="font-size:var(--fs-xs);padding:5px 2px">Arco</button>
-          <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo"      style="font-size:var(--fs-xs);padding:5px 2px">Círculo</button>
-        </div>
-      </div>
-
-      <!-- Borde premium (fraseo positivo) -->
-      <div class="set-row">
-        <div class="set-row-txt">
-          <span class="set-lbl">Borde Premium</span>
-          <span class="set-hint">Marco dorado ornamentado del retrato. Desactívalo para un borde sutil.</span>
-        </div>
-        <button id="port_border_btn" class="toggle-btn" data-action="togglePortraitBorder" aria-pressed="true" aria-label="Activar o desactivar el borde premium del retrato"></button>
-      </div>
-
-      <!-- Aplicar (al final: configurar → confirmar) -->
-      <div class="set-hint" id="port_scope_hint" style="margin-bottom:8px;line-height:1.5">Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.</div>
-      <button class="bcnf" id="confirm_portrait_btn" data-action="applyPortraitSettings" style="margin:0;width:100%"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar como global</button>
-    </section>
-
-    <!-- ── INTERFAZ ────────────────────────────────────────────── -->
-    <section aria-labelledby="dvdr_ui">
-      <div class="dvdr" id="dvdr_ui">Interfaz</div>
-      <div class="set-row" style="margin-bottom:10px">
-        <div class="set-row-txt">
-          <span class="set-lbl">Tamaño de Fuente</span>
-          <span class="set-hint" id="fs_eco">Normal · 16px · toda la app</span>
-        </div>
-        <div style="display:flex;gap:5px;align-items:center">
-          <button class="fs-btn" id="fs_small"  onclick="app.setFontSize('small')"  title="Pequeño"    style="font-size:11px">A</button>
-          <button class="fs-btn" id="fs_normal" onclick="app.setFontSize('normal')" title="Normal"     style="font-size:14px">A</button>
-          <button class="fs-btn" id="fs_large"  onclick="app.setFontSize('large')"  title="Grande"     style="font-size:17px">A</button>
-          <button class="fs-btn" id="fs_xlarge" onclick="app.setFontSize('xlarge')" title="Muy Grande" style="font-size:20px">A</button>
-        </div>
-      </div>
-      <div class="set-row">
-        <div class="set-row-txt">
-          <span class="set-lbl" id="scroll_preserve_lbl">Recordar posición al volver</span>
-          <span class="set-hint">Mantiene el scroll de cada sección al cambiar de pestaña</span>
-        </div>
-        <button id="scroll_preserve_btn" class="toggle-btn" data-action="toggleScrollPreserve" aria-pressed="false" title="Activar/desactivar recordar posición de scroll" aria-label="Activar recordar posición al volver"></button>
-      </div>
-      <div class="set-row">
-        <div class="set-row-txt">
-          <span class="set-lbl">Asistente de creación</span>
-          <span class="set-hint">Activado: «Nuevo personaje» abre los siete pasos guiados. Desactivado: abre la ficha entera para rellenarla a mano.</span>
-        </div>
-        <button id="wiz_toggle_btn" class="toggle-btn" data-action="toggleAsistente" aria-pressed="true" title="Activar/desactivar el asistente de creación" aria-label="Usar el asistente al crear un personaje"></button>
-      </div>
-    </section>
+  <!-- Secciones plegables: recuerdan si estaban abiertas (localStorage
+       ss_set_secs). Los id y clases que usa app.js se conservan. -->
+  <div class="mbd set-body">
 
     <!-- ── APARIENCIA ──────────────────────────────────────────── -->
-    <section aria-labelledby="dvdr_look">
-      <div class="dvdr" id="dvdr_look">Apariencia</div>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Tema Visual</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')" title="Art Déco" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Art Déco</button>
-        <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')" title="Vacío" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Vacío</button>
-        <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')" title="Arcano" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Arcano</button>
-      </div>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Tipografía</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
-        <button class="fs-btn font-btn" data-font="clasica" onclick="app.setFontFamily('clasica')" title="Cinzel y Spectral" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Clásica</button>
-        <button class="fs-btn font-btn" data-font="sobria" onclick="app.setFontFamily('sobria')" title="Palatino y Georgia" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Sobria</button>
-        <button class="fs-btn font-btn" data-font="legible" onclick="app.setFontFamily('legible')" title="Tipografía del sistema" style="flex:1;padding:6px 2px;font-size:var(--fs-xs)">Legible</button>
-      </div>
-      <span class="set-hint" style="display:block;margin-bottom:12px">Cambia la familia, no el tamaño. «Legible» usa la tipografía del sistema, con letras más abiertas para pantallas pequeñas.</span>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Letra de los títulos</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
-        <button class="fs-btn tit-btn" data-tit="cinzel" onclick="app.setTitulos('cinzel')" style="flex:1;padding:6px 2px;font-size:var(--fs-sm);font-family:'Cinzel',Georgia,serif">Cinzel</button>
-        <button class="fs-btn tit-btn" data-tit="fell" onclick="app.setTitulos('fell')" style="flex:1;padding:6px 2px;font-size:var(--fs-md);font-family:'IM Fell English',Georgia,serif">IM Fell English</button>
-      </div>
-      <span class="set-hint" style="display:block;margin-bottom:12px">Solo cambia los títulos, nombres y rótulos; el texto sigue con la familia de arriba.</span>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Fondo de Pantalla</span>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Inicio</div>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_home_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
-            <button id="bg_home_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <details class="set-sec" data-sec="apariencia" open>
+      <summary class="set-sum">Apariencia</summary>
+      <div class="set-sec-bd">
+        <div class="set-field">
+          <span class="set-lbl">Tema</span>
+          <div class="set-opts set-opts-3">
+            <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')"><span class="set-sw" style="--sw:#c9aa6f;--sw2:#100e18"></span>Art Déco</button>
+            <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')"><span class="set-sw" style="--sw:#aaaaaa;--sw2:#0c0c0c"></span>Vacío</button>
+            <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')"><span class="set-sw" style="--sw:#a060e8;--sw2:#0d0e22"></span>Arcano</button>
           </div>
-          <div id="bg_home_prev" class="bg-prev" hidden></div>
-          <span id="bg_home_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
         </div>
-        <div>
-          <div class="set-hint" style="margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">Personaje</div>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-g" style="flex:1;font-size:var(--fs-xs);padding:6px 4px" onclick="document.getElementById('bg_app_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
-            <button id="bg_app_clear" class="btn btn-p" style="font-size:var(--fs-xs);padding:6px 4px;display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <div class="set-field">
+          <span class="set-lbl">Tamaño de letra</span>
+          <div class="set-opts set-opts-4">
+            <button class="fs-btn" id="fs_small"  onclick="app.setFontSize('small')"  aria-label="Letra pequeña"    style="font-size:12px">A</button>
+            <button class="fs-btn" id="fs_normal" onclick="app.setFontSize('normal')" aria-label="Letra normal"     style="font-size:15px">A</button>
+            <button class="fs-btn" id="fs_large"  onclick="app.setFontSize('large')"  aria-label="Letra grande"     style="font-size:18px">A</button>
+            <button class="fs-btn" id="fs_xlarge" onclick="app.setFontSize('xlarge')" aria-label="Letra muy grande" style="font-size:21px">A</button>
           </div>
-          <div id="bg_app_prev" class="bg-prev" hidden></div>
-          <span id="bg_app_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
+          <span class="set-hint" id="fs_eco">Normal · 16px · toda la app</span>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Familia de letra</span>
+          <div class="set-opts set-opts-3">
+            <button class="fs-btn font-btn" data-font="clasica" onclick="app.setFontFamily('clasica')" title="Cinzel y Spectral">Clásica</button>
+            <button class="fs-btn font-btn" data-font="sobria" onclick="app.setFontFamily('sobria')" title="Palatino y Georgia">Sobria</button>
+            <button class="fs-btn font-btn" data-font="legible" onclick="app.setFontFamily('legible')" title="Letra del sistema, más abierta">Legible</button>
+          </div>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Letra de los títulos</span>
+          <div class="set-opts set-opts-2">
+            <button class="fs-btn tit-btn" data-tit="cinzel" onclick="app.setTitulos('cinzel')" style="font-family:'Cinzel',Georgia,serif">Cinzel</button>
+            <button class="fs-btn tit-btn" data-tit="fell" onclick="app.setTitulos('fell')" style="font-family:'IM Fell English',Georgia,serif;font-size:var(--fs-lg)">IM Fell English</button>
+          </div>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Fondo de pantalla</span>
+          <div class="set-bgs">
+            <div>
+              <span class="set-sublbl">Inicio</span>
+              <div class="set-bg-btns">
+                <button class="fs-btn" onclick="document.getElementById('bg_home_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
+                <button id="bg_home_clear" class="fs-btn set-bg-x" style="display:none" onclick="app.setBgImage('home','')" aria-label="Quitar fondo de inicio" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+              </div>
+              <div id="bg_home_prev" class="bg-prev" hidden></div>
+              <span id="bg_home_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
+            </div>
+            <div>
+              <span class="set-sublbl">Personaje</span>
+              <div class="set-bg-btns">
+                <button class="fs-btn" onclick="document.getElementById('bg_app_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
+                <button id="bg_app_clear" class="fs-btn set-bg-x" style="display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+              </div>
+              <div id="bg_app_prev" class="bg-prev" hidden></div>
+              <span id="bg_app_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </details>
 
-    <!-- ── DATOS ───────────────────────────────────────────────── -->
-    <section aria-labelledby="dvdr_data">
-      <div class="dvdr" id="dvdr_data">Datos</div>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Personaje</span>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
-        <button class="btn btn-g" data-action="saveFromSettings">Guardar</button>
-        <button class="btn btn-g" data-action="exportJSON"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar JSON</button>
-        <button class="btn btn-g" style="grid-column:1 / -1" data-action="triggerLoadJSON"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar JSON</button>
+    <!-- ── RETRATO ─────────────────────────────────────────────── -->
+    <details class="set-sec" data-sec="retrato">
+      <summary class="set-sum">Retrato</summary>
+      <div class="set-sec-bd">
+        <div class="set-field">
+          <span class="set-lbl">Aplicar a</span>
+          <div class="seg" role="group" aria-label="A quién se aplican los ajustes de retrato">
+            <button type="button" class="seg-btn" id="port_scope_char" onclick="app.setPortraitScope('char')" aria-pressed="false">Este personaje</button>
+            <button type="button" class="seg-btn active" id="port_scope_global" onclick="app.setPortraitScope('global')" aria-pressed="true">Todos</button>
+          </div>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Tamaño</span>
+          <div class="ps-row">
+            <button class="fs-btn ps-btn" data-size="xs" onclick="app.setPortraitSize('xs')" title="Muy pequeño">XS</button>
+            <button class="fs-btn ps-btn" data-size="s"  onclick="app.setPortraitSize('s')"  title="Pequeño">S</button>
+            <button class="fs-btn ps-btn active" data-size="m" onclick="app.setPortraitSize('m')" title="Mediano">M</button>
+            <button class="fs-btn ps-btn" data-size="l"  onclick="app.setPortraitSize('l')"  title="Grande">L</button>
+            <button class="fs-btn ps-btn" data-size="xl" onclick="app.setPortraitSize('xl')" title="Muy grande">XL</button>
+          </div>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Forma</span>
+          <div class="set-opts set-opts-4">
+            <button class="fs-btn psh-btn active" data-shape="rect"    onclick="app.setPortraitShape('rect')"    title="Rectangular"><span class="set-shape" data-f="rect"></span>Recto</button>
+            <button class="fs-btn psh-btn"        data-shape="rounded" onclick="app.setPortraitShape('rounded')" title="Redondeado"><span class="set-shape" data-f="rounded"></span>Suave</button>
+            <button class="fs-btn psh-btn"        data-shape="arch"    onclick="app.setPortraitShape('arch')"    title="Arco superior"><span class="set-shape" data-f="arch"></span>Arco</button>
+            <button class="fs-btn psh-btn"        data-shape="circle"  onclick="app.setPortraitShape('circle')"  title="Círculo"><span class="set-shape" data-f="circle"></span>Círculo</button>
+          </div>
+        </div>
+        <div class="set-row">
+          <div class="set-row-txt">
+            <span class="set-lbl">Borde dorado</span>
+            <span class="set-hint">Marco ornamentado; apagado queda un borde sutil.</span>
+          </div>
+          <button id="port_border_btn" class="toggle-btn" data-action="togglePortraitBorder" aria-pressed="true" aria-label="Borde dorado del retrato"></button>
+        </div>
+        <span class="set-hint" id="port_scope_hint">Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.</span>
+        <button class="bcnf set-apply" id="confirm_portrait_btn" data-action="applyPortraitSettings"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar para todos</button>
+        <button class="set-link" id="port_reset_btn" data-action="quitarRetratoPropio" hidden>Volver al predeterminado en este personaje</button>
       </div>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Todos los personajes</span>
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:4px">
-        <button class="btn btn-g" data-action="exportarRespaldo" aria-label="Crear copia de seguridad de todos los personajes"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Crear copia</button>
-        <button class="btn btn-g" onclick="document.getElementById('respaldo_input').click()" aria-label="Restaurar una copia de seguridad"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Restaurar</button>
-      </div>
-      <span class="set-hint bg-estado" id="respaldo_estado" aria-live="polite" style="display:block;margin-bottom:12px">Guarda todos tus personajes en un solo archivo. Úsalo antes de cambiar de móvil o de borrar los datos del navegador.</span>
-      <span class="set-lbl" style="display:block;margin-bottom:7px">Reglas del Juego</span>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="btn btn-g" style="width:100%" onclick="document.getElementById('json_rules_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar Reglas (JSON)</button>
-        <button class="btn btn-gold" style="width:100%" data-action="openDatabaseEditor"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Editor de Base de Datos</button>
-      </div>
-      <span class="set-lbl" style="display:block;margin:12px 0 7px">Aplicación</span>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="btn btn-g" style="width:100%" data-action="checkForUpdate"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>Buscar actualización</button>
-        <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);text-align:center;letter-spacing:.04em">Versión de la app: <span id="set_app_ver">—</span></div>
-        <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);text-align:center;letter-spacing:.04em">Publicada en el servidor: <span id="set_srv_ver">—</span></div>
-        <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--muted);text-align:center;letter-spacing:.04em">Datos de reglas: <span id="set_rules_ver">—</span></div>
-        <button class="btn btn-g" style="width:100%;margin-top:2px" data-action="forceUpdate"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>Forzar actualización</button>
-        <div class="set-hint" style="line-height:1.5">Úsalo si las dos versiones de arriba no coinciden o si un cambio no aparece. Borra la copia local y la baja otra vez; los personajes y las reglas no se tocan.</div>
-      </div>
-    </section>
+    </details>
 
-    <button class="bcnf" style="width:100%;margin-top:4px" data-action="closeSettings"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Listo</button>
+    <!-- ── PREFERENCIAS ────────────────────────────────────────── -->
+    <details class="set-sec" data-sec="preferencias">
+      <summary class="set-sum">Preferencias</summary>
+      <div class="set-sec-bd">
+        <div class="set-row">
+          <div class="set-row-txt">
+            <span class="set-lbl">Asistente de creación</span>
+            <span class="set-hint">«Nuevo personaje» abre los pasos guiados. Apagado, abre la ficha en blanco.</span>
+          </div>
+          <button id="wiz_toggle_btn" class="toggle-btn" data-action="toggleAsistente" aria-pressed="true" aria-label="Usar el asistente al crear un personaje"></button>
+        </div>
+        <div class="set-row">
+          <div class="set-row-txt">
+            <span class="set-lbl" id="scroll_preserve_lbl">Recordar posición</span>
+            <span class="set-hint">Cada pestaña vuelve a donde la dejaste.</span>
+          </div>
+          <button id="scroll_preserve_btn" class="toggle-btn" data-action="toggleScrollPreserve" aria-pressed="false" aria-label="Recordar la posición de cada pestaña"></button>
+        </div>
+      </div>
+    </details>
+
+    <!-- ── COPIAS Y DATOS ──────────────────────────────────────── -->
+    <details class="set-sec" data-sec="datos">
+      <summary class="set-sum">Copias y datos</summary>
+      <div class="set-sec-bd">
+        <div class="set-field">
+          <span class="set-lbl">Todos los personajes</span>
+          <div class="set-opts set-opts-2">
+            <button class="fs-btn set-act" data-action="exportarRespaldo" aria-label="Crear copia de seguridad de todos los personajes"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Crear copia</button>
+            <button class="fs-btn set-act" onclick="document.getElementById('respaldo_input').click()" aria-label="Restaurar una copia de seguridad"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Restaurar</button>
+          </div>
+          <span class="set-hint bg-estado" id="respaldo_estado" aria-live="polite">Un solo archivo con todos. Hazla antes de cambiar de móvil.</span>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Un personaje (JSON)</span>
+          <div class="set-opts set-opts-2">
+            <button class="fs-btn set-act" id="set_export_char" data-action="exportJSON" aria-label="Exportar el personaje abierto"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar</button>
+            <button class="fs-btn set-act" data-action="triggerLoadJSON" aria-label="Importar un personaje"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar</button>
+          </div>
+        </div>
+        <div class="set-field">
+          <span class="set-lbl">Reglas del juego</span>
+          <div class="set-opts set-opts-2">
+            <button class="fs-btn set-act" onclick="document.getElementById('json_rules_input').click()" aria-label="Importar reglas desde un JSON"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar</button>
+            <button class="fs-btn set-act" data-action="openDatabaseEditor" aria-label="Abrir el editor de reglas"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Editor</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ── APLICACIÓN ──────────────────────────────────────────── -->
+    <details class="set-sec" data-sec="app">
+      <summary class="set-sum">Aplicación</summary>
+      <div class="set-sec-bd">
+        <div class="set-opts set-opts-2">
+          <button class="fs-btn set-act" data-action="checkForUpdate"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>Buscar</button>
+          <button class="fs-btn set-act" data-action="forceUpdate" aria-label="Forzar actualización"><svg class="ico" aria-hidden="true"><use href="#i-rot-r"/></svg>Forzar</button>
+        </div>
+        <div class="set-vers">
+          <span>App <b id="set_app_ver">—</b></span>
+          <span>Servidor <b id="set_srv_ver">—</b></span>
+          <span>Reglas <b id="set_rules_ver">—</b></span>
+        </div>
+        <span class="set-hint">«Forzar» vuelve a descargar la app si App y Servidor no coinciden. No toca personajes ni reglas.</span>
+      </div>
+    </details>
+
   </div>
 </dialog>
 <!-- ── Asistente de creación guiada ─────────────────────────────────

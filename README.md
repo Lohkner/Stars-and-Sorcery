@@ -1,4 +1,60 @@
-# S&S Companion — v56.6
+# S&S Companion — v56.7
+
+## Novedades v56.7 — Panel de Ajustes reorganizado
+
+`CACHE_VERSION` sube a `ss-companion-v100`.
+
+### Estructura
+Cinco secciones plegables, ordenadas por uso, que recuerdan si se dejaron
+abiertas (`localStorage.ss_set_secs`; por defecto solo Apariencia):
+
+1. **Apariencia**: tema (con muestra de color), tamaño de letra, familia,
+   letra de los títulos y fondo de pantalla. El tamaño de letra pasa aquí
+   desde «Interfaz», junto al resto de la tipografía.
+2. **Retrato**: «Aplicar a: Este personaje | Todos», tamaño, forma (con
+   su silueta dibujada), borde dorado y un único botón de aplicar.
+3. **Preferencias**: asistente de creación y recordar posición.
+4. **Copias y datos**: todos los personajes (copia / restaurar), un
+   personaje (exportar / importar JSON) y reglas (importar / editor).
+5. **Aplicación**: Buscar y Forzar actualización lado a lado, y las tres
+   versiones en una línea.
+
+### Retirado
+- **«Guardar»** del panel: duplicaba el botón Guardar de la cabecera
+  (`saveFromSettings` eliminado).
+- **Interruptor «Ajustes individuales por personaje»**: se solapaba con
+  «Aplicar a». Un personaje solo tiene retrato propio si se pulsa «Aplicar a
+  este personaje». Para quitárselo aparece un enlace **«Volver al
+  predeterminado en este personaje»** (`quitarRetratoPropio`).
+  `togglePerCharPrefs` eliminado; la clave `ss_per_char_prefs` se borra al
+  arrancar.
+- **«Listo»** al pie (queda la X de la cabecera) y los textos de ayuda
+  largos.
+- El **Editor de reglas** deja de ser el botón dorado del panel: es de uso
+  raro y era lo que más llamaba la atención.
+
+### Arreglos de paso
+- **Exportar un personaje** se desactiva si no hay ninguno abierto: antes
+  exportaba una ficha vacía.
+- Las confirmaciones del retrato («Guardado para todos», «Aplicado solo
+  a…») se escriben dentro del panel, porque el toast queda tapado.
+- El botón de aplicar perdía su icono al cambiar de texto (`textContent`).
+- El rótulo de «Recordar posición» cambiaba a «Activar…/Desactivar…» junto
+  al interruptor, que ya dice el estado. Ahora es fijo.
+- Cada carga de personaje añadía otro oyente de «close» al panel. Ahora se
+  añade uno solo.
+- Cerrar el panel descarta la vista previa del retrato directamente, sin
+  depender del evento «close» del `<dialog>`.
+
+### Verificado
+A 390 px:
+- Los 41 botones del panel apuntan a funciones y elementos existentes.
+- Desde Inicio, «Este personaje» y «Exportar» aparecen desactivados.
+- Con un personaje abierto se probó: aplicar XL solo a él (se guarda en su
+  ficha, el enlace de volver aparece al momento), cerrar con una vista previa
+  sin aplicar (vuelve a XL) y volver al predeterminado (quita sus ajustes y
+  vuelve a M).
+- Autodiagnóstico: 9 de 9.
 
 ## Novedades v56.6 — Copia de seguridad · letras sin conexión · IM Fell English · armadura sin competencia · Grado 5
 

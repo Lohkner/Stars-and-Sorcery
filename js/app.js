@@ -5652,19 +5652,24 @@ const app = {
     const shape = localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded';
     this._portBorderMode = localStorage.getItem('ss_port_border') || 'premium';
     this._applyPortraitBorder();
-    // Activado por defecto: los ajustes de retrato son por personaje
-    // salvo que el usuario lo desactive explícitamente.
-    this._perCharPrefs = localStorage.getItem('ss_per_char_prefs') !== '0';
+    // Los ajustes por personaje están siempre disponibles: solo los tiene
+    // quien pulsó «Aplicar a este personaje», y «Volver al predeterminado»
+    // se los quita. (Hasta v56.6 había un interruptor general que hacía lo
+    // mismo para todos a la vez; se retiró por redundante.)
+    this._perCharPrefs = true;
+    try { localStorage.removeItem('ss_per_char_prefs'); } catch (e) {}
     this.setPortraitSize(size);
     this.setPortraitShape(shape);
     this._charPrefs = { portSize: size, portShape: shape, portBorder: this._portBorderMode };
-    const btn = document.getElementById('per_char_prefs_btn');
-    if (btn) btn.setAttribute('aria-pressed', String(this._perCharPrefs));
     this._syncPortraitScopeUI();
-    // Al cerrar Ajustes sin pulsar "✓ Aplicar al Personaje", descartar la
-    // vista previa y volver a los valores confirmados del personaje.
-    document.getElementById('settings_modal')
-      ?.addEventListener('close', () => this._revertPortraitPreview());
+    // Al cerrar Ajustes sin aplicar, descartar la vista previa y volver a los
+    // valores confirmados del personaje. Una sola vez: esta función se llama
+    // en cada carga de personaje y antes acumulaba un oyente por carga.
+    if (!this._portCloseListo) {
+      this._portCloseListo = true;
+      document.getElementById('settings_modal')
+        ?.addEventListener('close', () => this._revertPortraitPreview());
+    }
   },
 
   /** ¿Hay un personaje abierto (pantalla de hoja visible)? */
@@ -6053,6 +6058,10 @@ const app = {
     // (y prefs individuales activas) → "Este personaje"; si no → "Global".
     this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
     this._syncPortraitScopeUI();
+    // Exportar un personaje solo tiene sentido con uno abierto.
+    const exp = document.getElementById('set_export_char');
+    if (exp) { exp.disabled = !this._charOpen(); exp.title = exp.disabled ? 'Abre un personaje para exportarlo' : ''; }
+    this._syncSeccionesAjustes();
     // Sellos de versión (verificables tras actualizar). Son dos cosas
     // distintas y conviene poder mirarlas por separado: los DATOS de reglas
     // viven en el bundle JS, mientras que la VERSIÓN DE LA APP es la del
@@ -6083,17 +6092,31 @@ const app = {
     this._tapShield();  // anti-traspaso de toques
     if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
     this._closeSettingsDlg();
+    // Descarta la vista previa del retrato aquí mismo y no solo en el evento
+    // «close» del <dialog>: ese evento va ligado al pintado y hay entornos
+    // (pestaña en segundo plano, WebViews) en los que llega tarde o no llega.
+    // Si llega, la segunda llamada no encuentra nada que descartar.
+    this._revertPortraitPreview();
   },
 
-  /** "💾 Guardar" desde Ajustes: cierra el modal BAJO escudo y luego guarda.
-      Sin el escudo, el click fantasma del toque (~300 ms después) aterriza
-      sobre la hoja recién descubierta o sobre el diálogo de confirmación. */
-  saveFromSettings() {
-    if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
-    this._closeSettingsDlg();
-    // Siguiente tick: el confirm de sobreescritura ya no compite con el
-    // top-layer del <dialog> y se renderiza por encima de la hoja.
-    setTimeout(() => this.saveChar(), 0);
+  /** Secciones plegables de Ajustes: se abren como se dejaron. Por defecto
+      solo Apariencia, que es lo que más se toca. */
+  _syncSeccionesAjustes() {
+    let est = {};
+    try { est = JSON.parse(localStorage.getItem('ss_set_secs') || '{}') || {}; } catch (e) {}
+    document.querySelectorAll('#settings_modal .set-sec').forEach(d => {
+      const k = d.dataset.sec;
+      if (k in est) d.open = !!est[k];
+      if (!d._secListo) {
+        d._secListo = true;
+        d.addEventListener('toggle', () => {
+          let e2 = {};
+          try { e2 = JSON.parse(localStorage.getItem('ss_set_secs') || '{}') || {}; } catch (e) {}
+          e2[k] = d.open;
+          try { localStorage.setItem('ss_set_secs', JSON.stringify(e2)); } catch (e) {}
+        });
+      }
+    });
   },
 
   /* ══════════════════════════════════════════
@@ -6110,7 +6133,7 @@ const app = {
   /** Mantiene coherente el segmento de ámbito, el botón Aplicar y la ayuda. */
   _syncPortraitScopeUI() {
     const charOpen = this._charOpen();
-    const canChar  = charOpen && this._perCharPrefs;
+    const canChar  = charOpen;
     if (!canChar) this._portScope = 'global';
     else if (!this._portScope) this._portScope = 'char';
 
@@ -6125,19 +6148,20 @@ const app = {
       segC.classList.toggle('active', isChar);
       segC.setAttribute('aria-pressed', String(isChar));
       segC.title = canChar ? 'Aplicar solo al personaje abierto'
-        : (charOpen ? 'Activa "Ajustes individuales por personaje" para usar este ámbito'
-                    : 'Abre un personaje para usar este ámbito');
+                           : 'Abre un personaje para usar esta opción';
     }
     if (segG) {
       segG.classList.toggle('active', !isChar);
       segG.setAttribute('aria-pressed', String(!isChar));
     }
-    if (btn) btn.textContent = isChar ? 'Aplicar a este personaje' : 'Guardar como global';
+    // innerHTML y no textContent: textContent borraba el icono del botón.
+    if (btn) btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>'
+      + (isChar ? 'Aplicar a este personaje' : 'Guardar para todos');
     if (hint) hint.textContent = isChar
-      ? 'Vista previa en vivo: se aplica solo al personaje abierto al pulsar el botón. Si cierras sin aplicar, se descarta.'
-      : (charOpen
-          ? 'Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios. El personaje abierto conserva los suyos al cerrar.'
-          : 'Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.');
+      ? 'Vista previa: se queda solo si pulsas el botón. Si cierras sin aplicar, se descarta.'
+      : 'Para los personajes nuevos y los que no tienen ajustes propios.';
+    const reset = document.getElementById('port_reset_btn');
+    if (reset) reset.hidden = !(charOpen && this._charPrefsPropias);
   },
 
   /** Aplica la vista previa del retrato según el ámbito seleccionado. */
@@ -6161,6 +6185,37 @@ const app = {
     const btn = document.getElementById('confirm_portrait_btn');
     if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
     this.toast('Guardado como predeterminado global', 'ok');
+    this._avisoRetrato('✓ Guardado para todos');
+  },
+
+  /** El toast queda bajo el <dialog> de Ajustes: la confirmación del
+      retrato se escribe también en su línea de ayuda. */
+  _avisoRetrato(msg) {
+    const hint = document.getElementById('port_scope_hint');
+    if (!hint) return;
+    hint.textContent = msg;
+    hint.classList.add('is-ok');
+    // El enlace de volver aparece o desaparece al momento, no al expirar el aviso.
+    const reset = document.getElementById('port_reset_btn');
+    if (reset) reset.hidden = !(this._charOpen() && this._charPrefsPropias);
+    clearTimeout(this._avisoRetratoT);
+    this._avisoRetratoT = setTimeout(() => { hint.classList.remove('is-ok'); this._syncPortraitScopeUI(); }, 2600);
+  },
+
+  /** Quita los ajustes de retrato propios del personaje abierto: vuelve a
+      seguir el predeterminado. Sustituye al interruptor general retirado. */
+  quitarRetratoPropio() {
+    if (!this._charOpen()) return;
+    const name = document.getElementById('char_name')?.value.trim();
+    if (name) {
+      const roster = STORAGE.loadRoster();
+      if (roster[name]?._prefs) { delete roster[name]._prefs; STORAGE.saveRoster(roster); }
+    }
+    this._charPrefsPropias = false;
+    this._resetCharPrefsToDefaults();
+    this._portScope = 'global';
+    this._syncPortraitScopeUI();
+    this._avisoRetrato('✓ Este personaje vuelve a usar el predeterminado');
   },
 
   /** Confirma la vista previa de retrato SOLO para el personaje abierto. */
@@ -6195,8 +6250,9 @@ const app = {
       }
     }
     if (!persisted) this._markUnsaved();  // personaje aún no guardado: viajará en _prefs al guardar
-    this.toast(`Retrato aplicado solo a ${name ? `"${this._esc(name)}"` : 'este personaje'}`, 'ok');
+    this.toast(`Retrato aplicado solo a ${name ? `"${name}"` : 'este personaje'}`, 'ok');
     flash();
+    this._avisoRetrato(`✓ Aplicado solo a ${name ? `«${name}»` : 'este personaje'}`);
   },
 
   togglePortraitBorder() {
@@ -6217,15 +6273,6 @@ const app = {
     if (btn) btn.setAttribute('aria-pressed', mode === 'premium' ? 'true' : 'false');
   },
 
-  togglePerCharPrefs() {
-    this._perCharPrefs = !this._perCharPrefs;
-    const btn = document.getElementById('per_char_prefs_btn');
-    if (btn) btn.setAttribute('aria-pressed', String(this._perCharPrefs));
-    localStorage.setItem('ss_per_char_prefs', this._perCharPrefs ? '1' : '0');
-    // Desactivado ⇒ el ámbito "Este personaje" deja de tener sentido.
-    this._syncPortraitScopeUI();
-  },
-
   toggleScrollPreserve() {
     this.scrollPreserve = !this.scrollPreserve;
     this._pageScrolls = {}; // reset saved positions when toggling
@@ -6237,9 +6284,7 @@ const app = {
     const btn = document.getElementById('scroll_preserve_btn');
     const lbl = document.getElementById('scroll_preserve_lbl');
     if (btn) btn.setAttribute('aria-pressed', String(this.scrollPreserve));
-    if (lbl) lbl.textContent = this.scrollPreserve
-      ? 'Desactivar recordar posición al volver'
-      : 'Activar recordar posición al volver';
+    if (lbl) lbl.textContent = 'Recordar posición';
   },
 
   lethality: LETHALITY_DEFAULT,
