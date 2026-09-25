@@ -1,4 +1,18 @@
-# S&S Companion — v57.3.1
+# S&S Companion — v57.4
+
+## Novedades v57.4 — Joyas en la tarjeta de Estado
+
+`CACHE_VERSION` sube a `ss-companion-v110`.
+
+- **Joyas**: los puntos de 6 px junto a Puntos de Vida, Adrenalina, Ingenio
+  y Carne pasan a ser una joya en rombo tallado de 14 px, del color de cada
+  recurso (símbolo `#i-joya`).
+- **Cómo está hecha**: cuatro facetas y una mesa central, en blanco y negro
+  translúcidos sobre `currentColor`, más un destello arriba a la izquierda.
+  El mismo símbolo sirve para los cuatro recursos y para el tema Vacío.
+- **Brillo**: como en las barras, PV, Adrenalina e Ingenio lo llevan; Carne
+  no.
+- Verificado a 390 px; autodiagnóstico 9 de 9.
 
 ## Novedades v57.3.1 — Resumen de Guardia
 

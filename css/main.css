@@ -3672,14 +3672,19 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .est4 .e4-row-adr   .e4-btn{--c:var(--res-adr-ink)}
 .est4 .e4-row-ing   .e4-btn{--c:var(--res-ing-ink)}
 .est4 .e4-row-carne .e4-btn{--c:var(--res-carne-ink)}
-.est4 .e4-row .e4-name::before{
-  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
-  margin-right:8px;vertical-align:.1em;background:var(--rim);
+/* Joya en rombo tallado del color de cada recurso (v57.4). Las facetas
+   son blancas y negras translúcidas sobre currentColor, así que el mismo
+   símbolo sirve para los cuatro y para el tema Vacío. Brillo como en las
+   barras: todos menos Carne. */
+.est4 .e4-name{display:inline-flex;align-items:center}
+.est4 .e4-joya{width:14px;height:14px;flex:0 0 auto;margin-right:9px;color:var(--rim)}
+.est4 .e4-row-pv    .e4-joya{color:var(--res-pv-bar)}
+.est4 .e4-row-adr   .e4-joya{color:var(--res-adr)}
+.est4 .e4-row-ing   .e4-joya{color:var(--res-ing)}
+.est4 .e4-row-carne .e4-joya{color:var(--res-carne)}
+.est4 .e4-row-pv .e4-joya,.est4 .e4-row-adr .e4-joya,.est4 .e4-row-ing .e4-joya{
+  filter:drop-shadow(0 0 2.5px color-mix(in srgb,currentColor 80%,transparent));
 }
-.est4 .e4-row-pv    .e4-name::before{background:var(--res-pv-bar)}
-.est4 .e4-row-adr   .e4-name::before{background:var(--res-adr)}
-.est4 .e4-row-ing   .e4-name::before{background:var(--res-ing)}
-.est4 .e4-row-carne .e4-name::before{background:var(--res-carne)}
 
 /* ── 3 · Ataque y daño: iconos dibujados, bono en marfil ── */
 .abtn-icon{width:32px;min-width:32px;height:32px;padding:0;border-radius:50%}
