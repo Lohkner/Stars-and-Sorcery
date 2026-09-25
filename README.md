@@ -1,4 +1,82 @@
-# S&S Companion — v57.4
+# S&S Companion — v57.6.1
+
+## Novedades v57.6.1 — Medallas con gema abajo · Barras de Estado más cortas
+
+`CACHE_VERSION` sube a `ss-companion-v114`.
+
+- **Identidad**: la presentación definitiva son las medallas de engaste
+  fino, con la gema solo en el filo de abajo (sujeta por dos garras de oro)
+  y el «·» dorado entre ellas.
+  - Se retiran la tríada de v57.6 y sus rótulos (CSS y marcado).
+  - La fila vuelve a usar todo el ancho, como cuando su padding iba en
+    línea: la reserva de 34 px por lado para el lápiz partía las medallas
+    en dos líneas.
+  - A cambio, la fila baja 22 px para quedar bajo el lápiz de la esquina.
+  - A 390 px, Humano · Audaz · Soldado caben en una fila, sin solaparse
+    con el lápiz.
+- **Estado**: las barras de PV, Adrenalina, Ingenio y Carne ya no pasan
+  bajo los botones. Van bajo el nombre y acaban 12 px antes del −
+  (`margin-right:162px`: los 150 px de la columna de controles más el
+  hueco de 12).
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.6 — Identidad en tríada
+
+`CACHE_VERSION` sube a `ss-companion-v113`.
+
+- **Tríada**: el resumen de identidad pasa a tres columnas, sin medallas.
+  - Cada columna lleva la gema engastada de su color arriba, el nombre en
+    oro y debajo, en cursiva pequeña, qué es (descriptor, arquetipo,
+    trasfondo).
+  - Las columnas se separan con un filete de oro que se desvanece.
+- **Márgenes**: la tríada no usa los 34 px por lado que reservan el hueco
+  del lápiz. El lápiz queda en la esquina, por encima de los nombres, y las
+  columnas miden unos 100 px, así que ningún nombre del manual se parte a
+  media palabra.
+- **Dos presentaciones, un marcado**: sin la clase `id-triada` del
+  contenedor (`index.html`), vuelven las medallas de engaste fino con la
+  gema solo abajo y el «·» dorado entre ellas.
+- Verificado a 390 px con Medio Elfo · Audaz · Mercenario, en las dos
+  presentaciones; autodiagnóstico 9 de 9.
+
+## Novedades v57.5.1 — Medallas: engaste fino y doble gema
+
+`CACHE_VERSION` sube a `ss-companion-v112`.
+
+- **Borde**: mucho más delgado. Queda un solo filo de oro de 1 px, un hilo
+  oscuro por dentro y una leve sombra interior. Se quitan el hilo de oro
+  interior y el granulado.
+- **Gemas**: cada medalla lleva su gema engastada arriba y otra igual abajo,
+  cada una con sus dos garras de oro.
+- **Separadores**: vuelve el «·» dorado entre medallas. A 390 px las tres
+  caben en una fila.
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.5 — Medallas enjoyadas de identidad
+
+`CACHE_VERSION` sube a `ss-companion-v111`.
+
+- **Gema de corona**: cada medalla del resumen de identidad lleva sobre su
+  filo superior la joya en rombo engastada en oro (símbolo
+  `#i-joya-engaste`), con brillo del color de su categoría:
+  - amatista para el Descriptor;
+  - rubí para el Arquetipo;
+  - zafiro para el Trasfondo.
+
+  Dos garras de oro la sujetan al filo, y el tema Vacío tiene tonos
+  apagados propios.
+- **Borde de engaste**: de fuera adentro, filo de oro vivo, surco oscuro,
+  hilo de oro interior y granulado de puntos (milgrain), con una leve
+  sombra interior que da hondura.
+- **Separadores**: se quitan los «·» entre medallas. Con una gema por
+  medalla sobran, y al pasar a dos líneas se quedaban sueltos en los
+  bordes.
+- **Marcado**: el id `sum_*_badge` pasa a un `<span>` interior, así que
+  el `textContent` de `confirmSection` ya no borra la gema.
+- **Degradado del oro**: va en un `<svg>` aparte, de tamaño cero, porque
+  Chrome no pinta un degradado que viva dentro del sprite en
+  `display:none`.
+- Verificado a 390 px con nombres cortos y largos; autodiagnóstico 9 de 9.
 
 ## Novedades v57.4 — Joyas en la tarjeta de Estado
 

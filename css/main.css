@@ -3662,6 +3662,10 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .est4 .e4-track .res-fill-ing{box-shadow:0 0 4px color-mix(in srgb,var(--res-ing) 85%,transparent),0 0 12px color-mix(in srgb,var(--res-ing) 55%,transparent)}
 .est4 .e4-track .res-fill-carne{box-shadow:none}
 .est4 .e4-track-sm{height:3px;margin:-5px 0 5px;opacity:.9}
+/* La barra va bajo el nombre y acaba antes del −: no se extiende bajo los
+   botones. 162 px = columna de controles (32 + 70 + 32 + 2 huecos de 8)
+   más el hueco de 12 entre el nombre y los controles. */
+.est4 .e4-track{margin-right:162px}
 .est4 .e4-row-pv    .e4-fin{color:var(--res-pv-bar-ink)}
 .est4 .e4-row-adr   .e4-fin{color:var(--res-adr-ink)}
 .est4 .e4-row-ing   .e4-fin{color:var(--res-ing-ink)}
@@ -4100,3 +4104,50 @@ body.modo-edicion .page{padding-bottom:84px}
    —adjustRes ya no pasa del límite—, así que no se usa disabled. */
 .est4 .e4-ctl .e4-btn.is-tope{opacity:.32;box-shadow:none;background-color:transparent}
 @media(prefers-reduced-motion:reduce){.est4 .e4-ctl .e4-btn{transition:none}}
+
+/* ══════════════════════════════════════════
+   MEDALLAS ENJOYADAS DE IDENTIDAD (v57.5)
+══════════════════════════════════════════ */
+/* Una gema por categoría, engastada en oro sobre el filo inferior:
+   amatista (Descriptor), rubí (Arquetipo), zafiro (Trasfondo). */
+:root{--gema-desc:#9b6ad6;--gema-arq:#d0405a;--gema-bg:#3f7fd6}
+[data-theme="void"]{--gema-desc:#8e7fa6;--gema-arq:#a0676e;--gema-bg:#6a8299}
+
+/* Todo el ancho, como cuando este padding iba en línea: la reserva de 34 px
+   por lado para el lápiz (EDICIÓN DE TARJETAS) partía las medallas en dos
+   líneas. A cambio, la fila baja lo justo para quedar bajo el lápiz de la
+   esquina (32 px de alto a 8 px del borde). */
+#identity_summary_view > div.id-fila:first-child{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;padding:26px 0 4px}
+#identity_summary_view .ib-joya{
+  width:12px;height:15.6px;z-index:1;
+  filter:drop-shadow(0 0 3px color-mix(in srgb,currentColor 70%,transparent)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+}
+#identity_summary_view .ib-desc .ib-joya{color:var(--gema-desc)}
+#identity_summary_view .ib-arq  .ib-joya{color:var(--gema-arq)}
+#identity_summary_view .ib-bg   .ib-joya{color:var(--gema-bg)}
+
+/* ── Medallas: engaste fino (1 px de oro vivo, un hilo oscuro por dentro y
+      una leve sombra interior) y la gema centrada sobre el filo de abajo,
+      sujeta por dos garras de oro. */
+#identity_summary_view .ibadge{
+  position:relative;
+  margin:3px 3px 10px;padding:5px 15px;
+  color:#dcc084;
+  border:1px solid transparent;
+  background:
+    linear-gradient(180deg,rgba(40,32,21,.97),rgba(21,17,11,.97)) padding-box,
+    linear-gradient(140deg,#f0d89c 0%,#c9a96f 40%,#7f6231 64%,#e6c985 100%) border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(10,7,3,.6),
+    inset 0 2px 5px rgba(0,0,0,.4),
+    0 2px 8px rgba(0,0,0,.45);
+  text-shadow:0 1px 2px rgba(0,0,0,.55);
+}
+#identity_summary_view .ib-joya--abajo{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%)}
+#identity_summary_view .ibadge::after{
+  content:'';position:absolute;left:50%;bottom:-1.5px;transform:translateX(-50%);
+  width:20px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,#b08f55,#f0d89c 30%,transparent 30% 70%,#f0d89c 70%,#b08f55);
+}
+/* Separador «·» dorado entre medallas */
+#identity_summary_view .isep{align-self:center;margin-bottom:7px}
