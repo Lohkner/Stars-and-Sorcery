@@ -1063,24 +1063,27 @@ const app = {
                     + `<span class="sk-meta">2d10 · ${attr}</span>`;
       btn.addEventListener('click', () => this.rollSkill(sk));
 
-      // Cuatro puntos que se llenan hasta el Grado. Grado 0 = los cuatro
-      // vacíos. El nombre del Grado va en el title y en el aria-label.
+      // Cuatro engastes que reciben una gema de talla brillante por Grado
+      // (v57.8): azul de Ingenio si la habilidad va con un atributo mental
+      // (INT, SAB, CAR), naranja de Adrenalina si va con uno físico (FUE,
+      // DES, CON). Grado 0 = los cuatro vacíos, sin distinción. El nombre
+      // del Grado va en el title y en el aria-label.
       const badge = document.createElement('span');
-      badge.className = 'sk-g-badge read sk-pips';
+      badge.className = 'sk-g-badge read sk-pips '
+        + (['FUE', 'DES', 'CON'].includes(attr) ? 'sk-fisica' : 'sk-mental');
       badge.dataset.grade = grade;
       badge.title = `Grado ${grade} · ${SKILL_GRADE_NAMES[grade] || ''}`;
       badge.setAttribute('role', 'img');
       badge.setAttribute('aria-label', badge.title);
       if (grade >= 5) {
-        // Grado 5 (Maestría Absoluta): una medalla en lugar de los puntos.
-        badge.classList.add('sk-medalla');
-        badge.innerHTML = '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-medalla"/></svg>';
+        // Grado 5 (Maestría Absoluta): un cabujón rojo mítico en su engaste
+        // de oro ocupa el sitio de los cuatro.
+        badge.classList.add('sk-mitico');
+        badge.innerHTML = '<svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico"/></svg>';
       } else {
-        for (let i = 1; i <= 4; i++) {
-          const dot = document.createElement('span');
-          dot.className = 'sk-pip' + (i <= grade ? ' on' : '');
-          badge.appendChild(dot);
-        }
+        badge.innerHTML = [1, 2, 3, 4].map(i => i <= grade
+          ? '<svg class="sk-slot on" aria-hidden="true"><use href="#i-sk-gema"/></svg>'
+          : '<svg class="sk-slot" aria-hidden="true"><use href="#i-sk-slot"/></svg>').join('');
       }
 
       row.append(btn, badge);

@@ -1,4 +1,27 @@
-# S&S Companion — v57.7
+# S&S Companion — v57.8
+
+## Novedades v57.8 — Engastes de Grado en las habilidades
+
+`CACHE_VERSION` sube a `ss-companion-v116`.
+
+- **Engastes**: los cuatro círculos de Grado pasan a ser cuatro engastes
+  octogonales de oro, con el hueco oscuro de la piedra (`#i-sk-slot`).
+- **Gemas**: cada Grado pone en su engaste una gema de talla brillante
+  (`#i-sk-gema`) del color del atributo con que se tira la habilidad (el
+  elegido, o el automático):
+  - azul de Ingenio (`--res-ing`) si es mental: INT, SAB, CAR;
+  - naranja de Adrenalina (`--res-adr`) si es físico: FUE, DES, CON.
+
+  Grado 0 son cuatro engastes vacíos, sin distinción.
+- **Grado 5**: un cabujón rojo mítico en engaste de oro pulido, con cuatro
+  garras (`#i-sk-mitico`, 48 × 26 px), ocupa el sitio de los cuatro.
+  - Su brillo rojo late despacio, salvo con «reducir movimiento».
+  - Sustituye a la medalla de v56.6: se retiran `#i-medalla` y las reglas
+    `.sk-pip` / `.sk-medalla`.
+- Los degradados del oro, del rojo y de la luz del cabujón van en un
+  `<svg>` aparte, de tamaño cero, porque el sprite está en `display:none`.
+- Verificado a 390 px con Grados 0–5, físicos y mentales; autodiagnóstico
+  9 de 9.
 
 ## Novedades v57.7 — Amatista en las tarjetas · Iconos por tipo de arma
 

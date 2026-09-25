@@ -3726,14 +3726,6 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
   min-width:0;padding:0 9px;gap:4px;
   background:none;border-color:var(--edge);box-shadow:none;
 }
-.sk-pip{
-  width:6px;height:6px;border-radius:50%;flex:0 0 6px;
-  border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);
-}
-.sk-pip.on{
-  background:var(--goldb);border-color:var(--goldb);
-  box-shadow:0 0 5px color-mix(in srgb,var(--gold) 55%,transparent);
-}
 
 /* ── 6 · Tipo de talento con color propio ── */
 .tc-tipo[data-tipo],.arq-rasgo-t[data-tipo]{opacity:1}
@@ -3799,15 +3791,6 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* Grado de habilidad: en móvil los puntos de 6 px no se distinguían.
    Caja más ancha, puntos de 8 px, y el Grado 5 es una medalla. */
 .sk-g-badge.sk-pips{width:78px;min-width:78px;padding:0;gap:6px;justify-content:center}
-.sk-pip{width:8px;height:8px;flex:0 0 8px;border-width:1.5px}
-.sk-g-badge.sk-medalla{
-  color:var(--goldb);border-color:var(--edge-gold-strong);
-  background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--gold) 22%,transparent),transparent 70%);
-}
-.sk-g-badge.sk-medalla .ico{
-  width:24px;height:24px;margin:0;vertical-align:0;
-  filter:drop-shadow(0 0 4px color-mix(in srgb,var(--gold) 55%,transparent));
-}
 
 /* Aviso de armadura sin competencia */
 .armor-pen{
@@ -4139,3 +4122,28 @@ body.modo-edicion .page{padding-bottom:84px}
 }
 /* Separador «·» dorado entre medallas */
 #identity_summary_view .isep{align-self:center}
+
+/* ══════════════════════════════════════════
+   ENGASTES DE GRADO (v57.8)
+══════════════════════════════════════════ */
+/* Cuatro engastes de oro. Cada Grado pone una gema de talla brillante del
+   color del atributo: Ingenio (mental) o Adrenalina (físico). */
+.sk-g-badge.sk-pips{width:78px;min-width:78px;padding:0 4px;gap:3px;justify-content:center}
+.sk-slot{width:15px;height:15px;flex:0 0 15px}
+.sk-slot:not(.on){opacity:.75}
+.sk-fisica .sk-slot.on{color:var(--res-adr)}
+.sk-mental .sk-slot.on{color:var(--res-ing)}
+.sk-slot.on{filter:drop-shadow(0 0 2.5px color-mix(in srgb,currentColor 75%,transparent)) drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+
+/* Grado 5: el cabujón rojo mítico, con un brillo que late despacio */
+.sk-g-badge.sk-mitico{
+  border-color:rgba(214,40,48,.45);
+  background:radial-gradient(ellipse at 50% 50%,rgba(190,20,30,.22),transparent 72%);
+}
+.sk-mitico-g{
+  width:48px;height:26px;flex:0 0 auto;
+  filter:drop-shadow(0 0 5px rgba(255,40,40,.7)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  animation:skMitico 2.6s ease-in-out infinite;
+}
+@keyframes skMitico{50%{filter:drop-shadow(0 0 10px rgba(255,50,40,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
+@media(prefers-reduced-motion:reduce){.sk-mitico-g{animation:none}}
