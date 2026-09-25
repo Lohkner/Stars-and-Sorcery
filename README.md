@@ -1,4 +1,29 @@
-# S&S Companion — v57.2
+# S&S Companion — v57.3
+
+## Novedades v57.3 — Botones ± de recursos rediseñados
+
+`CACHE_VERSION` sube a `ss-companion-v108`. Pensados para el móvil.
+
+- **PV**: los botones − y + también en verde.
+- **Diseño**:
+  - casilla redondeada de 32 px (antes, círculo de 27 px) con un velo del
+    color de su recurso, borde a juego y un relieve sutil;
+  - los signos se dibujan con trazos, así que siempre están centrados y no
+    dependen del estilo de letra. El carácter sigue en el botón, en
+    transparente, para el lector de pantalla.
+- **Respuesta al dedo**:
+  - al pulsar, el botón se hunde (sombra interior) y se aprieta un poco;
+  - el brillo al pasar el ratón solo existe en dispositivos con ratón, así
+    que en el móvil no se queda pegado tras tocar;
+  - el área táctil sigue siendo de 44 px y mantener pulsado sigue
+    repitiendo.
+- **Topes**: el − se atenúa con el recurso a 0 y el + con el recurso lleno
+  (`_updateResBars` pone `.is-tope`). Siguen siendo pulsables; la suma y
+  la resta ya se detenían en el límite.
+- Verificado a 390 px con toques reales:
+  - Ingenio 0 → 1, y su − deja de estar atenuado;
+  - PV 13 → 12;
+  - autodiagnóstico: 9 de 9.
 
 ## Novedades v57.2 — PV en verde · Ingenio en azul místico
 

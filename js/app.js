@@ -2615,6 +2615,11 @@ const app = {
       const max = parseInt(document.getElementById(maxId)?.textContent) || 0;
       fill.style.width = (max > 0 ? Math.max(0, Math.min(100, cur / max * 100)) : 0) + '%';
       if (fillId === 'res_fill_pv') fill.classList.toggle('res-low', max > 0 && cur / max <= .25);
+      // Botones ± en su tope: el − a 0 y el + lleno se atenúan (v57.3).
+      document.querySelectorAll(`.e4-btn[data-cur="${curId}"]`).forEach(b => {
+        const baja = String(b.dataset.delta || '').startsWith('-');
+        b.classList.toggle('is-tope', baja ? cur <= 0 : cur >= max);
+      });
     });
   },
 

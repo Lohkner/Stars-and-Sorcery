@@ -3666,10 +3666,12 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .est4 .e4-row-adr   .e4-fin{color:var(--res-adr-ink)}
 .est4 .e4-row-ing   .e4-fin{color:var(--res-ing-ink)}
 .est4 .e4-row-carne .e4-fin{color:var(--res-carne-ink)}
-.est4 .e4-row-pv    .e4-btn{border-color:color-mix(in srgb,var(--res-pv) 42%,transparent);color:var(--res-pv-ink)}
-.est4 .e4-row-adr   .e4-btn{border-color:color-mix(in srgb,var(--res-adr) 42%,transparent);color:var(--res-adr-ink)}
-.est4 .e4-row-ing   .e4-btn{border-color:color-mix(in srgb,var(--res-ing) 42%,transparent);color:var(--res-ing-ink)}
-.est4 .e4-row-carne .e4-btn{border-color:color-mix(in srgb,var(--res-carne) 50%,transparent);color:var(--res-carne-ink)}
+/* Color de los botones ± por recurso: lo pintan las reglas «BOTONES ± DE
+   RECURSOS» (v57.3) a partir de --c. PV usa el verde de su barra. */
+.est4 .e4-row-pv    .e4-btn{--c:var(--res-pv-bar-ink)}
+.est4 .e4-row-adr   .e4-btn{--c:var(--res-adr-ink)}
+.est4 .e4-row-ing   .e4-btn{--c:var(--res-ing-ink)}
+.est4 .e4-row-carne .e4-btn{--c:var(--res-carne-ink)}
 .est4 .e4-row .e4-name::before{
   content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
   margin-right:8px;vertical-align:.1em;background:var(--rim);
@@ -4048,3 +4050,48 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 /* Que el último contenido no quede tapado por el botón flotante */
 body.modo-edicion .page{padding-bottom:84px}
 .sdial-item.is-on{color:var(--goldb);border-color:var(--edge-gold);background:color-mix(in srgb,var(--gold) 14%,transparent)}
+
+/* ══════════════════════════════════════════
+   BOTONES ± DE RECURSOS (v57.3)
+   Casilla redondeada de 32 px con un velo del color del recurso (--c).
+   Los signos se DIBUJAN con dos degradados del color --c: con el
+   carácter «−»/«+» de la letra quedaban descentrados y cambiaban con el
+   estilo de letra. El texto sigue en el botón para el lector de pantalla
+   (aria-label) y se vuelve transparente —con font-size:0 lo contaba el
+   autodiagnóstico como texto de 0 px—. --c lo pone cada fila;
+   sin él, gris (--muted). El área táctil de 44 px la
+   sigue dando .res-btn::before.
+══════════════════════════════════════════ */
+.est4 .e4-ctl{grid-template-columns:32px 70px 32px}
+.est4 .e4-ctl .e4-btn{
+  width:32px;height:32px;border-radius:10px;
+  font-size:14px;color:transparent;
+  border:1px solid color-mix(in srgb,var(--c,var(--muted)) 36%,transparent);
+  background-color:color-mix(in srgb,var(--c,var(--muted)) 9%,transparent);
+  background-image:linear-gradient(var(--c,var(--muted)),var(--c,var(--muted))),linear-gradient(var(--c,var(--muted)),var(--c,var(--muted)));
+  background-repeat:no-repeat;background-position:center;
+  background-size:12px 2px,2px 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 1px 3px rgba(0,0,0,.45);
+  transition:background-color .15s,border-color .15s,box-shadow .15s,opacity .2s,transform .08s;
+}
+/* «−»: solo el trazo horizontal */
+.est4 .e4-ctl .e4-btn[data-delta^="-"]{background-size:12px 2px,0 0}
+@media(hover:hover){
+  .est4 .e4-ctl .e4-btn:hover{
+    background-color:color-mix(in srgb,var(--c,var(--muted)) 18%,transparent);
+    border-color:color-mix(in srgb,var(--c,var(--muted)) 62%,transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 10px color-mix(in srgb,var(--c,var(--muted)) 28%,transparent);
+  }
+}
+/* Pulsado: se hunde (sombra interior) y se aprieta un poco */
+.est4 .e4-ctl .e4-btn:active{
+  transform:scale(.9);
+  background-color:color-mix(in srgb,var(--c,var(--muted)) 28%,transparent);
+  border-color:color-mix(in srgb,var(--c,var(--muted)) 75%,transparent);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.45);
+}
+.est4 .e4-ctl .e4-btn:focus-visible{outline:2px solid color-mix(in srgb,var(--c,var(--muted)) 75%,transparent);outline-offset:2px}
+/* En el tope (− a 0, + lleno): atenuado, sin relieve. Sigue siendo pulsable
+   —adjustRes ya no pasa del límite—, así que no se usa disabled. */
+.est4 .e4-ctl .e4-btn.is-tope{opacity:.32;box-shadow:none;background-color:transparent}
+@media(prefers-reduced-motion:reduce){.est4 .e4-ctl .e4-btn{transition:none}}
