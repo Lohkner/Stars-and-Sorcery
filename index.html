@@ -259,6 +259,7 @@
           <button class="sdial-item" onclick="app.personajeAleatorio();app.toggleDial()" title="Personaje aleatorio" aria-label="Generar personaje aleatorio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
           <button class="sdial-item sdial-danger" onclick="app.confirmClear();app.toggleDial()" title="Resetear hoja" aria-label="Resetear hoja de personaje"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
           <button class="sdial-item sdial-danger" onclick="app.deleteCurrentChar();app.toggleDial()" title="Eliminar personaje" aria-label="Eliminar personaje guardado"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+          <button class="sdial-item" id="sdial_modo_edicion" onclick="app.modoEdicion();app.toggleDial()" title="Modo edición: todas las tarjetas" aria-label="Modo edición: abrir todas las tarjetas en edición"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-quill"/></svg></button>
           <button class="sdial-item" onclick="app.verHistorialTiradas();app.toggleDial()" title="Últimas tiradas" aria-label="Ver las últimas tiradas"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-d20"/></svg></button>
           <button class="sdial-item" onclick="app.openSettings();app.toggleDial()" title="Ajustes y datos" aria-label="Abrir ajustes y datos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         </div>
@@ -1152,6 +1153,7 @@
 <script defer src="js/asistente.js"></script>
 <script defer src="js/respaldo.js"></script>
 <script defer src="js/historial.js"></script>
+<script defer src="js/edicion.js"></script>
 <script defer src="js/autocheck.js"></script>
 <script defer src="js/boot.js"></script>
 </body>

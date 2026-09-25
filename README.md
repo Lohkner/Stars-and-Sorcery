@@ -1,4 +1,82 @@
-# S&S Companion — v56.9.2
+# S&S Companion — v57.2
+
+## Novedades v57.2 — PV en verde · Ingenio en azul místico
+
+`CACHE_VERSION` sube a `ss-companion-v107`.
+
+- **PV**: el punto y el número también pasan a verde (`--res-pv-bar`,
+  `--res-pv-bar-ink: #7fd6a3`). Los botones − y + conservan el rojo.
+- **Ingenio**: azul místico en la barra, el brillo, el punto, el número y los
+  botones. Es el `--ice` de la antigua caja de Fuente de Poder (#3d8fc2), con
+  el número en #5aa8d8. Como `--ice` ya lo redefine cada tema, en Arcano y
+  Vacío toma su propio azul.
+
+## Novedades v57.1 — Barra de PV en verde
+
+`CACHE_VERSION` sube a `ss-companion-v106`.
+
+- La **barra** de Puntos de Vida pasa a verde esmeralda (`--res-pv-bar:
+  #46b97a`; en el tema Vacío, `#7d9c80`), con el mismo brillo de dos capas.
+- **Con PV bajos** (25 % o menos) sigue cambiando a brasa, barra y brillo.
+- El nombre, el número y los botones de PV conservan su color (`--res-pv`);
+  solo cambia la barra.
+
+## Novedades v57.0 — Lápiz en la cabecera, Cancelar y modo edición
+
+`CACHE_VERSION` sube a `ss-companion-v105`. Todo en `js/edicion.js`; la
+edición de cada tarjeta (`editSection`, `confirmSection`…) no cambia.
+
+### Lápiz en la cabecera
+- Sustituye al «Editar» del pie en las 9 tarjetas editables: retrato,
+  identidad, atributos, salvaciones, habilidades, Guardia, Equipo de Combate,
+  Equipo & Tesoro y Campaña.
+- En las tarjetas plegables va al extremo derecho del título y se ve aunque
+  la tarjeta esté plegada, detrás de su resumen. El título sigue plegando; el
+  lápiz solo edita y, si la tarjeta estaba plegada, la abre. En el retrato y
+  en la identidad, que no tienen título, va en la esquina.
+- El lápiz se oculta mientras la tarjeta está en edición.
+
+### Cancelar
+- Junto a cada «Confirmar». Al entrar en edición se guarda una foto de la
+  ficha; «Cancelar» devuelve **solo los campos de esa tarjeta** y lo que
+  arrastran:
+  - cambiar de Arquetipo o Linaje arrastra habilidades, Pericias y
+    elecciones;
+  - Equipo & Tesoro arrastra el inventario, el oro, lo equipado y las
+    raciones.
+- Lo demás no se toca: PV gastados, tiradas del historial y otras tarjetas
+  en edición.
+- La restauración usa la ruta de carga de un personaje guardado
+  (`clearCharData` + `applyCharData`) y conserva la página y el
+  desplazamiento.
+
+### Modo edición
+- Botón con el lápiz en el **menú de acciones**: abre las 9 tarjetas en
+  edición (despliega las plegadas) y muestra un único **«Terminar edición»**
+  flotante que las confirma todas.
+- Dentro del modo, «Cancelar» sigue funcionando por tarjeta y el resto sigue
+  abierto.
+
+### Arreglado de paso
+- Abrir Combate o Equipo desde otra página lanzaba un `scrollIntoView` que
+  descolocaba el carril de páginas. Ahora se evita con el indicador de
+  edición en bloque que ya tenía la app (`_bulkEditing`).
+- El historial de tiradas no se borra al cancelar.
+
+### Verificado
+A 390 px:
+- 9 lápices y ningún «Editar» al pie.
+- Lápiz sobre una tarjeta plegada, con clic real: se abre en edición.
+- Atributos: FUE +3 → Cancelar → vuelve a su valor; los PV restados, la
+  tirada y la Guardia en edición siguen igual.
+- Arquetipo cambiado → Cancelar → Arquetipo, habilidades y Reservas
+  idénticos a antes.
+- Arma equipada borrada y oro +50 → Cancelar → todo vuelve, arma equipada
+  incluida.
+- Modo edición: 9 de 9 abiertas; cancelar una deja las otras 8; «Terminar»
+  cierra todas.
+- Guardar, cargar y cancelar funciona.
+- Autodiagnóstico: 9 de 9.
 
 ## Novedades v56.9.2 — Brillo en las barras de Estado
 

@@ -81,8 +81,9 @@
   // ── Otro personaje, otra lista.
   const _clear = app.clearCharData;
   app.clearCharData = function () {
-    tiradas = [];
-    pintar(false);
+    // «Cancelar» de una tarjeta recarga la ficha por esta misma vía, pero
+    // sigue siendo el mismo personaje: su historial se conserva.
+    if (!app._restaurandoFicha) { tiradas = []; pintar(false); }
     return _clear.apply(this, arguments);
   };
 
