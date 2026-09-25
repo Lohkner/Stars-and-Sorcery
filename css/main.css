@@ -4102,9 +4102,12 @@ body.modo-edicion .page{padding-bottom:84px}
 ══════════════════════════════════════════ */
 /* Todo el ancho, como cuando este padding iba en línea: la reserva de 34 px
    por lado para el lápiz (EDICIÓN DE TARJETAS) partía las medallas en dos
-   líneas. A cambio, la fila baja lo justo para quedar bajo el lápiz de la
-   esquina (32 px de alto a 8 px del borde). */
-#identity_summary_view > div.id-fila:first-child{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;padding:26px 0 4px}
+   líneas. Para no chocar con el lápiz de la esquina la fila baja, pero con
+   el MISMO aire abajo (v57.15): antes 26 arriba y 4 abajo dejaban las
+   medallas caídas hacia el borde inferior. El lápiz sube a 4 px de la
+   esquina para que baste con 20. */
+#identity_summary_view > div.id-fila:first-child{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;padding:20px 0}
+.panel:has(#identity_summary_view) > .edit-pen--esquina{top:4px;right:4px}
 /* Engaste fino: 1 px de oro vivo, un hilo oscuro por dentro y una leve
    sombra interior. Sin gemas desde v57.7. */
 #identity_summary_view .ibadge{

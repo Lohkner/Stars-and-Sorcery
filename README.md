@@ -1,4 +1,17 @@
-# S&S Companion — v57.14
+# S&S Companion — v57.15
+
+## Novedades v57.15 — Medallas de identidad centradas
+
+`CACHE_VERSION` sube a `ss-companion-v123`.
+
+- **Problema**: la fila de medallas tenía 26 px de aire arriba, para no
+  chocar con el lápiz de la esquina, y 4 abajo. Las medallas quedaban
+  caídas hacia el borde inferior (44 px arriba y 22 abajo).
+- **Arreglo**: ahora lleva 20 px arriba y 20 abajo, y en esta tarjeta el
+  lápiz sube a 4 px de la esquina para que baste con eso.
+- Verificado a 390 px: 38 px por encima y 38 por debajo, con una fila
+  (Humano · Audaz · Soldado) y con dos (Medio Elfo · Audaz · Mercenario),
+  sin tocar el lápiz. Autodiagnóstico: 9 de 9.
 
 ## Novedades v57.14 — Grado 5: orbe legendario en filigrana
 
