@@ -34,7 +34,7 @@
       resumen era tan largo que en móvil comía el título de la tarjeta. */
   const RESUMEN = {
     estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`,
-    guardia: () => `Guardia ${txt('guard_total_live', '—')}`,
+    guardia: () => txt('guard_total_live', '—'),
     /* Solo el bono de ataque del arma principal, tal cual («+5»). */
     ataques: () => txt('atk_bonus_1', '') || '—',
   };

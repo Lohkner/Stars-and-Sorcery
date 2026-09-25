@@ -1,4 +1,10 @@
-# S&S Companion — v57.3
+# S&S Companion — v57.3.1
+
+## Novedades v57.3.1 — Resumen de Guardia
+
+- Plegada, la tarjeta de Guardia muestra solo el número («11»), no
+  «Guardia 11»: el título ya dice «Guardia» (`js/plegables.js`).
+- `CACHE_VERSION` sube a `ss-companion-v109`.
 
 ## Novedades v57.3 — Botones ± de recursos rediseñados
 
