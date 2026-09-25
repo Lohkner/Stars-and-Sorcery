@@ -1076,10 +1076,12 @@ const app = {
       badge.setAttribute('role', 'img');
       badge.setAttribute('aria-label', badge.title);
       if (grade >= 5) {
-        // Grado 5 (Maestría Absoluta): un cabujón rojo mítico en su engaste
-        // de oro ocupa el sitio de los cuatro.
+        // Grado 5 (Maestría Absoluta): un orbe legendario en montura de
+        // filigrana ocupa el sitio de los cuatro, del color de la reserva
+        // como las gemas de los grados inferiores (v57.14).
         badge.classList.add('sk-mitico');
-        badge.innerHTML = '<svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico"/></svg>';
+        const res = ['FUE', 'DES', 'CON'].includes(attr) ? 'adr' : 'ing';
+        badge.innerHTML = `<svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg>`;
       } else {
         badge.innerHTML = [1, 2, 3, 4].map(i => i <= grade
           ? '<svg class="sk-slot on" aria-hidden="true"><use href="#i-sk-gema"/></svg>'
@@ -1776,6 +1778,9 @@ const app = {
     if (noteEl) noteEl.textContent = altNote ? `Fórmula alternativa activa: ${altNote}` : '';
     // Desprevenido (§3d): sin PB ni escudo, conserva el atributo defensivo.
     set('guard_unaware_val', 10 + defMod + attr2Mod + magicBonus + otherBonus);
+    // Tarjeta Defensas de Perfil (v57.9): las mismas cifras que la Guardia.
+    set('def_guardia', total);
+    set('def_desprev', 10 + defMod + attr2Mod + magicBonus + otherBonus);
 
     this._combat.guardia = total;
     this._combat.guardAttr = altNote ? altNote : defKey;
@@ -5554,8 +5559,11 @@ const app = {
      app. Antes cada ficha guardaba el suyo y al abrirla lo imponía, así que
      había que reajustarlo personaje por personaje. */
   setFontSize(size, persist = true) {
-    // Normal = 16px (1rem base estándar del navegador).
-    const map = {small:'13px', normal:'16px', large:'18px', xlarge:'20px'};
+    // Normal = 16px (1rem base estándar del navegador). Pasos de ~9 % entre
+    // opciones, pensados para móvil (v57.9): con Pequeña a 13 px los
+    // rótulos bajaban a 9,75 px; ahora hay suelo de 12 px en los tokens y
+    // Muy grande se queda en 19 para que nada desborde a 360-390 px.
+    const map = {small:'14.5px', normal:'16px', large:'17.5px', xlarge:'19px'};
     const NOMBRES = {small:'Pequeña', normal:'Normal', large:'Grande', xlarge:'Muy grande'};
     const px = map[size] || '16px';
     // Cambiar el font-size del <html> escala todos los rem de la UI de golpe

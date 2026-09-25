@@ -906,7 +906,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   color:var(--bright);width:5ch;max-width:5ch;
   text-align:center;
   /* 16px prevents iOS auto-zoom on focus */
-  font-size:16px !important;
+  font-size:max(16px,1rem) !important;
   font-weight:600;
   min-height:unset !important;
   height:auto !important;
@@ -2291,7 +2291,7 @@ body.port-border-none .port-card-edit{
   border-bottom:1px solid var(--edge-soft);
 }
 #talent_panel .tm-search{
-  width:100%;font-family:var(--fb);font-size:16px;
+  width:100%;font-family:var(--fb);font-size:max(16px,1rem);
   background:var(--raised);color:var(--text);
   border:1px solid var(--edge);border-radius:var(--r);
   padding:8px 10px;outline:none;
@@ -2386,7 +2386,7 @@ body.port-border-none .port-card-edit{
 /* Búsqueda del gestor: 16px evita el auto-zoom de iOS al enfocar y da un
    objetivo táctil cómodo (≥44px) al campo que más se teclea en el panel. */
 input.apt-search{
-  font-size:16px;padding:10px 12px;min-height:44px;
+  font-size:max(16px,1rem);padding:10px 12px;min-height:44px;
   background:var(--raised);border-color:var(--edge);
 }
 input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
@@ -3086,7 +3086,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 .est4 .e4-btn{
   width:27px;height:27px;border-radius:50%;
   border:1px solid var(--edge-soft);background:none;color:var(--muted);
-  font-family:var(--fm);font-size:14px;line-height:1;font-weight:400;
+  font-family:var(--fm);font-size:.875rem;line-height:1;font-weight:400;
   transition:border-color .18s,color .18s,background .18s;
 }
 .est4 .e4-btn:active{border-color:var(--edge-gold);color:var(--goldb);background:rgba(200,169,110,.05)}
@@ -3114,7 +3114,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
 }
 .est4 .e4-sep{color:var(--rim);margin:0 4px;font-size:var(--fs-md)}
 .est4 .e4-max{color:var(--muted);font-size:var(--fs-md);font-variant-numeric:tabular-nums}
-.est4 .e4-row-pv .e4-fin{font-size:21px !important;font-weight:700}
+.est4 .e4-row-pv .e4-fin{font-size:1.3125rem !important;font-weight:700}
 .est4 .e4-row-pv .e4-sep{font-size:var(--fs-lg);margin:0 5px}
 .est4 .e4-row-pv .e4-max{font-size:var(--fs-lg)}
 
@@ -4066,7 +4066,7 @@ body.modo-edicion .page{padding-bottom:84px}
 .est4 .e4-ctl{grid-template-columns:32px 70px 32px}
 .est4 .e4-ctl .e4-btn{
   width:32px;height:32px;border-radius:10px;
-  font-size:14px;color:transparent;
+  font-size:.875rem;color:transparent;
   border:1px solid color-mix(in srgb,var(--c,var(--muted)) 36%,transparent);
   background-color:color-mix(in srgb,var(--c,var(--muted)) 9%,transparent);
   background-image:linear-gradient(var(--c,var(--muted)),var(--c,var(--muted))),linear-gradient(var(--c,var(--muted)),var(--c,var(--muted)));
@@ -4135,15 +4135,155 @@ body.modo-edicion .page{padding-bottom:84px}
 .sk-mental .sk-slot.on{color:var(--res-ing)}
 .sk-slot.on{filter:drop-shadow(0 0 2.5px color-mix(in srgb,currentColor 75%,transparent)) drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 
-/* Grado 5: el cabujón rojo mítico, con un brillo que late despacio */
+/* Grado 5 (v57.14): un orbe legendario —esfera con volumen, luz interior y
+   vetas de niebla— en una montura de filigrana de oro, del color de su
+   reserva (Adrenalina o Ingenio), con un brillo que late despacio. --mg es
+   el color del brillo. */
+.sk-fisica{--mg:255,146,48}
+.sk-mental{--mg:72,172,245}
+/* La caja se oscurece y el color queda solo en un halo tenue: la luz la
+   pone la piedra, no el recuadro. */
 .sk-g-badge.sk-mitico{
-  border-color:rgba(214,40,48,.45);
-  background:radial-gradient(ellipse at 50% 50%,rgba(190,20,30,.22),transparent 72%);
+  border-color:rgba(var(--mg),.3);
+  background:radial-gradient(ellipse at 50% 50%,rgba(var(--mg),.13),rgba(0,0,0,.25) 75%);
+  box-shadow:inset 0 1px 6px rgba(0,0,0,.6);
 }
 .sk-mitico-g{
   width:48px;height:26px;flex:0 0 auto;
-  filter:drop-shadow(0 0 5px rgba(255,40,40,.7)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  filter:drop-shadow(0 0 5px rgba(var(--mg),.75)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
   animation:skMitico 2.6s ease-in-out infinite;
 }
-@keyframes skMitico{50%{filter:drop-shadow(0 0 10px rgba(255,50,40,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
+@keyframes skMitico{50%{filter:drop-shadow(0 0 11px rgba(var(--mg),1)) drop-shadow(0 0 3px rgba(var(--mg),.9)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
 @media(prefers-reduced-motion:reduce){.sk-mitico-g{animation:none}}
+
+/* ══════════════════════════════════════════
+   TIPOGRAFÍA PARA MÓVIL (v57.9)
+══════════════════════════════════════════ */
+/* La rampa tenía siete pasos a medio píxel (12 · 12,5 · 13 · 14 · 15 · 16 ·
+   17): en el móvil no se distinguen y solo añadían ruido. Se agrupan en
+   seis papeles: rótulo 12 · detalle 13 · secundario 14 · énfasis 15 ·
+   cuerpo 16 · destacado 18. Los tres pequeños llevan suelo de 12 px, así
+   que ni con «Pequeña» bajan del mínimo legible (iOS 11 pt, Material 12 sp). */
+:root{
+  --fs-2xs: max(12px,.75rem);
+  --fs-xs:  max(12px,.8125rem);
+  --fs-sm:  max(12px,.8125rem);
+  --fs-md:  .875rem;
+  --fs-lg:  .9375rem;
+  --fs-xl:  1rem;
+  --fs-2xl: 1.125rem;
+}
+/* Títulos de tarjeta un paso por encima del contenido: en el móvil, a
+   14 px, se confundían con los rótulos. */
+.pt{font-size:var(--fs-lg)}
+/* Campos: nunca por debajo de 16 px, o iOS amplía la página al enfocarlos
+   (con «Pequeña» el cuerpo baja a 14,5). */
+input[type=text],input[type=number],input[type=search],select,textarea{font-size:max(16px,var(--fs-xl))}
+/* La cabecera y la barra de pestañas son el marco de la app, no el
+   contenido: siguen al ajuste de tamaño solo hasta donde caben. Con
+   «Muy grande» el título pisaba «Guardar» y las cinco pestañas se tocaban. */
+.app-hdr-ttl{font-size:clamp(13px,.875rem,14.5px)}
+.app-hdr-save{font-size:clamp(12px,.75rem,13px)}
+.last-saved{font-size:clamp(12px,.75rem,12.5px)}
+.nlbl{font-size:clamp(12px,.75rem,12.5px)}
+/* Con letra grande: las fórmulas del Arquetipo («FUE/DES+Niv+2») no tienen
+   dónde partirse, y «ADRENALINA» con .1em de espaciado no cabía en su
+   tercio de fila. */
+.infobox{overflow-wrap:anywhere}
+.js-res-formula-lbl{letter-spacing:.05em;overflow-wrap:anywhere}
+
+/* ══════════════════════════════════════════
+   CAPACIDADES Y DEFENSAS (v57.9)
+══════════════════════════════════════════ */
+/* Capacidades: la fila de referencia, ahora de cuatro. En móvil,
+   Iniciativa · Velocidad · Comp. arriba y Pericias con la fila entera. */
+/* Sin el filete superior: ya lo pone la línea del título */
+#fold_capacidades .e4-stats{margin-top:0;padding-top:0;background-size:0 0,100% 1px}
+#fold_capacidades .e4-stat:nth-child(-n+3){grid-column:span 2}
+#fold_capacidades .e4-stat:nth-child(4){grid-column:span 6}
+#fold_capacidades .e4-stat:nth-child(4)::before{content:none}
+@media(min-width:480px){
+  #fold_capacidades .e4-stats{grid-template-columns:1.1fr .95fr .7fr 1.35fr}
+  #fold_capacidades .e4-stat:nth-child(n){grid-column:auto}
+  #fold_capacidades .e4-stat:nth-child(4)::before{content:''}
+}
+/* Estado sin la fila de referencia: el descanso cierra la tarjeta */
+#fold_estado .rest-panel{margin-top:12px}
+
+/* Defensas: la Guardia manda, a la izquierda y a toda altura; a la derecha,
+   Desprevenido y Armadura en filas de rótulo y cifra. En tres columnas
+   «Desprevenido» no cabía con «Muy grande»; así cada rótulo tiene la
+   mitad de la tarjeta. */
+.def-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:stretch}
+.def-cell{
+  position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:7px 2px 7px 16px;min-width:0;
+}
+.def-cell--guardia{grid-row:1 / span 2;flex-direction:column;justify-content:center;gap:6px;padding:4px 4px}
+.def-cell + .def-cell::before{
+  content:'';position:absolute;left:0;top:10%;bottom:10%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--rim) 28%,var(--rim) 72%,transparent);
+}
+.def-cell + .def-cell + .def-cell{border-top:1px solid color-mix(in srgb,var(--rim) 70%,transparent)}
+.def-lbl{
+  font-family:var(--fd);font-size:var(--fs-2xs);font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap;
+}
+.def-val{
+  font-family:var(--fd);font-size:1.3125rem;font-weight:700;line-height:1;
+  color:var(--text);font-variant-numeric:tabular-nums;
+}
+.def-cell--guardia .def-lbl{color:var(--gold)}
+.def-cell--guardia .def-val{font-size:1.625rem;color:var(--goldb);text-shadow:0 0 12px color-mix(in srgb,var(--gold) 35%,transparent)}
+
+/* ══════════════════════════════════════════
+   PORTADA: NOMBRE, NIVEL, ALINEAMIENTO Y LEYENDA (v57.10)
+══════════════════════════════════════════ */
+/* La biografía (16 px, en el color del texto) pesaba más que el nombre
+   (16 px) y que el nivel y el alineamiento (12-13 px, mono y apagados).
+   Se invierte: el nombre encabeza, nivel y alineamiento lo acompañan en
+   la voz de los títulos, y la biografía queda como una leyenda breve. */
+.port-name{
+  font-size:1.3125rem;line-height:1.2;letter-spacing:.05em;
+  text-shadow:0 1px 2px rgba(0,0,0,.6),0 0 14px color-mix(in srgb,var(--gold) 22%,transparent);
+}
+.port-divider{margin:9px auto 7px}
+.port-lvl{
+  font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;
+  letter-spacing:.16em;color:var(--gold);
+}
+.port-align{
+  font-family:var(--fd);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  margin:0 0 10px;
+}
+.port-align:empty{display:none}
+/* Leyenda: pequeña, en cursiva, apagada y entre comillas angulares */
+.port-bio{
+  max-width:32em;margin:0 auto 4px;
+  font-family:var(--fb);font-size:var(--fs-md);font-style:italic;line-height:1.55;
+  color:color-mix(in srgb,var(--dim) 88%,transparent);
+}
+.port-bio:not(:empty)::before{content:'«';color:var(--gold);opacity:.7;margin-right:1px}
+.port-bio:not(:empty)::after{content:'»';color:var(--gold);opacity:.7;margin-left:1px}
+
+/* ══════════════════════════════════════════
+   PORTADA: NIVEL, ALINEAMIENTO Y LEYENDA (v57.11 → v57.12)
+══════════════════════════════════════════ */
+/* Nivel y alineamiento en un blanco casi puro, apenas enfriado para no
+   deslumbrar; la leyenda, en el tono de texto del resto de la app. */
+:root{--port-ink:#efedf3}
+[data-theme="void"]{--port-ink:#ededed}
+/* Nivel: versalitas, bastante más pequeño que el nombre */
+.port-lvl{font-size:var(--fs-2xs);letter-spacing:.18em;color:var(--port-ink)}
+/* Alineamiento: un dato, no un título. Tal como se guarda («Neutral
+   Bueno»), en la letra de texto. */
+.port-align{
+  font-family:var(--fb);font-size:var(--fs-md);font-weight:400;font-style:normal;
+  letter-spacing:.01em;text-transform:none;color:var(--port-ink);
+}
+/* Leyenda: pequeña, en cursiva y entre comillas dobles doradas (“…”) */
+.port-bio{font-size:var(--fs-sm);color:var(--text)}
+.port-bio:not(:empty)::before,.port-bio:not(:empty)::after{color:var(--goldb);opacity:.9;font-style:normal}
+.port-bio:not(:empty)::before{content:'\201C'}
+.port-bio:not(:empty)::after{content:'\201D'}

@@ -1,5 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
-   Tarjetas plegables. En Perfil: Estado · Guardia · Ataques. En
+   Tarjetas plegables. En Perfil: Estado · Capacidades · Defensas ·
+   Ataques. En Stats: Pilares · Salvaciones · Guardia · Habilidades. En
    Aptitudes: Trucos · Conjuros · Rasgos. En Detalle: Linaje · Arquetipo.
    Módulo aparte; se carga entre app.js y boot.js.
 
@@ -35,6 +36,9 @@
   const RESUMEN = {
     estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`,
     guardia: () => txt('guard_total_live', '—'),
+    capacidades: () => `Ini ${txt('res_ini', '+0')}`,
+    /* Solo las dos cifras, sin más texto que alargue la cabecera. */
+    defensas: () => `G: ${txt('def_guardia', '—')} | A: ${txt('res_armor', '—')}`,
     /* Solo el bono de ataque del arma principal, tal cual («+5»). */
     ataques: () => txt('atk_bonus_1', '') || '—',
   };

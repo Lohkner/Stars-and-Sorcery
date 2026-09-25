@@ -32,7 +32,7 @@
 </head>
 <body>
 <!-- Sprite de iconos unificados (trazo 1.5px, hereda color). Uso: <svg class="ico"><use href="#i-nombre"/></svg> -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="g-sk-oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e1a8"/><stop offset=".45" stop-color="#d9b877"/><stop offset=".8" stop-color="#9a7638"/><stop offset="1" stop-color="#e9cd8c"/></linearGradient><radialGradient id="g-sk-rojo" cx="50%" cy="56%" r="60%"><stop offset="0" stop-color="#ff5a47"/><stop offset=".35" stop-color="#d4141f"/><stop offset=".75" stop-color="#8a0012"/><stop offset="1" stop-color="#3d0008"/></radialGradient><radialGradient id="g-sk-luz" cx="35%" cy="25%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".25" stop-color="#fff" stop-opacity=".12"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="g-sk-oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e1a8"/><stop offset=".45" stop-color="#d9b877"/><stop offset=".8" stop-color="#9a7638"/><stop offset="1" stop-color="#e9cd8c"/></linearGradient><linearGradient id="g-sk-bronce" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fce9ae"/><stop offset=".3" stop-color="#e6c170"/><stop offset=".65" stop-color="#b38a3c"/><stop offset="1" stop-color="#7a5820"/></linearGradient><filter id="f-sk-niebla" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".32" numOctaves="3" seed="7"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2.2 -1.05"/><feComposite in2="SourceGraphic" operator="in"/></filter><radialGradient id="g-sk-orbe-adr" cx="46%" cy="58%" r="58%"><stop offset="0" stop-color="#fff1c6"/><stop offset=".22" stop-color="#ffb24e"/><stop offset=".55" stop-color="#d4610f"/><stop offset=".85" stop-color="#5e2204"/><stop offset="1" stop-color="#1c0801"/></radialGradient><radialGradient id="g-sk-orbe-ing" cx="46%" cy="58%" r="58%"><stop offset="0" stop-color="#e2f6ff"/><stop offset=".22" stop-color="#6fc6ff"/><stop offset=".55" stop-color="#1f74c6"/><stop offset=".85" stop-color="#0a2a5a"/><stop offset="1" stop-color="#030a1c"/></radialGradient><radialGradient id="g-sk-vol" cx="30%" cy="25%" r="85%"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".75" stop-color="#000" stop-opacity=".15"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient><linearGradient id="g-sk-rebote-adr"><stop offset="0" stop-color="#ffcf7a" stop-opacity="0"/><stop offset=".5" stop-color="#ffcf7a"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></linearGradient><linearGradient id="g-sk-rebote-ing"><stop offset="0" stop-color="#9edcff" stop-opacity="0"/><stop offset=".5" stop-color="#9edcff"/><stop offset="1" stop-color="#9edcff" stop-opacity="0"/></linearGradient></defs></svg>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5.5L19.5 6"/></symbol>
   <symbol id="i-quill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-4.5-.5-9 1.8-11.2 5.8L5.5 16 8 18.5l6.2-3.3C18.2 13 20.5 8.5 20 4z"/><path d="M3.5 20.5L10 14"/></symbol>
@@ -58,7 +58,8 @@
   <symbol id="i-arma-energia" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M13 2.5 5.5 13.5H11l-1 8 7.5-11H12z"/></symbol>
   <symbol id="i-sk-slot" viewBox="0 0 24 24"><polygon points="12,1.5 19.4,4.6 22.5,12 19.4,19.4 12,22.5 4.6,19.4 1.5,12 4.6,4.6" fill="url(#g-sk-oro)" stroke="#2a1e0a" stroke-width=".8"/><polygon points="12,3.4 18.1,6.1 20.6,12 18.1,17.9 12,20.6 5.9,17.9 3.4,12 5.9,6.1" fill="#0a0710" stroke="#000" stroke-opacity=".6" stroke-width=".6"/><path d="M6.3 17.6 12 20.1l5.7-2.5" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width=".7"/></symbol>
   <symbol id="i-sk-gema" viewBox="0 0 24 24"><polygon points="12,1.5 19.4,4.6 22.5,12 19.4,19.4 12,22.5 4.6,19.4 1.5,12 4.6,4.6" fill="url(#g-sk-oro)" stroke="#2a1e0a" stroke-width=".8"/><g transform="translate(12 12) scale(.8) translate(-12 -12)"><polygon points="12,1.5 19.4,4.6 22.5,12 19.4,19.4 12,22.5 4.6,19.4 1.5,12 4.6,4.6" fill="currentColor"/><polygon points="12,1.5 4.6,4.6 8.2,8.2 12,6.6" fill="#fff" opacity=".45"/><polygon points="4.6,4.6 1.5,12 6.6,12 8.2,8.2" fill="#fff" opacity=".3"/><polygon points="12,1.5 19.4,4.6 15.8,8.2 12,6.6" fill="#fff" opacity=".2"/><polygon points="19.4,4.6 22.5,12 17.4,12 15.8,8.2" fill="#fff" opacity=".06"/><polygon points="22.5,12 19.4,19.4 15.8,15.8 17.4,12" fill="#000" opacity=".25"/><polygon points="19.4,19.4 12,22.5 12,17.4 15.8,15.8" fill="#000" opacity=".4"/><polygon points="12,22.5 4.6,19.4 8.2,15.8 12,17.4" fill="#000" opacity=".3"/><polygon points="4.6,19.4 1.5,12 6.6,12 8.2,15.8" fill="#000" opacity=".12"/><polygon points="12,6.6 15.8,8.2 17.4,12 15.8,15.8 12,17.4 8.2,15.8 6.6,12 8.2,8.2" fill="#fff" fill-opacity=".14" stroke="#fff" stroke-opacity=".35" stroke-width=".5"/><polygon points="12,1.5 19.4,4.6 22.5,12 19.4,19.4 12,22.5 4.6,19.4 1.5,12 4.6,4.6" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".8"/><path d="M8.4 8.9 10.6 7.9" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".9"/></g></symbol>
-  <symbol id="i-sk-mitico" viewBox="0 0 48 26"><ellipse cx="24" cy="13" rx="23" ry="12" fill="url(#g-sk-oro)" stroke="#2a1e0a" stroke-width=".8"/><ellipse cx="24" cy="13" rx="21.2" ry="10.3" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".6"/><g fill="url(#g-sk-oro)" stroke="#2a1e0a" stroke-width=".5"><circle cx="24" cy="1.6" r="1.7"/><circle cx="24" cy="24.4" r="1.7"/><circle cx="1.8" cy="13" r="1.7"/><circle cx="46.2" cy="13" r="1.7"/></g><ellipse cx="24" cy="13" rx="19" ry="8.6" fill="url(#g-sk-rojo)"/><ellipse cx="24" cy="13" rx="19" ry="8.6" fill="url(#g-sk-luz)"/><ellipse cx="24" cy="13" rx="19" ry="8.6" fill="none" stroke="#1a0004" stroke-opacity=".7" stroke-width=".8"/><ellipse cx="17" cy="8.6" rx="5.2" ry="1.7" transform="rotate(-8 17 8.6)" fill="#fff" opacity=".78"/><circle cx="31.5" cy="17" r=".9" fill="#fff" opacity=".55"/></symbol>
+  <symbol id="i-sk-mitico-adr" viewBox="0 0 48 26"><g fill="none" stroke="url(#g-sk-bronce)" stroke-width="1.15" stroke-linecap="round"><path transform="translate(24 13) scale(1 1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(1 -1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(-1 1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(-1 -1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/></g><g fill="url(#g-sk-bronce)" stroke="#1a1005" stroke-width=".3"><circle cx="24" cy="1.2" r="1.1"/><circle cx="24" cy="24.8" r="1.1"/><path d="M8.8 13 11.8 11.6 11.8 14.4Z M39.2 13 36.2 11.6 36.2 14.4Z"/></g><circle cx="24" cy="13" r="11" fill="url(#g-sk-bronce)" stroke="#1a1005" stroke-width=".7"/><circle cx="24" cy="13" r="10" fill="none" stroke="#7a5820" stroke-width=".5"/><path d="M14.6 10.2C15.8 5.9 19.6 3.1 24 2.9" fill="none" stroke="#fff6d8" stroke-opacity=".75" stroke-width=".55" stroke-linecap="round"/><circle cx="24" cy="13" r="9.9" fill="#07040a"/><circle cx="24" cy="13" r="9.2" fill="url(#g-sk-orbe-adr)"/><circle cx="24" cy="13" r="9.2" fill="#fff" filter="url(#f-sk-niebla)" opacity=".5" style="mix-blend-mode:overlay"/><circle cx="24" cy="13" r="9.2" fill="url(#g-sk-vol)"/><path d="M18.94 19.62A8.46 8.46 0 0 0 30.62 17.6" fill="none" stroke="url(#g-sk-rebote-adr)" stroke-width=".9" stroke-linecap="round" opacity=".8"/><ellipse cx="20.5" cy="8.77" rx="2.39" ry="1.29" transform="rotate(-35 20.5 8.77)" fill="#fff" opacity=".78"/><circle cx="23.08" cy="7.3" r=".5" fill="#fff" opacity=".8"/><circle cx="24" cy="13" r="9.2" fill="none" stroke="#000" stroke-opacity=".6" stroke-width=".6"/></symbol>
+  <symbol id="i-sk-mitico-ing" viewBox="0 0 48 26"><g fill="none" stroke="url(#g-sk-bronce)" stroke-width="1.15" stroke-linecap="round"><path transform="translate(24 13) scale(1 1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(1 -1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(-1 1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/><path transform="translate(24 13) scale(-1 -1) translate(-15.8 -13)" d="M5.4 11.2C3.4 10.4 1.6 8.8 2.1 6.9C2.5 5.4 4.3 5 5.2 6C6 6.9 5.3 8.1 4.3 7.8"/></g><g fill="url(#g-sk-bronce)" stroke="#1a1005" stroke-width=".3"><circle cx="24" cy="1.2" r="1.1"/><circle cx="24" cy="24.8" r="1.1"/><path d="M8.8 13 11.8 11.6 11.8 14.4Z M39.2 13 36.2 11.6 36.2 14.4Z"/></g><circle cx="24" cy="13" r="11" fill="url(#g-sk-bronce)" stroke="#1a1005" stroke-width=".7"/><circle cx="24" cy="13" r="10" fill="none" stroke="#7a5820" stroke-width=".5"/><path d="M14.6 10.2C15.8 5.9 19.6 3.1 24 2.9" fill="none" stroke="#fff6d8" stroke-opacity=".75" stroke-width=".55" stroke-linecap="round"/><circle cx="24" cy="13" r="9.9" fill="#07040a"/><circle cx="24" cy="13" r="9.2" fill="url(#g-sk-orbe-ing)"/><circle cx="24" cy="13" r="9.2" fill="#fff" filter="url(#f-sk-niebla)" opacity=".5" style="mix-blend-mode:overlay"/><circle cx="24" cy="13" r="9.2" fill="url(#g-sk-vol)"/><path d="M18.94 19.62A8.46 8.46 0 0 0 30.62 17.6" fill="none" stroke="url(#g-sk-rebote-ing)" stroke-width=".9" stroke-linecap="round" opacity=".8"/><ellipse cx="20.5" cy="8.77" rx="2.39" ry="1.29" transform="rotate(-35 20.5 8.77)" fill="#fff" opacity=".78"/><circle cx="23.08" cy="7.3" r=".5" fill="#fff" opacity=".8"/><circle cx="24" cy="13" r="9.2" fill="none" stroke="#000" stroke-opacity=".6" stroke-width=".6"/></symbol>
   <!-- Objetos del inventario (resumen de Equipo & Tesoro) -->
   <symbol id="i-eq-escudo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></symbol>
   <symbol id="i-eq-armadura" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4h8l3.5 3-2.5 3.5V20H7v-9.5L4.5 7z"/><path d="M12 4v5M7 14h10"/></symbol>
@@ -329,8 +330,8 @@
                 </div>
               </div>
               <div style="padding:6px 4px 10px;text-align:center">
-                <div id="sum_align_ov" class="u-fm u-muted" style="font-size:var(--fs-sm);margin-bottom:5px"></div>
-                <div id="sum_bio_ov" class="u-pre-wrap" style="font-size:var(--fs-xl);font-style:italic;color:var(--text);margin-bottom:4px"></div>
+                <div id="sum_align_ov" class="port-align"></div>
+                <div id="sum_bio_ov" class="u-pre-wrap port-bio"></div>
                 <button class="bedit" onclick="app.editSection('personal')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
               </div>
             </div>
@@ -405,12 +406,20 @@
               <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
             </div>
 
-            <!-- Fila de referencia: Armadura · Iniciativa · Velocidad · Comp. · Pericia -->
+            <!-- Descanso -->
+            <details class="rest-panel" id="rest_panel">
+              <summary>Descansar</summary>
+              <div class="rest-list" id="rest_list"></div>
+            </details>
+          </details>
+
+          <!-- Capacidades (v57.9): lo que era la parte baja de Estado —
+               Iniciativa, Velocidad, Competencia, Pericias—, la Carga y las
+               notas. Estado se queda con los recursos y el descanso. -->
+          <details class="panel est4 fold" id="fold_capacidades" data-fold="capacidades" open style="padding:13px 14px">
+            <summary class="ph" style="margin-bottom:11px"><span class="pt">Capacidades</span></summary>
+            <!-- Iniciativa · Velocidad · Comp. · Pericias -->
             <div class="e4-stats">
-              <div class="e4-stat">
-                <span class="e4-slbl">Armadura</span>
-                <span class="e4-sval" id="res_armor">0</span>
-              </div>
               <button type="button" class="e4-stat e4-stat-btn" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)" aria-label="Tirar Iniciativa">
                 <span class="e4-slbl">Iniciativa</span>
                 <span class="e4-sval" id="res_ini">+0</span>
@@ -429,12 +438,6 @@
               </div>
             </div>
 
-            <!-- Descanso -->
-            <details class="rest-panel" id="rest_panel">
-              <summary>Descansar</summary>
-              <div class="rest-list" id="rest_list"></div>
-            </details>
-
             <!-- Carga -->
             <div class="e4-load">
               <span class="e4-load-lbl">Carga</span>
@@ -446,53 +449,24 @@
             <details class="e4-notes"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
           </details>
 
-          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
-               10 + PB + escudo + atributo defensivo. La armadura NO interviene
-               (solo aporta Reducción de Daño, en Equipo de Combate). -->
-          <details class="panel fold" id="fold_guardia" data-fold="guardia" open>
-            <summary class="ph"><span class="pt">Guardia</span></summary>
-            <div id="guard_edit_view">
-              <div class="guard-live">
-                <div class="guard-live-lbl">Guardia</div>
-                <div class="guard-live-val" id="guard_total_live">10</div>
+          <!-- Defensas (v57.9): Guardia, Desprevenido y Armadura de un
+               vistazo. Las cifras las calcula calc(); la tarjeta Guardia de
+               Stats es donde se ajustan. -->
+          <details class="panel fold def-card" id="fold_defensas" data-fold="defensas" open>
+            <summary class="ph"><span class="pt">Defensas</span></summary>
+            <div class="def-grid">
+              <div class="def-cell def-cell--guardia">
+                <span class="def-lbl">Guardia</span>
+                <span class="def-val" id="def_guardia">10</span>
               </div>
-              <div class="guard-formula">
-                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Esc.</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
-                <span class="guard-op">+</span>
-                <div class="guard-part"><span class="guard-part-lbl">Atrib.</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
-                <span class="guard-op" id="guard_attr2_op" style="display:none">+</span>
-                <div class="guard-part" id="guard_attr2_part" style="display:none"><span class="guard-part-lbl" id="guard_attr2_lbl">Atr.2</span><span class="guard-part-val" id="guard_attr2_val">+0</span></div>
+              <div class="def-cell">
+                <span class="def-lbl">Desprevenido</span>
+                <span class="def-val" id="def_desprev">10</span>
               </div>
-              <div style="margin-top:8px">
-                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
-                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
-                  <option value="DES">Destreza</option>
-                  <option value="SAB">Sabiduría</option>
-                  <option value="CON">Constitución</option>
-                </select>
+              <div class="def-cell">
+                <span class="def-lbl">Armadura</span>
+                <span class="def-val" id="res_armor">0</span>
               </div>
-              <!-- Los tres bonos comparten un rótulo: así cada etiqueta cabe en
-                   UNA línea y las tres cajas arrancan a la misma altura. Con
-                   «Bono de Atributo» y «Bono Mágico» partiendo en dos líneas y
-                   «Otro Bono» en una, la tercera caja subía 18 px. -->
-              <div style="margin-top:8px">
-                <span class="fl">Bonos a la Guardia</span>
-                <div class="guard-bonos">
-                  <div><span class="fl" style="font-size:var(--fs-2xs)">Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
-                  <div><span class="fl" style="font-size:var(--fs-2xs)">Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
-                  <div><span class="fl" style="font-size:var(--fs-2xs)">Otro</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
-                </div>
-              </div>
-              <div class="ccard"><span class="clbl">Desprevenido</span><span class="cval" id="guard_unaware_val">—</span></div>
-              <div id="guard_alt_note" class="infobox"></div>
-              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
-            </div>
-            <div id="guard_summary_view" style="display:none">
-              <!-- Generado por app._buildGuardSummary() desde app._combat -->
             </div>
           </details>
 
@@ -583,6 +557,56 @@
             <div id="saves_summary_view" style="display:none">
               <div id="saves_summary_text" class="saves-grid" style="margin-top:0;border-top:none;padding-top:0"></div>
               <button class="bedit" onclick="app.editSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
+          </details>
+
+          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
+               10 + PB + escudo + atributo defensivo. La armadura NO interviene
+               (solo aporta Reducción de Daño, en Equipo de Combate). -->
+          <details class="panel fold" id="fold_guardia" data-fold="guardia" open>
+            <summary class="ph"><span class="pt">Guardia</span></summary>
+            <div id="guard_edit_view">
+              <div class="guard-live">
+                <div class="guard-live-lbl">Guardia</div>
+                <div class="guard-live-val" id="guard_total_live">10</div>
+              </div>
+              <div class="guard-formula">
+                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Esc.</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Atrib.</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
+                <span class="guard-op" id="guard_attr2_op" style="display:none">+</span>
+                <div class="guard-part" id="guard_attr2_part" style="display:none"><span class="guard-part-lbl" id="guard_attr2_lbl">Atr.2</span><span class="guard-part-val" id="guard_attr2_val">+0</span></div>
+              </div>
+              <div style="margin-top:8px">
+                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
+                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
+                  <option value="DES">Destreza</option>
+                  <option value="SAB">Sabiduría</option>
+                  <option value="CON">Constitución</option>
+                </select>
+              </div>
+              <!-- Los tres bonos comparten un rótulo: así cada etiqueta cabe en
+                   UNA línea y las tres cajas arrancan a la misma altura. Con
+                   «Bono de Atributo» y «Bono Mágico» partiendo en dos líneas y
+                   «Otro Bono» en una, la tercera caja subía 18 px. -->
+              <div style="margin-top:8px">
+                <span class="fl">Bonos a la Guardia</span>
+                <div class="guard-bonos">
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Otro</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+                </div>
+              </div>
+              <div class="ccard"><span class="clbl">Desprevenido</span><span class="cval" id="guard_unaware_val">—</span></div>
+              <div id="guard_alt_note" class="infobox"></div>
+              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="guard_summary_view" style="display:none">
+              <!-- Generado por app._buildGuardSummary() desde app._combat -->
             </div>
           </details>
 

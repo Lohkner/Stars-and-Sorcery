@@ -1,4 +1,166 @@
-# S&S Companion — v57.8
+# S&S Companion — v57.14
+
+## Novedades v57.14 — Grado 5: orbe legendario en filigrana
+
+`CACHE_VERSION` sube a `ss-companion-v122`.
+
+El cabujón ovalado del Grado 5 pasa a ser un orbe legendario, en la línea
+de las gemas legendarias de los ARPG (opción F de la muestra):
+- **Esfera** (`i-sk-mitico-adr` / `i-sk-mitico-ing`):
+  - volumen, con luz arriba a la izquierda y sombra abajo a la derecha
+    (`g-sk-vol`);
+  - núcleo encendido del color de la reserva (`g-sk-orbe-adr` /
+    `g-sk-orbe-ing`);
+  - vetas de niebla: ruido fractal (`f-sk-niebla`) fundido en modo
+    *overlay*;
+  - una luz de rebote abajo, y un brillo con un destello arriba.
+- **Montura de filigrana**:
+  - aro redondo de oro con un filete interior y luz de borde arriba a la
+    izquierda;
+  - cuatro volutas enroscadas pegadas al aro, una perla arriba y otra
+    abajo, y dos puntas a los lados.
+- Se conservan el color de la reserva, el brillo mítico que late y el
+  tamaño de la caja.
+- Se retiran los degradados del cabujón y de las garras (`g-sk-adr`,
+  `g-sk-ing`, `g-sk-sombra`, `g-sk-garra`). El oro de la filigrana reutiliza
+  `g-sk-bronce`.
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.13 — Comillas dobles en la leyenda · Montura y garras del Grado 5
+
+`CACHE_VERSION` sube a `ss-companion-v121`.
+
+- **Leyenda**: comillas dobles tipográficas y doradas (“…”) en lugar de las
+  angulares.
+- **Montura del Grado 5**:
+  - más gruesa: el bisel crece (20,4 × 11,2) y la piedra se recoge
+    (15,6 × 7,2);
+  - lleva un escalón interior y el granulado más marcado (28 puntos);
+  - el oro es menos envejecido: pasa de claro arriba a la izquierda a un
+    oro hondo abajo a la derecha, y la luz de borde queda solo arriba a la
+    izquierda.
+- **Garras**: cuatro, más grandes y curvas, en diagonal. Tienen raíz ancha
+  en el bisel, punta que entra en la piedra, degradado propio
+  (`g-sk-garra`) y una sombra que las despega de la piedra.
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.12 — Portada en blanco · Grado 5 en oro viejo
+
+`CACHE_VERSION` sube a `ss-companion-v120`.
+
+### Portada
+- **Nivel y alineamiento**: pasan a un blanco casi puro, apenas enfriado
+  (`--port-ink: #efedf3`). Se retira el marfil.
+- **Nivel**: en versalitas de 12 px, espaciado; el nombre va a 21 px.
+- **Alineamiento**: tal como se guarda («Neutral Bueno»), en la letra de
+  texto. Se deshace el paso a minúsculas de v57.11.
+- **Leyenda**: 13 px, en cursiva, en el tono de texto del resto de la app
+  (`--text`), entre comillas angulares en oro.
+
+### Grado 5
+El cabujón conserva su forma, su color de reserva y su brillo mítico, pero
+deja de parecer un adhesivo:
+- **Engaste**: bisel de oro viejo (`g-sk-bronce`, de oro pálido a bronce
+  oscuro) con granulado de 26 puntos.
+- **Luz**: una luz de borde solo arriba a la izquierda y un surco oscuro
+  donde asienta la piedra.
+- **Garras**: cuatro, curvadas, en diagonal, mordiendo la piedra. Sustituyen
+  a los cuatro botones redondos.
+- **Remates**: en punta a los lados, como una montura gótica.
+- **Piedra**: más honda. Tiene un núcleo encendido abajo, bordes casi
+  negros y una sombra interior bajo el bisel (`g-sk-sombra`).
+- **Reflejos**: en lugar de la mancha blanca, un filo de luz fino, un
+  destello puntual y un reflejo tenue abajo.
+- **Caja**: se oscurece y el color queda solo en un halo leve.
+- Se retira el degradado `g-sk-luz`.
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.11 — Tinta marfil en la portada · Grado 5 del color de su reserva
+
+`CACHE_VERSION` sube a `ss-companion-v119`.
+
+- **Portada**: el nivel, el alineamiento y la leyenda comparten una tinta
+  marfil cálida (`--port-ink: #e4d8c0`; gris claro en el tema Vacío) en
+  lugar del lila apagado. No es blanco puro: sobre casi negro, el blanco
+  deslumbra y competiría con el oro del nombre.
+- **Nivel**: sigue en mayúsculas, con la letra de los títulos.
+- **Alineamiento**: pasa a minúsculas y a la letra de texto, porque es un
+  dato, no un título. Se guarda igual; solo se muestra en minúsculas.
+- **Grado 5**: el cabujón deja de ser rojo y toma el color de la reserva,
+  como las gemas de los grados inferiores:
+  - ámbar de Adrenalina (`#i-sk-mitico-adr`, degradado `g-sk-adr`) si la
+    habilidad va con FUE, DES o CON;
+  - azul de Ingenio (`#i-sk-mitico-ing`, degradado `g-sk-ing`) si va con
+    INT, SAB o CAR.
+- **Brillo mítico**: late en ese mismo color (`--mg`), igual que el borde y
+  el halo de la caja.
+- Autodiagnóstico: 9 de 9.
+
+## Novedades v57.10 — Portada: nombre al frente, biografía como leyenda
+
+`CACHE_VERSION` sube a `ss-companion-v118`.
+
+La biografía (16 px, en el color del texto) pesaba más que el nombre
+(16 px) y que el nivel y el alineamiento (12-13 px, mono y apagados). La
+jerarquía se invierte, sin estridencias:
+
+- **Nombre**: 21 px (antes 16), en oro, con un halo dorado muy leve.
+- **Nivel**: en la letra de los títulos, 13 px, en oro y espaciado (antes
+  mono gris de 12).
+- **Alineamiento**: en la misma voz, en versalitas de 12 px y color lila
+  tenue. Si no hay alineamiento, no ocupa sitio.
+- **Biografía**: una leyenda de 14 px (antes 16), en cursiva, apagada y
+  entre comillas angulares doradas («…»), con 32 em de ancho máximo.
+- Los estilos en línea de `sum_align_ov` y `sum_bio_ov` pasan a las
+  clases `.port-align` y `.port-bio`.
+- Autodiagnóstico: 9 de 9 con Normal y Muy grande.
+
+## Novedades v57.9 — Letra para móvil · Estado, Capacidades y Defensas · Guardia en Stats
+
+`CACHE_VERSION` sube a `ss-companion-v117`.
+
+### Tamaños de letra
+- **Rampa**: los siete pasos a medio píxel (12 · 12,5 · 13 · 14 · 15 · 16 ·
+  17) quedan en seis papeles, a tamaño Normal:
+  - rótulo 12;
+  - detalle 13;
+  - secundario 14;
+  - énfasis 15;
+  - cuerpo 16;
+  - destacado 18.
+- **Suelo de 12 px**: `--fs-2xs`, `--fs-xs` y `--fs-sm` llevan
+  `max(12px, …)`, así que ningún ajuste los baja del mínimo legible.
+- **Ajuste «Tamaño de letra»**: pasa a 14,5 · 16 · 17,5 · 19 px (antes
+  13 · 16 · 18 · 20).
+  - Con «Pequeña» a 13 px, los rótulos bajaban a 9,75 px.
+  - Con «Muy grande» a 20 px, el título de la cabecera pisaba «Guardar».
+- **Títulos de tarjeta** (`.pt`): de 14 a 15 px, un paso por encima del
+  contenido.
+- **Campos**: nunca por debajo de 16 px, para que iOS no amplíe la página al
+  enfocarlos.
+- **Cifras en px fijos** (los PV, los ±): pasan a rem, así que ahora siguen
+  el ajuste.
+- **Marco de la app**: la cabecera y la barra de pestañas crecen con el
+  ajuste solo hasta donde caben (`clamp`).
+- **Desbordes corregidos con letra grande**: la fórmula del Arquetipo y el
+  rótulo «Adrenalina» de Detalle.
+- Autodiagnóstico 9 de 9 con los cuatro tamaños, a 390 px.
+
+### Tarjetas
+- **Estado**: Puntos de Vida, Adrenalina, Ingenio, Carne y Descansar.
+- **Capacidades** (nueva): lo que sobraba de Estado.
+  - Iniciativa (se sigue tirando al tocarla), Velocidad, Competencia y
+    Pericias.
+  - También la Carga y las Notas rápidas.
+  - Plegada muestra «Ini ±N».
+- **Defensas** (nueva):
+  - la Guardia grande, y Desprevenido y Armadura en filas de rótulo y
+    cifra, para que quepan con cualquier tamaño de letra;
+  - `calc()` rellena `def_guardia` y `def_desprev` junto a la Guardia,
+    y `res_armor` se muda aquí;
+  - plegada muestra solo «G: N | A: N».
+- **Guardia**: de Perfil a Stats, bajo Tiradas de Salvación. Conserva su
+  edición, su lápiz y su resumen.
 
 ## Novedades v57.8 — Engastes de Grado en las habilidades
 
