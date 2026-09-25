@@ -2121,11 +2121,27 @@ const app = {
     // Calling it here would double-calculate on every inventory operation.
   },
 
+  /** Icono de un arma según su tipo (v57.7). Se decide por las etiquetas
+      de sus notas y, si no las hay (un arma escrita a mano), por su nombre.
+      El orden importa: un arma de fuego también es «A distancia», y una
+      daga arrojadiza también es perforante; gana la primera regla. */
+  _iconoArma(item) {
+    const txt = `${item?.dbData?.notes || item?.notes || ''} ${item?.name || ''}`
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (/magitec/.test(txt) && /a distancia/.test(txt)) return 'arma-fuego';
+    if (/a distancia|arco|ballesta/.test(txt)) return 'arma-ballesta';
+    if (/arrojadiza|shuriken|jabalina/.test(txt)) return 'arma-shuriken';
+    if (/contundente|maza|martillo|mazo|garrote|mangual|baston/.test(txt)) return 'arma-maza';
+    if (/perforante|lanza|estoque|ropera/.test(txt)) return 'arma-lanza';
+    if (/energia/.test(txt)) return 'arma-energia';
+    return 'sword';                                   // cortantes y demás
+  },
+
   /** Icono del sprite para un objeto del inventario. Solo decide el
       dibujo: por tipo de dato y, si es un objeto suelto, por su nombre. */
   _iconoObjeto(item) {
     const t = item?.type || '';
-    if (t === 'weapons') return 'sword';
+    if (t === 'weapons') return this._iconoArma(item);
     if (t === 'armors')  return 'eq-armadura';
     if (t === 'shields') return 'eq-escudo';
     const n = String(item?.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -2139,10 +2155,10 @@ const app = {
       [/ropa|capa|tunica|vestido|abrigo|botas/, 'eq-ropa'],
       [/foco|cristal|orbe|varita|baston|amuleto|simbolo|reliquia|gema/, 'eq-foco'],
       [/brujula|astrolabio|mapa|catalejo/, 'eq-brujula'],
-      [/espada|daga|hacha|lanza|arco|ballesta|maza|martillo|pistola|rifle|sable/, 'sword'],
       [/escudo/, 'eq-escudo'],
       [/armadura|coraza|cota|peto/, 'eq-armadura'],
     ];
+    if (/espada|daga|hacha|lanza|arco|ballesta|maza|martillo|pistola|rifle|sable|shuriken|jabalina|garrote|mangual/.test(n)) return this._iconoArma(item);
     for (const [rx, ico] of R) if (rx.test(n)) return ico;
     return 'eq-bolsa';
   },

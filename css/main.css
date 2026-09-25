@@ -3450,14 +3450,23 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169
    marcador —el rombo de .pt sobraba: eran dos— y en vez de cambiar de glifo
    ▸/▾ gira, que es lo que da la sensación de abrir y cerrar. */
 .panel.fold > summary::before{
-  content:'▸';flex:0 0 auto;display:inline-block;
-  color:var(--gold);font-size:var(--fs-xs);
-  transform:rotate(90deg);transform-origin:50% 50%;
-  transition:transform .18s ease, color .15s;
+  content:'';flex:0 0 auto;display:inline-block;
+  /* v57.7: una amatista engastada en oro en lugar del triángulo. Abierta
+     está en pie y brilla; plegada se tumba (gira 90°) y se apaga un poco.
+     La imagen lleva sus colores, así que en el tema Vacío se desatura. */
+  width:11px;height:14.3px;
+  background:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26"%3E%3Cdefs%3E%3ClinearGradient id="o" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="%23f3d99a"/%3E%3Cstop offset=".5" stop-color="%23c9aa6f"/%3E%3Cstop offset="1" stop-color="%237a5f2c"/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points="10,0 20,13 10,26 0,13" fill="url(%23o)" stroke="%233a2a10" stroke-width=".8"/%3E%3Cpolygon points="10,1.6 18.4,13 10,24.4 1.6,13" fill="none" stroke="%23fff" stroke-opacity=".28" stroke-width=".5"/%3E%3Cg transform="translate(.4 3.4) scale(.8)"%3E%3Cpolygon points="12,1 20.5,12 12,23 3.5,12" fill="%239b6ad6"/%3E%3Cpolygon points="12,1 3.5,12 8.4,12 12,6.2" fill="%23fff" opacity=".45"/%3E%3Cpolygon points="12,1 20.5,12 15.6,12 12,6.2" fill="%23fff" opacity=".15"/%3E%3Cpolygon points="20.5,12 12,23 12,17.8 15.6,12" fill="%23000" opacity=".4"/%3E%3Cpolygon points="3.5,12 12,23 12,17.8 8.4,12" fill="%23000" opacity=".2"/%3E%3Cpolygon points="12,6.2 15.6,12 12,17.8 8.4,12" fill="%23fff" opacity=".12" stroke="%23fff" stroke-opacity=".35" stroke-width=".5"/%3E%3Cpolygon points="12,1 20.5,12 12,23 3.5,12" fill="none" stroke="%23000" stroke-opacity=".45" stroke-width=".8"/%3E%3Cpath d="M7.2 9.6 9.8 5.8" stroke="%23fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/%3E%3C/g%3E%3C/svg%3E') center/contain no-repeat;
+  filter:drop-shadow(0 0 3px rgba(155,106,214,.7)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  transform:rotate(0deg);transform-origin:50% 50%;
+  transition:transform .18s ease, filter .18s, opacity .18s;
 }
-.panel.fold:not([open]) > summary::before{transform:rotate(0deg)}
+.panel.fold:not([open]) > summary::before{
+  transform:rotate(90deg);opacity:.8;
+  filter:drop-shadow(0 0 1.5px rgba(155,106,214,.45)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+}
+[data-theme="void"] .panel.fold > summary::before{filter:saturate(.3) drop-shadow(0 1px 1px rgba(0,0,0,.6))}
 .panel.fold > summary > .pt::before{content:none}
-@media(hover:hover){.panel.fold > summary:hover::before{color:var(--goldb)}}
+@media(hover:hover){.panel.fold > summary:hover::before{opacity:1;filter:drop-shadow(0 0 5px rgba(155,106,214,.85)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
 @media(prefers-reduced-motion:reduce){.panel.fold > summary::before{transition:none}}
 /* El título cede espacio antes que empujar nada fuera */
 .panel.fold > summary > .pt{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -4106,32 +4115,17 @@ body.modo-edicion .page{padding-bottom:84px}
 @media(prefers-reduced-motion:reduce){.est4 .e4-ctl .e4-btn{transition:none}}
 
 /* ══════════════════════════════════════════
-   MEDALLAS ENJOYADAS DE IDENTIDAD (v57.5)
+   MEDALLAS DE IDENTIDAD (v57.5 → v57.7)
 ══════════════════════════════════════════ */
-/* Una gema por categoría, engastada en oro sobre el filo inferior:
-   amatista (Descriptor), rubí (Arquetipo), zafiro (Trasfondo). */
-:root{--gema-desc:#9b6ad6;--gema-arq:#d0405a;--gema-bg:#3f7fd6}
-[data-theme="void"]{--gema-desc:#8e7fa6;--gema-arq:#a0676e;--gema-bg:#6a8299}
-
 /* Todo el ancho, como cuando este padding iba en línea: la reserva de 34 px
    por lado para el lápiz (EDICIÓN DE TARJETAS) partía las medallas en dos
    líneas. A cambio, la fila baja lo justo para quedar bajo el lápiz de la
    esquina (32 px de alto a 8 px del borde). */
 #identity_summary_view > div.id-fila:first-child{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;padding:26px 0 4px}
-#identity_summary_view .ib-joya{
-  width:12px;height:15.6px;z-index:1;
-  filter:drop-shadow(0 0 3px color-mix(in srgb,currentColor 70%,transparent)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
-}
-#identity_summary_view .ib-desc .ib-joya{color:var(--gema-desc)}
-#identity_summary_view .ib-arq  .ib-joya{color:var(--gema-arq)}
-#identity_summary_view .ib-bg   .ib-joya{color:var(--gema-bg)}
-
-/* ── Medallas: engaste fino (1 px de oro vivo, un hilo oscuro por dentro y
-      una leve sombra interior) y la gema centrada sobre el filo de abajo,
-      sujeta por dos garras de oro. */
+/* Engaste fino: 1 px de oro vivo, un hilo oscuro por dentro y una leve
+   sombra interior. Sin gemas desde v57.7. */
 #identity_summary_view .ibadge{
-  position:relative;
-  margin:3px 3px 10px;padding:5px 15px;
+  margin:3px;padding:5px 15px;
   color:#dcc084;
   border:1px solid transparent;
   background:
@@ -4143,11 +4137,5 @@ body.modo-edicion .page{padding-bottom:84px}
     0 2px 8px rgba(0,0,0,.45);
   text-shadow:0 1px 2px rgba(0,0,0,.55);
 }
-#identity_summary_view .ib-joya--abajo{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%)}
-#identity_summary_view .ibadge::after{
-  content:'';position:absolute;left:50%;bottom:-1.5px;transform:translateX(-50%);
-  width:20px;height:2px;border-radius:2px;
-  background:linear-gradient(90deg,#b08f55,#f0d89c 30%,transparent 30% 70%,#f0d89c 70%,#b08f55);
-}
 /* Separador «·» dorado entre medallas */
-#identity_summary_view .isep{align-self:center;margin-bottom:7px}
+#identity_summary_view .isep{align-self:center}

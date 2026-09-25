@@ -1,4 +1,36 @@
-# S&S Companion — v57.6.1
+# S&S Companion — v57.7
+
+## Novedades v57.7 — Amatista en las tarjetas · Iconos por tipo de arma
+
+`CACHE_VERSION` sube a `ss-companion-v115`.
+
+- **Medallas de identidad**: sin gemas. Quedan el engaste fino de oro y el
+  «·» dorado entre medallas. Se retiran el símbolo `#i-joya-engaste`, su
+  degradado y los tokens `--gema-*`.
+- **Tarjetas plegables**: el triángulo que giraba se cambia por una
+  amatista engastada en oro.
+  - Abierta, la amatista está en pie y brilla. Plegada, se tumba (gira 90°)
+    y se apaga un poco.
+  - Con ratón, al pasar por encima brilla más.
+  - Es una imagen SVG propia en el `::before`, porque un pseudoelemento no
+    puede usar el sprite. En el tema Vacío se desatura.
+- **Iconos de armas** en el resumen de Equipo & Tesoro, por tipo
+  (`_iconoArma`). Se decide por las etiquetas de las notas o, si no hay
+  notas, por el nombre. Gana la primera regla que encaje:
+
+  | Tipo | Icono | Ejemplos |
+  |---|---|---|
+  | Magitec a distancia | pistola | pistola, rifle, lanzagranadas |
+  | A distancia | ballesta | arcos, ballestas |
+  | Arrojadiza | shuriken | daga, jabalina, hacha de mano, lanza corta |
+  | Contundente | maza | maza, martillo, mangual, garrote, bastón, desarmado |
+  | Perforante | lanza | lanza, espada corta, espada ropera |
+  | Energía | rayo | sable de energía |
+  | Cortante y resto | espada | espada larga, espadón, hachas, alabarda |
+
+  Los objetos sueltos con nombre de arma («Shuriken de acero») pasan por la
+  misma función.
+- Verificado a 390 px con doce armas; autodiagnóstico 9 de 9.
 
 ## Novedades v57.6.1 — Medallas con gema abajo · Barras de Estado más cortas
 
