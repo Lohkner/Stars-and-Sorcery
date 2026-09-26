@@ -4290,3 +4290,6 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 .port-bio:not(:empty)::before,.port-bio:not(:empty)::after{color:var(--goldb);opacity:.9;font-style:normal}
 .port-bio:not(:empty)::before{content:'\201C'}
 .port-bio:not(:empty)::after{content:'\201D'}
+
+/* Talentos por encima del tope del nivel (p. ej. tras bajarlo) (v57.16) */
+#talent_count_main.over{color:var(--blood)!important}

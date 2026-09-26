@@ -1,4 +1,24 @@
-# S&S Companion — v57.15
+# S&S Companion — v57.16
+
+## Novedades v57.16 — Talentos según el nivel
+
+`CACHE_VERSION` sube a `ss-companion-v124`.
+
+- **Problema**: la tarjeta Talentos y su Gestor solo dejaban elegir 3
+  talentos, fuera cual fuera el nivel. `toggleTalent` cortaba en un 3 fijo
+  y los contadores enseñaban «/3» escrito en el marcado. Solo el contador
+  de la tarjeta del nivel usaba la tabla.
+- **Arreglo**: el tope sale de la Tabla de progresión (`TALENT_SLOTS`):
+  3 · 3 · 4 · 4 · 5 · 5 · 6 · 6 · 7 · 7 talentos del nivel 1 al 10.
+  - `app._nivel()` y `app._talentMax()` son la fuente única.
+  - Los tres contadores (tarjeta del nivel, tarjeta Talentos y Gestor)
+    dicen lo mismo y cambian al cambiar el nivel.
+  - Al llegar al tope, el aviso dice cuántos da el nivel («Al Nivel 10
+    puedes elegir 7 talentos»).
+  - Si bajas de nivel y te sobran talentos, el contador de la tarjeta
+    Talentos se pone en rojo y explica por cuántos te pasas.
+- Verificado: nivel 1 → «/3»; nivel 10 → «/7», 7 elegidos y el 8.º
+  rechazado; de vuelta a nivel 1 → «7/3» en rojo. Autodiagnóstico: 9 de 9.
 
 ## Novedades v57.15 — Medallas de identidad centradas
 

@@ -3350,7 +3350,12 @@ const app = {
     const card = chk.closest('.tc');
     if (chk.checked) {
       const count = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
-      if (count >= 3) { this.toast('Solo puedes elegir 3 talentos.','err'); chk.checked=false; return; }
+      // El tope sale del nivel (TALENT_SLOTS, v57.16): antes era un 3 fijo.
+      const max = this._talentMax();
+      if (count >= max) {
+        this.toast(`Al Nivel ${this._nivel()} puedes elegir ${max} talentos.`, 'err');
+        chk.checked = false; return;
+      }
       if (!hidden) {
         hidden = document.createElement('input'); hidden.type='hidden'; hidden.name='chk_talents_hidden';
         hidden.value=name; hidden.setAttribute('data-desc',chk.getAttribute('data-desc'));
@@ -3384,6 +3389,12 @@ const app = {
     this._markUnsaved();
   },
 
+  /** Nivel actual (1-10) y Talentos que da (Tabla de progresión). */
+  _nivel() {
+    return Math.min(10, Math.max(1, parseInt(document.getElementById('char_lvl')?.value, 10) || 1));
+  },
+  _talentMax() { return TALENT_SLOTS[this._nivel()] || 3; },
+
   updateTalentCount() {
     const n = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
     const el1 = document.getElementById('talent_count_main');
@@ -3391,7 +3402,7 @@ const app = {
     const el2 = document.getElementById('talent_count_modal');
     if (el2) {
       el2.textContent = n;
-      el2.classList.toggle('full', n >= 3);
+      el2.classList.toggle('full', n >= this._talentMax());
       // Pulse
       el2.classList.remove('pulse');
       void el2.offsetWidth;

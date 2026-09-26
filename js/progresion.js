@@ -46,16 +46,22 @@
   }
 
   function refreshSlots() {
-    const el = $('talent_slots_lbl');
-    if (!el) return;
     const n = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
     const max = TALENT_SLOTS[lvl()] || 3;
-    el.textContent = `${n} / ${max}`;
-    el.classList.toggle('over', n > max);
-    el.title = n > max
+    const aviso = n > max
       ? `Te pasas por ${n - max}: al Nivel ${lvl()} te tocan ${max} Talentos.`
       : `Al Nivel ${lvl()} te tocan ${max} Talentos.`;
-    // El contador del Gestor marcaba «lleno» con un 3 fijo
+    const el = $('talent_slots_lbl');
+    if (el) {
+      el.textContent = `${n} / ${max}`;
+      el.classList.toggle('over', n > max);
+      el.title = aviso;
+    }
+    // La tarjeta Talentos y el Gestor enseñaban «/3» fijo (v57.16): ahora
+    // los tres contadores dicen lo mismo, según el nivel.
+    ['talent_max_main', 'talent_max_modal'].forEach(id => { if ($(id)) $(id).textContent = `/${max}`; });
+    const main = $('talent_count_main');
+    if (main) { main.classList.toggle('over', n > max); main.title = aviso; }
     const modal = $('talent_count_modal');
     if (modal) modal.classList.toggle('full', n >= max);
   }
