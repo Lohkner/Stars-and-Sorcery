@@ -68,7 +68,7 @@
     armas: [], opcArq: '', armaExtra: '', monedas: null,
     armaQ: '', armaF: [],
     descUlt: '', arqUlt: '', bgUlt: '',
-    alineamiento: '', retrato: '',
+    alineamiento: '', retrato: '', pericia: '',
   });
 
   /* Paso 6 — «Salvaciones con PB» y «Guardia» del Manual Cap.6: dos
@@ -399,7 +399,7 @@
     Object.entries(app.DB.archetypes).forEach(([k, a]) => {
       b.appendChild(tarjeta(a.name, 'PV ' + (a.pv + con), a.txt || '',
         `Adr +${a.adr_bonus} · Ing +${a.ing_bonus} · ${a.skills_count} habilidades · ${a.sustrato_nombre} / ${a.permiso_nombre}`,
-        S.arq === k, () => alternar('arq', k, () => { S.arqSkills = []; })));
+        S.arq === k, () => alternar('arq', k, () => { S.arqSkills = []; S.pericia = ''; })));
       if (S.arq !== k) return;
       const sub = el('div', 'wiz-sub wiz-inline');
       sub.appendChild(el('span', 'wiz-lbl',
@@ -411,6 +411,25 @@
           else if (S.arqSkills.length < a.skills_count) S.arqSkills.push(n);
           pintar();
         });
+      /* Pericia inicial (Manual, tabla de cada Arquetipo: «elige 1 al
+         crear»). Empieza en Grado 1 y abarata el Esfuerzo de ese tipo de
+         acción. Las opciones salen de los `edges` del Arquetipo: el Versátil
+         añade Flexible. Faltaba en el asistente (v58.1). */
+      const edges = Array.isArray(a.edges) ? a.edges : [];
+      if (edges.length) {
+        sub.appendChild(el('span', 'wiz-lbl', 'Pericia inicial — elige 1 (empieza en Grado 1)'));
+        const fila = el('div', 'wiz-attrpick');
+        const QUE = { 'Físico': 'Esfuerzo físico', 'Mental': 'Esfuerzo mental', 'Flexible': 'la eliges cada turno' };
+        edges.forEach(e => {
+          const btn = el('button', 'wiz-apick' + (S.pericia === e ? ' sel' : ''));
+          btn.type = 'button';
+          btn.appendChild(el('span', 'wiz-apick-n', e));
+          btn.appendChild(el('span', 'wiz-apick-v wiz-apick-t', QUE[e] || ''));
+          btn.onclick = () => { S.pericia = e; pintar(); };
+          fila.appendChild(btn);
+        });
+        sub.appendChild(fila);
+      }
       b.appendChild(sub);
     });
   }
@@ -892,8 +911,8 @@
         return '';
       case 2:
         if (!S.arq) return 'Elige un Arquetipo';
-        return S.arqSkills.length === a.skills_count ? ''
-          : `Elige ${a.skills_count - S.arqSkills.length} habilidad(es) más`;
+        if (S.arqSkills.length !== a.skills_count) return `Elige ${a.skills_count - S.arqSkills.length} habilidad(es) más`;
+        return (Array.isArray(a.edges) && a.edges.length && !S.pericia) ? 'Elige tu Pericia inicial' : '';
       case 3:
         if (!S.bg) return 'Elige un Trasfondo';
         return S.bgSkills.length === 2 ? '' : `Elige ${2 - S.bgSkills.length} habilidad(es) más`;
@@ -968,6 +987,15 @@
     const set = (id, v) => { const e = $(id); if (e && v != null) e.value = v; };
     set('sel_desc', S.desc); set('sel_arq', S.arq); set('sel_bg', S.bg);
     app.updateOptions(false);                  // crea las elecciones del Linaje
+
+    // Pericia inicial en Grado 1. updateOptions ya creó sus desplegables
+    // (pericias.js, ids filo_g_<slug sin acentos>) y los conserva al
+    // repintar. Cerrar la ventana de migración: el grado lo decide el jugador.
+    if (S.pericia) {
+      const slug = S.pericia.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      set('filo_g_' + slug, '1');
+      app._periciasMigrar = false;
+    }
 
     // origen.js numera las elecciones del mismo grupo desc_eleccion,
     // desc_eleccion__2, desc_eleccion__3…
@@ -1131,6 +1159,7 @@
     S.desc = azar(Object.keys(app.DB.descriptors)); S.descUlt = S.desc;
     const d = app.DB.descriptors[S.desc];
     const a = app.DB.archetypes[S.arq];
+    if (Array.isArray(a.edges) && a.edges.length) S.pericia = azar(a.edges);   // Pericia inicial
 
     // 2 · Elecciones del Linaje. Las Expresiones van ANTES del reparto porque
     //     una de ellas puede abrir Fuente (el Mutante).

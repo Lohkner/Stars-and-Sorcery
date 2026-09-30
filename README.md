@@ -1,4 +1,26 @@
-# S&S Companion — v58.0
+# S&S Companion — v58.1
+
+## Novedades v58.1 — Pericia inicial en el asistente
+
+`CACHE_VERSION` sube a `ss-companion-v126`.
+
+- **Problema**: el asistente de creación no dejaba elegir la **Pericia
+  inicial**. El Manual la pide en la tabla de cada Arquetipo («elige 1 al
+  crear»), empieza en Grado 1 y abarata el Esfuerzo; los personajes salían
+  sin Pericia.
+- **Arreglo**: el paso **Arquetipo** muestra, bajo sus habilidades,
+  «Pericia inicial — elige 1».
+  - Las opciones salen de los `edges` del Arquetipo: Audaz y Sagaz,
+    Físico o Mental; el Versátil, también Flexible.
+  - Es obligatoria para continuar, y cambiar de Arquetipo la reinicia.
+  - Al crear el personaje, o al salir con «A mano», queda en Grado 1
+    (`filo_g_<pericia>`).
+  - El personaje aleatorio del dado también elige una.
+- Verificado:
+  - con el Versátil salen las tres opciones y sin elegir no se puede seguir;
+  - Flexible queda a 1 en la ficha («Flexible 1» en Estado);
+  - un aleatorio Sagaz sale con Mental 1;
+  - autodiagnóstico: 9 de 9.
 
 ## Novedades v58.0 — Almacenamiento grande y exportar que funciona en el móvil
 

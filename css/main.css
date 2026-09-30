@@ -4296,3 +4296,6 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 
 /* Exportar sin personaje abierto: activo, pero se ve en segundo plano (v58) */
 #set_export_char.is-apagado{opacity:.55}
+
+/* Asistente · Pericia inicial: la línea de abajo es texto, no una cifra (v58.1) */
+.wiz-apick-v.wiz-apick-t{font-family:var(--fb);font-size:var(--fs-2xs);font-weight:400;letter-spacing:0;text-transform:none;line-height:1.2}
