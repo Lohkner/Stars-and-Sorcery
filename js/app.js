@@ -32,6 +32,7 @@ const app = {
   _finalMods:  {FUE:0,DES:0,CON:0,INT:0,SAB:0,CAR:0},  // P1 fix: cached final modifiers
 
   init() {
+    STORAGE.alFallarEscritura = () => this.toast('No se pudo guardar en el dispositivo: exporta tus personajes', 'err');
     // ── Event delegation for [data-action] (Mejora 6) ──
     // A single listener dispatches simple no-arg calls to app methods.
     // CSP-friendlier and lighter than dozens of inline onclick handlers.
@@ -4783,10 +4784,41 @@ const app = {
   },
 
   exportRulesDB() {
+    this.guardarArchivo('sands_rules.json', JSON.stringify(this.DB, null, 2));
+  },
+
+  /** Guarda un archivo en el dispositivo (v58). Antes cada exportación
+      creaba un enlace data: y lo pulsaba: con retratos el enlace pasaba del
+      tamaño que admiten los navegadores móviles, y en la app instalada
+      (sin barra del navegador) la descarga no llegaba a ocurrir. Ahora, en
+      pantallas táctiles, se abre el menú Compartir del sistema («Guardar
+      en Archivos», Drive, WhatsApp…); en el ordenador, o si Compartir no
+      admite el archivo, se descarga con un Blob. Devuelve cómo acabó. */
+  guardarArchivo(nombre, texto, tipo = 'application/json') {
+    const blob = new Blob([texto], { type: tipo });
+    const tactil = matchMedia('(pointer: coarse)').matches;
+    if (tactil && navigator.share && navigator.canShare) {
+      // Algunos Android no aceptan application/json al compartir; como
+      // texto sí, y el nombre conserva la extensión .json.
+      const candidatos = [new File([blob], nombre, { type: tipo }), new File([blob], nombre, { type: 'text/plain' })];
+      const file = candidatos.find(f => { try { return navigator.canShare({ files: [f] }); } catch (e) { return false; } });
+      if (file) {
+        return navigator.share({ files: [file], title: nombre })
+          .then(() => 'compartido')
+          .catch(err => (err && err.name === 'AbortError') ? 'cancelado' : this._descargarBlob(nombre, blob));
+      }
+    }
+    return Promise.resolve(this._descargarBlob(nombre, blob));
+  },
+  _descargarBlob(nombre, blob) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.DB, null, 2));
-    a.download = 'sands_rules.json';
+    a.href = url; a.download = nombre; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a);   // Firefox y algunos móviles ignoran el clic en un enlace suelto
     a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    return 'descargado';
   },
 
   /* ══ CROPPER ══
@@ -5461,11 +5493,19 @@ const app = {
   },
 
   exportJSON() {
+    // Sin personaje abierto no hay nada que exportar: se dice, en vez de
+    // dejar el botón apagado sin explicación (parecía roto).
+    if (!this._charOpen()) {
+      this.toast('Abre un personaje para exportarlo, o usa «Crear copia» para todos', 'info');
+      const est = document.getElementById('respaldo_estado');
+      if (est) { est.textContent = 'Abre un personaje para exportarlo, o usa «Crear copia» para todos.'; est.classList.remove('is-ok'); est.classList.add('is-err'); }
+      return;
+    }
     const name = (document.getElementById('char_name').value.trim() || 'aventurero').replace(/ /g, '_');
-    const a = document.createElement('a');
-    a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.gatherCharData(), null, 2));
-    a.download = name + '.json';
-    a.click();
+    this.guardarArchivo(name + '.json', JSON.stringify(this.gatherCharData(), null, 2)).then(r => {
+      if (r === 'descargado') this.toast('Personaje exportado', 'ok');
+      if (r === 'compartido') this.toast('Personaje compartido', 'ok');
+    });
   },
 
   loadJSON(input) {
@@ -5809,17 +5849,16 @@ const app = {
       `guardar:false` es para la restauración al arrancar, que no reescribe. */
   setBgImage(target, src, { guardar = true } = {}) {
     const prop = target === 'home' ? '--bg-home' : '--bg-app';
-    const key  = target === 'home' ? 'ss_bg_home' : 'ss_bg_app';
     const root = document.documentElement.style;
     let guardado = true;
     if (src) {
       root.setProperty(prop, 'url("' + src + '")');
       root.setProperty('--bg-overlay-op', '1');
       if (guardar) {
-        // Primero se suelta la imagen anterior: cuando el cupo va justo,
-        // su hueco es precisamente el que necesita la nueva.
-        try { localStorage.removeItem(key); localStorage.setItem(key, src); }
-        catch (e) { guardado = false; }
+        // STORAGE.setBg suelta primero la imagen anterior (en localStorage,
+        // su hueco es el que necesita la nueva) y, desde v58, guarda en
+        // IndexedDB, donde un fondo ya no compite con los personajes.
+        guardado = STORAGE.setBg(target, src);
       }
     } else {
       root.setProperty(prop, 'none');
@@ -5827,16 +5866,13 @@ const app = {
       if (!this._bgGuardado(target === 'home' ? 'app' : 'home')) {
         root.setProperty('--bg-overlay-op', '0');
       }
-      try { localStorage.removeItem(key); } catch (e) {}
+      STORAGE.setBg(target, '');
     }
     this._pintarBgEstado(target, src, guardado ? 'ok' : 'sin-espacio');
     return guardado;
   },
 
-  _bgGuardado(target) {
-    try { return localStorage.getItem(target === 'home' ? 'ss_bg_home' : 'ss_bg_app') || ''; }
-    catch (e) { return ''; }
-  },
+  _bgGuardado(target) { return STORAGE.getBg(target); },
 
   /** Estado del fondo DENTRO del panel de Ajustes: miniatura, botón de
       quitar y una línea de texto. El panel es un <dialog> modal y los
@@ -6094,9 +6130,11 @@ const app = {
     // (y prefs individuales activas) → "Este personaje"; si no → "Global".
     this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
     this._syncPortraitScopeUI();
-    // Exportar un personaje solo tiene sentido con uno abierto.
+    // Exportar un personaje solo tiene sentido con uno abierto; sin él, el
+    // botón sigue activo y explica qué hacer (apagado parecía roto).
     const exp = document.getElementById('set_export_char');
-    if (exp) { exp.disabled = !this._charOpen(); exp.title = exp.disabled ? 'Abre un personaje para exportarlo' : ''; }
+    if (exp) { exp.disabled = false; exp.classList.toggle('is-apagado', !this._charOpen()); }
+    this._pintarEspacio();
     this._syncSeccionesAjustes();
     // Sellos de versión (verificables tras actualizar). Son dos cosas
     // distintas y conviene poder mirarlas por separado: los DATOS de reglas
@@ -6124,6 +6162,21 @@ const app = {
   },
 
   /** Cierra Ajustes con escudo: el toque de cierre no traspasa a la hoja. */
+  /** Línea de espacio en «Copias y datos»: cuánto ocupa la app y si el
+      almacenamiento está protegido (persistente) en este dispositivo. */
+  _pintarEspacio() {
+    const el = document.getElementById('espacio_estado');
+    if (!el) return;
+    STORAGE.espacio().then(e => {
+      if (!e) { el.textContent = ''; return; }
+      const mb = b => (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',');
+      el.textContent = `Espacio: ${mb(e.usado)} MB usados`
+        + (e.cupo ? ` de ${mb(e.cupo)} MB` : '')
+        + (e.persistente ? ' · protegido' : '')
+        + (e.idb ? '' : ' · modo básico (≈5 MB)');
+    });
+  },
+
   closeSettings() {
     this._tapShield();  // anti-traspaso de toques
     if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();

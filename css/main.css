@@ -4293,3 +4293,6 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 
 /* Talentos por encima del tope del nivel (p. ej. tras bajarlo) (v57.16) */
 #talent_count_main.over{color:var(--blood)!important}
+
+/* Exportar sin personaje abierto: activo, pero se ve en segundo plano (v58) */
+#set_export_char.is-apagado{opacity:.55}

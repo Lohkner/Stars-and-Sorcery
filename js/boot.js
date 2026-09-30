@@ -18,7 +18,19 @@
     setTimeout(() => { if (l.parentNode) l.parentNode.removeChild(l); }, TIMING.LOADER_DISMISS * 2);
   }
 
+  /* El almacén (IndexedDB, v58) se prepara ANTES de init(): el roster y
+     las reglas se leen de memoria y tienen que estar cargados. Si tarda
+     demasiado, se arranca igual con localStorage. */
   function startApp() {
+    const listo = STORAGE.preparar().catch(() => false);
+    const limite = new Promise(r => setTimeout(() => r('tarde'), 6000));
+    Promise.race([listo, limite]).then(estado => {
+      if (estado === 'tarde') { STORAGE._rendido = true; STORAGE._idb = null; STORAGE._mem = {}; }
+      iniciar();
+    });
+  }
+
+  function iniciar() {
     try {
       app.init();
       // Si venimos de "Buscar actualización" o de "Forzar actualización",

@@ -53,17 +53,13 @@
       reglas: STORAGE.RULES_DATA_VERSION,
       personajes: roster,
     };
-    // Blob y no data-URL: con retratos, la copia pasa de los 2 MB que
-    // algunos navegadores admiten en un enlace data:.
-    const url = URL.createObjectURL(new Blob([JSON.stringify(datos)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ss-companion-respaldo-${fecha()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-    avisar(`Copia creada: ${n} ${n === 1 ? 'personaje' : 'personajes'} · ${fecha()}`, 'ok');
+    // app.guardarArchivo (v58): en el móvil abre Compartir («Guardar en
+    // Archivos», Drive…), porque la descarga por enlace no funcionaba en la
+    // app instalada; en el ordenador descarga el archivo.
+    app.guardarArchivo(`ss-companion-respaldo-${fecha()}.json`, JSON.stringify(datos)).then(r => {
+      if (r === 'cancelado') { avisar('Copia cancelada', 'info'); return; }
+      avisar(`Copia ${r === 'compartido' ? 'compartida' : 'creada'}: ${n} ${n === 1 ? 'personaje' : 'personajes'} · ${fecha()}`, 'ok');
+    });
   };
 
   app.restaurarRespaldo = function (input) {

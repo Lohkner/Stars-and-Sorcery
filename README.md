@@ -1,4 +1,56 @@
-# S&S Companion — v57.16
+# S&S Companion — v58.0
+
+## Novedades v58.0 — Almacenamiento grande y exportar que funciona en el móvil
+
+`CACHE_VERSION` sube a `ss-companion-v125`.
+
+### «Almacenamiento lleno»
+- **Causa**: todo vivía en `localStorage`, con un cupo de unos 5 MB por
+  origen. Cada retrato (JPEG en data-URL) ocupa cientos de KB y cada fondo
+  de pantalla, más: con unos cuantos personajes y un fondo se llenaba.
+- **Arreglo**: el roster (personajes con retrato), las reglas editadas y
+  los fondos pasan a **IndexedDB** (`ss-companion` › `kv`), que admite
+  cientos de MB. Además se pide `navigator.storage.persist()` para que el
+  navegador no lo borre por su cuenta.
+- **Migración automática** al abrir la app: lo que hubiera en
+  `localStorage` se copia a IndexedDB y, ya a salvo, se libera. No se
+  pierde nada.
+- **La API de `STORAGE` sigue siendo síncrona**:
+  - `preparar()` carga todo en memoria antes de `app.init()` (boot.js);
+  - las lecturas salen de memoria, clonadas;
+  - las escrituras van a memoria al momento y a IndexedDB en segundo plano,
+    en cola.
+- **Casos límite**:
+  - si una escritura falla, se avisa;
+  - sin IndexedDB, o si tarda más de 6 s, todo sigue en `localStorage`
+    como antes, sin mezclar ni borrar nada.
+- **Espacio en Ajustes**: «Copias y datos» dice cuánto ocupa la app y si el
+  almacenamiento está protegido.
+
+### Exportar
+- **Causa**:
+  - exportar un personaje y las reglas creaba un enlace `data:`, que con
+    retrato pasaba del tamaño que admiten los navegadores móviles;
+  - en la app instalada, además, ninguna descarga por enlace llegaba a
+    ocurrir;
+  - «Exportar» se apagaba sin explicación cuando no había personaje abierto.
+- **Arreglo**:
+  - `app.guardarArchivo()` es la vía única de «Exportar» (personaje),
+    «Crear copia» (todos) y «Exportar» del editor de reglas;
+  - en pantallas táctiles abre el menú **Compartir** del sistema: Guardar
+    en Archivos, Drive, WhatsApp…;
+  - si ese Android no admite JSON, se comparte como texto conservando el
+    nombre `.json`;
+  - en el ordenador, o si Compartir no está disponible, descarga con un
+    Blob y el enlace insertado en la página.
+- **Sin personaje abierto**, «Exportar» ya no está apagado: explica que hay
+  que abrir uno o usar «Crear copia».
+- Verificado:
+  - migración de un personaje con retrato y de un fondo;
+  - guardar y recargar;
+  - los tres botones, por las vías de descarga y de Compartir (también al
+    cancelar);
+  - autodiagnóstico: 9 de 9.
 
 ## Novedades v57.16 — Talentos según el nivel
 
