@@ -96,6 +96,10 @@ const AXIOM_ID_RENAMES = {
   sordera:                'ensordecido',
   // Catálogo 1.0 «Ultimate»: solo cambia la grafía, el efecto es idéntico.
   telekinesis_menor:      'telequinesis_menor',
+  // Catálogo v1: renombres, mismo efecto.
+  armadura_de_mago:       'egida_geometrica',
+  patrono_hipnotico:      'patron_hipnotico',
+  massmorfosis:           'metamorfosis_colectiva',
 };
 
 /* ── Migración de ids de Talento (reglas v5.5.2) ─────────────────

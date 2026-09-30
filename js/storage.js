@@ -20,7 +20,7 @@
 const STORAGE = {
   SCHEMA_VERSION: 2,
   /** Bump when DEFAULT_DB rules data changes so cached rules refresh automatically. */
-  RULES_DATA_VERSION: '1.0-manual-sendas-axiomas-r6',
+  RULES_DATA_VERSION: 'v1-manual-sendas-axiomas',
   KEYS: {
     rules:          'sands_rules',
     rulesVer:       'sands_rules_ver',

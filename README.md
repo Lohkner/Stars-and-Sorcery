@@ -1,4 +1,47 @@
-# S&S Companion — v58.1
+# S&S Companion — v59.0
+
+## Novedades v59.0 — Reglas de los manuales v1
+
+`CACHE_VERSION` sube a `ss-companion-v127` y `RULES_DATA_VERSION` a
+`v1-manual-sendas-axiomas`: las reglas guardadas en el dispositivo se
+recargan desde `data.js`.
+
+Fuentes: *Manual Básico v1*, *Compendio de Sendas v1*, *Catálogo de Axiomas
+v1* y *Guía del Director v1* (`Ultimate\files`), comparados con los 1_0 que
+ya reflejaba la app.
+
+- **Compendio de Sendas**: los 253 Talentos siguen siendo los mismos; 122
+  cambian de texto.
+  - **Reglas**:
+    - Armadura de Magia (Grado 3: la Guardia sube +2);
+    - Sangre de Gigante (al terminar, 1 escalón de Fatiga);
+    - Iniciado en Naturaleza (sin terreno difícil en tu entorno);
+    - Maniobras de Combate (Réplica; el dado sube a d10 con el Grado 2 y a
+      d12 con el Grado 3);
+    - Armadura Arcana (ya no estorba tus Axiomas);
+    - Infusiones Arcanas, El Sintonizador (espacios de Sintonía),
+      Llamada del Sepulcro, Ejército de Sombras (cualquier oscuridad
+      mágica), Viajero Incansable, Golpe Sagrado (Quebrantado),
+      Contraataque, Las Concesiones y otros.
+  - **Requisitos**: «G2» pasa a «(Grado 2)», Liderazgo Táctico y Al Mando
+    sin el INT repetido, y Camino de las Sombras pide Grado 0 en Sigilo.
+  - **Tótem** es de GRADO ÚNICO y estrena epígrafe.
+  - **Vocabulario común**: Talento con mayúscula, Psíquico, Apresado,
+    quedar Desprevenido, escalón de Fatiga, Nivel, PNJ y Axiomas en vez de
+    «magia».
+- **Catálogo de Axiomas**:
+  - 20 efectos revisados: Geas, Nube Hedionda (Envenenado), Susurro
+    Cortante y Eco del Vacío (Aturdido Ud4), Presciencia y Sincronía Total
+    (Desprevenido), Látigo de Lava, Arma de los Elementos, Ola
+    Restauradora, Cadena de Relámpagos, Trampa Vegetal, Restauración y
+    otros;
+  - 3 renombres: Armadura de Mago → **Égida Geométrica**, Patrono
+    Hipnótico → **Patrón Hipnótico** y Massmorfosis → **Metamorfosis
+    Colectiva**. Los ids se migran solos (`AXIOM_ID_RENAMES`), así que las
+    fichas guardadas conservan sus Axiomas elegidos.
+- **Manual Básico y Guía**: solo hay cambios de redacción (AdO, DeT,
+  referencias por página, Etiquetas de Zona…). La penalización de armadura
+  a los Axiomas (Desventaja y Coste doble) ya estaba en la app.
 
 ## Novedades v58.1 — Pericia inicial en el asistente
 
