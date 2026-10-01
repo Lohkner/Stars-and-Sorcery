@@ -4430,3 +4430,142 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 .g3-combate .flbl{letter-spacing:.04em;padding-left:4px;padding-right:4px;text-align:center}
 .g3-combate .fval{text-align:center;line-height:1.15}
 .g3-combate .fval > span:first-child{font-size:var(--fs-md);text-wrap:balance}
+
+/* ══════════════════════════════════════════
+   v61 — Estado «Protagonista y trío»
+   Los PV, que es lo que más se mira y se toca en combate, van centrados y
+   grandes arriba. Adrenalina, Ingenio y Carne, en tres columnas debajo.
+   Botones ± en círculo de trazo fino, barras de línea con un rombo en la
+   punta y «Descansar» sin recuadro. Los ids y las clases que usa el
+   código (cur_*, max_*, res_fill_*, .res-btn, .e4-row-*) no cambian.
+══════════════════════════════════════════ */
+.est4 .e4-heroe{display:flex;flex-direction:column;align-items:center;padding-top:2px}
+.est4 .e4-heroe .e4-name{color:var(--text);letter-spacing:.17em}
+.est4 .e4-ctl--heroe{
+  display:flex;align-items:center;justify-content:center;gap:22px;
+  margin-top:4px;
+}
+.est4 .e4-heroe .e4-fin{font-size:2.625rem !important;font-weight:700;height:52px !important;min-height:52px !important}
+.est4 .e4-heroe .e4-sep{font-size:var(--fs-lg);margin:0 6px;align-self:flex-end;padding-bottom:9px}
+.est4 .e4-heroe .e4-max{font-size:var(--fs-lg);align-self:flex-end;padding-bottom:9px}
+.est4 .e4-heroe .e4-track{width:70%;margin:6px auto 0}
+
+/* La cifra mide lo que sus dígitos (--dig lo pone _updateResBars) */
+.est4 .e4-num{justify-content:center}
+.est4 .e4-fin{
+  width:calc(var(--dig,2) * 1ch + 2px) !important;max-width:none !important;
+  text-align:center;
+}
+
+/* El trío */
+.est4 .e4-trio{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  margin-top:16px;padding-top:14px;
+  background:var(--line-dim) top left / 100% 1px no-repeat;
+}
+.est4 .e4-col{display:flex;flex-direction:column;align-items:center;min-width:0}
+/* Las tres columnas comparten filas (nombre, cifra, barra, botones): si un
+   nombre se partiera en dos líneas, las cifras seguirían a la misma altura. */
+@supports (grid-template-rows:subgrid){
+  .est4 .e4-trio{grid-template-rows:auto auto auto auto}
+  .est4 .e4-col{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-items:center;align-items:center}
+}
+/* 12 px fijos, no rem: «Adrenalina» tiene que caber en un tercio de la
+   tarjeta también con la letra en Grande y Muy grande. Es el suelo
+   tipográfico de la app, así que no baja de ahí. */
+.est4 .e4-col .e4-name{
+  font-size:12px;letter-spacing:.02em;
+  flex-wrap:wrap;justify-content:center;row-gap:3px;max-width:100%;
+}
+.est4 .e4-col .e4-joya{width:11px;height:11px;margin-right:5px}
+.est4 .e4-col .e4-num{margin-top:1px}
+.est4 .e4-col .e4-fin{font-size:1.25rem !important;font-weight:700;height:34px !important;min-height:34px !important}
+.est4 .e4-col .e4-sep{margin:0 3px;font-size:var(--fs-2xs)}
+.est4 .e4-col .e4-max{font-size:var(--fs-2xs)}
+.est4 .e4-col .e4-track{width:100%;margin:2px 0 0;opacity:1}
+.est4 .e4-pm{display:flex;justify-content:center;gap:16px;margin-top:11px;grid-template-columns:none}
+
+/* Barras de línea: finas, a todo el ancho de su bloque, con un rombo en
+   la punta que marca hasta dónde llegan */
+.est4 .e4-track{height:3px;margin-right:0}
+.est4 .e4-col .e4-track{height:2px}
+.est4 .e4-track .res-fill::after{
+  content:'';position:absolute;right:-3px;top:50%;width:7px;height:7px;
+  transform:translateY(-50%) rotate(45deg);
+  background:inherit;filter:brightness(1.55);box-shadow:0 0 0 1px rgba(var(--void-rgb),.55);
+}
+
+/* Botones ±: círculo de trazo fino con el color del recurso, sin caja */
+.est4 .e4-ctl .e4-btn{
+  width:30px;height:30px;border-radius:50%;
+  background-color:transparent;box-shadow:none;
+  border:1px solid color-mix(in srgb,var(--c,var(--muted)) 55%,transparent);
+  background-size:11px 1.5px,1.5px 11px;
+}
+.est4 .e4-ctl .e4-btn[data-delta^="-"]{background-size:11px 1.5px,0 0}
+.est4 .e4-ctl--heroe .e4-btn{width:36px;height:36px;background-size:13px 1.5px,1.5px 13px}
+.est4 .e4-ctl--heroe .e4-btn[data-delta^="-"]{background-size:13px 1.5px,0 0}
+.est4 .e4-ctl .e4-btn:active{box-shadow:none}
+.est4 .e4-ctl .e4-btn.is-tope{opacity:.3}
+
+/* Cifra del cambio (v60): a la derecha de la cifra, no encima del nombre */
+.est4 .res-delta{left:100%;right:auto;bottom:auto;top:-3px;margin-left:3px}
+.est4 .e4-heroe .res-delta{top:2px;margin-left:5px;font-size:var(--fs-md)}
+
+/* «Descansar»: una línea de texto dorado, sin recuadro */
+#fold_estado .rest-panel{margin-top:14px}
+#fold_estado .rest-panel > summary{
+  background:none;border:none;min-height:44px;padding:4px 12px;
+  color:var(--gold);letter-spacing:.22em;font-size:var(--fs-2xs);
+}
+#fold_estado .rest-panel > summary::before{content:'—';margin-right:10px;color:var(--rim)}
+#fold_estado .rest-panel > summary::after{content:'—';margin-left:10px;color:var(--rim)}
+#fold_estado .rest-panel[open] > summary{color:var(--goldb)}
+
+/* ══════════════════════════════════════════
+   v61 — Pantalla de carga: el icono que late
+   Como la de S&S Director, con el icono de Companion: el arma del pacto
+   respirando sobre un resplandor frío y una línea que corre. Sin el anillo
+   de runas ni las partículas. El azul es el del icono, no el del tema.
+══════════════════════════════════════════ */
+#ss-loader{
+  background-image:
+    radial-gradient(ellipse 62% 40% at 50% 40%,rgba(150,200,240,.10) 0%,transparent 62%),
+    radial-gradient(ellipse 90% 50% at 50% 100%,rgba(var(--border-rgb),.35) 0%,transparent 70%);
+}
+.carga-icono{
+  width:132px;height:132px;margin-bottom:20px;flex-shrink:0;
+  animation:lReveal .6s cubic-bezier(.16,.72,.34,1) .05s both;
+}
+.carga-icono img{
+  display:block;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 16px rgba(150,200,240,.35));
+  animation:cargaLate 2.4s ease-in-out infinite;
+}
+@keyframes cargaLate{
+  0%,100%{opacity:.6;transform:scale(.94)}
+  50%    {opacity:1;transform:scale(1.04)}
+}
+#ss-loader .loader-title{
+  font-size:25px;      /* fijo: no crece con «Muy grande» y no se parte en dos líneas */
+  color:var(--goldb);
+  text-shadow:0 0 40px rgba(150,200,240,.22),0 2px 6px rgba(0,0,0,.95);
+}
+#ss-loader .loader-sub{color:var(--muted);margin-top:2px}
+#ss-loader .loader-status{color:var(--muted)}
+.carga-linea{
+  position:relative;width:128px;height:2px;margin:12px 0 4px;border-radius:1px;overflow:hidden;
+  background:var(--rim);
+  animation:lReveal .5s cubic-bezier(.16,.72,.34,1) .45s both;
+}
+.carga-linea::after{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:42%;border-radius:1px;
+  background:linear-gradient(90deg,transparent,#8ec4ee 45%,#e3f1fc 60%,transparent);
+  animation:cargaCorre 1.5s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes cargaCorre{from{transform:translateX(-110%)}to{transform:translateX(250%)}}
+@media(prefers-reduced-motion:reduce){
+  .carga-icono,.carga-icono img,.carga-linea,.carga-linea::after{animation:none}
+  .carga-icono img{opacity:1}
+  .carga-linea::after{width:100%}
+}

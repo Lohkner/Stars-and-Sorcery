@@ -239,7 +239,37 @@ const app = {
     keys.forEach(k => { reordered[k] = roster[k]; });
     STORAGE.saveRoster(reordered);
     if (navigator.vibrate) navigator.vibrate(6);
-    this.renderHome();
+    /* Antes se repintaba el roster entero: todas las tarjetas volvían a
+       entrar con su animación y el panel de ordenar se cerraba, así que
+       cada paso obligaba a deslizar otra vez. Ahora solo cambian de sitio
+       las dos tarjetas implicadas y la que se mueve conserva sus botones. */
+    const el = document.getElementById('home-roster');
+    const wraps = el ? [...el.querySelectorAll(':scope > .char-card-wrap')] : [];
+    const a = wraps[i], b = wraps[j];
+    if (!a || !b || wraps.length !== keys.length) { this.renderHome(); return; }
+    const y0 = [a.getBoundingClientRect().top, b.getBoundingClientRect().top];
+    // Mover un nodo reinicia su animación de entrada: se le quita antes.
+    [a, b].forEach(w => { w.style.animation = 'none'; w.style.opacity = '1'; });
+    if (dir < 0) el.insertBefore(a, b); else el.insertBefore(b, a);
+    this._ordenBotones(el);
+    const calma = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calma && a.animate) {
+      [a, b].forEach((w, k) => {
+        const dy = y0[k] - w.getBoundingClientRect().top;
+        if (dy) w.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
+                          { duration: 170, easing: 'cubic-bezier(.22,.61,.36,1)' });
+      });
+    }
+  },
+
+  /** «Subir» apagado en la primera tarjeta y «Bajar» en la última. */
+  _ordenBotones(el) {
+    const wraps = [...el.querySelectorAll(':scope > .char-card-wrap')];
+    wraps.forEach((w, k) => {
+      const [sube, baja] = w.querySelectorAll('.char-card-order .char-ord-btn');
+      if (sube) sube.disabled = k === 0;
+      if (baja) baja.disabled = k === wraps.length - 1;
+    });
   },
 
   /** Escudo anti-traspaso: absorbe el toque fantasma que sigue a abrir o
@@ -2640,6 +2670,9 @@ const app = {
       const cur = parseInt(document.getElementById(curId)?.value) || 0;
       const max = parseInt(document.getElementById(maxId)?.textContent) || 0;
       fill.style.width = (max > 0 ? Math.max(0, Math.min(100, cur / max * 100)) : 0) + '%';
+      // La cifra mide lo que sus dígitos: así «12 / 17» queda centrado (v61).
+      const campo = document.getElementById(curId);
+      if (campo) campo.style.setProperty('--dig', Math.max(1, String(campo.value || '0').trim().length));
       if (fillId === 'res_fill_pv') fill.classList.toggle('res-low', max > 0 && cur / max <= .25);
       // Botones ± en su tope: el − a 0 y el + lleno se atenúan (v57.3).
       document.querySelectorAll(`.e4-btn[data-cur="${curId}"]`).forEach(b => {

@@ -76,28 +76,13 @@
 </svg>
 <div id="ss-loader" aria-hidden="true">
 
-  <!-- Floating particles -->
-  <div class="loader-particles" aria-hidden="true">
-    <div class="lp"></div><div class="lp"></div><div class="lp"></div>
-    <div class="lp"></div><div class="lp"></div><div class="lp"></div>
-    <div class="lp"></div><div class="lp"></div>
-  </div>
+  <!-- El icono de la app, latiendo: sin anillo de runas ni partículas -->
+  <div class="carga-icono"><img src="Bind_Pact_Weapon.webp" alt="" width="144" height="144" decoding="sync"></div>
 
-  <!-- Rune ring -->
-  <div class="loader-ring-wrap">
-    <div class="loader-ring"></div>
-    <div class="loader-ring-outer"></div>
-    <div class="loader-ring-inner"></div>
-    <div class="loader-arc"></div>
-    <div class="loader-arc-trail"></div>
-    <div class="loader-glyph">✦</div>
-  </div>
-
-  <!-- Text -->
   <div class="loader-text">
     <div class="loader-title">Stars &amp; Sorcery</div>
-    <div class="loader-deco"></div>
     <div class="loader-sub">Companion</div>
+    <div class="carga-linea"></div>
     <div class="loader-status">Cargando…</div>
   </div>
 
@@ -362,48 +347,46 @@
           <details class="panel est4 fold" id="fold_estado" data-fold="estado" open style="padding:13px 14px">
             <summary class="ph" style="margin-bottom:11px"><span class="pt">Estado</span></summary>
 
-            <!-- Puntos de Vida -->
-            <div class="e4-pv">
-              <div class="e4-row e4-row-pv">
-                <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Puntos de Vida</span>
-                <span class="e4-ctl">
-                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="-1" aria-label="Reducir puntos de vida">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin e4-fin" aria-label="Puntos de vida actuales"><span class="e4-sep">/</span><span class="e4-max" id="max_pv">0</span></span>
-                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="1" aria-label="Aumentar puntos de vida">+</button>
-                </span>
-              </div>
+            <!-- Puntos de Vida: protagonistas, centrados (v61) -->
+            <div class="e4-heroe e4-row-pv">
+              <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Puntos de Vida</span>
+              <span class="e4-ctl e4-ctl--heroe">
+                <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="-1" aria-label="Reducir puntos de vida">&minus;</button>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin e4-fin" aria-label="Puntos de vida actuales"><span class="e4-sep">/</span><span class="e4-max" id="max_pv">0</span></span>
+                <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="1" aria-label="Aumentar puntos de vida">+</button>
+              </span>
               <div class="res-track e4-track" aria-hidden="true"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
             </div>
 
-            <!-- Adrenalina · Ingenio · Carne -->
-            <div class="e4-res">
-              <div class="e4-row e4-row-adr">
+            <!-- Adrenalina · Ingenio · Carne: el trío, en tres columnas -->
+            <div class="e4-trio">
+              <div class="e4-col e4-row-adr">
                 <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Adrenalina</span>
-                <span class="e4-ctl">
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin e4-fin" aria-label="Adrenalina actual"><span class="e4-sep">/</span><span class="e4-max" id="max_adr">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
+                <span class="e4-ctl e4-pm">
                   <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="-1" aria-label="Reducir adrenalina">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin e4-fin" aria-label="Adrenalina actual"><span class="e4-sep">/</span><span class="e4-max" id="max_adr">0</span></span>
                   <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="1" aria-label="Aumentar adrenalina">+</button>
                 </span>
               </div>
-              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
-              <div class="e4-row e4-row-ing">
+              <div class="e4-col e4-row-ing">
                 <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Ingenio</span>
-                <span class="e4-ctl">
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin e4-fin" aria-label="Ingenio actual"><span class="e4-sep">/</span><span class="e4-max" id="max_ing">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
+                <span class="e4-ctl e4-pm">
                   <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="-1" aria-label="Reducir ingenio">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin e4-fin" aria-label="Ingenio actual"><span class="e4-sep">/</span><span class="e4-max" id="max_ing">0</span></span>
                   <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="1" aria-label="Aumentar ingenio">+</button>
                 </span>
               </div>
-              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
-              <div class="e4-row e4-row-carne">
+              <div class="e4-col e4-row-carne">
                 <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Carne</span>
-                <span class="e4-ctl">
-                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir Carne">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
-                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar Carne">+</button>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
+                <span class="e4-ctl e4-pm">
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir carne">&minus;</button>
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar carne">+</button>
                 </span>
               </div>
-              <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
             </div>
 
             <!-- Descanso -->

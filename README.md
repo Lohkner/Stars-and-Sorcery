@@ -1,4 +1,29 @@
-# S&S Companion — v60.1
+# S&S Companion — v61.0
+
+## Novedades v61.0 — Estado «Protagonista y trío», pantalla de carga y orden del roster
+
+`CACHE_VERSION` sube a `ss-companion-v131`.
+
+- **Tarjeta Estado**:
+  - los **Puntos de Vida** van centrados y grandes arriba, con sus ± a los
+    lados y la barra debajo;
+  - **Adrenalina, Ingenio y Carne** en tres columnas: nombre con su joya,
+    cifra, barra y ±;
+  - botones ± en círculo de trazo fino con el color del recurso;
+  - barras de línea con un rombo en la punta;
+  - «Descansar» pasa a una línea de texto dorado, sin recuadro;
+  - la cifra del cambio (v60) sale a la derecha del número.
+  - Los ids y las clases que usa el código no cambian.
+- **Pantalla de carga** como la de S&S Director: el icono de la app
+  (`Bind_Pact_Weapon.webp`) latiendo sobre un resplandor frío y una línea
+  que corre. Se retiran el anillo de runas y las partículas.
+- **Ordenar personajes en el inicio**: «Subir» y «Bajar» intercambian las
+  dos tarjetas en su sitio. Antes se repintaba el roster entero —todas las
+  tarjetas volvían a entrar— y el panel de ordenar se cerraba tras cada
+  paso. Ahora la tarjeta que se mueve conserva sus botones a la vista.
+
+Verificado a 390 px: autodiagnóstico 9 de 9; los nombres del trío caben en
+una línea con los cuatro tamaños de letra.
 
 ## Novedades v60.1 — Se retira el plegado animado
 
