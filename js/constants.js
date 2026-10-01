@@ -10,30 +10,39 @@ const PROF_THRESHOLDS = [[9,4],[5,3],[1,2]]; // S&S: Nv1-4→+2, Nv5-8→+3, Nv9
 /* ── Habilidades — Manual Cap.VI §2 ──────────────────────────
    Tirada: 2d10 + MOD del Atributo asociado + Grado de Maestría vs CD.
    El PB NO se suma. Cuando hay dos atributos posibles se usa el de
-   mayor modificador. Las Especializadas sin Grado 0 sufren Desventaja
-   Técnica (3d10, suma los 2 más bajos) — no aplica a habilidades ya
-   adquiridas (Grado ≥ 0), que es lo único que se muestra como botón. */
+   mayor modificador. Las Especializadas sin Grado 0 se tiran con
+   Desventaja (3d10, suma los 2 más bajos) — no aplica a habilidades ya
+   adquiridas (Grado ≥ 0), que es lo único que se muestra como botón.
+   Manual v1: Historia y Religión son UNA habilidad, «Historia / Religión»;
+   las fichas anteriores se migran al cargar (SKILL_RENAMES). */
 const SKILL_ATTR = {
   // Generales
   'Sigilo':['DES'], 'Proeza Física':['FUE','DES'], 'Percepción':['SAB'],
   'Perspicacia':['SAB'], 'Influencia':['CAR'], 'Engaño':['CAR'],
   'Supervivencia':['SAB'], 'Intimidación':['CAR','FUE'],
   // Especializadas
-  'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'], 'Historia':['INT'],
-  'Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
+  'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'],
+  'Historia / Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
   'Herramientas de Ladrón':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
-  'Artesanía':['INT','DES'], 'Conocimiento':['INT'],
+  'Artesanía':['INT','DES'],
 };
 const SKILL_SPECIALIZED = new Set([
-  'Arcano','Medicina','Tecnología','Historia','Religión','Naturaleza',
+  'Arcano','Medicina','Tecnología','Historia / Religión','Naturaleza',
   'Investigación','Herramientas de Ladrón','Conocimiento de la Calle',
-  'Artesanía','Conocimiento',
+  'Artesanía',
 ]);
+/** Habilidades que el Manual v1 fundió en otra. */
+const SKILL_RENAMES = {
+  'Historia': 'Historia / Religión',
+  'Religión': 'Historia / Religión',
+  'Conocimiento': 'Historia / Religión',
+};
 /** Nombre del Grado de Maestría (Manual Cap.VI §1) */
 const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro','Maestría Absoluta'];
 
-/** XP required to reach each level (index = current level) */
-const XP_TABLE = [0, 1500, 4500, 9000, 15000, 22500, 31500, 42000, 54000, 67000];
+/** XP acumulada para alcanzar el nivel siguiente (índice = nivel actual).
+    Manual v1: cada Nivel cuesta lo mismo, 1.500 XP (antes la tabla crecía). */
+const XP_TABLE = [0, 1500, 3000, 4500, 6000, 7500, 9000, 10500, 12000, 13500];
 
 /* Índice de Letalidad: el sumando FIJO de los PV que se ganan por nivel,
    sobre el que se añade el MOD de CON. El Manual v1.8 da «2 + MOD CON»
@@ -73,15 +82,15 @@ const DESCANSOS = [
     pv:'1d8+con', reservas:.25 },
   { id:'largo_inseg', nombre:'Descanso Largo — Inseguro', dur:'6 h',
     coste:'1 Ración',
-    txt:'Mitad de PV máximos y mitad de Reservas. No elimina Fatiga.',
+    txt:'Mitad de PV máximos y mitad de Reservas. No reduce la Fatiga.',
     pv:'mitad',   reservas:.5 },
   { id:'largo_seg',   nombre:'Descanso Largo — Seguro',   dur:'8 h',
     coste:'1 Ración + entorno adecuado',
-    txt:'Todos los PV y Reservas. Elimina 1 nivel de Fatiga.',
+    txt:'Todos los PV y Reservas. Baja 1 escalón de Fatiga.',
     pv:'todo',    reservas:1 },
   { id:'largo_conf',  nombre:'Descanso Largo — Confortable', dur:'8 h',
     coste:'Posada de calidad o camarote',
-    txt:'Todos los PV y Reservas. Elimina 2 niveles de Fatiga.',
+    txt:'Todos los PV y Reservas. Baja 2 escalones de Fatiga.',
     pv:'todo',    reservas:1 },
 ];
 

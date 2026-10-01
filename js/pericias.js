@@ -14,7 +14,7 @@
    · Flexible sigue siendo exclusiva del Versátil (el Arquetipo que las
      Reglas Esenciales llamaban «Sutil»), así que solo se ofrece a los
      Arquetipos que la listan en sus edges.
-   La tarjeta Estado muestra todas las de grado ≥1 ("Físico 1", "Mental 2").
+   La tarjeta Estado muestra todas las de grado ≥1 ("Física 1", "Mental 2").
 
    `sel_filo` NO es una elección del jugador: está oculto y es un campo
    DERIVADO, sincronizado con la Pericia de mayor grado. Existe solo como
@@ -32,13 +32,13 @@
   // Única Pericia atada al Arquetipo. El resto son libres.
   const EXCLUSIVE = ['Flexible'];
   const $ = id => document.getElementById(id);
-  // "Físico" → "fisico": los ids deben ser estables y sin acentos porque
+  // "Física" → "fisica": los ids deben ser estables y sin acentos porque
   // viajan al JSON del personaje como claves de data.selects.
   const slug = e => e.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                      .toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
   /** Pericias que este personaje puede tener. No se leen solo de su
-      Arquetipo: se recorre toda la DB para no cablear "Físico"/"Mental"
+      Arquetipo: se recorre toda la DB para no cablear "Física"/"Mental"
       (el Editor de Reglas puede renombrarlas). Las exclusivas se filtran
       por el Arquetipo actual; las demás quedan abiertas a todos. */
   function edgesOf() {

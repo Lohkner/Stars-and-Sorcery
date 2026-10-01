@@ -1,4 +1,53 @@
-# S&S Companion — v59.0
+# S&S Companion — v59.1
+
+## Novedades v59.1 — El Manual Básico v1, ahora completo
+
+`CACHE_VERSION` sube a `ss-companion-v128` y `RULES_DATA_VERSION` a
+`v1-manual-sendas-axiomas-r2`.
+
+La v59.0 dio por bueno que el Manual solo traía cambios de redacción. No era
+así: la comparación ocultaba los párrafos eliminados y las celdas de las
+tablas. Esta versión aplica lo que faltaba.
+
+- **Descriptores**:
+  - desaparecen los **Inconvenientes** de los once Linajes;
+  - **Mutante**: la Afinidad Psiónica es un Rasgo fijo (antes era una de sus
+    dos Expresiones) y sus Expresiones dicen «a 30 pies o menos»;
+  - **Dracónido** y **Cambiante**: las CD de Presencia Dracónica, Arma de
+    Aliento (antes CD 13) y Furia Salvaje suman **½ Nivel**;
+  - Humano: «Astucia Práctica»; Medio Elfo: Herencia Mixta da Historia /
+    Religión; Aesir: Ventaja en Salvaciones y «escalón de Fatiga».
+- **Arquetipos**:
+  - **Versátil elige 4 habilidades** y **Sagaz 3** (estaban al revés);
+  - la Pericia se llama **Física** (antes «Físico»);
+  - Improvisar habla de Desventaja, sin «Técnica».
+- **Habilidades**:
+  - **Historia / Religión** es una sola habilidad, en Arquetipos, Trasfondos
+    y Enfoque del Versátil; desaparece «Conocimiento»;
+  - el Grado 3 ya no garantiza un mínimo de 7 en los dados.
+- **Trasfondos**: los kits de oficio ya no piden competencia aparte.
+- **Progresión**: cada Nivel cuesta **1.500 XP** (1.500, 3.000 … 13.500); la
+  tabla anterior crecía hasta 67.000.
+- **Equipo**:
+  - la daga gana **Sigilosa**, y lo que la app llamaba «Sutil» se llama
+    **Versátil**, como en el Manual;
+  - armaduras en una sola tabla (sin «módulo históricas»), Cuero tachonado
+    Flexible, Coraza resonante con la propiedad Resonante;
+  - el Sagaz empieza con un «Foco Desalineado» solo si el Director usa Focos.
+- **Descansos y raciones**: «escalón de Fatiga» en lugar de «nivel».
+- **Fichas guardadas**: se migran solas al abrirlas.
+  - Historia, Religión y Conocimiento pasan a Historia / Religión (si tenías
+    las dos, queda una y recuperas una elección).
+  - La Pericia «Físico» conserva su grado como «Física».
+  - Un Mutante que hubiera gastado una Expresión en la Afinidad Psiónica
+    recupera esa Expresión para elegir otra.
+- **Ojo con la XP**: la que una ficha acumuló con la tabla anterior vale
+  más Niveles con la nueva. La app no la recalcula: ajústala a mano si hace
+  falta.
+
+No cambian en la app, porque no los lleva: estados (Toxicidad → Envenenado,
+Agarrado → Apresado), Fatiga en tres escalones, Moral, Focos, Módulos y
+Dones de Poder (ahora en la Guía).
 
 ## Novedades v59.0 — Reglas de los manuales v1
 
@@ -39,9 +88,9 @@ ya reflejaba la app.
     Hipnótico → **Patrón Hipnótico** y Massmorfosis → **Metamorfosis
     Colectiva**. Los ids se migran solos (`AXIOM_ID_RENAMES`), así que las
     fichas guardadas conservan sus Axiomas elegidos.
-- **Manual Básico y Guía**: solo hay cambios de redacción (AdO, DeT,
-  referencias por página, Etiquetas de Zona…). La penalización de armadura
-  a los Axiomas (Desventaja y Coste doble) ya estaba en la app.
+- **Guía del Director**: sin efecto en la app. La penalización de armadura
+  a los Axiomas (Desventaja y Coste doble) ya estaba.
+- **Manual Básico**: sus cambios de reglas se aplicaron en la v59.1.
 
 ## Novedades v58.1 — Pericia inicial en el asistente
 

@@ -43,7 +43,7 @@
       { v: 'arma_extra', t: 'Un arma ligera adicional', armaLigera: true },
     ]},
     sagaz: { etiqueta: 'Tu apoyo de partida', fijo: {}, opciones: [
-      { v: 'foco', t: 'Un Foco Mixto Desalineado — realinearlo es tu primera misión personal', custom: 'Foco Mixto Desalineado' },
+      { v: 'foco', t: 'Un Foco Desalineado, si el Director usa Focos en su mundo — realinearlo es tu primera misión personal', custom: 'Foco Desalineado' },
       { v: 'botiquin', t: 'Un Kit de primeros auxilios', misc: 'kit_primeros_auxilios' },
     ]},
   };
@@ -292,6 +292,10 @@
     });
   }
 
+  /** Parte «A (…) / B (…)» por los « / » que NO están dentro de un
+      paréntesis: «Historia / Religión» lleva uno en su propio nombre. */
+  const partirOpciones = t => String(t || '').split(/ \/ (?![^()]*\))/).map(o => o.trim()).filter(Boolean);
+
   function subDescriptor(d) {
     const sub = el('div', 'wiz-sub wiz-inline');
 
@@ -311,7 +315,7 @@
     }
     const grupo = grupoEleccion(d);
     if (grupo) {
-      const opciones = grupo.opciones.split(' / ')
+      const opciones = partirOpciones(grupo.opciones)
         .map(o => ({ v: o.split('(')[0].trim(), t: o }));
       for (let i = 0; i < grupo.n; i++) {
         sub.appendChild(el('span', 'wiz-lbl',
@@ -360,7 +364,7 @@
       // Se parte la lista de opciones YA SIN su etiqueta —«Elección de
       // Experiencia: …»—: con ella delante, la primera opción no empieza por
       // su propio nombre y no se reconocía nunca.
-      const trozos = grupo.opciones.split(' / ').map(o => o.trim());
+      const trozos = partirOpciones(grupo.opciones);
       S.descExps.filter(Boolean).forEach(v => {
         const t = trozos.find(o => o.startsWith(v));
         if (t && /Grado\s*\d/i.test(t)) textos.push(t);
@@ -419,7 +423,7 @@
       if (edges.length) {
         sub.appendChild(el('span', 'wiz-lbl', 'Pericia inicial — elige 1 (empieza en Grado 1)'));
         const fila = el('div', 'wiz-attrpick');
-        const QUE = { 'Físico': 'Esfuerzo físico', 'Mental': 'Esfuerzo mental', 'Flexible': 'la eliges cada turno' };
+        const QUE = { 'Física': 'Esfuerzo físico', 'Mental': 'Esfuerzo mental', 'Flexible': 'la eliges cada turno' };
         edges.forEach(e => {
           const btn = el('button', 'wiz-apick' + (S.pericia === e ? ' sel' : ''));
           btn.type = 'button';
@@ -594,7 +598,7 @@
     inp.oninput = () => { S.nombre = inp.value; pie(); };
     b.appendChild(inp);
 
-    /* Convicción — Manual Apéndice D. Las nueve etiquetas clásicas como
+    /* Convicción — Manual Apéndice B. Las nueve etiquetas clásicas como
        coordenadas de dos ejes, no como veredicto moral. No cambia ninguna
        regla, pero es parte de quién es el personaje y faltaba. */
     b.appendChild(el('span', 'wiz-lbl', 'Convicción'));
@@ -692,7 +696,7 @@
      a mano y no sacada de los datos porque ahí hay ruido que no filtra
      nada —alcances como «150/600», «Munición Ud10», «Área 15 pies»—. */
   const FILTROS_ARMA = ['Simple', 'Marcial', 'Ligera', 'Pesada', 'Versátil',
-                        'Dos Manos', 'Sutil', 'Arrojadiza', 'A distancia',
+                        'Dos Manos', 'Sigilosa', 'Arrojadiza', 'A distancia',
                         'Cortante', 'Perforante', 'Contundente', 'Magitec'];
 
   /** Propiedades de un arma, ya normalizadas y sin los paréntesis. */
@@ -1165,7 +1169,7 @@
     //     una de ellas puede abrir Fuente (el Mutante).
     const g = grupoEleccion(d);
     if (g) {
-      const trozos = barajar(g.opciones.split(' / ').map(o => o.trim()));
+      const trozos = barajar(partirOpciones(g.opciones));
       S.descExps = trozos.slice(0, g.n).map(t => t.split(' (')[0].trim());
     }
 

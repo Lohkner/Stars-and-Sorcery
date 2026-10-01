@@ -1382,7 +1382,8 @@ const app = {
         · la frase de sabor,
         · los bonos de atributo,
         · la Afinidad, porque decide tu Fuente,
-        · el Inconveniente, porque es el precio.
+        · el Inconveniente, si unas reglas propias lo traen (el Manual v1
+          ya no da ninguno).
       Los demás Rasgos viven en la pestaña Detalle, y la Elección de
       Experiencia tiene su propio desplegable justo debajo (origen.js), así
       que repetirla aquí era decir dos veces lo mismo. */
@@ -2418,7 +2419,8 @@ const app = {
   /** Tirada de habilidad — Manual Cap.VI §1: 2d10 + MOD Atributo + Grado.
       Ventaja/Desventaja: 3d10 conservando los 2 más altos / más bajos.
       Dobles del Destino (solo en 2d10 limpio): doble 10 = éxito auto, doble 1 =
-      fallo auto. Grado 3+: los dados nunca suman menos de 7. El PB no se aplica. */
+      fallo auto. El PB no se aplica. (El mínimo de 7 del Grado 3 desapareció
+      en el Manual v1.) */
   rollSkill(skill) {
     if (!this._finalMods) this.calc();
     const grade   = this._skillGrade(skill);
@@ -2436,9 +2438,6 @@ const app = {
       kept = adv>0 ? [s[1],s[2]] : [s[0],s[1]];   // 2 más altos / 2 más bajos
       diceSum = kept[0]+kept[1];
     }
-    const floored = grade >= 3 && diceSum < 7;     // Grado 3+: mínimo 7 en los dados
-    if (floored) diceSum = 7;
-
     const isCrit = adv===0 && rolled[0]===10 && rolled[1]===10;  // Doble 10
     const isFail = adv===0 && rolled[0]===1  && rolled[1]===1;   // Doble 1
     const total  = diceSum + attrMod + grade;
@@ -2448,7 +2447,7 @@ const app = {
     const diceTxt = adv===0
       ? `2d10: [${rolled.join(' + ')}]`
       : `3d10: [${rolled.join(', ')}] → ${kept.join('+')}`;
-    let detail = `${diceTxt}${floored?' →7 (mín. G3)':''}  ${modStr} ${attrKey}  +${grade} G${grade}${advTxt}`;
+    let detail = `${diceTxt}  ${modStr} ${attrKey}  +${grade} G${grade}${advTxt}`;
     if (isCrit) detail = '¡Doble 10! Éxito crítico · ' + detail;
     if (isFail) detail = '¡Doble 1! Ojos de Serpiente · ' + detail;
 
@@ -4414,7 +4413,7 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
       <div style="margin-bottom:6px"><span class="dfl">Bono</span><input type="text" id="db_bonus" value="${_e(existing?.bonus)}" placeholder="ej: +1 DES"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px" placeholder="Visión en la Oscuridad: 60 pies&#10;Inconveniente — …">${_e(this._grantFijos(existing).join('\n'))}</textarea>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px" placeholder="Visión en la Oscuridad: 60 pies">${_e(this._grantFijos(existing).join('\n'))}</textarea>
         <div class="is-field-note" style="margin-top:3px">Antes se separaban por coma, pero los rasgos llevan comas dentro y se partían solos. Ahora, una línea por rasgo.</div>
       </div>
       <div style="margin-bottom:6px"><span class="dfl">Elecciones <span class="is-field-note">— una por línea</span></span><textarea id="db_elecciones" style="min-height:66px" placeholder="Elección: Ingenio Práctico (…) o Aguante (…)&#10;Elige DOS Mutaciones: Garras (…) / Piel Blindada (…)">${_e(this._grantElecciones(existing).join('\n'))}</textarea>
@@ -5300,7 +5299,44 @@ const app = {
   },
 
   /** Hydrates the form from a deserialized character data object. */
+  /** Manual Básico v1: Historia y Religión son una sola habilidad y la
+      Pericia «Físico» se llama «Física». Las fichas guardadas antes conservan
+      sus elecciones con los nombres nuevos. No toca el objeto original. */
+  _migrarManualV1(data) {
+    const ren = v => SKILL_RENAMES[v] || v;
+    const esSkill = c => c.name === 'chk_arq' || c.name === 'chk_bg';
+    const vistos = new Set();
+    const checks = (data.checks || [])
+      .map(c => esSkill(c) ? { ...c, value: ren(c.value) } : c)
+      .filter(c => {
+        if (!esSkill(c)) return true;
+        const k = c.name + '|' + c.value;
+        if (vistos.has(k)) return false;       // Historia + Religión: una sola
+        vistos.add(k); return true;
+      });
+    const out = { ...data, checks };
+    if (data.skillBonus && typeof data.skillBonus === 'object') {
+      out.skillBonus = {};
+      Object.keys(data.skillBonus).forEach(k => {
+        out.skillBonus[ren(k)] = Math.max(out.skillBonus[ren(k)] || 0, data.skillBonus[k] || 0);
+      });
+    }
+    if (data.skillAttr && typeof data.skillAttr === 'object') {
+      out.skillAttr = {};
+      Object.keys(data.skillAttr).forEach(k => { if (!(ren(k) in out.skillAttr)) out.skillAttr[ren(k)] = data.skillAttr[k]; });
+    }
+    const sel = { ...(data.selects || {}) };
+    if ('filo_g_fisico' in sel) {
+      if (!('filo_g_fisica' in sel)) sel.filo_g_fisica = sel.filo_g_fisico;
+      delete sel.filo_g_fisico;
+    }
+    if (sel.sel_filo === 'Físico') sel.sel_filo = 'Física';
+    out.selects = sel;
+    return out;
+  },
+
   applyCharData(data) {
+    data = this._migrarManualV1(data);
     // Normalize inventory: ensure uid is always a string, name always a string
     this.inventory = (data.inventory || []).map(item => ({
       ...item,
