@@ -13,7 +13,7 @@
 /* REGLA DE DESPLIEGUE: sube SIEMPRE esta versión al publicar cualquier
    cambio. El navegador solo detecta actualizaciones si sw.js cambia en
    bytes — con la misma versión, la app queda congelada para siempre. */
-const CACHE_VERSION = 'ss-companion-v128';
+const CACHE_VERSION = 'ss-companion-v130';
 const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
@@ -45,6 +45,7 @@ const APP_SHELL = [
   './js/progresion.js',
   './js/origen.js',
   './js/plegables.js',
+  './js/efectos.js',
   './js/raciones.js',
   './js/asistente.js',
   './js/respaldo.js',

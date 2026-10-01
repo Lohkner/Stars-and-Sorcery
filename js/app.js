@@ -918,7 +918,7 @@ const app = {
     tl.innerHTML = '';
     [...this._grantFijos(desc), ...(bg?.grant || [])].forEach(g => {
       const b = document.createElement('span');
-      b.className = 'tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); b.textContent = '✦ ' + g;
+      b.className = 'tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); b.textContent = '✦ ' + this._sinPrefijoRasgo(g);
       tl.appendChild(b);
     });
     const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
@@ -950,6 +950,8 @@ const app = {
         || /^Elige\s+\S+\s+[^:]+:/i.test(g);
   },
   _grantFijos(d)      { return (d?.grant || []).filter(g => !this._esEleccion(g)); },
+  /** Solo para pintar: «Rasgo — Implacable: …» → «Implacable: …». */
+  _sinPrefijoRasgo(g) { return String(g || '').replace(/^\s*Rasgo\s*[—–-]\s*/i, ''); },
   /** Solo para pintar: los Inconvenientes llevan otro color de filete. */
   _esInconveniente(g) { return /^\s*Inconveniente\b/i.test(String(g || '')); },
   _grantElecciones(d) { return (d?.grant || []).filter(g =>  this._esEleccion(g)); },
@@ -1082,7 +1084,7 @@ const app = {
         // como las gemas de los grados inferiores (v57.14).
         badge.classList.add('sk-mitico');
         const res = ['FUE', 'DES', 'CON'].includes(attr) ? 'adr' : 'ing';
-        badge.innerHTML = `<svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg>`;
+        badge.innerHTML = `<svg class="sk-mitico-halo" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg><svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg>`;
       } else {
         badge.innerHTML = [1, 2, 3, 4].map(i => i <= grade
           ? '<svg class="sk-slot on" aria-hidden="true"><use href="#i-sk-gema"/></svg>'
@@ -1182,7 +1184,6 @@ const app = {
           <span class="atk-nm" id="sum_wep${n}_name">${this._esc(w.name)}</span>
           <span class="atk-role-badge">${role}</span>
         </div>
-        <div class="atk-stats-line" id="sum_wep${n}_stats">Ataque: ${this._esc(w.atk)} / Daño: ${this._esc(w.dmg)}</div>
         ${w.alert ? `<div class="calert" style="display:block">${this._esc(w.alert)}</div>` : ''}
         <div class="atk-btns">
           <button class="abtn abtn-a" onclick="app.rollWeaponAtk(${n})" aria-label="Tirar ataque arma ${role.toLowerCase()}">
@@ -1200,14 +1201,15 @@ const app = {
     // Modo consulta v8.3: la tarjeta ya no reporta CA. Reporta la Armadura
     // (tipo + valor de RD) y lo que el escudo aporta a la Guardia, que vive
     // en su propia tarjeta (pestaña Stats).
+    // Dos líneas a propósito: en una sola no cabía y se partía por donde caía.
     const shieldLine = c.shieldGuard
-      ? `+${c.shieldGuard} Guardia · +${c.shieldBlock} Bloqueo`
+      ? `+${c.shieldGuard} Guardia\n+${c.shieldBlock} Bloqueo`
       : (c.shieldBlock ? `+${c.shieldBlock} Bloqueo` : '—');
     view.innerHTML = `
-      <div class="g3" style="margin-bottom:6px">
+      <div class="g3 g3-combate" style="margin-bottom:6px">
         <div class="fbox"><div class="flbl g">Armadura</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_rd">${this._esc(String(c.rd))}</span></div></div>
         <div class="fbox"><div class="flbl">Tipo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
-        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_shield">${this._esc(c.shieldName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_shield_bonus">${this._esc(shieldLine)}</span></div></div>
+        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_shield">${this._esc(c.shieldName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted);white-space:pre-line;text-align:center;line-height:1.25" id="sum_shield_bonus">${this._esc(shieldLine)}</span></div></div>
       </div>
       ${c.rdCapped ? `<div class="calert" style="display:block">Armadura limitada por el techo del sistema (5 + PB = ${c.rdCap})</div>` : ''}
       ${c.armorPenalty && !c.armorPenaltyIgnored ? `<div class="armor-pen">
@@ -1244,10 +1246,10 @@ const app = {
     const attrLbl = ATTR_LBL[c.guardAttr] || c.guardAttr;
     const unaware = this._el('guard_unaware_val')?.textContent || '—';
     view.innerHTML = `
-      <div class="g3" style="margin-bottom:6px">
-        <div class="fbox"><div class="flbl g">Guardia</div><div class="fval" style="color:var(--goldb);font-size:1.35rem"><span id="sum_guardia">${this._esc(String(c.guardia))}</span></div></div>
-        <div class="fbox"><div class="flbl">Atributo</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_guard_attr">${this._esc(attrLbl)}</span></div></div>
-        <div class="fbox"><div class="flbl">Desprevenido</div><div class="fval" style="font-size:var(--fs-lg)"><span id="sum_guard_unaware">${this._esc(unaware)}</span></div></div>
+      <div class="def-grid def-grid--guardia">
+        <div class="def-cell def-cell--guardia"><span class="def-lbl">Guardia</span><span class="def-val" id="sum_guardia">${this._esc(String(c.guardia))}</span></div>
+        <div class="def-cell"><span class="def-lbl">Atributo</span><span class="def-val def-val--txt" id="sum_guard_attr">${this._esc(attrLbl)}</span></div>
+        <div class="def-cell"><span class="def-lbl">Desprevenido</span><span class="def-val" id="sum_guard_unaware">${this._esc(unaware)}</span></div>
       </div>
       <button class="bedit" onclick="app.editSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
   },
@@ -3582,7 +3584,7 @@ const app = {
         gl.className = 'js-section-lbl';
         gl.textContent='Rasgos'; db.appendChild(gl);
         const gw = document.createElement('div'); gw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); s.textContent='✦ '+this._sanitize(String(g)); gw.appendChild(s); });
+        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); s.textContent='✦ '+this._sanitize(this._sinPrefijoRasgo(g)); gw.appendChild(s); });
         db.appendChild(gw);
       }
 
@@ -4308,7 +4310,7 @@ const app = {
       Object.keys(src).forEach(sub => {
         const h = document.createElement('div');
         h.className = 'db-group-hdr';
-        h.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xs);color:rgba(200,169,110,.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
+        h.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xs);color:rgba(var(--gold-rgb),.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
         const hl = document.createElement('span'); hl.textContent = sub;
         const hc = document.createElement('span'); hc.style.cssText = 'color:var(--muted);font-size:var(--fs-2xs)'; hc.textContent = (src[sub]||[]).length + ' talentos';
         h.appendChild(hl); h.appendChild(hc);
@@ -5836,6 +5838,10 @@ const app = {
       b.classList.toggle('active', b.dataset.theme === tid)
     );
     localStorage.setItem('ss_theme', tid);
+    // La barra del sistema (Android, PWA instalada) toma el fondo del tema.
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const fondo = getComputedStyle(document.documentElement).getPropertyValue('--void').trim();
+    if (meta && fondo) meta.setAttribute('content', fondo);
   },
 
   /** Estilo de letra: un pack coherente de títulos, texto, cifras y

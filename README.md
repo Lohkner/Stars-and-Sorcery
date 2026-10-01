@@ -1,4 +1,59 @@
-# S&S Companion — v59.1
+# S&S Companion — v60.1
+
+## Novedades v60.1 — Se retira el plegado animado
+
+`CACHE_VERSION` sube a `ss-companion-v130`.
+
+- Las tarjetas vuelven a abrir y cerrar al instante, como antes de la v60.0.
+  La animación de altura recortaba el contenido mientras se movía y quedaba
+  peor que el cambio directo.
+- El resto de la v60.0 se mantiene: estela y cifra en Estado, destello de
+  nivel, temas y arreglos.
+
+## Novedades v60.0 — Efectos de respuesta y temas refinados
+
+`CACHE_VERSION` sube a `ss-companion-v129`. Módulo nuevo: `js/efectos.js`.
+
+### Efectos
+- ~~Plegado suave~~: retirado en la v60.1.
+- **Daño y curación visibles** en Estado (`js/efectos.js`):
+  - al bajar un recurso, la barra deja una **estela** donde estaba y la
+    recoge medio segundo después;
+  - al subir, la barra destella;
+  - sobre la cifra sube el **cambio acumulado**: cinco toques seguidos en
+    «−» enseñan «−5», y un descanso, «+16».
+  - Solo cuenta lo que hace el jugador (±, teclear la cifra, descansar):
+    crear o cargar un personaje no pinta nada.
+- **Subida de nivel**: destello breve con el nivel nuevo y dos anillos, además
+  del aviso de texto de siempre. No bloquea toques.
+- Con «reducir movimiento» en el móvil, todo lo anterior se muestra sin
+  desplazamientos.
+
+### Temas (Art Déco · Vacío · Arcano)
+- Vacío y Arcano heredaban 347 colores escritos a mano para el Art Déco:
+  halos y tintes dorados, bordes morados y el oro de medallas, marcos y
+  sellos. Ahora salen de tokens que cada tema redefine
+  (`--gold-rgb`, `--danger-rgb`, `--border-rgb`, `--metal-1…4`, etc.).
+- **Vacío**: medallas, marco del retrato y sellos en acero; halos en gris.
+- **Arcano**: metal violeta y halos violeta.
+- **Art Déco**: sin cambios a la vista.
+- La barra del sistema (Android, app instalada) toma el fondo del tema.
+
+### Arreglos de la revisión visual
+- **Stats › Guardia**: «Desprevenido» salía cortado. El resumen usa la misma
+  rejilla que Defensas en Perfil, que no depende del ancho del rótulo.
+- **Equipo de combate**:
+  - fuera la línea «Ataque / Daño», que repetía los dos botones;
+  - nombres de armadura y escudo centrados y con líneas equilibradas;
+  - el escudo enseña «+1 Guardia» y «+2 Bloqueo» en dos líneas;
+  - «Armadura» ya no se corta con la letra Grande ni Muy grande.
+- **Rasgos**: sin el prefijo «Rasgo —», que repetía el título de la tarjeta.
+- **Brillos permanentes** (gema de Grado 5, botón de subir nivel): el latido
+  pasa de animar `filter`/`box-shadow` a animar solo la opacidad de un halo
+  fijo. Mismo aspecto, menos batería.
+
+Verificado a 390 px: autodiagnóstico 9 de 9; los tres temas; los cuatro
+tamaños de letra sin textos cortados en Guardia ni en Equipo de combate.
 
 ## Novedades v59.1 — El Manual Básico v1, ahora completo
 
