@@ -4482,7 +4482,9 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 .est4 .e4-col .e4-fin{font-size:1.25rem !important;font-weight:700;height:34px !important;min-height:34px !important}
 .est4 .e4-col .e4-sep{margin:0 3px;font-size:var(--fs-2xs)}
 .est4 .e4-col .e4-max{font-size:var(--fs-2xs)}
-.est4 .e4-col .e4-track{width:100%;margin:2px 0 0;opacity:1}
+/* Más cortas que su columna (v63): a todo el ancho, las tres barras casi se
+   tocaban entre sí. */
+.est4 .e4-col .e4-track{width:78%;margin:2px auto 0;opacity:1}
 .est4 .e4-pm{display:flex;justify-content:center;gap:16px;margin-top:11px;grid-template-columns:none}
 
 /* Barras de línea: finas, a todo el ancho de su bloque, con un rombo en
@@ -4569,3 +4571,33 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
   .carga-icono img{opacity:1}
   .carga-linea::after{width:100%}
 }
+
+/* ══════════════════════════════════════════
+   v62 — Mutaciones del Mutante: se compran con Potencial
+══════════════════════════════════════════ */
+.mut-wrap{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.mut-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.mut-cont{font-family:var(--fm);font-size:var(--fs-sm);color:var(--gold);white-space:nowrap}
+.mut-cont--falta{color:var(--goldb)}
+.mut-sub{font-family:var(--fd);font-size:var(--fs-2xs);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.mut-op{
+  display:grid;grid-template-columns:auto 1fr auto;column-gap:8px;row-gap:1px;align-items:center;
+  padding:7px 9px;border:1px solid var(--edge);border-radius:var(--r);background:var(--raised);
+  cursor:pointer;text-align:left;min-height:44px;
+}
+.mut-op input{grid-row:1 / span 2;margin:0}
+.mut-op:has(input:checked),.mut-op--wiz.sel{border-color:var(--edge-gold);background:rgba(var(--gold-rgb),.06)}
+.mut-op.is-off{opacity:.45;cursor:default}
+.mut-n{font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;color:var(--text)}
+.mut-c{font-family:var(--fm);font-size:var(--fs-xs);color:var(--gold);border:1px solid var(--edge-gold);border-radius:10px;padding:0 7px;justify-self:end}
+.mut-c--def{color:var(--blood);border-color:rgba(var(--danger-rgb),.45)}
+.mut-t{grid-column:2 / span 2;font-family:var(--fb);font-size:var(--fs-sm);color:var(--dim);line-height:1.35}
+/* En el asistente no hay casilla: la fila entera es el botón */
+.mut-op--wiz{grid-template-columns:1fr auto;width:100%;font:inherit;color:inherit}
+.mut-op--wiz .mut-t{grid-column:1 / span 2}
+
+/* Detalle · Trasfondo (v63) */
+.bg-fila{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.bg-nota{font-family:var(--fb);font-size:var(--fs-sm);font-style:italic;color:var(--muted);margin:4px 0 8px}
+#detail_bg_body .tbadge{display:inline-block}
+.bg-defecto{border-left:2px solid rgba(var(--danger-rgb),.45);padding-left:9px}

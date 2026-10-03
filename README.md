@@ -1,4 +1,59 @@
-# S&S Companion — v61.0
+# S&S Companion — v63.0
+
+## Novedades v63.0 — Trasfondo en Detalle y barras del trío
+
+`CACHE_VERSION` sube a `ss-companion-v133`.
+
+- **Detalle › Trasfondo**: una tarjeta nueva bajo Arquetipo. Muestra:
+  - la frase del Trasfondo;
+  - el **Vínculo** con su Dado de Uso y cómo se tira;
+  - el **kit de oficio** y el **Defecto**;
+  - las **habilidades del Trasfondo** elegidas («2 de 2»).
+  La tarjeta Arquetipo pasa a listar solo sus propias habilidades.
+- **Estado**: las barras de Adrenalina, Ingenio y Carne ocupan el 78 % de su
+  columna y quedan separadas unos 30 px; antes casi se tocaban.
+
+Verificado a 390 px: autodiagnóstico 9 de 9 (20 tarjetas plegables).
+
+## Novedades v62.0 — Descriptores del Manual Básico v1 (2-10-2026)
+
+`CACHE_VERSION` sube a `ss-companion-v132` y `RULES_DATA_VERSION` a
+`v1-manual-sendas-axiomas-r3`. Del resto del Manual, de la Guía y del Manual
+de Monstruos no cambia nada que la app lleve.
+
+- **Humano**:
+  - **+2 a un atributo y +1 a otro**, a elección (antes +1 y +1);
+  - elige **dos** Experiencias, con dos nuevas: **Polivalente** (Grado 0 en
+    dos habilidades más) y **Voluntad Humana** (Ventaja contra quedar
+    Aterrado).
+- **Medio Elfo**: también +2 y +1, y Rasgo nuevo **Herencia Élfica**.
+- **Enano**: Rasgo nuevo **Oficio de Clan**. Da Grado 0 en Artesanía, y la
+  ficha lo cuenta sola.
+- **Medio Orco**: Rasgo nuevo **Golpe Salvaje**.
+- **Sintético**: la Interfaz admite **Chips de Mejora** (capacidad 4 +
+  Nivel, fusión normal → + → ++). Los 15 chips del Manual están en
+  Equipo › Categoría **Chips**; no ocupan ranuras de carga.
+- **Mutante**:
+  - pierde Inmunidad Tóxica (ahora es la mutación «Resistencia al Veneno»);
+  - sus Expresiones pasan a ser **Mutaciones con Potencial**: 3 de
+    Potencial y 21 mutaciones de coste 1 o 2, más hasta dos
+    **Deformidades** que dan 1 de Potencial cada una;
+  - en la ficha y en el asistente se marcan con un contador «Potencial
+    gastado / total», que apaga lo que ya no cabe;
+  - la tarjeta Rasgos las muestra con su efecto y avisa si queda Potencial
+    sin gastar.
+- **Fichas guardadas**:
+  - un Mutante conserva las Expresiones que siguen existiendo con el mismo
+    efecto (Garras, Piel Blindada, Regeneración…) y recupera el Potencial
+    de las retiradas (Empatía, Proyección, Sentidos Agudos);
+  - la Experiencia «Ingenio Práctico» del Humano pasa a «Astucia Práctica»,
+    algo que la v59.1 había olvidado migrar.
+- **Editor de reglas**: el «Valor» del bono a elección admite una lista
+  (`2, 1`), un valor por ranura.
+
+Verificado a 390 px: autodiagnóstico 9 de 9; 40 personajes aleatorios sin
+errores; ida y vuelta de guardado de las Mutaciones; migración de un
+Mutante y de un Humano antiguos.
 
 ## Novedades v61.0 — Estado «Protagonista y trío», pantalla de carga y orden del roster
 

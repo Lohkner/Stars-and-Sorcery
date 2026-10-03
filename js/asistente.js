@@ -62,7 +62,7 @@
   let S = null;
   const nuevoEstado = () => ({
     paso: 0, metodo: 'B', pool: ESTANDAR.slice(), pick: null, asign: {},
-    desc: '', arq: '', bg: '', descPick: [], descExps: [], descTruco: '',
+    desc: '', arq: '', bg: '', descPick: [], descExps: [], descTruco: '', descMut: [], descDef: [],
     arqSkills: [], bgSkills: [], talentos: [], nombre: '', cat: '', q: '',
     savCom: '', savPoco: '', guardAttr: 'DES',
     armas: [], opcArq: '', armaExtra: '', monedas: null,
@@ -111,6 +111,8 @@
   function bonoCorto(txt) {
     if (!txt) return '';
     return String(txt)
+      // «+2 a un Atributo y +1 a otro, a elección» (Humano, Medio Elfo, v62)
+      .replace(/\+(\d+)\s+a\s+un\s+Atributo\s+y\s+\+(\d+)\s+a\s+otro,?\s*a\s+elecci[oó]n/gi, 'Elegir +$1, +$2')
       .replace(/,\s*\+/g, ' · +')
       .replace(/\+(\d+)\s+a\s+(un|una|dos|tres|cuatro)\s+Atributos?\s*(?:distintos?\s*)?a\s+elecci[oó]n/gi,
         (_, n, palabra) => {
@@ -149,7 +151,7 @@
     const out = {};
     if (!d) return out;
     Object.entries(d.mods || {}).forEach(([k, v]) => out[k] = (out[k] || 0) + v);
-    S.descPick.forEach(a => { if (a) out[a] = (out[a] || 0) + (d.pick?.val || 1); });
+    S.descPick.forEach((a, i) => { if (a) out[a] = (out[a] || 0) + pickVal(d.pick, i); });
     return out;
   }
   const base  = k => S.asign[k] != null ? S.asign[k] : (S.metodo === 'C' ? 8 : null);
@@ -283,7 +285,7 @@
         sub = '◇ Puede abrir ' + d.afinidadOpcional.fuente + ' gastando una Expresión';
       b.appendChild(tarjeta(d.name, bonoCorto(d.bonus), d.txt || '', sub, S.desc === k,
         () => alternar('desc', k, () => {
-          S.descPick = []; S.descExps = []; S.descTruco = '';
+          S.descPick = []; S.descExps = []; S.descTruco = ''; S.descMut = []; S.descDef = [];
         })));
       // Las elecciones del Linaje cuelgan de SU tarjeta, igual que las
       // habilidades del Arquetipo y del Trasfondo: al fondo de once linajes
@@ -296,14 +298,49 @@
       paréntesis: «Historia / Religión» lleva uno en su propio nombre. */
   const partirOpciones = t => String(t || '').split(/ \/ (?![^()]*\))/).map(o => o.trim()).filter(Boolean);
 
+  /* Mutaciones del Mutante: Potencial 3, más 1 por Deformidad (hasta dos). */
+  function potencialMut(m) {
+    const coste = n => (m.opciones.find(o => o[0] === n) || [0, 0])[1];
+    const total = (m.potencial || 0) + S.descDef.length;
+    const gastado = S.descMut.reduce((t, n) => t + coste(n), 0);
+    return { total, gastado, libre: total - gastado, coste };
+  }
+  function wizMutaciones(m) {
+    const caja = el('div', 'mut-wrap mut-wrap--wiz');
+    const p = potencialMut(m);
+    caja.appendChild(el('span', 'wiz-lbl', `Mutaciones — Potencial ${p.gastado} de ${p.total}`));
+    const fila = (arr, lista, esDef) => arr.forEach(([n, c, t]) => {
+      const sel = lista.includes(n);
+      const cabe = esDef
+        ? (sel ? p.libre >= 1 : S.descDef.length < (m.maxDeformidades ?? 2))
+        : (sel || p.coste(n) <= p.libre);
+      const b = el('button', 'mut-op mut-op--wiz' + (sel ? ' sel' : '') + (cabe ? '' : ' is-off'));
+      b.type = 'button';
+      b.appendChild(el('span', 'mut-n', n));
+      b.appendChild(el('span', 'mut-c' + (c < 0 ? ' mut-c--def' : ''), (c > 0 ? '' : '+') + Math.abs(c)));
+      b.appendChild(el('span', 'mut-t', t));
+      b.onclick = () => {
+        if (!cabe) return;
+        const i = lista.indexOf(n);
+        if (i >= 0) lista.splice(i, 1); else lista.push(n);
+        pintar();
+      };
+      caja.appendChild(b);
+    });
+    fila(m.opciones, S.descMut, false);
+    caja.appendChild(el('span', 'wiz-lbl', `Deformidades — hasta ${m.maxDeformidades ?? 2}, +1 de Potencial cada una`));
+    fila(m.deformidades || [], S.descDef, true);
+    return caja;
+  }
+
   function subDescriptor(d) {
     const sub = el('div', 'wiz-sub wiz-inline');
 
     if (d.pick) {
-      const n = d.pick.n || 1, origen = d.pick.from || ATTRS;
+      const n = pickN(d.pick), origen = d.pick.from || ATTRS;
       for (let i = 0; i < n; i++) {
         sub.appendChild(el('span', 'wiz-lbl',
-          (n > 1 ? `Bono de Linaje ${i + 1}` : 'Bono de Linaje') + ` (+${d.pick.val || 1})`));
+          (n > 1 ? `Bono de Linaje ${i + 1}` : 'Bono de Linaje') + ` (+${pickVal(d.pick, i)})`));
         const s = el('select');
         s.appendChild(new Option('— Elegir —', ''));
         origen.filter(a => d.pick.distinct ? !S.descPick.some((x, j) => j !== i && x === a) : true)
@@ -330,6 +367,7 @@
         sub.appendChild(s);
       }
     }
+    if (d.mutaciones) sub.appendChild(wizMutaciones(d.mutaciones));
     const fuente = fuenteAfinidad();
     if (fuente) {
       sub.appendChild(el('span', 'wiz-lbl', 'Truco de ' + fuente));
@@ -658,6 +696,8 @@
     const grupo = grupoEleccion(d);
     if (grupo && S.descExps.filter(Boolean).length)
       fila(grupo.etiqueta, S.descExps.filter(Boolean).join(', '));
+    if (d.mutaciones && (S.descMut.length || S.descDef.length))
+      fila('Mutaciones', S.descMut.concat(S.descDef).join(', '));
     fila('Arquetipo', a.name);
     fila('Trasfondo', (app.DB.backgrounds[S.bg] || {}).name);
     // Una habilidad en Arquetipo Y Trasfondo no se lista dos veces: sube de
@@ -904,8 +944,12 @@
         return Object.keys(S.asign).length === 6 ? '' : 'Reparte los seis valores';
       case 1:
         if (!S.desc) return 'Elige un Linaje';
-        if (d.pick && S.descPick.filter(Boolean).length < (d.pick.n || 1))
+        if (d.pick && S.descPick.filter(Boolean).length < pickN(d.pick))
           return 'Elige tu bono de atributo';
+        if (d.mutaciones) {
+          const p = potencialMut(d.mutaciones);
+          if (p.libre > 0) return `Te queda ${p.libre} de Potencial por gastar`;
+        }
         {
           const g = grupoEleccion(d);
           if (g && S.descExps.filter(Boolean).length < g.n)
@@ -1013,6 +1057,9 @@
     app._repintarOrigen && app._repintarOrigen();
     volcarElecciones();
     set('desc_eleccion_afinidad', S.descTruco);
+    // Mutaciones: casillas desc_mut_<slug> / desc_def_<slug> que pinta origen.js
+    S.descMut.forEach(n => { const c = document.getElementById('desc_mut_' + slugId(n)); if (c) c.checked = true; });
+    S.descDef.forEach(n => { const c = document.getElementById('desc_def_' + slugId(n)); if (c) c.checked = true; });
 
     S.talentos.forEach(t => {
       const h = document.createElement('input');
@@ -1172,6 +1219,13 @@
       const trozos = barajar(partirOpciones(g.opciones));
       S.descExps = trozos.slice(0, g.n).map(t => t.split(' (')[0].trim());
     }
+    S.descMut = []; S.descDef = [];
+    if (d.mutaciones) {
+      // Sin Deformidades: se gasta el Potencial base al azar, lo que quepa.
+      barajar(d.mutaciones.opciones.slice()).forEach(([n, c]) => {
+        if (c <= potencialMut(d.mutaciones).libre) S.descMut.push(n);
+      });
+    }
 
     // 3 · Atributos: método A, repartidos por prioridad del Arquetipo con la
     //     Fuente colada en segundo lugar si el Linaje abre una.
@@ -1184,7 +1238,7 @@
     // 4 · Bono de atributo del Linaje: al que ya va primero, respetando
     //     `distinct` cuando el Linaje pide dos distintos.
     if (d.pick) {
-      const n = d.pick.n || 1;
+      const n = pickN(d.pick);
       const origen = d.pick.from || ATTRS;
       const cola = orden.filter(k => origen.includes(k));
       S.descPick = [];

@@ -31,6 +31,16 @@ const SKILL_SPECIALIZED = new Set([
   'Investigación','Herramientas de Ladrón','Conocimiento de la Calle',
   'Artesanía',
 ]);
+/** Bonos de atributo a elección del Linaje: número de ranuras y valor de
+    cada una. `vals` (Humano y Medio Elfo: [2,1]) manda sobre n/val. */
+function pickN(pick) { return Array.isArray(pick?.vals) ? pick.vals.length : (pick?.n || 1); }
+function pickVal(pick, i) { return Array.isArray(pick?.vals) ? (pick.vals[i] ?? 1) : (pick?.val || 1); }
+/** Id estable sin acentos: «Visión en la Oscuridad» → «vision_en_la_oscuridad». */
+function slugId(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
 /** Habilidades que el Manual v1 fundió en otra. */
 const SKILL_RENAMES = {
   'Historia': 'Historia / Religión',

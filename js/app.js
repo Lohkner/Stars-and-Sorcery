@@ -952,12 +952,19 @@ const app = {
       tl.appendChild(b);
     });
     const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
-    elegidas.forEach(({ valor }) => {
+    elegidas.forEach(({ valor, texto }) => {
       const b = document.createElement('span');
       b.className = 'tbadge tbadge-elegido';
-      b.textContent = '✦ ' + valor;
+      b.textContent = '✦ ' + valor + (texto ? ': ' + texto : '');
       tl.appendChild(b);
     });
+    const mu = this._mutaciones ? this._mutaciones() : null;
+    if (mu && mu.libre > 0) {
+      const b = document.createElement('span');
+      b.className = 'tbadge tbadge-pendiente';
+      b.textContent = `Potencial sin gastar: ${mu.libre}`;
+      tl.appendChild(b);
+    }
     // Pendientes = ranuras vacías, no líneas de `grant` sin resolver: una
     // sola línea puede abrir varias («Elige DOS Mutaciones»).
     const ranuras = document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').length;
@@ -991,10 +998,10 @@ const app = {
     if (!d) return {};
     const out = { ...(d.mods || {}) };
     if (d.pick) {
-      const n = d.pick.n || 1;
+      const n = pickN(d.pick);
       for (let i = 1; i <= n; i++) {
         const a = document.getElementById('desc_pick_' + i)?.value;
-        if (a) out[a] = (out[a] || 0) + (d.pick.val || 1);
+        if (a) out[a] = (out[a] || 0) + pickVal(d.pick, i - 1);
       }
     }
     return out;
@@ -1927,8 +1934,9 @@ const app = {
     const item = {
       uid: this._nextUid(),
       name: data.name,
-      slots: data.slots || 1,
-      type: cat === 'shields' ? 'shields' : cat,
+      // `??` y no `||`: un chip (o el desarmado) ocupa 0 ranuras de verdad.
+      slots: data.slots ?? 1,
+      type: cat === 'chips' ? 'misc' : (cat === 'shields' ? 'shields' : cat),
       dbKey: key,
       // Copia, no referencia: con `dbData: data` el objeto del inventario
       // apuntaba a la entrada viva de la base de reglas, y cualquier cambio
@@ -2192,7 +2200,7 @@ const app = {
       [/antorcha|linterna|lampara|vela|aceite|farol/, 'eq-luz'],
       [/cantimplora|odre|agua|pocion|frasco|vial/, 'eq-agua'],
       [/cuerda|escalada|garfio|gancho|cadena/, 'eq-cuerda'],
-      [/kit|herramient|ganzua|botiquin|instrumento|balanza|util/, 'eq-kit'],
+      [/kit|herramient|ganzua|botiquin|instrumento|balanza|util|chip/, 'eq-kit'],
       [/morral|mochila|saco|alforja/, 'eq-mochila'],
       [/ropa|capa|tunica|vestido|abrigo|botas/, 'eq-ropa'],
       [/foco|cristal|orbe|varita|baston|amuleto|simbolo|reliquia|gema/, 'eq-foco'],
@@ -3790,19 +3798,22 @@ const app = {
       bloque('Permiso',  arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso',  'Permiso');
       bloque('Límite',   arq.limite,   'limite',   'Límite',                          'Límite');
 
-      const selSkills = [...new Set([...Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value),...Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value)])];
+      // Solo las del Arquetipo: las del Trasfondo van en su propia sección (v63).
+      const selSkills = Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value);
       if (selSkills.length) {
-        const nArq = document.querySelectorAll('input[name="chk_arq"]:checked').length;
+        const nArq = selSkills.length;
         const cupo = arq?.skills_count;
         const sl=document.createElement('div'); sl.className='js-section-lbl';
         // Con el cupo a la vista se ve de un vistazo si faltan por elegir.
-        sl.textContent = cupo ? `Habilidades Seleccionadas — ${nArq} de ${cupo} del Arquetipo` : 'Habilidades Seleccionadas';
+        sl.textContent = cupo ? `Habilidades del Arquetipo — ${nArq} de ${cupo}` : 'Habilidades del Arquetipo';
         ab.appendChild(sl);
         const sw=document.createElement('div'); sw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
         selSkills.forEach(s => { const sp=document.createElement('span'); sp.className='js-tag-neutral'; sp.textContent=this._sanitize(String(s)); sw.appendChild(sp); });
         ab.appendChild(sw);
       }
     } else { at.textContent='Arquetipo: —'; ab.innerHTML='<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p>'; }
+
+    this._detalleTrasfondo();
 
     // Talents
     const tl = document.getElementById('detail_talents_list');
@@ -3811,6 +3822,50 @@ const app = {
     tl.innerHTML = '';
     if (this._channelOpen()) tl.appendChild(this._fuenteReadonlyEl());
     talents.forEach(h => tl.appendChild(this._talentRichCard(h, { editable: false })));
+  },
+
+  /** Pestaña Detalle · Trasfondo (v63): de dónde viene el personaje —su
+      Vínculo con el Dado de Uso, el kit de su oficio, el Defecto que el
+      Director puede usar— y las dos habilidades que le dio. */
+  _detalleTrasfondo() {
+    const bt = document.getElementById('detail_bg_title');
+    const bb = document.getElementById('detail_bg_body');
+    if (!bt || !bb) return;
+    const bg = this.DB.backgrounds?.[document.getElementById('sel_bg')?.value];
+    if (!bg) {
+      bt.textContent = 'Trasfondo: —';
+      bb.innerHTML = '<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Trasfondo.</p>';
+      return;
+    }
+    bt.textContent = 'Trasfondo: ' + this._sanitize(bg.name);
+    bb.innerHTML = '';
+    const nodo = (tag, cls, txt) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (txt != null) e.textContent = this._sanitize(String(txt));
+      return e;
+    };
+    const seccion = (titulo, ...hijos) => {
+      bb.appendChild(nodo('div', 'js-section-lbl', titulo));
+      hijos.forEach(h => bb.appendChild(h));
+    };
+    if (bg.txt) bb.appendChild(nodo('p', 'js-detail-txt', bg.txt));
+    // La primera línea de `grant` es el Vínculo («Red Militar (Ud8)»); el
+    // resto, el equipo del oficio.
+    const [vinculo, ...resto] = bg.grant || [];
+    if (vinculo) seccion('Vínculo', nodo('span', 'tbadge', vinculo),
+      nodo('p', 'bg-nota', 'Se tira al usar tu red de contactos: con 1–2, el dado baja un escalón.'));
+    if (resto.length) {
+      const w = nodo('div', 'bg-fila');
+      resto.forEach(g => w.appendChild(nodo('span', 'tbadge', g)));
+      seccion('Kit de oficio', w);
+    }
+    if (bg.defecto) seccion('Defecto', nodo('p', 'js-detail-txt bg-defecto', bg.defecto));
+    const hab = Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e => e.value);
+    const w = nodo('div', 'bg-fila');
+    if (hab.length) hab.forEach(s => w.appendChild(nodo('span', 'js-tag-neutral', s)));
+    else w.appendChild(nodo('span', 'bg-nota', 'Sin elegir'));
+    seccion(`Habilidades del Trasfondo — ${hab.length} de 2`, w);
   },
 
   /** Fija el Grado activo de un talento elegido y refresca las vistas. */
@@ -4462,7 +4517,7 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Bono de Atributo a elegir <span class="is-field-note">— déjalo en 0 si no lo hay</span></span>
         <div class="g3" style="gap:4px">
           <div><span class="dfl">Cuántos</span><input type="number" id="db_pick_n" value="${existing?.pick?.n||0}" min="0" max="6" style="font-family:var(--fm);text-align:center;padding:3px"></div>
-          <div><span class="dfl">Valor</span><input type="number" id="db_pick_val" value="${existing?.pick?.val||1}" min="1" max="5" style="font-family:var(--fm);text-align:center;padding:3px"></div>
+          <div><span class="dfl">Valor</span><input type="text" id="db_pick_val" value="${Array.isArray(existing?.pick?.vals) ? existing.pick.vals.join(', ') : (existing?.pick?.val||1)}" title="Un número, o uno por ranura separados por comas (2, 1)" style="font-family:var(--fm);text-align:center;padding:3px"></div>
           <div><span class="dfl">Distintos</span><select id="db_pick_distinct"><option value="1"${existing?.pick?.distinct?' selected':''}>Sí</option><option value="0"${existing?.pick?.distinct?'':' selected'}>No</option></select></div>
         </div>
         <input type="text" id="db_pick_from" value="${_e((existing?.pick?.from||[]).join(', '))}" placeholder="Limitar a (coma): INT, DES — vacío = cualquiera" style="margin-top:4px">
@@ -4692,7 +4747,12 @@ const app = {
         if (pickN > 0) {
           const from = (document.getElementById('db_pick_from')?.value||'')
             .split(',').map(s=>s.trim().toUpperCase()).filter(s=>STATS.includes(s));
-          entry.pick = { n: pickN, val: parseInt(document.getElementById('db_pick_val')?.value)||1 };
+          // «2, 1»: un valor por ranura (Humano: +2 a uno y +1 a otro).
+          const vals = (document.getElementById('db_pick_val')?.value || '')
+            .split(',').map(v => parseInt(v, 10)).filter(v => v > 0);
+          entry.pick = vals.length > 1
+            ? { n: vals.length, val: vals[vals.length - 1], vals }
+            : { n: pickN, val: vals[0] || 1 };
           if (document.getElementById('db_pick_distinct')?.value === '1') entry.pick.distinct = true;
           if (from.length) entry.pick.from = from;
         } else {
@@ -5366,6 +5426,28 @@ const app = {
       delete sel.filo_g_fisico;
     }
     if (sel.sel_filo === 'Físico') sel.sel_filo = 'Física';
+    // v59.1 renombró la Experiencia del Humano sin migrar la elección.
+    Object.keys(sel).forEach(k => {
+      if (/^desc_eleccion/.test(k) && sel[k] === 'Ingenio Práctico') sel[k] = 'Astucia Práctica';
+    });
+    /* Mutante (v62): las dos Expresiones de desplegable pasan a Mutaciones
+       con Potencial. Las que existen con el mismo efecto se conservan; las
+       que el Manual retiró (Empatía, Proyección, Sentidos Agudos) liberan
+       su Potencial para elegir otra. */
+    if (sel.sel_desc === 'mutante' && !out.checks.some(c => c.name === 'desc_mut')) {
+      const EQUIV = {
+        'Regeneración Lenta': 'Regeneración', 'Piel Blindada': 'Piel Blindada',
+        'Garras Naturales': 'Garras Naturales', 'Apéndices Extra': 'Apéndices Prensiles',
+        'Resistencia Elemental': 'Resistencia Elemental', 'Telepatía Mutante': 'Telepatía Mutante',
+        'Psicoquinesis Mutante': 'Psicoquinesis Mutante', 'Percepción Extrasensorial': 'Percepción Extrasensorial',
+        'Adaptación Ambiental': 'Adaptación Ambiental',
+      };
+      Object.keys(sel).filter(k => /^desc_eleccion(__\d+)?$/.test(k)).forEach(k => {
+        const nuevo = EQUIV[sel[k]];
+        if (nuevo) out.checks.push({ name: 'desc_mut', value: nuevo, id: 'desc_mut_' + slugId(nuevo) });
+        delete sel[k];
+      });
+    }
     out.selects = sel;
     return out;
   },
@@ -5643,6 +5725,7 @@ const app = {
     });
     document.querySelectorAll('select[id^="filo_g_"]').forEach(s=>{ s.value='0'; });
     const dch=document.getElementById('desc_choices'); if(dch) dch.textContent='';
+    const dmu=document.getElementById('desc_mutaciones'); if(dmu) dmu.textContent='';
     this._afinidadPrevia='';
     // Se abre la ventana de migración de Pericias: la ficha que venga puede
     // ser anterior a los grados y traer solo `sel_filo`. La cierra pericias.js

@@ -330,6 +330,7 @@
                 <div><span class="fl">Linaje (Raza)</span><select id="sel_desc" aria-label="Linaje del personaje" onchange="app.updateOptions()"></select><div id="desc_info" class="infobox"></div><div id="desc_choices"></div></div>
                 <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericias (grado 0&ndash;3)</span><div id="filo_grades" class="per-grid"></div><select id="sel_filo" aria-label="Pericia de referencia (campo derivado, no editable)" onchange="app.calc()" hidden style="display:none"></select></div>
               </div>
+              <div id="desc_mutaciones"></div>
               <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
               <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
             </div>
@@ -730,7 +731,7 @@
             <div id="equipment_edit_view">
               <div style="background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:6px 8px;margin-bottom:8px">
                 <div style="display:grid;grid-template-columns:auto auto 1fr auto;gap:4px;align-items:end">
-                  <div><span class="fl">Categ.</span><select id="inv_db_category" aria-label="Categoría del objeto" onchange="app.updateDbSelect()" style="font-size:var(--fs-lg)"><option value="weapons">Armas</option><option value="armors">Armaduras</option><option value="shields">Escudos</option><option value="misc">Misc.</option></select></div>
+                  <div><span class="fl">Categ.</span><select id="inv_db_category" aria-label="Categoría del objeto" onchange="app.updateDbSelect()" style="font-size:var(--fs-lg)"><option value="weapons">Armas</option><option value="armors">Armaduras</option><option value="shields">Escudos</option><option value="misc">Misc.</option><option value="chips">Chips</option></select></div>
                   <div><span class="fl">Objeto</span><select id="inv_db_item" aria-label="Objeto a añadir" style="font-size:var(--fs-lg)"></select></div>
                   <div></div>
                   <button class="btn btn-p" style="font-size:var(--fs-sm);padding:6px 9px;align-self:end" data-action="addFromDB">+ Añadir</button>
@@ -797,6 +798,7 @@
           </details>
           <details class="panel fold" id="fold_linaje" data-fold="linaje" open><summary class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></summary><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></details>
           <details class="panel fold" id="fold_arquetipo" data-fold="arquetipo" open><summary class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></summary><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></details>
+          <details class="panel fold" id="fold_trasfondo" data-fold="trasfondo" open><summary class="ph"><span class="pt" id="detail_bg_title">Trasfondo: —</span></summary><div id="detail_bg_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Trasfondo.</p></div></details>
           <details class="panel fold" id="fold_talentos_activos" data-fold="talentos_activos" open><summary class="ph"><span class="pt">Talentos Activos</span></summary><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></details>
         </div><!-- /page 4 -->
 
