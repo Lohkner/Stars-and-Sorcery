@@ -1323,11 +1323,17 @@ const app = {
     const s = document.getElementById(id);
     if (!s) return;
     s.innerHTML = '<option value="" disabled selected>— Seleccionar —</option>';
+    // Las Vocaciones (regla opcional del Manual v1) van en su propio grupo.
+    let grupo = null;
     for (const k in data) {
       const o = document.createElement('option');
       o.value = k; o.textContent = String(data[k].name || k);
-      s.appendChild(o);
+      if (data[k].vocacion) {
+        if (!grupo) { grupo = document.createElement('optgroup'); grupo.label = 'Vocaciones (regla opcional)'; }
+        grupo.appendChild(o);
+      } else s.appendChild(o);
     }
+    if (grupo) s.appendChild(grupo);
   },
 
   getMod(val) {
@@ -3012,7 +3018,7 @@ const app = {
         const m = part.match(/^Iniciad[oa]\s+en\s+(.+)$/i);
         const resto = (m ? m[1] : (part.match(/\(([^)]+)\)/) || [,''])[1]).trim();
         let met, miss;
-        if (!resto || /cualquier|tu Fuente/i.test(resto)) {
+        if (!resto || /cualquier|tu Fuente|una Fuente/i.test(resto)) {
           met = iniciadas.size > 0;
           miss = 'Iniciado en cualquier Fuente (un Talento de Iniciación o la Afinidad de tu Linaje)';
         } else {
@@ -3850,6 +3856,21 @@ const app = {
       hijos.forEach(h => bb.appendChild(h));
     };
     if (bg.txt) bb.appendChild(nodo('p', 'js-detail-txt', bg.txt));
+    const voc = bg.vocacion;
+    if (voc) {
+      bt.textContent = 'Vocación: ' + this._sanitize(bg.name);
+      if (voc.lema) bb.appendChild(nodo('p', 'bg-nota', voc.lema));
+      const datos = nodo('div', 'bg-fila');
+      datos.appendChild(nodo('span', 'tbadge', 'Requisitos: ' + voc.req));
+      if (voc.fuente) datos.appendChild(nodo('span', 'tbadge', 'Fuente: ' + voc.fuente));
+      seccion('Vocación', datos);
+      const tl = nodo('div', 'bg-fila');
+      (voc.talentos || []).forEach(t => tl.appendChild(nodo('span', 'js-tag-neutral', t)));
+      seccion('Talentos de Nivel 1', tl);
+      const sl = nodo('div', 'bg-fila');
+      (voc.sendas || []).forEach((t, i) => sl.appendChild(nodo('span', 'tbadge', `Nivel ${3 + i * 2}: ${t}`)));
+      seccion('Senda de cada Talento posterior', sl);
+    }
     // La primera línea de `grant` es el Vínculo («Red Militar (Ud8)»); el
     // resto, el equipo del oficio.
     const [vinculo, ...resto] = bg.grant || [];

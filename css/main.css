@@ -4601,3 +4601,9 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 .bg-nota{font-family:var(--fb);font-size:var(--fs-sm);font-style:italic;color:var(--muted);margin:4px 0 8px}
 #detail_bg_body .tbadge{display:inline-block}
 .bg-defecto{border-left:2px solid rgba(var(--danger-rgb),.45);padding-left:9px}
+
+/* Asistente · rótulo de las Vocaciones (v64) */
+.wiz-voc-cab{margin-top:14px;padding-top:10px;border-top:1px solid var(--edge);color:var(--gold)}
+.wiz-voc{margin:6px 0 4px}
+.wiz-voc dt{font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:8px}
+.wiz-voc dd{margin:2px 0 0;font-family:var(--fb);font-size:var(--fs-sm);color:var(--text);line-height:1.4}

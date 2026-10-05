@@ -484,16 +484,49 @@
       { etiqueta: 'tu Arquetipo', lista: S.arqSkills },
       { etiqueta: 'tu Linaje',    lista: skillsDelLinaje() },
     ];
+    let cabVoc = false;
     Object.entries(app.DB.backgrounds).forEach(([k, g]) => {
+      // Las Vocaciones (regla opcional) van al final, bajo su rótulo.
+      if (g.vocacion && !cabVoc) {
+        cabVoc = true;
+        b.appendChild(el('p', 'wiz-hint wiz-voc-cab',
+          'Vocaciones — regla opcional: sustituyen al Trasfondo y fijan tus tres Talentos iniciales y la Senda de cada Talento posterior.'));
+      }
       const ud = ((g.grant || []).find(x => /Ud\d/.test(x)) || '').match(/Ud\d+/);
       // En la propia tarjeta, las que ya tienes salen marcadas: así se ve de
       // un vistazo qué Trasfondo te repite habilidades y cuál te amplía.
       const lista = (g.skills || [])
         .map(n => fuentes.some(f => f.lista.includes(n)) ? '✓ ' + n : n).join(' · ');
-      b.appendChild(tarjeta(g.name, ud ? ud[0] : '', g.defecto || '', lista, S.bg === k,
-        () => alternar('bg', k, () => { S.bgSkills = []; })));
+      b.appendChild(tarjeta(g.name, ud ? ud[0] : '', g.vocacion ? g.txt : (g.defecto || ''), lista, S.bg === k,
+        () => alternar('bg', k, () => {
+          S.bgSkills = [];
+          // Una Vocación trae sus tres Talentos; al dejarla se quitan.
+          const v = app.DB.backgrounds[k]?.vocacion;
+          if (v) {
+            S.talentos = [];
+            v.talentos.forEach(nm => {
+              const t = Object.values(app.DB.talents).flat().find(x => x.name === nm);
+              if (t) S.talentos.push({ name: t.name, id: t.id || '', desc: t.desc || '' });
+            });
+          } else if (S.deVocacion) S.talentos = [];
+          S.deVocacion = !!v;
+        })));
       if (S.bg !== k) return;
       const sub = el('div', 'wiz-sub wiz-inline');
+      if (g.vocacion) {
+        const v = g.vocacion;
+        const ficha = el('dl', 'wiz-voc');
+        [['Requisitos', v.req + (v.fuente ? ' · Fuente: ' + v.fuente : '')],
+         ['Talentos de Nivel 1', v.talentos.join(' · ')],
+         ['Sendas a Niveles 3 · 5 · 7 · 9', v.sendas.join(' → ')],
+         ['Vínculo', (g.grant || [])[0]],
+         ['Kit', (g.grant || [])[1]],
+         ['Defecto', g.defecto]].forEach(([r, t]) => {
+          ficha.appendChild(el('dt', '', r));
+          ficha.appendChild(el('dd', '', t));
+        });
+        sub.appendChild(ficha);
+      }
       sub.appendChild(el('span', 'wiz-lbl',
         `Habilidades del Trasfondo — elige 2 (${S.bgSkills.length} elegidas)`));
       listaHabilidades(sub, g.skills, S.bgSkills, 2, fuentes, (n, on) => {
@@ -636,7 +669,7 @@
     inp.oninput = () => { S.nombre = inp.value; pie(); };
     b.appendChild(inp);
 
-    /* Convicción — Manual Apéndice B. Las nueve etiquetas clásicas como
+    /* Convicción — Manual Cap. 17. Las nueve etiquetas clásicas como
        coordenadas de dos ejes, no como veredicto moral. No cambia ninguna
        regla, pero es parte de quién es el personaje y faltaba. */
     b.appendChild(el('span', 'wiz-lbl', 'Convicción'));
@@ -1267,7 +1300,7 @@
 
     // 6 · Habilidades
     S.arqSkills = barajar(a.skills || []).slice(0, a.skills_count || 2);
-    S.bg = azar(Object.keys(app.DB.backgrounds)); S.bgUlt = S.bg;
+    S.bg = azar(Object.keys(app.DB.backgrounds).filter(k => !app.DB.backgrounds[k].vocacion)); S.bgUlt = S.bg;
     S.bgSkills = barajar(app.DB.backgrounds[S.bg].skills || []).slice(0, 2);
 
     // 7 · Talentos: uno a uno y RE-EVALUANDO, porque tomar una Iniciación abre

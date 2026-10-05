@@ -1,4 +1,40 @@
-# S&S Companion — v63.0
+# S&S Companion — v64.0
+
+## Novedades v64.0 — Manuales «Official» (3-10-2026)
+
+`CACHE_VERSION` sube a `ss-companion-v134` y `RULES_DATA_VERSION` a
+`v1-official`. Los cambios de la Guía del Director y del Manual de Monstruos
+son solo del Director: la app no los lleva.
+
+- **Descriptores**: cada uno se llama como su fantasía y lista sus
+  interpretaciones:
+  - Ambicioso (Humano), Robusto (Enano), Místico (Elfo);
+  - Fronterizo (Medio Elfo), Marcado (Infernal), Construido (Sintético);
+  - Portador (Aesir), Alterado (Mutante), Indómito (Medio Orco);
+  - Antiguo (Dracónido), Feral (Cambiante).
+  Las claves internas no cambian, así que las fichas guardadas siguen igual.
+- **Vocaciones** (Manual Cap. 14, regla opcional): 12 oficios completos que
+  sustituyen al Trasfondo.
+  - Salen en su propio grupo del desplegable de Trasfondo.
+  - En el asistente aparecen al final, bajo un rótulo propio. Al elegir una,
+    sus tres Talentos de Nivel 1 quedan elegidos.
+  - Detalle › Trasfondo muestra los requisitos, la Fuente, los Talentos y la
+    Senda de cada Talento posterior (Niveles 3, 5, 7 y 9).
+  - El personaje aleatorio no las usa.
+- **Compendio de Sendas**:
+  - dos Sendas nuevas: **Transmutación** (10 Talentos) y **Devoración**
+    (3 Talentos). Devorador de Esencias lleva en sus notas las reglas de la
+    Galería, la Absorción y los Axiomas de Esencia;
+  - dos Talentos Generales nuevos: **Arquitecto de Constructos** (con el
+    Axioma Constructo Temporal en sus notas) y **Convergencia**.
+    «Iniciado en una Fuente» cuenta como «en cualquier Fuente»;
+  - Las Concesiones: la Segunda Cara se descubre con Perspicacia contra tu CD
+    (antes CD 14).
+- **Catálogo de Axiomas**: cinco Axiomas nuevos de Erudición:
+  - Agrandar / Reducir (Nv 1);
+  - Alterar el Cuerpo y Forma Prestada (Nv 2);
+  - Forma de Bestia (Nv 3);
+  - Transmutar Materia (Nv 4).
 
 ## Novedades v63.0 — Trasfondo en Detalle y barras del trío
 
