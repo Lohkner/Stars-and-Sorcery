@@ -32,7 +32,7 @@
   /* Paquete de equipo inicial — Manual Cap.6. Lo mismo para todos, más una
      elección por Arquetipo. Las claves son las de DEFAULT_DB. */
   const PAQUETE = ['morral', 'raciones', 'antorchas', 'cantimplora', 'cuerda'];
-  const MONEDAS = { audaz: 5, sutil: 4, sagaz: 3 };   // Nd6 × 10 pp
+  const MONEDAS = { audaz: 5, sutil: 4, sagaz: 3 };   // Nd6 × 10 cr
   const EQUIPO_ARQ = {
     audaz: { etiqueta: 'Armadura inicial', fijo: { shields: 'escudo' }, opciones: [
       { v: 'cota_malla',   t: 'Cota de malla — Armadura 3', armor: 'cota_malla' },
@@ -62,7 +62,7 @@
   let S = null;
   const nuevoEstado = () => ({
     paso: 0, metodo: 'B', pool: ESTANDAR.slice(), pick: null, asign: {},
-    desc: '', arq: '', bg: '', descPick: [], descExps: [], descTruco: '', descMut: [], descDef: [],
+    desc: '', arq: '', bg: '', descPick: [], descExps: [], descTruco: '', descMut: [], descDef: [], descAfinFuente: '',
     arqSkills: [], bgSkills: [], talentos: [], nombre: '', cat: '', q: '',
     savCom: '', savPoco: '', guardAttr: 'DES',
     armas: [], opcArq: '', armaExtra: '', monedas: null,
@@ -162,6 +162,8 @@
     const d = app.DB.descriptors[S.desc];
     if (!d) return '';
     if (d.afinidad) return d.afinidad;
+    const am = d.afinidadMutacion;
+    if (am) return S.descMut.includes(am.opcion) && am.fuentes.includes(S.descAfinFuente) ? S.descAfinFuente : '';
     const op = d.afinidadOpcional;
     return (op && S.descExps.includes(op.opcion)) ? op.fuente : '';
   }
@@ -283,9 +285,11 @@
       if (d.afinidad) sub = '◆ Afinidad — Acceso a ' + d.afinidad;
       else if (d.afinidadOpcional)
         sub = '◇ Puede abrir ' + d.afinidadOpcional.fuente + ' gastando una Expresión';
+      else if (d.afinidadMutacion)
+        sub = '◇ Puede abrir ' + d.afinidadMutacion.fuentes.join(', ') + ' con la mutación ' + d.afinidadMutacion.opcion;
       b.appendChild(tarjeta(d.name, bonoCorto(d.bonus), d.txt || '', sub, S.desc === k,
         () => alternar('desc', k, () => {
-          S.descPick = []; S.descExps = []; S.descTruco = ''; S.descMut = []; S.descDef = [];
+          S.descPick = []; S.descExps = []; S.descTruco = ''; S.descMut = []; S.descDef = []; S.descAfinFuente = '';
         })));
       // Las elecciones del Linaje cuelgan de SU tarjeta, igual que las
       // habilidades del Arquetipo y del Trasfondo: al fondo de once linajes
@@ -328,6 +332,16 @@
       caja.appendChild(b);
     });
     fila(m.opciones, S.descMut, false);
+    const am = app.DB.descriptors[S.desc]?.afinidadMutacion;
+    if (am && S.descMut.includes(am.opcion)) {
+      caja.appendChild(el('span', 'wiz-lbl', 'Fuente de la ' + am.opcion));
+      const s = el('select');
+      s.appendChild(new Option('— Elegir —', ''));
+      am.fuentes.forEach(f => s.appendChild(new Option(f, f)));
+      s.value = S.descAfinFuente;
+      s.onchange = () => { S.descAfinFuente = s.value; pintar(); };
+      caja.appendChild(s);
+    }
     caja.appendChild(el('span', 'wiz-lbl', `Deformidades — hasta ${m.maxDeformidades ?? 2}, +1 de Potencial cada una`));
     fila(m.deformidades || [], S.descDef, true);
     return caja;
@@ -581,7 +595,7 @@
           host.appendChild(tarjeta(t.name, on ? '✓ elegido' : c, t.desc || '',
             t.grades?.[0] ? 'G1: ' + t.grades[0].d.split('\n')[0] : '', on, () => {
               if (on) S.talentos = S.talentos.filter(x => x.name !== t.name);
-              else if (S.talentos.length < 3)
+              else if (talentoIncluido(t.name) || S.talentos.filter(x => !talentoIncluido(x.name)).length < 3)
                 S.talentos.push({ name: t.name, id: t.id || '', desc: t.desc || '' });
               pintarListaTalentos();   // solo la lista: no se mueve el scroll
               pie();
@@ -759,7 +773,9 @@
       .filter(([, w]) => {
         if (k === 'audaz') return true;
         if (k === 'sagaz') return esSimple(w);
-        return esLigera(w) || w.type === 'medium';   // Versátil
+        // Versátil: ligeras y una mediana, que es cualquier marcial que no
+        // sea Ligera ni Pesada (Manual, Apéndice A).
+        return esLigera(w) || !tieneProp(w, 'Pesada');
       });
   }
   const topeArmas = () => S.armas.length && esSimple(app.DB.weapons[S.armas[0]]) ? 2 : 1;
@@ -853,7 +869,7 @@
   function pasoEquipo(b) {
     const arq = app.DB.archetypes[S.arq] || {};
     b.appendChild(el('p', 'wiz-hint',
-      'Con lo que sales por la puerta. El equipo pesado —Coraza, Placas, armas de fuego— se gana en juego, no en la creación.'));
+      'Con lo que sales por la puerta. El equipo pesado —Coraza, Placas— se gana en juego. Las armas avanzadas se eligen si encajan con tu concepto, el escenario y el Director.'));
 
     // 1 · Armas. Con buscador y filtros: la lista completa son 31 entradas
     //     y bajarla entera para comparar dos dagas no es elegir, es hojear.
@@ -934,7 +950,7 @@
     // 3 · Monedas iniciales
     const nd = MONEDAS[S.arq] || 3;
     const sub2 = el('div', 'wiz-sub');
-    sub2.appendChild(el('span', 'wiz-lbl', `Monedas iniciales — ${nd}d6 × 10 pp`));
+    sub2.appendChild(el('span', 'wiz-lbl', `Créditos iniciales — ${nd}d6 × 10 cr`));
     const fila = el('div', 'wiz-attrpick');
     const caja = el('div', 'wiz-apick sel');
     caja.appendChild(el('span', 'wiz-apick-n', 'Piezas de plata'));
@@ -982,6 +998,8 @@
         if (d.mutaciones) {
           const p = potencialMut(d.mutaciones);
           if (p.libre > 0) return `Te queda ${p.libre} de Potencial por gastar`;
+          const am = d.afinidadMutacion;
+          if (am && S.descMut.includes(am.opcion) && !S.descAfinFuente) return 'Elige la Fuente de tu Afinidad Mutante';
         }
         {
           const g = grupoEleccion(d);
@@ -998,7 +1016,8 @@
         if (!S.bg) return 'Elige un Trasfondo';
         return S.bgSkills.length === 2 ? '' : `Elige ${2 - S.bgSkills.length} habilidad(es) más`;
       case 4:
-        return S.talentos.length === 3 ? '' : `Elige ${3 - S.talentos.length} Talento(s) más`;
+        { const n = S.talentos.filter(t => !talentoIncluido(t.name)).length;
+          return n === 3 ? '' : `Elige ${3 - n} Talento(s) más`; }
       case 5:
         if (!S.savCom)  return 'Elige tu Salvación Común';
         if (!S.savPoco) return 'Elige tu Salvación Poco Común';
@@ -1093,6 +1112,14 @@
     // Mutaciones: casillas desc_mut_<slug> / desc_def_<slug> que pinta origen.js
     S.descMut.forEach(n => { const c = document.getElementById('desc_mut_' + slugId(n)); if (c) c.checked = true; });
     S.descDef.forEach(n => { const c = document.getElementById('desc_def_' + slugId(n)); if (c) c.checked = true; });
+    // Afinidad Mutante: su Fuente y su Truco solo existen tras repintar con
+    // la mutación ya marcada.
+    if (S.descAfinFuente) {
+      app._repintarOrigen && app._repintarOrigen();
+      set('desc_afin_fuente', S.descAfinFuente);
+      app._repintarOrigen && app._repintarOrigen();
+      set('desc_eleccion_afinidad', S.descTruco);
+    }
 
     S.talentos.forEach(t => {
       const h = document.createElement('input');
@@ -1258,6 +1285,8 @@
       barajar(d.mutaciones.opciones.slice()).forEach(([n, c]) => {
         if (c <= potencialMut(d.mutaciones).libre) S.descMut.push(n);
       });
+      const am = d.afinidadMutacion;
+      if (am && S.descMut.includes(am.opcion)) S.descAfinFuente = azar(am.fuentes);
     }
 
     // 3 · Atributos: método A, repartidos por prioridad del Arquetipo con la
@@ -1307,7 +1336,8 @@
     //     los Talentos que la exigen. Sortear los tres de golpe daba fichas
     //     con requisitos sin cumplir.
     S.talentos = [];
-    for (let i = 0; i < 3; i++) {
+    // Tres que ocupen espacio: el Dominio y la Gracia vienen aparte.
+    for (let i = 0; i < 12 && S.talentos.filter(t => !talentoIncluido(t.name)).length < 3; i++) {
       const posibles = [];
       conContexto(() => {
         Object.values(app.DB.talents).forEach(arr => arr.forEach(t => {

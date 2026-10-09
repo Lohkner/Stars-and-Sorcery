@@ -737,7 +737,7 @@
                   <button class="btn btn-p" style="font-size:var(--fs-sm);padding:6px 9px;align-self:end" data-action="addFromDB">+ Añadir</button>
                 </div>
               </div>
-              <div class="coin" style="margin-bottom:8px"><label>Oro (PO)</label><input type="number" id="gold_coins_edit" value="0" min="0" onchange="app.syncGold('edit')" inputmode="numeric" aria-label="Monedas de oro"></div>
+              <div class="coin" style="margin-bottom:8px"><label>Créditos (cr)</label><input type="number" id="gold_coins_edit" value="0" min="0" onchange="app.syncGold('edit')" inputmode="numeric" aria-label="Créditos"></div>
               <div id="inv_backpack_list" style="display:flex;flex-direction:column;gap:4px"></div>
               <div style="text-align:center;margin-top:8px"><button class="bedit" data-action="addCustomItem">+ Objeto Personalizado</button></div>
               <button class="bcnf" onclick="app.confirmSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
@@ -745,7 +745,7 @@
             <div id="equipment_summary_view" style="display:none">
               <div style="display:flex;justify-content:space-between;align-items:center;background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:5px 8px;margin-bottom:6px">
                 <span style="font-family:var(--fd);font-size:var(--fs-sm);color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Tesoro</span>
-                <span class="num-fig" style="color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> PO</span>
+                <span class="num-fig" style="color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> cr</span>
               </div>
               <div id="inv_summary_list" style="display:flex;flex-direction:column;gap:2px"></div>
               <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--rim);display:flex;justify-content:space-between">

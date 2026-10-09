@@ -11,7 +11,7 @@
    TALENT_SLOTS · HITOS_NIVEL · DESCANSOS.
 
    La Carne NO se recupera descansando: el manual solo la sube 1 punto
-   por semana completa de reposo real, con curación avanzada (100 pp) o
+   por semana completa de reposo real, con curación avanzada (100 cr) o
    con botiquín avanzado (CD 16). Por eso el reposo semanal es una
    entrada aparte del menú y los cuatro descansos normales no la tocan.
 ══════════════════════════════════════════════════════════════ */
@@ -46,7 +46,7 @@
   }
 
   function refreshSlots() {
-    const n = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
+    const n = talentosQueCuentan();          // sin Dominio ni Gracia
     const max = TALENT_SLOTS[lvl()] || 3;
     const aviso = n > max
       ? `Te pasas por ${n - max}: al Nivel ${lvl()} te tocan ${max} Talentos.`

@@ -1339,6 +1339,7 @@ const app = {
   getMod(val) {
     // Tabla de modificadores de atributo S&S — NO es floor((val-10)/2)
     // 3→-3 · 4-5→-2 · 6-8→-1 · 9-11→0 · 12-14→+1 · 15-16→+2 · 17-18→+3 · 19-20→+4
+    // 21-22→+5, solo alcanzable con la Trascendencia Biológica.
     if (val <= 3)  return -3;
     if (val <= 5)  return -2;
     if (val <= 8)  return -1;
@@ -1346,7 +1347,7 @@ const app = {
     if (val <= 14) return +1;
     if (val <= 16) return +2;
     if (val <= 18) return +3;
-    return +4; // 19-20+
+    return val <= 20 ? +4 : +5;
   },
 
   // Tabla de XP necesario para subir al siguiente nivel (acumulativo)
@@ -2956,6 +2957,9 @@ const app = {
     const parts = [];
     rawParts.forEach(chunk => {
       // Break "DES 16+, Nv3+" → ["DES 16+","Nv3+"] but not "INT, SAB o CAR 13+"
+      // ni «INT 13+, SAB 13+ o CAR 13+»: una lista con «o» al final es UNA
+      // sola alternativa (Arquitecto de Constructos, Surcacielos).
+      if (/\d+\+?\s*,\s*(?:FUE|DES|CON|INT|SAB|CAR)\s*\d+\+?[^,]*\so\s/i.test(chunk)) { parts.push(chunk); return; }
       const segs = chunk.split(/,\s*(?=(?:Nivel|Nv)\.?\s*\d|(?:FUE|DES|CON|INT|SAB|CAR)\s*\d)/i)
                         .map(s => s.trim()).filter(Boolean);
       segs.forEach(s => parts.push(s));
@@ -2967,7 +2971,15 @@ const app = {
       const altPairs = [...part.matchAll(/\b(FUE|DES|CON|INT|SAB|CAR)\s*(\d+)\+?/gi)];
       const hasConnector = /\b(FUE|DES|CON|INT|SAB|CAR)\b[^·]*\b[\/o]\b[^·]*\b(FUE|DES|CON|INT|SAB|CAR)\s*\d/i.test(part);
 
-      if (altPairs.length >= 2 && hasConnector) {
+      // «el atributo de tu Fuente 13+»: cuenta el de la Fuente elegida.
+      const deFuente = part.match(/atributo de tu Fuente\s*(\d+)/i);
+      if (deFuente) {
+        const FUENTE_ATTR = { 'Erudición': ['INT'], 'Psiónica': ['INT', 'SAB'], 'Divinidad': ['SAB', 'CAR'],
+          'Naturaleza': ['SAB'], 'Pacto': ['CAR'], 'Herencia': ['CAR'], 'Juramento': ['CAR'] };
+        (FUENTE_ATTR[this._powerSource] || []).forEach(a => altPairs.push([a, a, deFuente[1]]));
+      }
+      const enLista = deFuente && altPairs.length >= 1;   // «DES 13+, CON 13+ o el atributo…»
+      if ((altPairs.length >= 2 && hasConnector) || enLista) {
         // Satisfied if ANY one attribute meets its own threshold.
         const met = altPairs.some(p => (stats[p[1].toUpperCase()] || 0) >= parseInt(p[2]));
         out.atoms.push({ kind:'attr', raw: part, met });
@@ -3125,6 +3137,12 @@ const app = {
     const d = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
     if (!d) return '';
     if (d.afinidad) return d.afinidad;
+    const am = d.afinidadMutacion;
+    if (am) {
+      if (!document.getElementById('desc_mut_' + slugId(am.opcion))?.checked) return '';
+      const f = valores ? valores['desc_afin_fuente'] : document.getElementById('desc_afin_fuente')?.value;
+      return am.fuentes.includes(f) ? f : '';
+    }
     const op = d.afinidadOpcional;
     if (!op) return '';
     const elegidas = valores
@@ -3398,10 +3416,11 @@ const app = {
     let hidden = document.querySelector(`input[name="chk_talents_hidden"][value="${name}"]`);
     const card = chk.closest('.tc');
     if (chk.checked) {
-      const count = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
+      const count = talentosQueCuentan();
       // El tope sale del nivel (TALENT_SLOTS, v57.16): antes era un 3 fijo.
+      // El Dominio y la Gracia vienen con su Iniciación y no ocupan espacio.
       const max = this._talentMax();
-      if (count >= max) {
+      if (count >= max && !talentoIncluido(name)) {
         this.toast(`Al Nivel ${this._nivel()} puedes elegir ${max} talentos.`, 'err');
         chk.checked = false; return;
       }
@@ -3445,7 +3464,7 @@ const app = {
   _talentMax() { return TALENT_SLOTS[this._nivel()] || 3; },
 
   updateTalentCount() {
-    const n = document.querySelectorAll('input[name="chk_talents_hidden"]').length;
+    const n = talentosQueCuentan();
     const el1 = document.getElementById('talent_count_main');
     if (el1) el1.textContent = n;
     const el2 = document.getElementById('talent_count_modal');
@@ -5374,6 +5393,8 @@ const app = {
   gatherCharData() {
     const data = {
       _schemaVersion: STORAGE.SCHEMA_VERSION,
+      // Edición de los manuales con la que se guardó (8 = 8-10-2026).
+      _manual: 8,
       inputs:{}, selects:{}, checks:[], hidden_talents:[],
       portrait: (() => {
         const src = document.getElementById('char_img')?.src || '';
@@ -5469,6 +5490,15 @@ const app = {
         delete sel[k];
       });
     }
+    /* Alterado (8-10-2026): la Afinidad Psiónica fija pasa a ser la mutación
+       «Afinidad Mutante» con Fuente a elegir. Las fichas anteriores la
+       conservan como Psiónica; si con ella se pasan de Potencial, el
+       contador lo marca y el jugador ajusta. */
+    if (!(data._manual >= 8) && sel.sel_desc === 'mutante' &&
+        !out.checks.some(c => c.name === 'desc_mut' && c.value === 'Afinidad Mutante')) {
+      out.checks.push({ name: 'desc_mut', value: 'Afinidad Mutante', id: 'desc_mut_afinidad_mutante' });
+      sel.desc_afin_fuente = 'Psiónica';
+    }
     out.selects = sel;
     return out;
   },
@@ -5558,6 +5588,16 @@ const app = {
     document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
     document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
     data.checks?.forEach(item=>{let el=document.getElementById(item.id)||document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);if(el)el.checked=true});
+    // Tercera pasada: la Afinidad Mutante del Alterado es una casilla, y su
+    // Fuente y su Truco solo aparecen con ella ya marcada.
+    if (this._repintarOrigen && data.selects?.desc_afin_fuente) {
+      for (let i = 0; i < 2; i++) {
+        this._repintarOrigen();
+        ['desc_afin_fuente', 'desc_eleccion_afinidad'].forEach(id => {
+          const el = document.getElementById(id); if (el && data.selects[id]) el.value = data.selects[id];
+        });
+      }
+    }
     // Migración de talentos renombrados 1:1 (mapa en constants.js): si el id
     // guardado cambió de nombre sin cambiar de mecánica, se remapea al id/nombre
     // vigente para que _findTalent lo reconozca y muestre su contenido completo.

@@ -178,6 +178,8 @@
         cb.checked = marcados.has(cb.id);
         cb.addEventListener('change', () => {
           app._markUnsaved && app._markUnsaved();
+          // La Afinidad Mutante abre (o cierra) el bloque de Afinidad.
+          if (n === descActual()?.afinidadMutacion?.opcion) { pintar(); app.calc(); return; }
           limitarMutaciones();
           app.calc();
           app._renderTraits && app._renderTraits();
@@ -355,6 +357,13 @@
     //    Se consulta con `previos` porque los selects recién creados aún no
     //    tienen valor asignado en el DOM en este punto del repintado.
     if (!d.afinidad && d.afinidadOpcional) {
+      const fuente = app._afinidadFuente(previos);
+      if (fuente) pintarAfinidad(fuente);
+    }
+    // Alterado: con la mutación Afinidad Mutante elige qué Fuente abre.
+    const am = d.afinidadMutacion;
+    if (am && $('desc_mut_' + slugId(am.opcion))?.checked) {
+      host.appendChild(mkSelect('desc_afin_fuente', 'Fuente de la Afinidad Mutante', am.fuentes, previos['desc_afin_fuente']));
       const fuente = app._afinidadFuente(previos);
       if (fuente) pintarAfinidad(fuente);
     }

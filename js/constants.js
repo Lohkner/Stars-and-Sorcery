@@ -13,8 +13,8 @@ const PROF_THRESHOLDS = [[9,4],[5,3],[1,2]]; // S&S: Nv1-4→+2, Nv5-8→+3, Nv9
    mayor modificador. Las Especializadas sin Grado 0 se tiran con
    Desventaja (3d10, suma los 2 más bajos) — no aplica a habilidades ya
    adquiridas (Grado ≥ 0), que es lo único que se muestra como botón.
-   Manual v1: Historia y Religión son UNA habilidad, «Historia / Religión»;
-   las fichas anteriores se migran al cargar (SKILL_RENAMES). */
+   Manual v1 (8-10-2026): Historia y Religión vuelven a ser dos habilidades.
+   Las fichas con «Historia / Religión» pasan a Historia (SKILL_RENAMES). */
 const SKILL_ATTR = {
   // Generales
   'Sigilo':['DES'], 'Proeza Física':['FUE','DES'], 'Percepción':['SAB'],
@@ -22,12 +22,12 @@ const SKILL_ATTR = {
   'Supervivencia':['SAB'], 'Intimidación':['CAR','FUE'],
   // Especializadas
   'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'],
-  'Historia / Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
+  'Historia':['INT'], 'Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
   'Herramientas de Ladrón':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
   'Artesanía':['INT','DES'],
 };
 const SKILL_SPECIALIZED = new Set([
-  'Arcano','Medicina','Tecnología','Historia / Religión','Naturaleza',
+  'Arcano','Medicina','Tecnología','Historia','Religión','Naturaleza',
   'Investigación','Herramientas de Ladrón','Conocimiento de la Calle',
   'Artesanía',
 ]);
@@ -41,12 +41,25 @@ function slugId(s) {
     .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
-/** Habilidades que el Manual v1 fundió en otra. */
+/** Habilidades con otro nombre en fichas anteriores. «Historia / Religión»
+    (Manual v1 hasta el 3-10-2026) conserva su Grado como Historia: el
+    jugador puede cambiarla por Religión si era lo que usaba. */
 const SKILL_RENAMES = {
-  'Historia': 'Historia / Religión',
-  'Religión': 'Historia / Religión',
-  'Conocimiento': 'Historia / Religión',
+  'Historia / Religión': 'Historia',
+  'Conocimiento': 'Historia',
 };
+
+/** Talentos que vienen incluidos en una Iniciación y no ocupan espacio de
+    Talento (Compendio, 8-10-2026): el Dominio de Divinidad y la Gracia de
+    Juramento. */
+function talentoIncluido(nombre) {
+  return /^Dominio de |^Gracia (de|del) /.test(String(nombre || ''));
+}
+/** Talentos elegidos en la ficha que sí ocupan espacio. */
+function talentosQueCuentan() {
+  return [...document.querySelectorAll('input[name="chk_talents_hidden"]')]
+    .filter(h => !talentoIncluido(h.value)).length;
+}
 /** Nombre del Grado de Maestría (Manual Cap.VI §1) */
 const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro','Maestría Absoluta'];
 
@@ -84,7 +97,7 @@ const HITOS_NIVEL = {
 /* ── Descanso y recuperación (Reglas Esenciales §7) ─────────────
    La Carne/Flesh NO figura aquí a propósito: ningún descanso la
    recupera. Solo sube 1 punto por semana completa de reposo real,
-   con curación avanzada (100 pp) o con botiquín avanzado (CD 16). */
+   con curación avanzada (100 cr) o con botiquín avanzado (CD 16). */
 const DESCANSOS = [
   { id:'respiro',     nombre:'Respiro',                  dur:'10 min',
     coste:'1 Ración',

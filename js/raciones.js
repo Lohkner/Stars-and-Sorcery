@@ -11,7 +11,7 @@
        Largo Seguro 1 + entorno · Largo Confortable «posada de calidad o
        camarote». El Confortable NO gasta Ración: la comida caliente va
        incluida en la posada, y así lo dice su fila de la tabla.
-     · Tabla de equipo de aventurero: «Raciones (×5) · 5 pp · 1 Slot ·
+     · Tabla de equipo de aventurero: «Raciones (×5) · 5 cr · 1 Slot ·
        Ud: —». Las Raciones NO tienen Dado de Uso: se cuentan una a una.
      · La Fatiga por 24 h sin comer es cosa de mesa (tiempo
        transcurrido), no de la ficha: aquí no se simula.

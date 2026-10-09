@@ -1,4 +1,42 @@
-# S&S Companion — v64.0
+# S&S Companion — v65.0
+
+## Novedades v65.0 — Manuales del 8-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v135` y `RULES_DATA_VERSION` a
+`v1-official-o8`. Los cambios de la Guía del Director y del Manual de
+Monstruos son solo del Director.
+
+- **Historia y Religión** vuelven a ser dos habilidades (INT, Especializadas).
+  - Las fichas con «Historia / Religión» conservan su Grado como Historia.
+  - Trasfondos, Vocaciones, el Sagaz y Herencia Mixta ya las listan por separado.
+- **Moneda: créditos (cr)** en lugar de piezas de plata, en la ficha, el
+  asistente y los precios. Las armaduras avanzadas bajan de precio (Traje
+  Balístico 60 cr, Exoesqueleto 250 cr, Nanoplacas 1.500 cr…).
+- **Alterado (Mutante)**:
+  - la Afinidad Psiónica fija pasa a ser la mutación **Afinidad Mutante**
+    (Potencial 1), que abre Psiónica, Herencia, Naturaleza o Erudición;
+  - las fichas anteriores la reciben marcada con Psiónica;
+  - Alas: regla de caída.
+- **Dominio y Gracia**: vienen incluidos con Iniciado en Divinidad e Iniciado
+  en Juramento y no ocupan espacio de Talento.
+- **Talento nuevo Surcacielos** (General). Además, 83 Talentos actualizados: muchos
+  requisitos de Nivel 2→3, 4→5 y 6→7, Maestría de Fuente a Nivel 9, y los
+  Disparadores que no gastan Reacción lo dicen.
+- **Requisitos** «A 13+, B 13+ o C 13+» y «el atributo de tu Fuente»: se
+  leen como una sola alternativa. Arquitecto de Constructos exigía los tres.
+- **Catálogo**:
+  - nueve Axiomas de vuelo y levitación;
+  - el Truco **Caída de Pluma**;
+  - el antiguo Axioma Caída de Pluma se llama ahora **Lluvia de Plumas**;
+  - Forma de Bestia da PV temporales.
+- **Otros**:
+  - un atributo de 21–22 da +5 (Trascendencia Biológica);
+  - nuevos textos de Aguante, Entrenamiento Marcial, Afinidad de Herencia del
+    Antiguo y chips del Construido;
+  - «Visión en la Oscuridad»;
+  - el Versátil puede llevar cualquier arma marcial que no sea Ligera ni
+    Pesada;
+  - las armas avanzadas se pueden elegir al crear el personaje.
 
 ## Novedades v64.0 — Manuales «Official» (3-10-2026)
 
