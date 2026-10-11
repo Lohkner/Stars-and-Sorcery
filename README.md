@@ -1,4 +1,30 @@
-# S&S Companion — v65.0
+# S&S Companion — v66.0
+
+## Novedades v66.0 — Paquete Completo del 11-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v136` y `RULES_DATA_VERSION` a
+`v1-official-o11`. Los cambios de la Guía del Director y del Manual de
+Monstruos son solo del Director.
+
+- **Contrahechizo pasa a llamarse Contraaxioma**. Las fichas que lo tenían lo
+  conservan, con su Grado.
+- **29 Talentos al día**. Filo que Vuelve recupera su Grado 3, y La Hoja del
+  Pacto aclara que su Esfuerzo se paga con Adrenalina.
+- **Catálogo regenerado desde el documento**:
+  - Hechizo de Muerte pasa a ser Círculo de Muerte, y Hechizar Serpientes,
+    Encantar Serpientes;
+  - las Reacciones ya no dicen «0 PA»;
+  - Clonar y Exorcismo son rituales;
+  - Espray de Colores, Susurro Cortante y Eco del Vacío conmocionan en vez
+    de aturdir;
+  - en Palabra Sagrada se intercambian Aturdidos y Paralizados.
+- **Construido**: solo +1 CON (antes +1 CON y +1 INT).
+- **Retoques**:
+  - Furia de la Forja y Tradición Marcial: «si ya la tienes, elige la otra»;
+  - Teletransporte del Alterado cuesta 4 Ingenio;
+  - la Media Armadura se compra por piezas (150 cr);
+  - el Bastón ya no es Dos Manos;
+  - con 23–24 el modificador es +6, y sigue subiendo.
 
 ## Novedades v65.0 — Manuales del 8-10-2026
 

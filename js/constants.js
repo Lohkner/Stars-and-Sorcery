@@ -148,6 +148,7 @@ const AXIOM_ID_RENAMES = {
    `_findTalent` / `_talentRichCard` en app.js. */
 const TALENT_ID_RENAMES = {
   golpe_de_ki:      'golpe_de_qi',
+  contrahechizo:    'contraaxioma',     // Compendio del 11-10-2026
   reflexion_de_ki:  'reflexion_de_qi',
 
   /* ── Compendio de Sendas v2.0 ───────────────────────────────────

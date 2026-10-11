@@ -1339,7 +1339,8 @@ const app = {
   getMod(val) {
     // Tabla de modificadores de atributo S&S — NO es floor((val-10)/2)
     // 3→-3 · 4-5→-2 · 6-8→-1 · 9-11→0 · 12-14→+1 · 15-16→+2 · 17-18→+3 · 19-20→+4
-    // 21-22→+5, solo alcanzable con la Trascendencia Biológica.
+    // 21-22→+5, 23-24→+6 y así sucesivamente: solo con la Trascendencia o
+    // los Hitos de Legado.
     if (val <= 3)  return -3;
     if (val <= 5)  return -2;
     if (val <= 8)  return -1;
@@ -1347,7 +1348,7 @@ const app = {
     if (val <= 14) return +1;
     if (val <= 16) return +2;
     if (val <= 18) return +3;
-    return val <= 20 ? +4 : +5;
+    return val <= 20 ? +4 : 5 + Math.floor((val - 21) / 2);
   },
 
   // Tabla de XP necesario para subir al siguiente nivel (acumulativo)
