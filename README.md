@@ -1,4 +1,22 @@
-# S&S Companion — v66.0
+# S&S Companion — v67.0
+
+## Novedades v67.0 — Manuales del 12-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v137` y `RULES_DATA_VERSION` a
+`v1-official-o12`.
+
+- **14 Talentos**: los ataques extra pasan a ser «efecto de 0 PA» o parte del
+  Ataque Normal. Algunos se limitan a una vez por ronda. Contraaxioma se tira
+  con 1d20 + PB + MOD INT, y Competencia Marcial ya no pide competencia con
+  armas marciales.
+- **10 Axiomas**:
+  - Lanza de Rayo hace 2d6;
+  - Desintegrar inflige 8d6 de Fuerza (CON mitad);
+  - Lluvia de Meteoros hace 12d6 por meteoro;
+  - las parálisis duran un Ud en vez de rondas (Detener Monstruo,
+    Inmovilizar Persona, Animal y Planta, Paralización, Detener a las
+    Masas);
+  - Palabra de Poder: Matar elige a quién afecta.
 
 ## Novedades v66.0 — Paquete Completo del 11-10-2026
 
