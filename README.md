@@ -1,4 +1,29 @@
-# S&S Companion — v67.0
+# S&S Companion — v68.0
+
+## Novedades v68.0 — Manuales del 18-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v138` y `RULES_DATA_VERSION` a
+`v1-official-o18`.
+
+- **Descriptor nuevo: Retornado** (no-muerto consciente). +2 CON y +1 a CAR o
+  INT, y los Rasgos Sin Pulso, Frío de la Tumba, Lo que no Muere y Lo que te
+  Deshace. Sus Respiros y Descansos Largos no gastan Ración.
+- **Monturas** en Equipo: Mula (20 cr), Caballo de monta (75 cr) y Caballo de
+  guerra (250 cr).
+- **Iniciaciones**: cada una pide el atributo de su Fuente (Erudición INT 13+,
+  Pacto CAR 13+…).
+- **25 Talentos al día**. Maestría Alquímica trae sus seis recetas.
+- **8 Axiomas**:
+  - Descarga Arcana hace 2d6 y salpica a 5 pies;
+  - Cono de Frío hace 7d6;
+  - Círculo de Muerte mata a NA 4 o menos;
+  - Dedo de la Muerte hace 7d6;
+  - Barrera de Cuchillas hace 8d6 (DES mitad);
+  - Semillas de Fuego, Palabra Sagrada y Fauces del Vacío cambian su texto.
+- **Retoques**:
+  - Marcado: no necesita Patrono para su Afinidad;
+  - Construido: empieza con chips por toda su capacidad;
+  - Ataques Salvajes: un solo dado extra por ataque.
 
 ## Novedades v67.0 — Manuales del 12-10-2026
 

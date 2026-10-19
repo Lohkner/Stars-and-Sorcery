@@ -2972,6 +2972,19 @@ const app = {
       const altPairs = [...part.matchAll(/\b(FUE|DES|CON|INT|SAB|CAR)\s*(\d+)\+?/gi)];
       const hasConnector = /\b(FUE|DES|CON|INT|SAB|CAR)\b[^·]*\b[\/o]\b[^·]*\b(FUE|DES|CON|INT|SAB|CAR)\s*\d/i.test(part);
 
+      // «El atributo de la Fuente 13+» (requisito de cada Iniciación): el de
+      // la Fuente elegida o, sin elegir, el mejor de INT, SAB o CAR.
+      const soloFuente = part.match(/^el atributo de la Fuente\s*(\d+)/i);
+      if (soloFuente) {
+        const FA = { 'Erudición': ['INT'], 'Psiónica': ['INT', 'SAB'], 'Divinidad': ['SAB', 'CAR'],
+          'Naturaleza': ['SAB'], 'Pacto': ['CAR'], 'Herencia': ['CAR'], 'Juramento': ['CAR'] };
+        const at = FA[this._powerSource] || ['INT', 'SAB', 'CAR'];
+        const need = parseInt(soloFuente[1]);
+        const met = Math.max(...at.map(a => stats[a] || 0)) >= need;
+        out.atoms.push({ kind:'attr', raw: part, met });
+        if (!met) { out.met = false; out.unmet.push(`${at.join('/')} ${need}+`); }
+        return;
+      }
       // «el atributo de tu Fuente 13+»: cuenta el de la Fuente elegida.
       const deFuente = part.match(/atributo de tu Fuente\s*(\d+)/i);
       if (deFuente) {

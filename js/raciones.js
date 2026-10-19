@@ -313,7 +313,8 @@
       abierto, porque la acción no ha llegado a ocurrir. */
   const _doRest = app.doRest;
   app.doRest = function (id) {
-    const coste = COSTE[id] || 0;
+    // Retornado (Sin Pulso): sus Respiros y Descansos Largos no consumen Ración.
+    const coste = document.getElementById('sel_desc')?.value === 'retornado' ? 0 : (COSTE[id] || 0);
     if (coste && actual() < coste) {
       const det = $('rest_panel');
       if (det) det.open = true;
