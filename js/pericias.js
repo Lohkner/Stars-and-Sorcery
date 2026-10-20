@@ -159,7 +159,8 @@
       if (!row) return;
       row.classList.toggle('per-on', grades[e] > 0);
       const cost = row.querySelector('.per-cost');
-      if (cost) cost.textContent = (NE_COST[grades[e]] ?? 5) + ' pts/NE';
+      // Manual (19-10-2026): ya no se dice «NE», sino «de Esfuerzo».
+      if (cost) cost.textContent = (NE_COST[grades[e]] ?? 5) + ' por Esfuerzo';
     });
     return r;
   };

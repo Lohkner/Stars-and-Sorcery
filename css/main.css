@@ -3272,8 +3272,10 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 
 /* ── Editor de grados de Pericia (panel Identidad) ───────────── */
 .per-grid{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+/* Rejilla (v69): nombre arriba, coste debajo y el grado a la derecha. Con
+   «4 por Esfuerzo» en la misma línea no cabía en la columna de 156 px. */
 .per-row{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px;
   padding:4px 8px;border:1px solid var(--edge-soft);border-radius:var(--r);
   background:var(--raised);
 }
@@ -3281,13 +3283,14 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   font-family:var(--fd);font-size:var(--fs-sm);color:var(--dim);
   letter-spacing:.06em;white-space:nowrap;
 }
-/* Lo que compra el grado: coste por Nivel de Esfuerzo */
+/* Lo que compra el grado: coste de cada Esfuerzo */
 .per-cost{
-  margin-left:auto;font-family:var(--fm);font-size:var(--fs-2xs);
-  color:var(--muted);white-space:nowrap;
+  grid-column:1;grid-row:2;font-family:var(--fm);font-size:var(--fs-2xs);
+  color:var(--muted);line-height:1.3;overflow-wrap:anywhere;
 }
 .per-row.per-on .per-cost{color:var(--gold)}
 .per-sel{
+  grid-column:2;grid-row:1 / span 2;
   width:auto !important;min-width:52px;flex-shrink:0;
   min-height:32px !important;padding:2px 4px !important;
   font-family:var(--fm) !important;font-size:var(--fs-md) !important;

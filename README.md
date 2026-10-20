@@ -1,4 +1,21 @@
-# S&S Companion — v68.0
+# S&S Companion — v69.0
+
+## Novedades v69.0 — Manuales del 19-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v139` y `RULES_DATA_VERSION` a
+`v1-official-o19`.
+
+- **El Fronterizo pasa a llamarse Escindido**. Su clave interna no cambia y
+  las fichas siguen igual.
+- **«NE» pasa a llamarse «Esfuerzo»**: la ficha dice «4 por Esfuerzo» en las
+  Pericias. Esa fila es ahora una rejilla (nombre, coste debajo y grado a la
+  derecha), porque el texto nuevo no cabía en la columna.
+- **Sin Salvaciones de Muerte**: a 0 PV el personaje se desangra (−1d4 Flesh
+  por turno). El Retornado cambia Lo que no Muere y Carne Muerta, y la
+  Regeneración del Alterado devuelve 1 de Flesh por Descanso Largo.
+- **42 Talentos al día**: Golpe de Conmoción, Golpe Aturdidor, Golpe Furtivo,
+  Metacreatividad, Tótem y más.
+- Descarga de Energía (Alterado) cuesta además 4 Adrenalina.
 
 ## Novedades v68.0 — Manuales del 18-10-2026
 
