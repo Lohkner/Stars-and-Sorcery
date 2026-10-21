@@ -1,4 +1,34 @@
-# S&S Companion — v69.0
+# S&S Companion — v71.0
+
+## Novedades v71.0 — Manual del 20-10-2026, 23:15
+
+`CACHE_VERSION` sube a `ss-companion-v141` y `RULES_DATA_VERSION` a
+`v1-official-o21`.
+
+- **Carga por Slots**:
+  - la capacidad es 10 + MOD FUE (de 7 a 14), en vez de FUE + 5;
+  - el Morral y la ropa no ocupan Slots, tampoco en las fichas guardadas
+    antes;
+  - el aviso dice «Sobrecargado» con 1–4 Slots de más e «Inmóvil: suelta
+    algo» con 5 o más.
+- **Raciones**: se siguen contando una a una. La nota recuerda que el día de
+  marcha también gasta una (con el botón «−»).
+- **Munición contada**: las armas a distancia dicen «carcaj de 20; recuperas
+  la mitad» o «cargador de 10 disparos».
+
+## Novedades v70.0 — Manuales del 20-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v140` y `RULES_DATA_VERSION` a
+`v1-official-o20`.
+
+- Un Talento al día. En su Grado «Alternas», las armas a mano ya no cuentan
+  para la Carga.
+- El resto de la entrega no toca nada que la app lleve:
+  - el Esfuerzo da +4 al daño en vez de +1d6 (la app no tira el Esfuerzo);
+  - la Fatiga cambia de nombres: Fatigado, Extenuado, Rendido;
+  - hay acciones libres;
+  - la Carga por defecto pasa a contar puntos. La ficha sigue con el módulo
+    de Carga por Slots (FUE + 5), que el Manual mantiene como opción.
 
 ## Novedades v69.0 — Manuales del 19-10-2026
 

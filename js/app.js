@@ -1743,8 +1743,12 @@ const app = {
           ? 'linear-gradient(90deg,var(--gold),var(--ember))'
           : 'linear-gradient(90deg,var(--gold),var(--goldb))';
     }
+    // De 1 a 4 Slots de más: Sobrecargado (−10 pies, Desventaja en Proeza
+    // Física y Sigilo). Con 5 o más de más: velocidad 0 hasta soltar algo.
     const warn = $('carga_warn');
-    warn.style.display = inv.current > inv.max ? 'block' : 'none';
+    const exceso = inv.current - inv.max;
+    warn.style.display = exceso > 0 ? 'block' : 'none';
+    if (exceso > 0) warn.textContent = exceso >= 5 ? 'Inmóvil: suelta algo' : 'Sobrecargado';
     if ($('load_summary_display'))
       $('load_summary_display').textContent = `${inv.current}/${inv.max}`;
 
@@ -2232,10 +2236,15 @@ const app = {
   },
 
   calcInventory() {
-    // Slots = puntuación FUE FINAL (incluye bonificaciones de descriptor) + 5 del Morral gratuito
-    // _finalStats se actualiza en calc() antes de llamar calcInventory — siempre es consistente
+    // Manual (20-10-2026): capacidad = 10 + MOD FUE (de 7 a 14), con la FUE
+    // final. El Morral ya no suma Slots: es lo que permite llevarlos, y
+    // todos los Arquetipos empiezan con uno, así que se da por supuesto.
+    // Todo lo que llevas ocupa Slots, también la armadura puesta.
     const fueFinal = this._finalStats?.FUE ?? (parseInt(document.getElementById('base_FUE')?.value)||8);
-    return { current: this.inventory.reduce((s,i)=>s+(i.slots||0),0), max: fueFinal + 5 };
+    // El Morral y la ropa no ocupan Slots: así quedan también las fichas
+    // guardadas antes, que los traían con 1.
+    const libre = i => /^\s*(morral|ropa)\b/i.test(String(i.name || ''));
+    return { current: this.inventory.reduce((s,i)=>s+(libre(i)?0:(i.slots||0)),0), max: 10 + this.getMod(fueFinal) };
   },
 
   syncCombatOptions() {

@@ -1176,7 +1176,7 @@
     }
     if (hayEquipo) {
       PAQUETE.forEach(k => meter('misc', k));
-      app.inventory.push({ uid: app._nextUid(), name: 'Ropa de viaje', slots: 1, type: 'misc' });
+      app.inventory.push({ uid: app._nextUid(), name: 'Ropa de viaje', slots: 0, type: 'misc' });
       app.gold = S.monedas || 0;
     }
 

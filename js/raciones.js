@@ -189,7 +189,7 @@
         ? 'No llevas Raciones. Añádelas en Equipo y Tesoro: ellas fijan el máximo de esta tarjeta.'
         : t === 0
           ? 'Sin Raciones no hay recuperación: el Respiro y el Descanso Largo no curan nada. El Confortable sí, porque no cuesta Ración.'
-          : 'Cada Respiro y cada Descanso Largo gasta 1. El Confortable no: la posada te da de comer.';
+          : 'Cada Respiro, Descanso Largo o día de marcha gasta 1 (usa «−» para la marcha). El Confortable no: la posada te da de comer.';
       nota.classList.toggle('rac-note--vacio', t === 0);
     }
     const panel = $('rac_panel');
