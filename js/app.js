@@ -2244,7 +2244,9 @@ const app = {
     // El Morral y la ropa no ocupan Slots: así quedan también las fichas
     // guardadas antes, que los traían con 1.
     const libre = i => /^\s*(morral|ropa)\b/i.test(String(i.name || ''));
-    return { current: this.inventory.reduce((s,i)=>s+(libre(i)?0:(i.slots||0)),0), max: 10 + this.getMod(fueFinal) };
+    // Cada 100 monedas completas ocupan 1 Slot; menos de 100, nada.
+    const monedas = Math.floor((parseInt(this.gold, 10) || 0) / 100);
+    return { current: this.inventory.reduce((s,i)=>s+(libre(i)?0:(i.slots||0)),0) + monedas, max: 10 + this.getMod(fueFinal) };
   },
 
   syncCombatOptions() {

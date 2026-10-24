@@ -1,4 +1,32 @@
-# S&S Companion — v71.0
+# S&S Companion — v73.0
+
+## Novedades v73.0 — Corrección del 24-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v143` y `RULES_DATA_VERSION` a
+`v1-official-o24`.
+
+- **Adepto de Fuente** vuelve a pedir «Iniciado en tu Fuente · Nivel 5»: la
+  Afinidad del Linaje vuelve a valer. Se retira la regla de la v72.
+- **Marcado**: el Patrono opcional alcanza también a las ventajas de Pacto de
+  Adepto y Maestría de Fuente.
+
+## Novedades v72.0 — Manuales del 23-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v142` y `RULES_DATA_VERSION` a
+`v1-official-o23`.
+
+- **Adepto de Fuente** exige el Talento de Iniciación: la Afinidad del Linaje
+  ya no basta.
+- **Munición en Equipo**: Carcaj (20 flechas o virotes, 1 cr) y Cargador
+  (10 disparos, 5 cr). El asistente los da con el arma a distancia que
+  elijas.
+- **Carga**:
+  - cada 100 monedas completas ocupan 1 Slot;
+  - el asistente ya no le da 1 Slot al Morral.
+- **Talentos al día**:
+  - Mente Criminal: estudiar 1 minuto revela una vulnerabilidad;
+  - Defensa Arcana: solo sustituye cuando te da más Guardia;
+  - la Prerrogativa del Dominio de Vida pasa a hablar de Flesh.
 
 ## Novedades v71.0 — Manual del 20-10-2026, 23:15
 

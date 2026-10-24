@@ -1147,7 +1147,7 @@
       const data = app.DB[cat]?.[key];
       if (!data) return null;
       const item = {
-        uid: app._nextUid(), name: data.name, slots: data.slots || 1,
+        uid: app._nextUid(), name: data.name, slots: data.slots ?? 1,
         // Copia de los datos de juego, no referencia a la entrada de la base
         // (mismo criterio que addFromDB).
         type: cat === 'shields' ? 'shields' : cat, dbKey: key, dbData: { ...data },
@@ -1159,6 +1159,12 @@
     // no se le mete en la mochila un macuto que no ha visto.
     const hayEquipo = S.paso >= 6;
     const armasItems = hayEquipo ? S.armas.map(k => meter('weapons', k)).filter(Boolean) : [];
+    // «Con su munición si es a distancia»: un carcaj de 20 o un cargador.
+    if (hayEquipo) {
+      const notas = S.armas.map(k => app.DB.weapons[k]?.notes || '').join(' ');
+      if (/carcaj/i.test(notas)) meter('misc', 'carcaj');
+      if (/cargador/i.test(notas)) meter('misc', 'cargador');
+    }
     const eq = hayEquipo ? EQUIPO_ARQ[S.arq] : null;
     let armorItem = null, shieldItem = null;
     if (eq) {
