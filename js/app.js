@@ -2427,6 +2427,18 @@ const app = {
     return acq > 0 ? Math.max(0, Math.min(4, acq - 1)) : 0;
   },
 
+  /** Grado que el personaje tiene en una habilidad, o −1 si no la tiene
+      (sin Grado 0 no está entrenado). Durante el Asistente sale de su
+      borrador (`_wizCtx.habilidades`), porque la ficha aún está vacía. */
+  _gradoHabilidad(skill) {
+    const ctx = this._wizCtx;
+    if (ctx && ctx.habilidades) return ctx.habilidades[skill] ?? -1;
+    const counts = this._skillCounts(), grants = this._lineageGrants();
+    const acq = (grants[skill] != null ? grants[skill] + 1 : 0) + (counts[skill] || 0);
+    if (acq <= 0 && !((this._skillBonus?.[skill] || 0) > 0)) return -1;
+    return this._skillGrade(skill, counts, grants);
+  },
+
   /** Grado efectivo = mínimo automático + puntos extra manuales (clamp 0–5).
       El 5 solo existe por Maestría Absoluta o un Hito de Legado (Manual 1.0):
       el mínimo automático sigue topando en 4, así que solo se llega a mano. */
@@ -3097,6 +3109,15 @@ const app = {
           n.startsWith('gracia ') || n.startsWith('voto ') || n === 'rompejuramentos');
         out.atoms.push({ kind:'talent', raw: part, met });
         if (!met) { out.met = false; out.unmet.push('Gracia de Juramento (cualquiera)'); }
+      }
+      // Grado en una habilidad: «Grado 0 en Naturaleza o Arcano», «Grado 1 en
+      // Sigilo». Basta una de las alternativas con ese Grado o más.
+      else if ((m = part.match(/^Grado\s+(\d)\s+en\s+(.+)$/i))) {
+        const need = parseInt(m[1]);
+        const opciones = m[2].split(/\s+o\s+|\s*,\s*/i).map(x => x.trim()).filter(Boolean);
+        const met = opciones.some(sk => this._gradoHabilidad(sk) >= need);
+        out.atoms.push({ kind:'skill', raw: part, met });
+        if (!met) { out.met = false; out.unmet.push(`Grado ${need} en ${opciones.join(' o ')}`); }
       }
       // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
       else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
@@ -4119,7 +4140,8 @@ const app = {
       // por Fuente ni por Nivel, o «Mi Fuente» dejaría al personaje sin los
       // 24 Trucos que sí puede usar.
       const esTruco = s.type === 'trick';
-      if (ok && f.source && miFuente && !esTruco) {
+      // Los rituales comunes no son de ninguna Fuente: los usa cualquiera.
+      if (ok && f.source && miFuente && !esTruco && s.source !== 'Rituales') {
         ok = this._normSource(s.source || '') === miFuente;
       }
       if (ok && f.reach && !esTruco) {

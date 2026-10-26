@@ -1,4 +1,30 @@
-# S&S Companion — v73.0
+# S&S Companion — v74.0
+
+## Novedades v74.0 — Manuales del 26-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v144` y `RULES_DATA_VERSION` a
+`v1-official-o26`.
+
+- **Arreglo: requisitos de Grado en habilidades.** «Grado 0 en Naturaleza o
+  Arcano» (Maestría Alquímica, Camino de las Sombras…) se tomaba por el nombre
+  de un Talento y nunca se cumplía. Ahora se mira el Grado real de la
+  habilidad, también en el asistente con lo elegido en el borrador.
+- **Escuelas**: cada Axioma muestra la suya (Evocación, Nigromancia…).
+- **Rituales comunes**: Ensamblar Osamenta, Círculo Menor, Consagrar,
+  Remodelar Objeto, Reposo Apacible y Grieta Umbral. Son de cualquier Fuente
+  y el filtro «Mi Fuente» no los oculta.
+- **9 Axiomas nuevos de Nigromancia**: Tañido Fúnebre (Truco), Rayo
+  Enervante, Paso al Umbral, Náusea Psíquica, Infligir Heridas, Otorgar
+  Maldición, Marchitar y Contagio.
+- **Compendio**:
+  - Talento nuevo Especialista de escuela;
+  - 10 Talentos retirados: Consagrar, Círculo de Invocación, Osamenta
+    Viviente, Heraldo del Umbral, Manto de Oscuridad, Lazo de Sombra, Espejo
+    Sombrío, Ejército de Sombras, Grieta Umbral y Alquimia de la Forma.
+    Algunos pasan a ser rituales o Axiomas de la Lista Sombría;
+  - Camino de las Sombras abre esa Lista Sombría;
+  - 46 Talentos al día.
+- **Equipo**: Kit de oficio, Libro de rituales y Componentes de ritual.
 
 ## Novedades v73.0 — Corrección del 24-10-2026
 

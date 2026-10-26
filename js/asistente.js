@@ -112,7 +112,7 @@
     if (!txt) return '';
     return String(txt)
       // «+2 a un Atributo y +1 a otro, a elección» (Humano, Medio Elfo, v62)
-      .replace(/\+(\d+)\s+a\s+un\s+Atributo\s+y\s+\+(\d+)\s+a\s+otro,?\s*a\s+elecci[oó]n/gi, 'Elegir +$1, +$2')
+      .replace(/\+(\d+)\s+a\s+un\s+Atributo\s+y\s+\+(\d+)\s+a\s+otro(?:\s+distinto)?,?\s*a\s+elecci[oó]n/gi, 'Elegir +$1, +$2')
       .replace(/,\s*\+/g, ' · +')
       .replace(/\+(\d+)\s+a\s+(un|una|dos|tres|cuatro)\s+Atributos?\s*(?:distintos?\s*)?a\s+elecci[oó]n/gi,
         (_, n, palabra) => {
@@ -558,12 +558,23 @@
      el asistente está vacío o con los restos del personaje anterior.
      Incluye los Talentos ya elegidos, así que tomar «Iniciado en Pacto»
      desbloquea al momento los que lo exigen. */
+  /** Grado de cada habilidad del borrador: cada elección (Arquetipo,
+      Trasfondo, Linaje) es una adquisición; la primera da Grado 0. */
+  function habilidadesBorrador() {
+    const acq = {};
+    S.arqSkills.concat(S.bgSkills, skillsDelLinaje()).forEach(x => { acq[x] = (acq[x] || 0) + 1; });
+    (app.DB.descriptors[S.desc]?.skillGrants || []).forEach(g => { acq[g.skill] = (acq[g.skill] || 0) + (g.grade || 0) + 1; });
+    const out = {};
+    Object.keys(acq).forEach(k => { out[k] = Math.min(4, acq[k] - 1); });
+    return out;
+  }
   function conContexto(fn) {
     app._wizCtx = {
       stats: ATTRS.reduce((o, k) => (o[k] = total(k), o), {}),
       lvl: 1,
       afinidad: fuenteAfinidad(),
       talentos: S.talentos,
+      habilidades: habilidadesBorrador(),
     };
     try { return fn(); } finally { app._wizCtx = null; }
   }
