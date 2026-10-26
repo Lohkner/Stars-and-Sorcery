@@ -3947,6 +3947,8 @@ const app = {
       seccion('Kit de oficio', w);
     }
     if (bg.defecto) seccion('Defecto', nodo('p', 'js-detail-txt bg-defecto', bg.defecto));
+    // Sin efecto mecánico: da contenido al Vínculo y al Defecto.
+    if (bg.pregunta) seccion('Pregunta de origen', nodo('p', 'bg-nota', bg.pregunta));
     const hab = Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e => e.value);
     const w = nodo('div', 'bg-fila');
     if (hab.length) hab.forEach(s => w.appendChild(nodo('span', 'js-tag-neutral', s)));

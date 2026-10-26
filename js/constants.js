@@ -23,12 +23,12 @@ const SKILL_ATTR = {
   // Especializadas
   'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'],
   'Historia':['INT'], 'Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
-  'Herramientas de Ladrón':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
+  'Mecanismos':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
   'Artesanía':['INT','DES'],
 };
 const SKILL_SPECIALIZED = new Set([
   'Arcano','Medicina','Tecnología','Historia','Religión','Naturaleza',
-  'Investigación','Herramientas de Ladrón','Conocimiento de la Calle',
+  'Investigación','Mecanismos','Conocimiento de la Calle',
   'Artesanía',
 ]);
 /** Bonos de atributo a elección del Linaje: número de ranuras y valor de
@@ -45,6 +45,7 @@ function slugId(s) {
     (Manual v1 hasta el 3-10-2026) conserva su Grado como Historia: el
     jugador puede cambiarla por Religión si era lo que usaba. */
 const SKILL_RENAMES = {
+  'Herramientas de Ladrón': 'Mecanismos',   // Manual, 26-10-2026
   'Historia / Religión': 'Historia',
   'Conocimiento': 'Historia',
 };

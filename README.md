@@ -1,4 +1,24 @@
-# S&S Companion — v74.0
+# S&S Companion — v75.0
+
+## Novedades v75.0 — Manuales del 26-10-2026, 18:14
+
+`CACHE_VERSION` sube a `ss-companion-v145` y `RULES_DATA_VERSION` a
+`v1-official-o27`.
+
+- **Trasfondos nuevos**:
+  - cada uno trae seis habilidades distintas de antes;
+  - todos los Vínculos son Ud8;
+  - el Marinero pasa a llamarse Navegante (las fichas lo conservan);
+  - el Forastero lleva Kit de disfraz.
+- **Pregunta de origen**: cada Trasfondo trae una y se ve en Detalle ›
+  Trasfondo. No tiene efecto mecánico.
+- **La habilidad Herramientas de Ladrón pasa a llamarse Mecanismos**
+  (cerraduras, trampas, relojería). Las fichas guardadas la migran con su
+  Grado. El kit del Ladrón conserva su nombre.
+- **Vocaciones**: habilidades nuevas y Vínculo Ud8.
+- **Talentos al día**: Golpe Táctico y Torbellino (Postura Agresiva),
+  Especialista de escuela, Convergencia y 10 más.
+- **Axiomas**: Curación Mayor, Maldición Menor y Guía del Patrono.
 
 ## Novedades v74.0 — Manuales del 26-10-2026
 
