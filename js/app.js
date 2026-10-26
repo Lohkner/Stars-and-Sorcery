@@ -1004,6 +1004,21 @@ const app = {
         if (a) out[a] = (out[a] || 0) + pickVal(d.pick, i - 1);
       }
     }
+    // Atributos que da la Experiencia elegida (Protocolo Coloso: +2 FUE).
+    Object.entries(this._eleccionMods(d)).forEach(([a, v]) => {
+      if (STATS.includes(a)) out[a] = (out[a] || 0) + v;
+    });
+    return out;
+  },
+
+  /** Suma de lo que dan las Experiencias elegidas del Linaje (eleccionMods),
+      atributos y VEL. */
+  _eleccionMods(d) {
+    const out = {};
+    if (!d?.eleccionMods) return out;
+    document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').forEach(s => {
+      Object.entries(d.eleccionMods[s.value] || {}).forEach(([a, v]) => { out[a] = (out[a] || 0) + v; });
+    });
     return out;
   },
 
@@ -1632,12 +1647,14 @@ const app = {
     $('res_ini').textContent = (ini>=0?'+':'')+ini;
 
     // Velocidad
-    const spd = arq?.speed || 30;
+    // Más lo que dé la Experiencia del Linaje (Hostigador, Velocidad y Sentidos).
+    const spd = (arq?.speed || 30) + (this._eleccionMods(desc).VEL || 0);
     $('res_vel').textContent = spd+' pies';
 
-    // Flesh/Carne = puntuación de CON (el número, no el modificador)
-    const conScore = parseInt($('base_CON')?.value)||8;
-    const carneVal = conScore + (desc?.mods?.CON||0);
+    // Flesh/Carne = puntuación de CON FINAL (el número, no el modificador),
+    // con todos los bonos del Linaje: también los elegidos (Ambicioso con
+    // +2 a CON) y los de su Experiencia. Antes solo sumaba los fijos.
+    const carneVal = final.CON || 8;
     $('res_carne').textContent = carneVal;
 
     // ── ARMADURA (RD) y GUARDIA — las dos defensas (Manual v8.3, Cap.5 §3a) ──

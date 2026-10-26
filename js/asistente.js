@@ -152,6 +152,10 @@
     if (!d) return out;
     Object.entries(d.mods || {}).forEach(([k, v]) => out[k] = (out[k] || 0) + v);
     S.descPick.forEach((a, i) => { if (a) out[a] = (out[a] || 0) + pickVal(d.pick, i); });
+    // Atributos de la Experiencia elegida (Protocolo Coloso: +2 FUE).
+    S.descExps.forEach(x => Object.entries(d.eleccionMods?.[x] || {}).forEach(([a, v]) => {
+      if (ATTRS.includes(a)) out[a] = (out[a] || 0) + v;
+    }));
     return out;
   }
   const base  = k => S.asign[k] != null ? S.asign[k] : (S.metodo === 'C' ? 8 : null);

@@ -1,4 +1,19 @@
-# S&S Companion — v75.0
+# S&S Companion — v76.0
+
+## Novedades v76.0 — Bonos de la Elección de Experiencia
+
+`CACHE_VERSION` sube a `ss-companion-v146`.
+
+- **Arreglo: la Experiencia del Linaje ya suma sus bonos.**
+  - Construido: Protocolo Coloso da +2 FUE; Protocolo Hostigador, +2 DES y
+    +10 pies de velocidad.
+  - Feral: Velocidad y Sentidos da +10 pies.
+  - Se aplica en la ficha y en el asistente. Los datos lo declaran con
+    `eleccionMods` en el Descriptor.
+- **Arreglo: la Carne usa la CON final.** Antes solo sumaba el bono fijo del
+  Linaje, así que un Ambicioso con +2 a CON no veía subir su Carne.
+- **Revisión de los 12 Descriptores**: sus bonos de atributo coinciden con el
+  Manual y se aplican.
 
 ## Novedades v75.0 — Manuales del 26-10-2026, 18:14
 

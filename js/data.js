@@ -13,6 +13,8 @@ const DEFAULT_DB = {
        `vals` da el valor de cada ranura cuando no es el mismo —Humano y
        Medio Elfo: [2,1], «+2 a un Atributo y +1 a otro»—; sin él vale `val`.
      skillGrants: Grados de habilidad que el Linaje da sin elegir.
+     eleccionMods: lo que suma cada opción de la Elección de Experiencia
+       (atributos y VEL en pies), por el nombre de la opción.
      mutaciones (Mutante): {potencial, maxDeformidades, opciones,
        deformidades}, cada una [nombre, coste, efecto]. Se eligen con
        Potencial en vez de con desplegables (origen.js y asistente.js).
@@ -61,6 +63,7 @@ const DEFAULT_DB = {
       txt:"Pilares: Precisión · Permanencia. Tu cuerpo fue construido y tus sistemas funcionan de forma distinta a la biología convencional. Interpretaciones: Sintético · autómata · gólem racional · humano reconstruido · soldado artificial.",
       bonus:"+1 CON",
       grant:["Rasgo — Construcción: inmune al Veneno y a las Enfermedades. Un Descanso Largo requiere cuatro horas de mantenimiento inactivo; su calidad, segura o insegura, la da el lugar, como a cualquiera.","Rasgo — Interfaz: tu cuerpo admite Chips de Mejora, módulos que se instalan en tu sistema y cambian cómo funcionas. Capacidad total: 4 + tu Nivel de personaje. Empiezas con chips por un total igual a tu capacidad (5 a Nivel 1), además del Chip de Sistema. Son chips de grado normal: la fusión solo llega jugando.","Chips de Mejora: se instalan y se quitan durante un Respiro o un Descanso Largo, nunca en combate. No puedes llevar dos copias del mismo chip: dos iguales del mismo grado se fusionan en un Respiro en el grado siguiente (normal → + → ++), que ocupa 1 de capacidad más. Se encuentran, se compran (50 cr por punto de capacidad) o se extraen de máquinas derrotadas con Tecnología contra su CD. Si te extraen el Chip de Sistema quedas inerte hasta que te lo reinstalen. Los tienes en Equipo › Categoría «Chips».","Elección de Experiencia: Protocolo Coloso (+2 FUE; desarmado 1d6 + MOD FUE Contundente) / Protocolo Hostigador (+2 DES y +10 pies de velocidad base)"],
+      eleccionMods:{"Protocolo Coloso":{FUE:2},"Protocolo Hostigador":{DES:2,VEL:10}},
       mods:{CON:1}},
     "aesir":{name:"Portador",interpretaciones:"Aesir · descendiente de dioses · avatar de una fe · elegido del destino",pr:4,
       txt:"Pilares: Deber · Destino. Desciende de poderes que tocaron lo divino. Interpretaciones: Aesir · descendiente de dioses · avatar de una fe · elegido del destino.",
@@ -93,6 +96,7 @@ const DEFAULT_DB = {
       bonus:"+2 FUE o DES, +1 CON",
       afinidad:"Naturaleza",
       grant:["Rasgo — Garras Naturales: tus ataques desarmados infligen 1d6 + MOD FUE de daño Cortante.","Rasgo — Instinto de Manada: comunicas intenciones y emociones simples a bestias no hostiles. Ventaja en Percepción al buscar anomalías en entornos naturales y en Supervivencia en terrenos naturales o salvajes.","Rasgo — Afinidad Natural: tienes Acceso a Naturaleza. Para cumplir los requisitos de los Talentos de Naturaleza, tu Afinidad cuenta como Iniciado en Naturaleza. Además, aprendes 1 Truco de Naturaleza.","Además: los animales no hostiles te aceptan sin tirada. Una vez por Descanso Largo pides a un animal salvaje una cosa concreta y sencilla —vigilar, guiar, traer, esperar— y la hace, hasta donde su naturaleza le permita.","Elección de Experiencia: Furia Salvaje (una vez por conflicto emites un rugido; un enemigo que lo perciba hace Salvación de SAB CD 8 + PB + ½ Nivel + el mayor entre tu MOD FUE y tu MOD DES o sufre Desventaja en su próximo ataque) / Velocidad y Sentidos (+10 pies de velocidad base y Visión en la Oscuridad hasta 60 pies)"],
+      eleccionMods:{"Velocidad y Sentidos":{VEL:10}},
       mods:{CON:1},pick:{n:1,val:2,from:['FUE','DES']}},
     "retornado":{name:"Retornado",interpretaciones:"no-muerto consciente · espectro a medio formar · vampiro joven · aparecido · cuerpo que se niega a morir · alma atada a un anillo o a un juramento",pr:4,
       txt:"Pilares: Muerte · Voluntad. Algo te mató, o debió matarte, y no te fuiste. Tu cuerpo sigue en pie porque tu voluntad no ha soltado lo que te ata aquí. Interpretaciones: no-muerto consciente · espectro a medio formar · vampiro joven · aparecido · cuerpo que se niega a morir · alma atada a un anillo o a un juramento.",
