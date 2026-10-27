@@ -4163,6 +4163,11 @@ const app = {
       if (ok && f.source && miFuente && !esTruco && s.source !== 'Rituales') {
         ok = this._normSource(s.source || '') === miFuente;
       }
+      // Cada Fuente tiene su lista de Trucos (Catálogo, «Trucos por Fuente»).
+      // Herencia no tiene lista: escribe los suyos, así que los ve todos.
+      if (ok && f.source && miFuente && esTruco && Array.isArray(s.fuentes) && miFuente !== this._normSource('Herencia')) {
+        ok = s.fuentes.some(x => this._normSource(x) === miFuente);
+      }
       if (ok && f.reach && !esTruco) {
         ok = techo > 0 && (s.level || 0) <= techo;
       }

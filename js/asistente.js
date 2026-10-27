@@ -391,7 +391,7 @@
       sub.appendChild(el('span', 'wiz-lbl', 'Truco de ' + fuente));
       const s = el('select');
       s.appendChild(new Option('— Elegir —', ''));
-      Object.values(app.DB.spells).filter(x => x.type === 'trick')
+      Object.values(app.DB.spells).filter(x => x.type === 'trick' && trucoDeFuente(x, fuente))
         .map(x => x.name).sort((a, b) => a.localeCompare(b, 'es'))
         .forEach(n => s.appendChild(new Option(n, n)));
       s.value = S.descTruco;
@@ -1342,8 +1342,7 @@
     const fuente = fuenteAfinidad();
     if (fuente) {
       const todos = Object.values(app.DB.spells || {}).filter(x => x.type === 'trick');
-      const propios = todos.filter(x =>
-        app._normSource(x.source || '') === app._normSource(fuente));
+      const propios = todos.filter(x => trucoDeFuente(x, fuente));
       const lista = propios.length ? propios : todos;
       if (lista.length) S.descTruco = azar(lista).name;
     }

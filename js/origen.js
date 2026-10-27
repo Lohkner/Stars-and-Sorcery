@@ -311,7 +311,7 @@
       host.appendChild(chip);
 
       const trucos = Object.values(app.DB.spells || {})
-        .filter(s => s.type === 'trick')
+        .filter(s => s.type === 'trick' && trucoDeFuente(s, fuente))
         .map(s => s.name)
         .sort((a, b) => a.localeCompare(b, 'es'));
       if (trucos.length) {

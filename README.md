@@ -1,4 +1,23 @@
-# S&S Companion — v76.0
+# S&S Companion — v77.0
+
+## Novedades v77.0 — Manuales del 27-10-2026
+
+`CACHE_VERSION` sube a `ss-companion-v147` y `RULES_DATA_VERSION` a
+`v1-official-o28`.
+
+- **Juramento tiene lista propia**: 21 Axiomas del Nivel 1 al 6, con sus
+  insignias (Favor Divino, Duelo Obligado, Aura de Vitalidad, Arma Sagrada).
+  Ya no usa la lista de Divinidad.
+- **Trucos por Fuente**:
+  - cada Fuente aprende Trucos de su lista, y con «Mi Fuente» solo se ven
+    esos (Herencia los ve todos);
+  - el Truco de la Afinidad del Linaje también sale de la lista de su
+    Fuente.
+- **Insignias**: cada Fuente tiene un Truco y tres Axiomas exclusivos; su
+  texto lo indica.
+- **Trucos nuevos**: Marca del Juramento, Lanza Mental y Látigo de Espinas.
+- **7 Talentos al día**: Iniciado en Juramento, los que aprenden «de cualquier
+  Fuente» (salvo insignias ajenos) y otros.
 
 ## Novedades v76.0 — Bonos de la Elección de Experiencia
 

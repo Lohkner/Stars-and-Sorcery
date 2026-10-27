@@ -50,6 +50,14 @@ const SKILL_RENAMES = {
   'Conocimiento': 'Historia',
 };
 
+/** ¿Puede aprender este Truco quien tiene esa Fuente? Cada Fuente tiene su
+    lista (Catálogo, «Trucos por Fuente»); Herencia escribe los suyos, así
+    que vale cualquiera. Sin lista en los datos, también. */
+function trucoDeFuente(t, fuente) {
+  if (!Array.isArray(t?.fuentes) || !fuente || fuente === 'Herencia') return true;
+  return t.fuentes.includes(fuente);
+}
+
 /** Talentos que vienen incluidos en una Iniciación y no ocupan espacio de
     Talento (Compendio, 8-10-2026): el Dominio de Divinidad y la Gracia de
     Juramento. */
