@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════
-   S&S Director — Service Worker
+   S&S Companion — Service Worker
    ══════════════════════════════════════════════════════════════════
    Estrategia:
    · App shell  → precache + cache-first (funciona 100% offline).
@@ -13,8 +13,8 @@
 /* REGLA DE DESPLIEGUE: sube SIEMPRE esta versión al publicar cualquier
    cambio. El navegador solo detecta actualizaciones si sw.js cambia en
    bytes — con la misma versión, la app queda congelada para siempre. */
-const CACHE_VERSION = 'ss-director-v25';
-const FONT_CACHE    = 'ss-director-fonts-v1';
+const CACHE_VERSION = 'ss-companion-v151';
+const FONT_CACHE    = 'ss-fonts-v1';
 
 const APP_SHELL = [
   './',
@@ -36,27 +36,24 @@ const APP_SHELL = [
   './fonts/spectral-400-italic.woff2',
   './fonts/spectral-400.woff2',
   './fonts/spectral-600.woff2',
-  './css/temas.css',
-  './css/director.css',
-  './js/reglas.js',
+  './js/data.js',
   './js/constants.js',
   './js/storage.js',
   './js/ui-dialogs.js',
-  './js/base.js',
   './js/app.js',
-  './js/amenaza.js',
-  './js/biblioteca.js',
-  './js/mesa.js',
-  './js/asistente.js',
-  './js/editor.js',
+  './js/pericias.js',
+  './js/progresion.js',
+  './js/origen.js',
   './js/plegables.js',
+  './js/efectos.js',
+  './js/raciones.js',
+  './js/asistente.js',
   './js/respaldo.js',
   './js/historial.js',
+  './js/edicion.js',
   './js/autocheck.js',
   './js/boot.js',
-  './Bone_Chill_Icon.webp',
-  './icono-192.png',
-  './icono-512.png',
+  './Bind_Pact_Weapon.webp',
 ];
 
 /* ── Install: precachear el app shell ─────────────────────────── */
@@ -79,9 +76,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys
-        // Solo las cachés de ESTA app: si se publica en el mismo origen que
-        // S&S Companion, borrar «todo lo que no sea mío» le vaciaría la suya.
-        .filter((k) => k.startsWith('ss-director-') && k !== CACHE_VERSION && k !== FONT_CACHE)
+        .filter((k) => k !== CACHE_VERSION && k !== FONT_CACHE)
         .map((k) => caches.delete(k))
     )).then(() => self.clients.claim())
   );

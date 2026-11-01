@@ -11,11 +11,31 @@
     try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
   }
 
+  /* Retirar la pantalla de carga (v81). Antes se iba a los ~0,5 s, cuando
+     el título aún estaba entrando, y se borraba a mitad del fundido (0,6 s
+     de 0,8 s), con un salto visible. Ahora espera a que termine de entrar,
+     funde entera y, a la vez, el inicio entra con un leve acercamiento. */
+  let _retirando = false;
   function dismissLoader() {
     const l = document.getElementById('ss-loader');
-    if (!l) return;
-    l.classList.add('fade-out');
-    setTimeout(() => { if (l.parentNode) l.parentNode.removeChild(l); }, TIMING.LOADER_DISMISS * 2);
+    if (!l || _retirando) return;
+    _retirando = true;
+    const falta = Math.max(0, TIMING.LOADER_MIN - performance.now());
+    setTimeout(() => {
+      l.classList.add('fade-out');
+      const raiz = document.documentElement;
+      raiz.classList.add('entrando'); raiz.classList.remove('arranque');
+      setTimeout(() => raiz.classList.remove('entrando'), 700);
+      let hecho = false;
+      const quitar = () => {
+        if (hecho) return; hecho = true;
+        if (l.parentNode) l.parentNode.removeChild(l);
+        window.__ssCargaFuera = true;
+        document.dispatchEvent(new Event('ss:carga-fuera'));
+      };
+      l.addEventListener('transitionend', e => { if (e.target === l) quitar(); });
+      setTimeout(quitar, TIMING.LOADER_FADE + 150);
+    }, falta);
   }
 
   /* El almacén (IndexedDB, v58) se prepara ANTES de init(): el roster y
@@ -38,7 +58,7 @@
       // más y los dos botones parecen no haber hecho nada.
       app._avisoTrasActualizar && app._avisoTrasActualizar();
     } catch(err) {
-      console.error('S&S Director init error:', err);
+      console.error('S&S init error:', err);
     }
     // Dismiss loader after init — short delay so first paint is ready
     setTimeout(dismissLoader, TIMING.LOADER_DISMISS);

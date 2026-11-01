@@ -56,8 +56,29 @@
   --ice:    #3d8fc2;
   --sage:   #3fa06c;
 
-  /* RGB for overlay compositing */
+  /* Tríos RGB para rgba(var(--x-rgb), alfa): halos, tintes y filetes.
+     Cada tema los redefine; antes iban escritos a mano en oro y morado
+     por todo el archivo y Vacío y Arcano los heredaban (v60). */
   --void-rgb: 5,4,10;
+  --deep-rgb: 10,8,16;
+  --surface-rgb: 16,14,24;
+  --raised-rgb: 24,20,34;
+  --border-rgb: 61,50,84;
+  --gold-rgb: 200,169,110;
+  --goldb-rgb: 224,194,126;
+  --danger-rgb: 168,42,58;
+  --crimson-rgb: 110,21,37;
+  --ember-rgb: 217,84,42;
+  --ice-rgb: 61,143,194;
+  --sage-rgb: 63,160,108;
+  /* Metal de medallas, marcos y sellos: pulido (1-4), suave (s) y
+     brillante (b), con su tinta y su fondo. */
+  --metal-1:#e8cd90; --metal-2:#c9a96f; --metal-3:#8a6b35; --metal-4:#e0c27e;
+  --metal-s1:#c5ad7b; --metal-s2:#b09763; --metal-s3:#96794c; --metal-s4:#bfa76d;
+  --metal-b1:#f0d89c; --metal-b3:#7f6231; --metal-b4:#e6c985;
+  --metal-ink:#dcc084;
+  --metal-in-1:#1e1a12; --metal-in-2:#131008;
+  --metal-fondo-1: 38,31,21; --metal-fondo-2: 23,19,13;
 
   /* Typography */
   /* Typography — primary webfonts with strong offline fallbacks.
@@ -124,11 +145,11 @@ body{
 #ss-loader{
   position:fixed;inset:0;z-index:9999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  transition:opacity .8s cubic-bezier(.4,0,.2,1);
+  transition:opacity .5s cubic-bezier(.4,0,.2,1);   /* = TIMING.LOADER_FADE */
   background:var(--void);
   /* Atmospheric depth — crimson heart, blue corners, gold hint */
   background-image:
-    radial-gradient(ellipse 70% 60% at 50% 55%,rgba(110,21,37,.28) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 60% at 50% 55%,rgba(var(--crimson-rgb),.28) 0%,transparent 55%),
     radial-gradient(ellipse 40% 40% at 8%  90%,rgba(28,70,130,.14) 0%,transparent 50%),
     radial-gradient(ellipse 30% 30% at 92% 10%,rgba(var(--gold-rgb),.07) 0%,transparent 45%),
     radial-gradient(ellipse 20% 20% at 50%  5%,rgba(var(--gold-rgb),.05) 0%,transparent 60%);
@@ -151,7 +172,7 @@ body{
 .lp:nth-child(4) {left:60%;animation-duration:8s;animation-delay:2.1s}
 .lp:nth-child(5) {left:76%;animation-duration:7.5s;animation-delay:.8s;width:1.5px;height:1.5px}
 .lp:nth-child(6) {left:88%;animation-duration:10s;animation-delay:3.4s}
-.lp:nth-child(7) {left:35%;animation-duration:6.5s;animation-delay:1.8s;width:1px;height:1px;background:rgba(var(--sangre-rgb),.5)}
+.lp:nth-child(7) {left:35%;animation-duration:6.5s;animation-delay:1.8s;width:1px;height:1px;background:rgba(var(--danger-rgb),.5)}
 .lp:nth-child(8) {left:55%;animation-duration:8.5s;animation-delay:.2s; width:2px;height:2px}
 @keyframes lpFloat{
   0%  {opacity:0;transform:translateY(105vh) scale(.5)}
@@ -180,7 +201,7 @@ body{
 /* Inner counter-rotating ring */
 .loader-ring-inner{
   position:absolute;inset:12px;border-radius:50%;
-  border:1px dashed rgba(var(--sangre-rgb),.12);
+  border:1px dashed rgba(var(--danger-rgb),.12);
   animation:lRingCCW 12s linear infinite;
 }
 /* Spinning arc — the visible "loading" indicator */
@@ -196,7 +217,7 @@ body{
 .loader-arc-trail{
   position:absolute;inset:4px;border-radius:50%;
   border:1px solid transparent;
-  border-bottom-color:rgba(var(--sangre-rgb),.35);
+  border-bottom-color:rgba(var(--danger-rgb),.35);
   animation:lRingCCW 2.1s linear infinite;
 }
 @keyframes lRingCW {to{transform:rotate(360deg)}}
@@ -239,13 +260,13 @@ body{
 }
 .loader-sub{
   font-family:var(--fd);font-size:var(--fs-2xs);
-  color:rgba(var(--muted-rgb),.55);
+  color:rgba(138,122,158,.55);
   letter-spacing:.6em;text-transform:uppercase;
   animation:lReveal .5s cubic-bezier(.16,.72,.34,1) .5s both;
 }
 .loader-status{
   font-family:var(--fm);font-size:var(--fs-2xs);
-  color:rgba(var(--muted-rgb),.4);letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(122,106,146,.4);letter-spacing:.18em;text-transform:uppercase;
   margin-top:4px;
   animation:lReveal .5s cubic-bezier(.16,.72,.34,1) .6s both, lStatusBlink 2s ease-in-out 1s infinite;
 }
@@ -345,7 +366,7 @@ body{
   font-weight:600;cursor:pointer;border-radius:var(--r);
   display:flex;align-items:center;justify-content:center;gap:7px;
   min-height:54px;padding:0 12px;
-  background:linear-gradient(135deg,rgba(var(--surface-rgb),.8) 0%,rgba(var(--raised-rgb),.85) 100%);
+  background:linear-gradient(135deg,rgba(var(--surface-rgb),.8) 0%,rgba(22,18,32,.85) 100%);
   border:1px solid var(--edge-strong);color:var(--dim);
   box-shadow:0 2px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03);
   backdrop-filter:blur(12px);
@@ -357,7 +378,7 @@ body{
 
 /* ── Roster container ── */
 .home-roster-wrap{
-  background:linear-gradient(180deg,rgba(var(--void-rgb),.7) 0%,rgba(var(--void-rgb),.75) 100%);
+  background:linear-gradient(180deg,rgba(7,5,12,.7) 0%,rgba(var(--void-rgb),.75) 100%);
   border:1px solid var(--edge);
   border-radius:var(--rl);overflow:hidden;
   
@@ -615,7 +636,7 @@ body{
 @media(hover:hover){.sdial-item:hover{border-color:var(--edge-gold-strong);color:var(--goldb);background:var(--panel);box-shadow:0 4px 18px rgba(0,0,0,.65),0 0 14px rgba(var(--gold-rgb),.12),inset 0 1px 0 rgba(255,255,255,.07)}}
 .sdial-item:active{transform:scale(.84);background:rgba(var(--gold-rgb),.08)}
 
-@media(hover:hover){.sdial-danger:hover{border-color:rgba(var(--sangre-rgb),.7);color:#f08090;background:var(--panel);box-shadow:0 4px 18px rgba(0,0,0,.65),0 0 14px rgba(var(--sangre-rgb),.18),inset 0 1px 0 rgba(255,255,255,.04)}}
+@media(hover:hover){.sdial-danger:hover{border-color:rgba(var(--danger-rgb),.7);color:#f08090;background:var(--panel);box-shadow:0 4px 18px rgba(0,0,0,.65),0 0 14px rgba(var(--danger-rgb),.18),inset 0 1px 0 rgba(255,255,255,.04)}}
 
 /* PAGES + NAV */
 .pages-wrapper{flex:1;overflow:hidden;position:relative;min-height:0;touch-action:pan-y}
@@ -762,7 +783,7 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 input:focus,select:focus,textarea:focus{
   outline:none;border-color:var(--gold);
-  background:rgba(var(--deep-rgb),.95);
+  background:rgba(8,6,14,.95);
   box-shadow:0 0 0 3px rgba(var(--gold-rgb),.12),inset 0 1px 3px rgba(0,0,0,.4);
 }
 input::placeholder,textarea::placeholder{color:var(--muted);font-style:italic;opacity:.6}
@@ -943,7 +964,7 @@ input[type=radio]:checked::after{transform:scale(1)}
 }
 .atk-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,rgba(var(--sangre-rgb),.6) 0%,rgba(var(--sangre-rgb),.0) 65%);
+  background:linear-gradient(90deg,rgba(var(--danger-rgb),.6) 0%,rgba(var(--danger-rgb),.0) 65%);
 }
 .atk-card.secondary::before{
   background:linear-gradient(90deg,rgba(var(--gold-rgb),.35) 0%,rgba(var(--gold-rgb),.0) 65%);
@@ -963,14 +984,14 @@ input[type=radio]:checked::after{transform:scale(1)}
   position:relative;overflow:hidden;width:100%;min-height:44px;
 }
 .abtn:active{transform:scale(.96)}
-.abtn-a:active{background:rgba(var(--sangre-rgb),.18)}
+.abtn-a:active{background:rgba(var(--danger-rgb),.18)}
 .abtn-d:active{background:rgba(var(--gold-rgb),.14)}
-@media(hover:hover){.abtn-a:hover{background:rgba(var(--sangre-rgb),.1)}}
+@media(hover:hover){.abtn-a:hover{background:rgba(var(--danger-rgb),.1)}}
 @media(hover:hover){.abtn-d:hover{background:rgba(var(--gold-rgb),.08)}}
 /* Ancho elástico con suelo de 30: «DMG» pedía 32 px dentro de una caja
    fija de 30 con borde, así que el texto cruzaba la insignia. */
 .abtn-icon{min-width:30px;padding:0 3px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--fs-md);font-family:var(--fd);font-weight:700}
-.abtn-a .abtn-icon{background:rgba(var(--sangre-rgb),.2);border:1px solid rgba(var(--sangre-rgb),.35);color:#d06070}
+.abtn-a .abtn-icon{background:rgba(var(--danger-rgb),.2);border:1px solid rgba(var(--danger-rgb),.35);color:#d06070}
 .abtn-d .abtn-icon{background:rgba(var(--gold-rgb),.12);border:1px solid rgba(var(--gold-rgb),.22);color:var(--gold)}
 .abtn-text{display:flex;flex-direction:column;gap:1px;min-width:38px}
 .asub{font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);line-height:1}
@@ -1102,7 +1123,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   box-shadow:0 4px 16px rgba(0,0,0,.5);transition:transform .12s,border-color .15s,color .15s}
 .adv-fab-main:active{transform:scale(.9)}
 .adv-fab[data-state="1"] .adv-fab-main{color:var(--sage);border-color:rgba(122,158,110,.6)}
-.adv-fab[data-state="-1"] .adv-fab-main{color:#d06070;border-color:rgba(var(--sangre-rgb),.6)}
+.adv-fab[data-state="-1"] .adv-fab-main{color:#d06070;border-color:rgba(var(--danger-rgb),.6)}
 /* En Normal —el estado del 95 % del tiempo— el flotante se hace discreto:
    encoge y se apaga, para dejar de competir con el contenido que tiene
    debajo. Al tocarlo o desplegarlo recupera su tamaño, así que sigue
@@ -1149,7 +1170,7 @@ input[type=radio]:checked::after{transform:scale(1)}
 .adv-opt:active{transform:scale(.88)}
 .adv-opt.active.adv-adv{border-color:var(--sage);color:var(--sage);background:rgba(122,158,110,.16)}
 .adv-opt.active.adv-norm{border-color:var(--gold);color:var(--gold);background:rgba(var(--gold-rgb),.16)}
-.adv-opt.active.adv-dis{border-color:var(--blood);color:#d06070;background:rgba(110,21,37,.22)}
+.adv-opt.active.adv-dis{border-color:var(--blood);color:#d06070;background:rgba(var(--crimson-rgb),.22)}
 
 /* SAVES */
 .saves-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:6px;border-top:1px solid var(--rim);padding-top:6px}
@@ -1194,7 +1215,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   min-width:44px;min-height:44px;border-radius:var(--r);
 }
 
-@media(hover:hover){.idel:hover{color:var(--blood);background:rgba(var(--sangre-rgb),.08)}}
+@media(hover:hover){.idel:hover{color:var(--blood);background:rgba(var(--danger-rgb),.08)}}
 .irow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--rim);font-size:var(--fs-xl);color:var(--text)}
 .irow:last-child{border-bottom:none}
 .coin{
@@ -1234,8 +1255,8 @@ input[type=radio]:checked::after{transform:scale(1)}
      padding-box — el filo brilla y gira como metal pulido. */
   border:1px solid transparent;
   background:
-    linear-gradient(180deg, rgba(var(--medalla-a-rgb),.96), rgba(var(--medalla-b-rgb),.96)) padding-box,
-    var(--oro-metal) border-box;
+    linear-gradient(180deg, rgba(var(--metal-fondo-1),.96), rgba(var(--metal-fondo-2),.96)) padding-box,
+    linear-gradient(140deg, var(--metal-1) 0%, var(--metal-2) 38%, var(--metal-3) 62%, var(--metal-4) 100%) border-box;
   border-radius:20px;padding:5px 14px;margin:2px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 10px rgba(0,0,0,.4);
   text-shadow:0 1px 2px rgba(0,0,0,.6);
@@ -1312,7 +1333,7 @@ input[type=radio]:checked::after{transform:scale(1)}
   border:1px solid var(--edge-soft);
   border-left:2px solid var(--edge);
   border-radius:var(--r);padding:7px 11px;
-  font-size:var(--fs-md);color:rgba(var(--dim-rgb),.6);font-style:italic;
+  font-size:var(--fs-md);color:rgba(158,141,182,.6);font-style:italic;
   line-height:1.65;margin-top:6px;
 }
 .infobox:not(:empty){border-left-color:var(--edge-gold);background:rgba(var(--gold-rgb),.02)}
@@ -1340,11 +1361,11 @@ input[type=radio]:checked::after{transform:scale(1)}
 }
 .btn:active{transform:scale(.92)}
 .btn-p{
-  background:rgba(110,21,37,.6);border:1px solid rgba(var(--sangre-rgb),.6);
+  background:rgba(var(--crimson-rgb),.6);border:1px solid rgba(var(--danger-rgb),.6);
   color:#ffe4e8;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-@media(hover:hover){.btn-p:hover{background:rgba(var(--sangre-rgb),.7);border-color:var(--blood)}}
+@media(hover:hover){.btn-p:hover{background:rgba(var(--danger-rgb),.7);border-color:var(--blood)}}
 .btn-p:active{box-shadow:none}
 .btn-g{background:transparent;border:1px solid var(--border);color:var(--dim)}
 
@@ -1408,9 +1429,9 @@ input[type=radio]:checked::after{transform:scale(1)}
 .bmini.bl{background:rgba(var(--ice-rgb),.08);border-color:rgba(var(--ice-rgb),.35);color:var(--ice)}
 
 @media(hover:hover){.bmini.bl:hover{background:rgba(var(--ice-rgb),.18);border-color:var(--ice);color:#fff}}
-.bmini.br{background:rgba(var(--sangre-rgb),.08);border-color:rgba(var(--sangre-rgb),.35);color:#c06070}
+.bmini.br{background:rgba(var(--danger-rgb),.08);border-color:rgba(var(--danger-rgb),.35);color:#c06070}
 
-@media(hover:hover){.bmini.br:hover{background:rgba(var(--sangre-rgb),.18);border-color:var(--blood);color:#fff}}
+@media(hover:hover){.bmini.br:hover{background:rgba(var(--danger-rgb),.18);border-color:var(--blood);color:#fff}}
 .bmini.bg{background:rgba(var(--sage-rgb),.08);border-color:rgba(var(--sage-rgb),.35);color:var(--sage)}
 
 @media(hover:hover){.bmini.bg:hover{background:rgba(var(--sage-rgb),.18);border-color:var(--sage);color:#fff}}
@@ -1451,7 +1472,7 @@ input[type=radio]:checked::after{transform:scale(1)}
 
 /* ── Ajustes — legibilidad (el panel se describe en «PANEL DE AJUSTES»,
    al final de la hoja) ── */
-/* Legibilidad: la pista era var(--border) (var(--border)), casi invisible. */
+/* Legibilidad: la pista era var(--border) (#3d3254), casi invisible. */
 .mbd .set-hint{color:var(--muted)}
 .mbd .set-lbl{color:var(--dim)}
 /* Fondo de pantalla: miniatura de lo guardado y línea de estado. Van
@@ -1501,11 +1522,11 @@ input[type=radio]:checked::after{transform:scale(1)}
 }
 .leth-card::before{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .18s}
 .leth-card:active{transform:scale(.94)}
-.leth-card[data-tier="1"]::before{background:radial-gradient(ellipse at 50% 0%,rgba(var(--sangre-rgb),.18) 0%,transparent 70%)}
+.leth-card[data-tier="1"]::before{background:radial-gradient(ellipse at 50% 0%,rgba(var(--danger-rgb),.18) 0%,transparent 70%)}
 .leth-card[data-tier="2"]::before{background:radial-gradient(ellipse at 50% 0%,rgba(var(--gold-rgb),.18) 0%,transparent 70%)}
 .leth-card[data-tier="3"]::before{background:radial-gradient(ellipse at 50% 0%,rgba(var(--sage-rgb),.18) 0%,transparent 70%)}
 .leth-card.active::before{opacity:1}
-.leth-card[data-tier="1"].active{border-color:var(--blood);box-shadow:0 0 0 1px rgba(var(--sangre-rgb),.2)}
+.leth-card[data-tier="1"].active{border-color:var(--blood);box-shadow:0 0 0 1px rgba(var(--danger-rgb),.2)}
 .leth-card[data-tier="2"].active{border-color:var(--gold);box-shadow:0 0 0 1px rgba(var(--gold-rgb),.2)}
 .leth-card[data-tier="3"].active{border-color:var(--sage);box-shadow:0 0 0 1px rgba(var(--sage-rgb),.2)}
 .leth-check{position:absolute;top:5px;right:6px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--fs-2xs);font-weight:700;opacity:0;transform:scale(.5);transition:opacity .18s,transform .18s}
@@ -1520,7 +1541,7 @@ input[type=radio]:checked::after{transform:scale(1)}
 .leth-bonus{font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-top:1px;transition:color .18s}
 .leth-card.active .leth-bonus{color:var(--dim)}
 .leth-summary-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:2px;font-family:var(--fd);font-size:var(--fs-md);font-weight:600;letter-spacing:.08em;border:1px solid}
-.leth-summary-badge[data-tier="1"]{color:var(--blood);border-color:rgba(var(--sangre-rgb),.3);background:rgba(var(--sangre-rgb),.07)}
+.leth-summary-badge[data-tier="1"]{color:var(--blood);border-color:rgba(var(--danger-rgb),.3);background:rgba(var(--danger-rgb),.07)}
 .leth-summary-badge[data-tier="2"]{color:var(--goldb);border-color:var(--edge-gold);background:rgba(var(--gold-rgb),.07)}
 .leth-summary-badge[data-tier="3"]{color:var(--sage);border-color:rgba(var(--sage-rgb),.3);background:rgba(var(--sage-rgb),.07)}
 
@@ -1538,7 +1559,7 @@ dialog.modal{
 }
 dialog.modal[open]{display:flex;animation:popIn .22s cubic-bezier(.16,.72,.34,1) forwards}
 #crop_modal{max-height:none}
-dialog::backdrop{background:rgba(var(--void-rgb),.88);backdrop-filter:blur(18px) saturate(.7)}
+dialog::backdrop{background:rgba(3,2,8,.88);backdrop-filter:blur(18px) saturate(.7)}
 @keyframes popIn{
   from{opacity:0;transform:scale(.95) translateY(14px)}
   to  {opacity:1;transform:scale(1)   translateY(0)}
@@ -1588,8 +1609,8 @@ dialog::backdrop{background:rgba(var(--void-rgb),.88);backdrop-filter:blur(18px)
   font-weight:700;flex-shrink:0;line-height:1;
 }
 @media(hover:hover){.bcls:hover{
-  border-color:rgba(var(--sangre-rgb),.5);color:var(--blood);
-  background:rgba(110,21,37,.15);transform:rotate(90deg) scale(1.08);
+  border-color:rgba(var(--danger-rgb),.5);color:var(--blood);
+  background:rgba(var(--crimson-rgb),.15);transform:rotate(90deg) scale(1.08);
 }}.mft-count{
   color:var(--gold);font-weight:700;
   background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.2);
@@ -1683,9 +1704,9 @@ details[open] > summary::before { content: '▾'; }
 .js-section-lbl   { font-family: var(--fd); font-size:var(--fs-xs); color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 5px; }
 .js-badge-gold    { font-family: var(--fm); font-size:var(--fs-md); color: var(--gold); background: rgba(var(--gold-rgb),.08); border: 1px solid rgba(var(--gold-rgb),.25); border-radius: 2px; padding: 2px 10px; }
 .js-tag-neutral   { font-family: var(--fm); font-size:var(--fs-md); background: var(--raised); border: 1px solid var(--border); border-radius: 2px; padding: 2px 8px; color: var(--text); }
-.js-grade-block   { font-family: var(--fm); font-size:var(--fs-sm); color: #e7a7ae; display: block; margin-top: 3px; padding: 3px 6px; background: rgba(110,21,37,.18); border-radius: 2px; }
+.js-grade-block   { font-family: var(--fm); font-size:var(--fs-sm); color: #e7a7ae; display: block; margin-top: 3px; padding: 3px 6px; background: rgba(var(--crimson-rgb),.18); border-radius: 2px; }
 /* Grado activo de un talento elegido (resaltado vs atenuado) */
-.js-grade-block.grade-on{color:#e7c98a;background:rgba(var(--gold-rgb),.10);border-left:2px solid var(--edge-gold-strong);padding-left:7px}
+.js-grade-block.grade-on{color:var(--metal-ink);background:rgba(var(--gold-rgb),.10);border-left:2px solid var(--edge-gold-strong);padding-left:7px}
 .js-grade-block.grade-active{color:var(--goldb);background:rgba(var(--gold-rgb),.18);border-left:3px solid var(--gold);font-weight:600}
 .js-grade-block.grade-off{opacity:.45;font-style:italic}
 
@@ -1738,7 +1759,7 @@ details[open] > summary::before { content: '▾'; }
   pointer-events:none;align-items:center;
 }
 .toast{
-  background:rgba(var(--raised-rgb),.96);
+  background:rgba(19,16,29,.96);
   color:var(--bright);
   padding:12px 16px;border-radius:12px;
   border:1px solid var(--edge);
@@ -1755,7 +1776,7 @@ details[open] > summary::before { content: '▾'; }
 /* Toast accionable (p. ej. "Nueva versión") — debe poder tocarse aunque el
    contenedor tenga pointer-events:none, y se resalta como pulsable. */
 .toast.t-action{pointer-events:auto;cursor:pointer;border-color:var(--edge-gold)}
-@media(hover:hover){.toast.t-action:hover{border-color:var(--edge-gold-strong);background:linear-gradient(135deg,rgba(var(--panel-rgb),.97),rgba(var(--raised-rgb),.98))}}
+@media(hover:hover){.toast.t-action:hover{border-color:var(--edge-gold-strong);background:linear-gradient(135deg,rgba(30,24,44,.97),rgba(20,17,30,.98))}}
 .toast.t-action:active{transform:scale(.97)}
 /* Subtle shimmer line on top */
 .toast::before{
@@ -1763,12 +1784,12 @@ details[open] > summary::before { content: '▾'; }
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
 }
 .toast.terror{
-  border-color:rgba(216,84,42,.35);
+  border-color:rgba(var(--ember-rgb),.35);
   background:linear-gradient(135deg,rgba(80,16,8,.95) 0%,rgba(20,8,6,.97) 100%);
-  box-shadow:0 12px 40px rgba(0,0,0,.8),0 0 20px rgba(216,84,42,.08),0 0 0 1px rgba(255,255,255,.02);
+  box-shadow:0 12px 40px rgba(0,0,0,.8),0 0 20px rgba(var(--ember-rgb),.08),0 0 0 1px rgba(255,255,255,.02);
 }
 .toast.terror::before{
-  background:linear-gradient(90deg,transparent,rgba(216,84,42,.15),transparent);
+  background:linear-gradient(90deg,transparent,rgba(var(--ember-rgb),.15),transparent);
 }
 /* Ok toast gets a faint gold glow */
 .toast:not(.terror)::after{
@@ -1786,7 +1807,7 @@ details[open] > summary::before { content: '▾'; }
   box-shadow:0 0 8px rgba(var(--gold-rgb),.2);
   font-size:var(--fs-md);
 }
-.t-icon.err{color:var(--ember);background:rgba(216,84,42,.1);box-shadow:0 0 8px rgba(216,84,42,.2);font-size:var(--fs-md)}
+.t-icon.err{color:var(--ember);background:rgba(var(--ember-rgb),.1);box-shadow:0 0 8px rgba(var(--ember-rgb),.2);font-size:var(--fs-md)}
 .t-icon.dim{color:var(--muted)}
 .t-msg{flex:1;line-height:1.35;letter-spacing:.01em}
 @keyframes toastIn{
@@ -1834,7 +1855,7 @@ details[open] > summary::before { content: '▾'; }
 .dice-num.rolling{animation:diceFlip .07s ease-in-out}
 .dice-num.result-pop{animation:resultPop .4s cubic-bezier(.18,.89,.32,1.28) forwards}
 .dice-num.crit-glow{color:var(--goldb);text-shadow:0 0 30px rgba(var(--goldb-rgb),.9),0 0 60px rgba(var(--gold-rgb),.5)}
-.dice-num.fail-glow{color:var(--blood);text-shadow:0 0 30px rgba(var(--sangre-rgb),.9)}
+.dice-num.fail-glow{color:var(--blood);text-shadow:0 0 30px rgba(var(--danger-rgb),.9)}
 @keyframes diceFlip{0%{opacity:1;transform:scale(1)}40%{opacity:.2;transform:scale(.7) rotateY(90deg)}60%{opacity:.2;transform:scale(.7) rotateY(-90deg)}100%{opacity:1;transform:scale(1)}}
 @keyframes resultPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}80%{transform:scale(.96)}100%{transform:scale(1);opacity:1}}
 .dice-detail{font-family:var(--fm);font-size:var(--fs-md);color:var(--dim);text-align:center;min-height:1.1em;opacity:0;transform:translateY(4px);transition:opacity .3s .15s,transform .3s .15s}
@@ -1847,7 +1868,7 @@ details[open] > summary::before { content: '▾'; }
 .dice-deco-line{width:100%;height:1px;background:var(--edge-soft);margin:2px 0;border-radius:1px}
 .dice-badge{font-family:var(--fd);font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;padding:2px 12px;border-radius:2px;margin-top:2px}
 .dice-badge.crit{background:rgba(var(--gold-rgb),.1);border:1px solid var(--edge-gold);color:var(--goldb)}
-.dice-badge.fail{background:rgba(var(--sangre-rgb),.1);border:1px solid rgba(var(--sangre-rgb),.35);color:var(--blood)}
+.dice-badge.fail{background:rgba(var(--danger-rgb),.1);border:1px solid rgba(var(--danger-rgb),.35);color:var(--blood)}
 .dice-close-btn{font-family:var(--fd);font-size:var(--fs-sm);letter-spacing:.1em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:12px 28px;min-height:44px;border-radius:2px;cursor:pointer;margin-top:6px;transition:all .18s;opacity:0;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 @media(hover:hover){.dice-close-btn:hover{border-color:var(--gold);color:var(--gold)}}
@@ -1857,11 +1878,11 @@ details[open] > summary::before { content: '▾'; }
 #crop_modal{max-width:min(520px,100vw);width:100%;height:100dvh;max-height:100dvh;border-radius:0;border:none;inset:0;margin:0}
 @media(min-width:480px){#crop_modal{height:min(640px,92dvh);max-height:min(640px,92dvh);border-radius:var(--rl);border:1px solid var(--border);inset:0;margin:auto}}
 #crop_modal .crl{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
-.crws{flex:1 1 0;min-height:0;background:#06060b;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crws{flex:1 1 0;min-height:0;background:var(--void);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .crws:active{cursor:grabbing}
 .crfr{
   position:absolute;
-  border:1.5px solid rgba(var(--goldb-rgb),.98);
+  border:1.5px solid rgba(224,192,122,.98);
   border-radius:var(--crfr-r, 2px);
   pointer-events:none;z-index:12;
   /* Dark surround via box-shadow — clips to border-radius automatically */
@@ -1892,7 +1913,7 @@ input[type=range]{flex:1;accent-color:var(--gold);cursor:pointer;min-width:0;hei
 @media(hover:hover){.cr-rot-btn:hover{border-color:rgba(var(--ice-rgb),.5);color:var(--ice)}}
 .cr-rot-btn:active,.cr-fit-btn:active{transform:scale(.94)}
 .cr-apply-row{display:flex}
-.bsave{flex:1;background:linear-gradient(135deg,var(--crimson),var(--blood-fill));color:#fff;border:none;height:48px;cursor:pointer;border-radius:var(--r);font-family:var(--fd);font-size:var(--fs-lg);letter-spacing:.12em;text-transform:uppercase;transition:all .18s;white-space:nowrap;touch-action:manipulation;box-shadow:0 2px 16px rgba(110,21,37,.4)}
+.bsave{flex:1;background:linear-gradient(135deg,var(--crimson),var(--blood-fill));color:#fff;border:none;height:48px;cursor:pointer;border-radius:var(--r);font-family:var(--fd);font-size:var(--fs-lg);letter-spacing:.12em;text-transform:uppercase;transition:all .18s;white-space:nowrap;touch-action:manipulation;box-shadow:0 2px 16px rgba(var(--crimson-rgb),.4)}
 
 @media(hover:hover){.bsave:hover{box-shadow:var(--gb)}}
 .bsave:active{transform:scale(.98);opacity:.9}
@@ -1982,7 +2003,15 @@ input:focus-visible,textarea:focus-visible{outline:none}
 :root[data-estilo="clasico"] .pt,:root[data-estilo="clasico"] .dvdr,
 :root[data-estilo="clasico"] .set-lbl,:root[data-estilo="clasico"] .set-sum{letter-spacing:.08em}
 
-[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--blood-fill:#8a4a4e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;}
+[data-theme="void"]{--edge-soft:rgba(51,51,51,.35);--edge:rgba(51,51,51,.55);--edge-strong:rgba(51,51,51,.75);--edge-gold:rgba(136,136,136,.4);--edge-gold-strong:rgba(136,136,136,.55);--void:#020202;--deep:#060606;--surface:#0c0c0c;--raised:#111111;--panel:#181818;--rim:#252525;--border:#333333;--muted:#818181;--dim:#999999;--text:#cccccc;--bright:#f0f0f0;--gold:#888888;--goldb:#aaaaaa;--crimson:#1a1a1a;--blood:#b06a6e;--blood-fill:#8a4a4e;--ember:#8e7a52;--ice:#6a8299;--sage:#7d9c80;
+  --void-rgb:2,2,2;--deep-rgb:6,6,6;--surface-rgb:12,12,12;--raised-rgb:17,17,17;--border-rgb:51,51,51;
+  --gold-rgb:136,136,136;--goldb-rgb:170,170,170;--danger-rgb:138,74,78;--crimson-rgb:26,26,26;--ember-rgb:142,122,82;--ice-rgb:106,130,153;--sage-rgb:125,156,128;
+  /* Acero en vez de oro */
+  --metal-1:#dcdcdc;--metal-2:#a6a6a6;--metal-3:#5c5c5c;--metal-4:#c6c6c6;
+  --metal-s1:#b9b9b9;--metal-s2:#9c9c9c;--metal-s3:#7a7a7a;--metal-s4:#b0b0b0;
+  --metal-b1:#e6e6e6;--metal-b3:#555555;--metal-b4:#cfcfcf;
+  --metal-ink:#d2d2d2;--metal-in-1:#171717;--metal-in-2:#0d0d0d;
+  --metal-fondo-1:28,28,28;--metal-fondo-2:16,16,16;}
 
 /* Background image overlays — ensure readability */
 #home-screen::before,.pages-wrapper::before{
@@ -2043,6 +2072,14 @@ body.port-border-none .port-card-edit{
   --muted:#7b7bb6;--dim:#8080c8;--text:#c0c0f0;--bright:#e8e8ff;
   --gold:#a060e8;--goldb:#b878f8;
   --crimson:#3a1080;--blood:#cc5a86;--blood-fill:#a8446b;--ember:#d9803f;--ice:#4090d8;--sage:#309890;
+  --void-rgb:2,3,8;--deep-rgb:5,6,16;--surface-rgb:9,11,26;--raised-rgb:14,16,36;--border-rgb:44,48,104;
+  --gold-rgb:160,96,232;--goldb-rgb:184,120,248;--danger-rgb:168,68,107;--crimson-rgb:58,16,128;--ember-rgb:217,128,63;--ice-rgb:64,144,216;--sage-rgb:48,152,144;
+  /* Metal violeta */
+  --metal-1:#d2b4ff;--metal-2:#a060e8;--metal-3:#5b2f9e;--metal-4:#b878f8;
+  --metal-s1:#b79be6;--metal-s2:#9a7ad6;--metal-s3:#7558b4;--metal-s4:#ad8fe0;
+  --metal-b1:#dcc4ff;--metal-b3:#54299a;--metal-b4:#c08cfa;
+  --metal-ink:#cfb2fb;--metal-in-1:#141030;--metal-in-2:#0b0a1e;
+  --metal-fondo-1:22,18,48;--metal-fondo-2:12,11,30;
 }
 
 /* ── Inline style helpers (extracted from repeated inline styles) ── */
@@ -2365,7 +2402,7 @@ body.port-border-none .port-card-edit{
 /* Selected column */
 #apt_panel .apt-col:last-child{
   display:flex;flex-direction:column;overflow:hidden;min-height:0;
-  background:rgba(var(--deep-rgb),.4);
+  background:rgba(8,6,14,.4);
 }
 
 .apt-col-hdr{
@@ -2415,7 +2452,7 @@ input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
 @media(hover:hover){.apt-card:hover{border-color:rgba(var(--ice-rgb),.35);background:rgba(var(--ice-rgb),.04)}}
 .apt-card--sel{background:rgba(var(--ice-rgb),.07);border-color:rgba(var(--ice-rgb),.38)}
 .apt-card--sel::before{background:var(--ice)}
-@media(hover:hover){.apt-card--sel:hover{border-color:rgba(var(--sangre-rgb),.35);background:rgba(var(--sangre-rgb),.05)}}
+@media(hover:hover){.apt-card--sel:hover{border-color:rgba(var(--danger-rgb),.35);background:rgba(var(--danger-rgb),.05)}}
 .apt-card--sel:active{transform:scale(.97)}
 .apt-card__row{display:flex;justify-content:space-between;align-items:center;gap:6px}
 .apt-card__name{font-family:var(--fd);font-size:var(--fs-lg);color:var(--gold);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2649,11 +2686,11 @@ input.apt-search::-webkit-search-cancel-button{-webkit-appearance:none}
   background:rgba(var(--gold-rgb),.2);border-color:var(--goldb);color:var(--bright);
 }
 .ui-confirm-btn.ok.danger{
-  background:linear-gradient(135deg,rgba(110,21,37,.5),rgba(110,21,37,.3));
-  border-color:rgba(var(--sangre-rgb),.7);color:#eba6b0;
+  background:linear-gradient(135deg,rgba(var(--crimson-rgb),.5),rgba(var(--crimson-rgb),.3));
+  border-color:rgba(var(--danger-rgb),.7);color:#eba6b0;
 }
 .ui-confirm-btn.ok.danger:hover,.ui-confirm-btn.ok.danger:focus-visible{
-  background:rgba(110,21,37,.65);border-color:var(--blood);color:#fff;
+  background:rgba(var(--crimson-rgb),.65);border-color:var(--blood);color:#fff;
 }
 .ui-confirm-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
@@ -2749,8 +2786,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   to  {box-shadow:0 32px 100px rgba(0,0,0,.9),0 0 58px rgba(var(--gold-rgb),.4), 0 0 0 1px rgba(var(--gold-rgb),.4)}
 }
 .dice-card.fail{
-  border-color:rgba(var(--sangre-rgb),.55);
-  box-shadow:0 32px 100px rgba(0,0,0,.9),0 0 42px rgba(var(--sangre-rgb),.28),0 0 0 1px rgba(var(--sangre-rgb),.32);
+  border-color:rgba(var(--danger-rgb),.55);
+  box-shadow:0 32px 100px rgba(0,0,0,.9),0 0 42px rgba(var(--danger-rgb),.28),0 0 0 1px rgba(var(--danger-rgb),.32);
 }
 @media(prefers-reduced-motion:reduce){.dice-card.crit{animation:none}}
 
@@ -2862,7 +2899,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 .char-card-order{
   position:absolute;left:0;top:0;bottom:0;width:80px;
   display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:5px;
-  padding:7px;background:#1d1230;
+  padding:7px;background:var(--panel);
   transform:translateX(-100%);
 }
 .char-ord-btn{
@@ -2881,7 +2918,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 
 /* ══════════════════════════════════════════
    REVAMP v45 — Golden noise en todas las tarjetas
-   Base var(--surface); el grano (más intenso, 13%) se desvanece de arriba
+   Base #100e18; el grano (más intenso, 13%) se desvanece de arriba
    hacia abajo: mucho ruido → cero ruido, con bloom dorado sutil.
 ══════════════════════════════════════════ */
 :root{
@@ -2920,7 +2957,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 ══════════════════════════════════════════ */
 :root{
   /* El metal de las medallas, como token reutilizable */
-  --oro-metal: linear-gradient(140deg, #e8cd90 0%, #c9a96f 38%, #8a6b35 62%, #e0c27e 100%);
+  --oro-metal: linear-gradient(140deg, var(--metal-1) 0%, var(--metal-2) 38%, var(--metal-3) 62%, var(--metal-4) 100%);
 }
 
 /* P1 · Oro de joyería en los sellos importantes */
@@ -2930,12 +2967,12 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 }
 .char-lvl-badge{
   border:1px solid transparent;
-  background:linear-gradient(180deg,var(--medalla-a),var(--medalla-b)) padding-box, var(--oro-metal) border-box;
-  color:#d9bd7f;
+  background:linear-gradient(180deg,var(--metal-in-1),var(--metal-in-2)) padding-box, var(--oro-metal) border-box;
+  color:color-mix(in srgb,var(--goldb) 97%,#000);
 }
 .dice-badge.crit{
   border:1px solid transparent;
-  background:linear-gradient(180deg,#211a0f,#151007) padding-box, var(--oro-metal) border-box;
+  background:linear-gradient(180deg,var(--metal-in-1),var(--metal-in-2)) padding-box, var(--oro-metal) border-box;
   color:var(--goldb);
   animation:badgePulse 1.6s ease-in-out infinite;
 }
@@ -2959,7 +2996,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 .bnav{position:relative}
 .nav-thread{
   position:absolute;top:-1px;left:0;width:20%;height:2px;border-radius:1px;
-  background:linear-gradient(90deg, rgba(var(--gold-rgb),0), rgba(var(--goldb-rgb),.7) 30%, rgba(var(--gold-rgb),.7) 70%, rgba(var(--gold-rgb),0));
+  background:linear-gradient(90deg, rgba(138,107,53,0), rgba(var(--goldb-rgb),.7) 30%, rgba(178,143,90,.7) 70%, rgba(138,107,53,0));
   transition:transform .28s cubic-bezier(.22,.61,.36,1);
   pointer-events:none;
 }
@@ -3003,10 +3040,10 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 @supports (color: color-mix(in srgb, red 90%, black)){
   :root{
     --oro-metal-90: linear-gradient(140deg,
-      color-mix(in srgb, #e8cd90 90%, #000) 0%,
-      color-mix(in srgb, #c9a96f 90%, #000) 38%,
-      color-mix(in srgb, #8a6b35 90%, #000) 62%,
-      color-mix(in srgb, #e0c27e 90%, #000) 100%);
+      color-mix(in srgb, var(--metal-1) 90%, #000) 0%,
+      color-mix(in srgb, var(--metal-2) 90%, #000) 38%,
+      color-mix(in srgb, var(--metal-3) 90%, #000) 62%,
+      color-mix(in srgb, var(--metal-4) 90%, #000) 100%);
   }
 }
 
@@ -3022,12 +3059,12 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
    de oro mate en vez de un reflejo. El marco del retrato y las tarjetas del
    roster conservan el metalizado completo. */
 :root{
-  --oro-suave: linear-gradient(140deg, #c5ad7b 0%, #b09763 38%, #96794c 62%, #bfa76d 100%);
+  --oro-suave: linear-gradient(140deg, var(--metal-s1) 0%, var(--metal-s2) 38%, var(--metal-s3) 62%, var(--metal-s4) 100%);
 }
 .ibadge{
   color:#caaf71;
   background:
-    linear-gradient(180deg, rgba(var(--medalla-a-rgb),.96), rgba(var(--medalla-b-rgb),.96)) padding-box,
+    linear-gradient(180deg, rgba(var(--metal-fondo-1),.96), rgba(var(--metal-fondo-2),.96)) padding-box,
     var(--oro-suave) border-box;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 1px 6px rgba(0,0,0,.32);
   text-shadow:0 1px 2px rgba(0,0,0,.45);
@@ -3041,8 +3078,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 /* Tarjetas del roster (Sala de héroes) */
 .char-port{ box-shadow:0 3px 12px rgba(0,0,0,.6),0 0 0 1px rgba(var(--gold-rgb),.072); }
 .char-lvl-badge{
-  color:#b59964;
-  background:linear-gradient(180deg,var(--medalla-a),var(--medalla-b)) padding-box, var(--oro-metal-90) border-box;
+  color:color-mix(in srgb,var(--gold) 90%,#000);
+  background:linear-gradient(180deg,var(--metal-in-1),var(--metal-in-2)) padding-box, var(--oro-metal-90) border-box;
 }
 @supports (color: color-mix(in srgb, red 90%, black)){
   .port-name,.ibadge{ color:color-mix(in srgb, var(--goldb) 90%, #000); }
@@ -3120,8 +3157,8 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 
 /* Barra de PV: el único color de la tarjeta */
 .est4 .e4-track{height:4px;margin:1px 0 3px;border-radius:2px}
-.est4 .e4-track .res-fill{box-shadow:0 0 9px rgba(var(--sangre-rgb),.45)}
-.est4 .e4-track .res-fill.res-low{box-shadow:0 0 9px rgba(217,84,42,.5)}
+.est4 .e4-track .res-fill{box-shadow:0 0 9px rgba(var(--danger-rgb),.45)}
+.est4 .e4-track .res-fill.res-low{box-shadow:0 0 9px rgba(var(--ember-rgb),.5)}
 .est4 .e4-res{margin-top:5px}
 
 /* ── Fila de referencia ───────────────────────────────────────── */
@@ -3191,7 +3228,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   font-family:var(--fm);font-size:var(--fs-2xs);font-weight:600;line-height:1.2;
 }
 .est4 .e4-per{white-space:nowrap;position:relative}
-/* El punto iba en var(--rim) — un color de BORDE (var(--rim)), invisible como
+/* El punto iba en var(--rim) — un color de BORDE (#2e2540), invisible como
    texto sobre el fondo del panel: las dos Pericias se leían de corrido.
    Va CENTRADO en el hueco: sin el translateX se posaba en el borde
    izquierdo y quedaba pegado a la Pericia siguiente. */
@@ -3235,8 +3272,10 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 
 /* ── Editor de grados de Pericia (panel Identidad) ───────────── */
 .per-grid{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+/* Rejilla (v69): nombre arriba, coste debajo y el grado a la derecha. Con
+   «4 por Esfuerzo» en la misma línea no cabía en la columna de 156 px. */
 .per-row{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px;
   padding:4px 8px;border:1px solid var(--edge-soft);border-radius:var(--r);
   background:var(--raised);
 }
@@ -3244,13 +3283,14 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   font-family:var(--fd);font-size:var(--fs-sm);color:var(--dim);
   letter-spacing:.06em;white-space:nowrap;
 }
-/* Lo que compra el grado: coste por Nivel de Esfuerzo */
+/* Lo que compra el grado: coste de cada Esfuerzo */
 .per-cost{
-  margin-left:auto;font-family:var(--fm);font-size:var(--fs-2xs);
-  color:var(--muted);white-space:nowrap;
+  grid-column:1;grid-row:2;font-family:var(--fm);font-size:var(--fs-2xs);
+  color:var(--muted);line-height:1.3;overflow-wrap:anywhere;
 }
 .per-row.per-on .per-cost{color:var(--gold)}
 .per-sel{
+  grid-column:2;grid-row:1 / span 2;
   width:auto !important;min-width:52px;flex-shrink:0;
   min-height:32px !important;padding:2px 4px !important;
   font-family:var(--fm) !important;font-size:var(--fs-md) !important;
@@ -3289,14 +3329,15 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   box-shadow:0 2px 16px rgba(var(--gold-rgb),.22),inset 0 1px 0 rgba(255,255,255,.25);
   text-shadow:0 1px 0 rgba(255,255,255,.2);
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  min-height:40px;
-  animation:lvlupBreath 2.4s ease-in-out infinite;
+  min-height:40px;position:relative;
 }
-@keyframes lvlupBreath{
-  0%,100%{box-shadow:0 2px 16px rgba(var(--gold-rgb),.22),inset 0 1px 0 rgba(255,255,255,.25)}
-  50%    {box-shadow:0 2px 26px rgba(var(--gold-rgb),.45),inset 0 1px 0 rgba(255,255,255,.25)}
+.lvlup-btn::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:0 2px 26px rgba(var(--gold-rgb),.45);
+  opacity:0;animation:lvlupBreath 2.4s ease-in-out infinite;
 }
-@media(prefers-reduced-motion:reduce){.lvlup-btn{animation:none}}
+@keyframes lvlupBreath{50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.lvlup-btn::after{animation:none}}
 .lvlup-btn:active{transform:scale(.97);box-shadow:none}
 
 /* ── Espacios de Talento ────────────────────────────────────────── */
@@ -3308,7 +3349,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   font-variant-numeric:tabular-nums;
 }
 /* Pasarse no bloquea: el sistema es abierto y el DJ manda. Solo se avisa. */
-.slots-box.over{color:var(--ember);border-color:rgba(217,84,42,.45)}
+.slots-box.over{color:var(--ember);border-color:rgba(var(--ember-rgb),.45)}
 
 /* ── Menú de descanso ───────────────────────────────────────────── */
 .rest-panel{margin-top:12px}
@@ -3455,18 +3496,18 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
      está en pie y brilla; plegada se tumba (gira 90°) y se apaga un poco.
      La imagen lleva sus colores, así que en el tema Vacío se desatura. */
   width:11px;height:14.3px;
-  background:var(--joya-img) center/contain no-repeat;
-  filter:drop-shadow(0 0 3px rgba(var(--joya-rgb),.7)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  background:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 26"%3E%3Cdefs%3E%3ClinearGradient id="o" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="%23f3d99a"/%3E%3Cstop offset=".5" stop-color="%23c9aa6f"/%3E%3Cstop offset="1" stop-color="%237a5f2c"/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points="10,0 20,13 10,26 0,13" fill="url(%23o)" stroke="%233a2a10" stroke-width=".8"/%3E%3Cpolygon points="10,1.6 18.4,13 10,24.4 1.6,13" fill="none" stroke="%23fff" stroke-opacity=".28" stroke-width=".5"/%3E%3Cg transform="translate(.4 3.4) scale(.8)"%3E%3Cpolygon points="12,1 20.5,12 12,23 3.5,12" fill="%239b6ad6"/%3E%3Cpolygon points="12,1 3.5,12 8.4,12 12,6.2" fill="%23fff" opacity=".45"/%3E%3Cpolygon points="12,1 20.5,12 15.6,12 12,6.2" fill="%23fff" opacity=".15"/%3E%3Cpolygon points="20.5,12 12,23 12,17.8 15.6,12" fill="%23000" opacity=".4"/%3E%3Cpolygon points="3.5,12 12,23 12,17.8 8.4,12" fill="%23000" opacity=".2"/%3E%3Cpolygon points="12,6.2 15.6,12 12,17.8 8.4,12" fill="%23fff" opacity=".12" stroke="%23fff" stroke-opacity=".35" stroke-width=".5"/%3E%3Cpolygon points="12,1 20.5,12 12,23 3.5,12" fill="none" stroke="%23000" stroke-opacity=".45" stroke-width=".8"/%3E%3Cpath d="M7.2 9.6 9.8 5.8" stroke="%23fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/%3E%3C/g%3E%3C/svg%3E') center/contain no-repeat;
+  filter:drop-shadow(0 0 3px rgba(155,106,214,.7)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
   transform:rotate(0deg);transform-origin:50% 50%;
   transition:transform .18s ease, filter .18s, opacity .18s;
 }
 .panel.fold:not([open]) > summary::before{
   transform:rotate(90deg);opacity:.8;
-  filter:drop-shadow(0 0 1.5px rgba(var(--joya-rgb),.45)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  filter:drop-shadow(0 0 1.5px rgba(155,106,214,.45)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
 }
 [data-theme="void"] .panel.fold > summary::before{filter:saturate(.3) drop-shadow(0 1px 1px rgba(0,0,0,.6))}
 .panel.fold > summary > .pt::before{content:none}
-@media(hover:hover){.panel.fold > summary:hover::before{opacity:1;filter:drop-shadow(0 0 5px rgba(var(--joya-rgb),.85)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
+@media(hover:hover){.panel.fold > summary:hover::before{opacity:1;filter:drop-shadow(0 0 5px rgba(155,106,214,.85)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
 @media(prefers-reduced-motion:reduce){.panel.fold > summary::before{transition:none}}
 /* El título cede espacio antes que empujar nada fuera */
 .panel.fold > summary > .pt{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -3562,7 +3603,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
   line-height:1.45;text-align:center;
 }
 .rac-note--vacio{color:#d06070}
-.rac-panel--vacio{border-color:rgba(var(--sangre-rgb),.45)}
+.rac-panel--vacio{border-color:rgba(var(--danger-rgb),.45)}
 @media(prefers-reduced-motion:reduce){
   .rac-step,.rac-lata,.rac-lata__cuerpo,.rac-lata__tapa{transition:none}
 }
@@ -3712,7 +3753,7 @@ input.pillar-in:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--g
 .port-card:has(img[src^="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80'"]),
 .port-card-edit:has(img[src^="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80'"]){
   background:
-    var(--emblema-img) center 44% / 52% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23c9aa6f'%3E%3Ccircle cx='50' cy='50' r='44' stroke-opacity='.35' stroke-width='.8'/%3E%3Ccircle cx='50' cy='50' r='39' stroke-opacity='.22' stroke-width='.6' stroke-dasharray='1.5 3'/%3E%3Cpath d='M50 28 65.5 34.5 72 50 65.5 65.5 50 72 34.5 65.5 28 50 34.5 34.5Z' stroke-opacity='.3' stroke-width='.7'/%3E%3Cpath d='M50 12 58.5 41.5 88 50 58.5 58.5 50 88 41.5 58.5 12 50 41.5 41.5Z' stroke-opacity='.8' stroke-width='1.1' fill='%23c9aa6f' fill-opacity='.07'/%3E%3Ccircle cx='50' cy='50' r='3.5' fill='%23c9aa6f' fill-opacity='.75' stroke='none'/%3E%3C/svg%3E") center 44% / 52% no-repeat,
     radial-gradient(ellipse at 50% 44%, color-mix(in srgb,var(--gold) 12%,transparent), transparent 62%),
     linear-gradient(180deg,var(--panel),var(--deep));
 }
@@ -4112,11 +4153,11 @@ body.modo-edicion .page{padding-bottom:84px}
    sombra interior. Sin gemas desde v57.7. */
 #identity_summary_view .ibadge{
   margin:3px;padding:5px 15px;
-  color:#dcc084;
+  color:var(--metal-ink);
   border:1px solid transparent;
   background:
-    linear-gradient(180deg,rgba(var(--medalla-a-rgb),.97),rgba(var(--medalla-b-rgb),.97)) padding-box,
-    var(--oro-metal) border-box;
+    linear-gradient(180deg,rgba(var(--metal-fondo-1),.97),rgba(var(--metal-fondo-2),.97)) padding-box,
+    linear-gradient(140deg,var(--metal-b1) 0%,var(--metal-2) 40%,var(--metal-b3) 64%,var(--metal-b4) 100%) border-box;
   box-shadow:
     inset 0 0 0 1px rgba(10,7,3,.6),
     inset 0 2px 5px rgba(0,0,0,.4),
@@ -4152,12 +4193,21 @@ body.modo-edicion .page{padding-bottom:84px}
   box-shadow:inset 0 1px 6px rgba(0,0,0,.6);
 }
 .sk-mitico-g{
-  width:48px;height:26px;flex:0 0 auto;
+  width:48px;height:26px;flex:0 0 auto;position:relative;
   filter:drop-shadow(0 0 5px rgba(var(--mg),.75)) drop-shadow(0 1px 1px rgba(0,0,0,.6));
-  animation:skMitico 2.6s ease-in-out infinite;
 }
-@keyframes skMitico{50%{filter:drop-shadow(0 0 11px rgba(var(--mg),1)) drop-shadow(0 0 3px rgba(var(--mg),.9)) drop-shadow(0 1px 1px rgba(0,0,0,.6))}}
-@media(prefers-reduced-motion:reduce){.sk-mitico-g{animation:none}}
+/* El latido (v60): antes se animaba el `filter` de la gema, que obliga a
+   repintarla en cada fotograma y es de lo más caro en un móvil. Ahora el
+   brillo fuerte está en una copia fija detrás, y solo cambia su opacidad
+   —lo resuelve el compositor—. El aspecto es el mismo. */
+.sk-g-badge.sk-mitico{position:relative}
+.sk-mitico-halo{
+  position:absolute;inset:0;margin:auto;width:48px;height:26px;pointer-events:none;
+  filter:drop-shadow(0 0 11px rgba(var(--mg),1)) drop-shadow(0 0 3px rgba(var(--mg),.9));
+  opacity:0;animation:skMiticoHalo 2.6s ease-in-out infinite;
+}
+@keyframes skMiticoHalo{50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.sk-mitico-halo{animation:none}}
 
 /* ══════════════════════════════════════════
    TIPOGRAFÍA PARA MÓVIL (v57.9)
@@ -4299,3 +4349,293 @@ input[type=text],input[type=number],input[type=search],select,textarea{font-size
 
 /* Asistente · Pericia inicial: la línea de abajo es texto, no una cifra (v58.1) */
 .wiz-apick-v.wiz-apick-t{font-family:var(--fb);font-size:var(--fs-2xs);font-weight:400;letter-spacing:0;text-transform:none;line-height:1.2}
+
+/* ══════════════════════════════════════════
+   v60 — Efectos de respuesta y arreglos de la revisión visual
+══════════════════════════════════════════ */
+
+/* Estado · estela: al bajar un recurso, la barra deja su marca un instante
+   y luego la recoge (js/efectos.js). */
+.res-track{position:relative}
+.res-fill{position:relative}
+.res-ghost{
+  position:absolute;left:0;top:0;height:100%;width:0;border-radius:2px;
+  background:var(--bright);opacity:.5;pointer-events:none;
+  transition:width .5s cubic-bezier(.5,0,.75,0);
+}
+.res-fill.res-sube{animation:resSube .5s ease-out}
+@keyframes resSube{30%{filter:brightness(1.9)}}
+
+/* Estado · cifra del cambio, acumulada mientras se toca */
+.est4 .e4-num{position:relative}
+.res-delta{
+  position:absolute;right:2px;bottom:calc(100% - 5px);z-index:3;
+  font-family:var(--fm);font-size:var(--fs-sm);font-weight:700;line-height:1;
+  color:var(--blood);white-space:nowrap;pointer-events:none;
+  text-shadow:0 1px 3px rgba(0,0,0,.85);
+}
+.res-delta--sube{color:var(--sage)}
+.res-delta--va{animation:resDelta 1.3s ease-out both}
+@keyframes resDelta{
+  0%{opacity:0;transform:translateY(6px) scale(.8)}
+  12%,60%{opacity:1;transform:none}
+  100%{opacity:0;transform:translateY(-14px)}
+}
+@keyframes resDeltaCalma{0%,70%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .res-ghost{transition:none}
+  .res-fill.res-sube{animation:none}
+  .res-delta--va{animation:resDeltaCalma 1.3s linear both}
+}
+
+/* Subida de nivel: destello breve con el nivel nuevo. No bloquea toques. */
+.lvl-fx{
+  position:fixed;inset:0;z-index:1900;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 50%,rgba(var(--void-rgb),.82),rgba(var(--void-rgb),.35) 45%,transparent 70%);
+  animation:lvlFx 1.7s ease both;
+}
+@keyframes lvlFx{0%{opacity:0}10%,72%{opacity:1}100%{opacity:0}}
+.lvl-fx-lbl{
+  font-family:var(--fd);font-size:var(--fs-md);letter-spacing:.42em;text-transform:uppercase;
+  color:var(--gold);padding-left:.42em;
+}
+.lvl-fx-num{
+  font-family:var(--ft);font-size:5.5rem;font-weight:700;line-height:1;color:var(--goldb);
+  text-shadow:0 0 28px rgba(var(--gold-rgb),.7),0 0 8px rgba(var(--gold-rgb),.45);
+  animation:lvlFxNum .6s cubic-bezier(.18,.89,.32,1.28) both;
+}
+@keyframes lvlFxNum{0%{transform:scale(.35);opacity:0}60%{transform:scale(1.14);opacity:1}100%{transform:scale(1)}}
+.lvl-fx-ring{
+  position:absolute;width:150px;height:150px;border-radius:50%;
+  border:2px solid rgba(var(--goldb-rgb),.9);
+  box-shadow:0 0 18px rgba(var(--gold-rgb),.5);
+  animation:lvlFxRing .95s ease-out both;
+}
+.lvl-fx-ring--2{animation-delay:.2s;border-width:1px}
+@keyframes lvlFxRing{0%{transform:scale(.45);opacity:.95}100%{transform:scale(2.5);opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .lvl-fx-num{animation:none}
+  .lvl-fx-ring{display:none}
+}
+
+/* Stats › Guardia: «Desprevenido» no cabía en un tercio (salía «DESPREVE…»).
+   El resumen usa ahora la misma rejilla que la tarjeta Defensas de Perfil
+   —la cifra grande a la izquierda y dos filas a la derecha—, que no depende
+   del ancho de un rótulo ni del tamaño de letra elegido. */
+.def-grid--guardia{margin-bottom:8px}
+.def-val--txt{font-family:var(--fb);font-size:var(--fs-lg);font-weight:700}
+/* Equipo de combate: los nombres de armadura y escudo pueden ser largos
+   («Media Armadura (peto y grevas)»). Un punto más pequeños, centrados y
+   con las líneas equilibradas: «Cota de Malla» cabe en una, y los largos
+   se parten por la mitad y no por donde caiga. */
+/* «Armadura» se cortaba con la letra en Grande y Muy grande */
+.g3-combate .flbl{letter-spacing:.04em;padding-left:4px;padding-right:4px;text-align:center}
+.g3-combate .fval{text-align:center;line-height:1.15}
+.g3-combate .fval > span:first-child{font-size:var(--fs-md);text-wrap:balance}
+
+/* ══════════════════════════════════════════
+   v61 — Estado «Protagonista y trío»
+   Los PV, que es lo que más se mira y se toca en combate, van centrados y
+   grandes arriba. Adrenalina, Ingenio y Carne, en tres columnas debajo.
+   Botones ± en círculo de trazo fino, barras de línea con un rombo en la
+   punta y «Descansar» sin recuadro. Los ids y las clases que usa el
+   código (cur_*, max_*, res_fill_*, .res-btn, .e4-row-*) no cambian.
+══════════════════════════════════════════ */
+.est4 .e4-heroe{display:flex;flex-direction:column;align-items:center;padding-top:2px}
+.est4 .e4-heroe .e4-name{color:var(--text);letter-spacing:.17em}
+.est4 .e4-ctl--heroe{
+  display:flex;align-items:center;justify-content:center;gap:22px;
+  margin-top:4px;
+}
+.est4 .e4-heroe .e4-fin{font-size:2.625rem !important;font-weight:700;height:52px !important;min-height:52px !important}
+.est4 .e4-heroe .e4-sep{font-size:var(--fs-lg);margin:0 6px;align-self:flex-end;padding-bottom:9px}
+.est4 .e4-heroe .e4-max{font-size:var(--fs-lg);align-self:flex-end;padding-bottom:9px}
+.est4 .e4-heroe .e4-track{width:70%;margin:6px auto 0}
+
+/* La cifra mide lo que sus dígitos (--dig lo pone _updateResBars) */
+.est4 .e4-num{justify-content:center}
+.est4 .e4-fin{
+  width:calc(var(--dig,2) * 1ch + 2px) !important;max-width:none !important;
+  text-align:center;
+}
+
+/* El trío */
+.est4 .e4-trio{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  margin-top:16px;padding-top:14px;
+  background:var(--line-dim) top left / 100% 1px no-repeat;
+}
+.est4 .e4-col{display:flex;flex-direction:column;align-items:center;min-width:0}
+/* Las tres columnas comparten filas (nombre, cifra, barra, botones): si un
+   nombre se partiera en dos líneas, las cifras seguirían a la misma altura. */
+@supports (grid-template-rows:subgrid){
+  .est4 .e4-trio{grid-template-rows:auto auto auto auto}
+  .est4 .e4-col{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-items:center;align-items:center}
+}
+/* 12 px fijos, no rem: «Adrenalina» tiene que caber en un tercio de la
+   tarjeta también con la letra en Grande y Muy grande. Es el suelo
+   tipográfico de la app, así que no baja de ahí. */
+.est4 .e4-col .e4-name{
+  font-size:12px;letter-spacing:.02em;
+  flex-wrap:wrap;justify-content:center;row-gap:3px;max-width:100%;
+}
+.est4 .e4-col .e4-joya{width:11px;height:11px;margin-right:5px}
+.est4 .e4-col .e4-num{margin-top:1px}
+.est4 .e4-col .e4-fin{font-size:1.25rem !important;font-weight:700;height:34px !important;min-height:34px !important}
+.est4 .e4-col .e4-sep{margin:0 3px;font-size:var(--fs-2xs)}
+.est4 .e4-col .e4-max{font-size:var(--fs-2xs)}
+/* Más cortas que su columna (v63): a todo el ancho, las tres barras casi se
+   tocaban entre sí. */
+.est4 .e4-col .e4-track{width:78%;margin:2px auto 0;opacity:1}
+.est4 .e4-pm{display:flex;justify-content:center;gap:16px;margin-top:11px;grid-template-columns:none}
+
+/* Barras de línea: finas, a todo el ancho de su bloque, con un rombo en
+   la punta que marca hasta dónde llegan */
+.est4 .e4-track{height:3px;margin-right:0}
+.est4 .e4-col .e4-track{height:2px}
+.est4 .e4-track .res-fill::after{
+  content:'';position:absolute;right:-3px;top:50%;width:7px;height:7px;
+  transform:translateY(-50%) rotate(45deg);
+  background:inherit;filter:brightness(1.55);box-shadow:0 0 0 1px rgba(var(--void-rgb),.55);
+}
+
+/* Botones ±: círculo de trazo fino con el color del recurso, sin caja */
+.est4 .e4-ctl .e4-btn{
+  width:30px;height:30px;border-radius:50%;
+  background-color:transparent;box-shadow:none;
+  border:1px solid color-mix(in srgb,var(--c,var(--muted)) 55%,transparent);
+  background-size:11px 1.5px,1.5px 11px;
+}
+.est4 .e4-ctl .e4-btn[data-delta^="-"]{background-size:11px 1.5px,0 0}
+.est4 .e4-ctl--heroe .e4-btn{width:36px;height:36px;background-size:13px 1.5px,1.5px 13px}
+.est4 .e4-ctl--heroe .e4-btn[data-delta^="-"]{background-size:13px 1.5px,0 0}
+.est4 .e4-ctl .e4-btn:active{box-shadow:none}
+.est4 .e4-ctl .e4-btn.is-tope{opacity:.3}
+
+/* Cifra del cambio (v60): a la derecha de la cifra, no encima del nombre */
+.est4 .res-delta{left:100%;right:auto;bottom:auto;top:-3px;margin-left:3px}
+.est4 .e4-heroe .res-delta{top:2px;margin-left:5px;font-size:var(--fs-md)}
+
+/* «Descansar»: una línea de texto dorado, sin recuadro */
+#fold_estado .rest-panel{margin-top:14px}
+#fold_estado .rest-panel > summary{
+  background:none;border:none;min-height:44px;padding:4px 12px;
+  color:var(--gold);letter-spacing:.22em;font-size:var(--fs-2xs);
+}
+#fold_estado .rest-panel > summary::before{content:'—';margin-right:10px;color:var(--rim)}
+#fold_estado .rest-panel > summary::after{content:'—';margin-left:10px;color:var(--rim)}
+#fold_estado .rest-panel[open] > summary{color:var(--goldb)}
+
+/* ══════════════════════════════════════════
+   v61 — Pantalla de carga: el icono que late
+   Como la de S&S Director, con el icono de Companion: el arma del pacto
+   respirando sobre un resplandor frío y una línea que corre. Sin el anillo
+   de runas ni las partículas. El azul es el del icono, no el del tema.
+══════════════════════════════════════════ */
+#ss-loader{
+  background-image:
+    radial-gradient(ellipse 62% 40% at 50% 40%,rgba(150,200,240,.10) 0%,transparent 62%),
+    radial-gradient(ellipse 90% 50% at 50% 100%,rgba(var(--border-rgb),.35) 0%,transparent 70%);
+}
+.carga-icono{
+  width:132px;height:132px;margin-bottom:20px;flex-shrink:0;
+  animation:lReveal .6s cubic-bezier(.16,.72,.34,1) .05s both;
+}
+.carga-icono img{
+  display:block;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 16px rgba(150,200,240,.35));
+  animation:cargaLate 2.4s ease-in-out infinite;
+}
+@keyframes cargaLate{
+  0%,100%{opacity:.6;transform:scale(.94)}
+  50%    {opacity:1;transform:scale(1.04)}
+}
+#ss-loader .loader-title{
+  font-size:25px;      /* fijo: no crece con «Muy grande» y no se parte en dos líneas */
+  color:var(--goldb);
+  text-shadow:0 0 40px rgba(150,200,240,.22),0 2px 6px rgba(0,0,0,.95);
+}
+#ss-loader .loader-sub{color:var(--muted);margin-top:2px}
+#ss-loader .loader-status{color:var(--muted)}
+.carga-linea{
+  position:relative;width:128px;height:2px;margin:12px 0 4px;border-radius:1px;overflow:hidden;
+  background:var(--rim);
+  animation:lReveal .5s cubic-bezier(.16,.72,.34,1) .45s both;
+}
+.carga-linea::after{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:42%;border-radius:1px;
+  background:linear-gradient(90deg,transparent,#8ec4ee 45%,#e3f1fc 60%,transparent);
+  animation:cargaCorre 1.5s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes cargaCorre{from{transform:translateX(-110%)}to{transform:translateX(250%)}}
+@media(prefers-reduced-motion:reduce){
+  .carga-icono,.carga-icono img,.carga-linea,.carga-linea::after{animation:none}
+  .carga-icono img{opacity:1}
+  .carga-linea::after{width:100%}
+}
+
+/* ══════════════════════════════════════════
+   v62 — Mutaciones del Mutante: se compran con Potencial
+══════════════════════════════════════════ */
+.mut-wrap{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.mut-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.mut-cont{font-family:var(--fm);font-size:var(--fs-sm);color:var(--gold);white-space:nowrap}
+.mut-cont--falta{color:var(--goldb)}
+.mut-sub{font-family:var(--fd);font-size:var(--fs-2xs);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.mut-op{
+  display:grid;grid-template-columns:auto 1fr auto;column-gap:8px;row-gap:1px;align-items:center;
+  padding:7px 9px;border:1px solid var(--edge);border-radius:var(--r);background:var(--raised);
+  cursor:pointer;text-align:left;min-height:44px;
+}
+.mut-op input{grid-row:1 / span 2;margin:0}
+.mut-op:has(input:checked),.mut-op--wiz.sel{border-color:var(--edge-gold);background:rgba(var(--gold-rgb),.06)}
+.mut-op.is-off{opacity:.45;cursor:default}
+.mut-n{font-family:var(--fd);font-size:var(--fs-sm);font-weight:600;color:var(--text)}
+.mut-c{font-family:var(--fm);font-size:var(--fs-xs);color:var(--gold);border:1px solid var(--edge-gold);border-radius:10px;padding:0 7px;justify-self:end}
+.mut-c--def{color:var(--blood);border-color:rgba(var(--danger-rgb),.45)}
+.mut-t{grid-column:2 / span 2;font-family:var(--fb);font-size:var(--fs-sm);color:var(--dim);line-height:1.35}
+/* En el asistente no hay casilla: la fila entera es el botón */
+.mut-op--wiz{grid-template-columns:1fr auto;width:100%;font:inherit;color:inherit}
+.mut-op--wiz .mut-t{grid-column:1 / span 2}
+
+/* Detalle · Trasfondo (v63) */
+.bg-fila{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.bg-nota{font-family:var(--fb);font-size:var(--fs-sm);font-style:italic;color:var(--muted);margin:4px 0 8px}
+#detail_bg_body .tbadge{display:inline-block}
+.bg-defecto{border-left:2px solid rgba(var(--danger-rgb),.45);padding-left:9px}
+
+/* Asistente · rótulo de las Vocaciones (v64) */
+.wiz-voc-cab{margin-top:14px;padding-top:10px;border-top:1px solid var(--edge);color:var(--gold)}
+.wiz-voc{margin:6px 0 4px}
+.wiz-voc dt{font-family:var(--fd);font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:8px}
+.wiz-voc dd{margin:2px 0 0;font-family:var(--fb);font-size:var(--fs-sm);color:var(--text);line-height:1.4}
+
+/* ── Talentos con el color de su tipo (v79) ────────────────────────
+   Franja a la izquierda (sombra interior, para no romper el radio) y el
+   glifo del tipo delante del nombre en Talentos activos. Los colores son
+   los --tipo-* de cada tema. */
+.dc[data-tipo],.tc[data-tipo]{--tipo-c:var(--gold)}
+.dc[data-tipo="pasivo"],.tc[data-tipo="pasivo"]{--tipo-c:var(--tipo-pasivo,var(--gold))}
+.dc[data-tipo="habilitador"],.tc[data-tipo="habilitador"]{--tipo-c:var(--tipo-habilitador,var(--gold))}
+.dc[data-tipo="disparador"],.tc[data-tipo="disparador"]{--tipo-c:var(--tipo-disparador,var(--gold))}
+.dc[data-tipo="modificador"],.tc[data-tipo="modificador"]{--tipo-c:var(--tipo-modificador,var(--gold))}
+.dc[data-tipo]{box-shadow:inset 3px 0 0 var(--tipo-c)}
+.tc[data-tipo]{box-shadow:inset 3px 0 0 var(--tipo-c)}
+.tc[data-tipo].tc-locked{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tipo-c) 55%,transparent)}
+.dc-glifo{color:var(--tipo-c);font-size:var(--fs-sm);margin-right:7px;flex-shrink:0;line-height:1}
+
+/* ── Entrada desde la pantalla de carga (v81) ──────────────────────
+   Mientras carga, la pantalla visible espera un poco alejada; al fundirse
+   el velo se acerca a su sitio. La pantalla de carga también sale con un
+   leve acercamiento, para que las dos se crucen. */
+html.arranque .screen:not(.hidden){transform:scale(.985)}
+html.entrando .screen{transition-duration:.26s,.55s}
+#ss-loader.fade-out .carga-icono,#ss-loader.fade-out .loader-text{
+  transform:scale(1.04);transition:transform .5s cubic-bezier(.4,0,.2,1);
+}
+@media(prefers-reduced-motion:reduce){
+  html.arranque .screen:not(.hidden){transform:none}
+  #ss-loader{transition-duration:.2s}
+  #ss-loader.fade-out .carga-icono,#ss-loader.fade-out .loader-text{transform:none}
+}

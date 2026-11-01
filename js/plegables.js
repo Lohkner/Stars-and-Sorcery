@@ -1,16 +1,23 @@
 /* ══════════════════════════════════════════════════════════════
-   Tarjetas plegables (heredado de S&S Companion).
-   Van ABIERTAS por defecto. El estado se guarda en localStorage y no en
-   la amenaza: plegar una tarjeta es una preferencia de quien dirige en
-   esa mesa, no un dato de la ficha, así que no viaja en el JSON ni marca
-   la amenaza como no guardada.
+   Tarjetas plegables. En Perfil: Estado · Capacidades · Defensas ·
+   Ataques. En Stats: Pilares · Salvaciones · Guardia · Habilidades. En
+   Aptitudes: Trucos · Conjuros · Rasgos. En Detalle: Linaje · Arquetipo.
+   Módulo aparte; se carga entre app.js y boot.js.
 
-   Algunas muestran plegadas un resumen de una línea con lo esencial,
-   para que plegar no signifique perder el dato de vista. Basta con NO
-   darles entrada en RESUMEN para que su cabecera enseñe solo el título.
+   Van ABIERTAS por defecto —se usan cada turno, al contrario que las
+   aptitudes de Arquetipo, que son consulta—. El estado se guarda en
+   localStorage y no en el personaje: plegar una tarjeta es una
+   preferencia de quien juega en esa mesa, no un dato de la ficha, así
+   que no debe viajar en el JSON ni marcar el personaje como no guardado.
+
+   Estado, Guardia y Ataques muestran plegadas un resumen de una línea con
+   lo esencial, para que plegar no signifique perder el dato de vista.
+   Las demás no llevan resumen: su cabecera enseña solo el título —y el
+   contador, donde ya lo había—. Basta con NO darles entrada en RESUMEN:
+   pintarPeek() se retira sola si la clave no está.
 ══════════════════════════════════════════════════════════════ */
 (function () {
-  const CLAVE = 'ssd_folds';
+  const CLAVE = 'ss_folds';
   const $ = id => document.getElementById(id);
   const txt = (id, def = '—') => $(id)?.textContent?.trim() || def;
   const val = (id, def = '—') => $(id)?.value?.trim() || def;
@@ -23,16 +30,17 @@
     try { localStorage.setItem(CLAVE, JSON.stringify(p)); } catch (e) { /* cuota */ }
   }
 
-  const S = () => app._S;
+  /** Resumen de una línea por tarjeta.
+      Estado se queda solo con los PV: con Adrenalina e Ingenio detrás, el
+      resumen era tan largo que en móvil comía el título de la tarjeta. */
   const RESUMEN = {
     estado: () => `PV ${val('cur_pv', '0')}/${txt('max_pv', '0')}`,
-    stats: () => S() ? `${S().vel} pies · Ini ${app._signo(S().ini)}` : '—',
-    defensa: () => S() ? `G: ${S().guardia} | A: ${S().armadura}` : '—',
-    ataques: () => S() ? `${app._signo(S().ataque)} · ${S().dano}` : '—',
-    salv: () => S() ? (S().noMoral ? 'Sin Moral' : 'Moral ' + S().moral) : '—',
-    grupo: () => app.mesa ? `${app.mesa.grupo.pjs} PJ · Nv ${app.mesa.grupo.nivel}` : '—',
-    encuentro: () => { if (!app.mesa) return '—'; const { na } = app._naEncuentro(); return app._dificultad(na, app.umbrales()).n + (na == null ? '' : ' · NA ' + na); },
-    combate: () => app.mesa?.combate ? 'Ronda ' + app.mesa.combate.ronda : '',
+    guardia: () => txt('guard_total_live', '—'),
+    capacidades: () => `Ini ${txt('res_ini', '+0')}`,
+    /* Solo las dos cifras, sin más texto que alargue la cabecera. */
+    defensas: () => `G: ${txt('def_guardia', '—')} | A: ${txt('res_armor', '—')}`,
+    /* Solo el bono de ataque del arma principal, tal cual («+5»). */
+    ataques: () => txt('atk_bonus_1', '') || '—',
   };
 
   function pintarPeek(det) {
@@ -43,9 +51,7 @@
     if (!peek) {
       peek = document.createElement('span');
       peek.className = 'fold-peek';
-      // Antes del lápiz, que va al extremo derecho.
-      const pen = sum.querySelector('.edit-pen');
-      if (pen) sum.insertBefore(peek, pen); else sum.appendChild(peek);
+      sum.appendChild(peek);
     }
     // Solo cuesta calcularlo cuando se ve
     if (!det.open) peek.textContent = RESUMEN[clave]();
@@ -77,7 +83,19 @@
     return r;
   };
 
-  // pintarFicha() y pintarMesa() lo llaman al terminar: sin esto, una
-  // tarjeta plegada enseñaría cifras rancias.
-  app._refrescarPlegables = refrescar;
+  // Los resúmenes salen de valores que recalcula calc(); si no se
+  // refrescan aquí, una tarjeta plegada enseñaría cifras rancias.
+  const _calc = app.calc;
+  app.calc = function () {
+    const r = _calc.apply(this, arguments);
+    refrescar();
+    return r;
+  };
+
+  const _adjustRes = app.adjustRes;
+  app.adjustRes = function () {
+    const r = _adjustRes.apply(this, arguments);
+    refrescar();
+    return r;
+  };
 })();

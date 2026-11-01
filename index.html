@@ -1,37 +1,34 @@
 <!DOCTYPE html>
-<html lang="es" style="background:#06080a;color-scheme:dark">
+<html lang="es" class="arranque" style="background:#07060a;color-scheme:dark">
 <head>
 <meta charset="UTF-8">
 <!-- CRITICAL: this inline style fires before any stylesheet and kills the iOS white flash -->
-<style>html,body{background:#06080a!important}*{box-sizing:border-box}</style>
+<style>html,body{background:#07060a!important}*{box-sizing:border-box}</style>
 <!-- maximum-scale=1 evita el auto-zoom de iOS al enfocar inputs pequeños sin
      bloquear el pellizco (iOS lo permite siempre); user-scalable=no se retira
      por accesibilidad (WCAG 1.4.4). interactive-widget hace que el teclado en
      pantalla de Android encoja el layout en vez de tapar los controles. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#06080a">
-<meta name="background-color" content="#06080a">
-<title>S&amp;S Director</title>
-<meta name="description" content="Herramienta del Director de Juego de Stars &amp; Sorcery: crea amenazas, calibra encuentros y genera botín, zonas y facciones.">
-<link rel="icon" type="image/webp" href="Bone_Chill_Icon.webp">
-<link rel="apple-touch-icon" href="icono-192.png">
+<meta name="theme-color" content="#07060a">
+<meta name="background-color" content="#07060a">
+<title>S&amp;S Companion</title>
+<meta name="description" content="Hoja de personaje digital para Stars &amp; Sorcery RPG. Gestiona estadísticas, inventario, talentos y tiradas de dados.">
+<link rel="icon" type="image/webp" href="Bind_Pact_Weapon.webp">
+<link rel="apple-touch-icon" href="Bind_Pact_Weapon.webp">
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="S&amp;S Director">
-<meta name="application-name" content="S&amp;S Director">
-<meta name="msapplication-TileColor" content="#06080a">
+<meta name="apple-mobile-web-app-title" content="S&amp;S Companion">
+<meta name="application-name" content="S&amp;S Companion">
+<meta name="msapplication-TileColor" content="#07060a">
 <meta name="color-scheme" content="dark">
 <!-- Letras instaladas en la propia app (css/fuentes.css + /fonts): se ven igual
      con o sin conexión. Se precargan las dos que pintan la primera pantalla. -->
-<link rel="preload" href="Bone_Chill_Icon.webp" as="image" type="image/webp">
 <link rel="preload" href="fonts/cinzel-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/spectral-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fuentes.css">
 <link rel="stylesheet" href="css/main.css">
-<link rel="stylesheet" href="css/temas.css">
-<link rel="stylesheet" href="css/director.css">
 </head>
 <body>
 <!-- Sprite de iconos unificados (trazo 1.5px, hereda color). Uso: <svg class="ico"><use href="#i-nombre"/></svg> -->
@@ -76,21 +73,17 @@
   <symbol id="i-eq-foco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M12 20L8.5 9 12 4l3.5 5z"/></symbol>
   <symbol id="i-eq-brujula" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5L13 13l-4.5 2.5L11 11z"/></symbol>
   <symbol id="i-eq-bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 7.5h8l3 5v4.5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-4.5z"/><path d="M9 3.5l3 4 3-4"/></symbol>
-  <!-- S&S Director: tipos de pieza (Manual de Monstruos, Cap. 3) -->
-  <symbol id="i-escudo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.500-7 10-3.500-1.500-7-5-7-10V6z"/></symbol>
-  <symbol id="i-mas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
-  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
 </svg>
 <div id="ss-loader" aria-hidden="true">
 
-  <!-- La mano que late: el icono de la app, sin anillo ni partículas -->
-  <div class="carga-mano"><img src="Bone_Chill_Icon.webp" alt="" width="144" height="144" decoding="sync"></div>
+  <!-- El icono de la app, latiendo: sin anillo de runas ni partículas -->
+  <div class="carga-icono"><img src="Bind_Pact_Weapon.webp" alt="" width="144" height="144" decoding="sync"></div>
 
   <div class="loader-text">
     <div class="loader-title">Stars &amp; Sorcery</div>
-    <div class="loader-sub">Director</div>
+    <div class="loader-sub">Companion</div>
     <div class="carga-linea"></div>
-    <div class="loader-status">Despertando…</div>
+    <div class="loader-status">Cargando…</div>
   </div>
 
 </div>
@@ -114,50 +107,117 @@
     <details class="dice-hist" id="dice_hist" hidden>
       <summary class="dice-hist-sum">Últimas tiradas <span class="dice-hist-n" id="dice_hist_n">0</span></summary>
       <ol class="dice-hist-list" id="dice_hist_list"></ol>
-      <p class="dice-hist-vacia" id="dice_hist_vacia" hidden>Aún no hay tiradas.</p>
+      <p class="dice-hist-vacia" id="dice_hist_vacia" hidden>Aún no hay tiradas con este personaje.</p>
     </details>
     <button class="dice-close-btn" id="dice-close-btn" data-action="closeDiceOverlay" aria-label="Cerrar resultado de dados"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Cerrar</button>
     <div style="font-family:var(--fm);font-size:var(--fs-2xs);color:var(--border);letter-spacing:.08em;margin-top:2px">↓ desliza para cerrar</div>
   </div>
 </div>
 <input type="file" id="img_input" accept="image/*" style="display:none" onchange="app.startCrop(this)">
+<div id="apt_panel" class="fs-panel" role="region" aria-label="Gestor de aptitudes">
+  <div class="fs-hdr">
+    <button class="fs-hdr-back" data-action="closeAptManager" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="fs-hdr-center">
+      <span class="fs-hdr-ttl" id="apt_manager_title">Gestor de Trucos</span>
+      <span class="fs-hdr-sub" id="apt_manager_sub">Selecciona los trucos del personaje</span>
+    </div>
+    <div class="fs-hdr-actions">
+      <span id="apt_modal_icon" style="font-size:1.1rem;color:var(--gold)">✦</span>
+    </div>
+  </div>
+
+  <div class="fs-body">
+    <div class="apt-layout">
+      <!-- LEFT: Available -->
+      <div class="apt-col">
+        <div class="apt-col-hdr">
+          <span class="apt-col-title">Disponibles</span>
+        </div>
+        <div class="apt-search-wrap">
+          <input class="apt-search" id="apt_search" type="search"
+            placeholder="Buscar…" autocomplete="off" spellcheck="false"
+            oninput="app._aptFilter(this.value)">
+          <div class="tm-filters" id="apt_filters">
+            <button type="button" class="tm-fchip" id="apt_filter_source"
+              onclick="app._toggleAptFilter('source', this)" aria-pressed="false">
+              <span class="tm-fchip-dot"></span>Mi Fuente
+            </button>
+            <button type="button" class="tm-fchip" id="apt_filter_reach"
+              onclick="app._toggleAptFilter('reach', this)" aria-pressed="false">
+              <span class="tm-fchip-dot"></span>A mi alcance
+            </button>
+          </div>
+          <div class="apt-lvls" id="apt_levels"></div>
+        </div>
+        <span class="apt-count" id="apt_avail_count"></span>
+        <div class="apt-col-body" id="apt_available_list"></div>
+      </div>
+      <!-- RIGHT: Selected -->
+      <div class="apt-col">
+        <div class="apt-col-hdr">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span class="apt-col-title active-col">Seleccionados</span>
+            <span class="mft-count" id="apt_sel_count">0</span>
+          </div>
+          <button class="bmini br" style="font-size:var(--fs-xs);padding:6px 12px;min-height:38px"
+            data-action="_aptClearAll"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Limpiar</button>
+        </div>
+        <div class="apt-col-body" id="apt_selected_list">
+          <p id="apt_selected_empty" style="display:none;text-align:center;color:var(--muted);
+            font-style:italic;font-size:var(--fs-md);margin-top:20px;line-height:1.8;padding:0 12px">
+            Sin selección.<br>
+            <span style="font-size:var(--fs-sm);color:var(--border)">Toca un ítem para añadir.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fs-footer">
+    <div class="fs-footer-info">
+      <span id="apt_type_label" style="color:var(--muted)">—</span>
+    </div>
+    <button class="btn btn-gold" data-action="closeAptManager"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+  </div>
+</div>
 <input type="file" id="bg_home_input" accept="image/*" style="display:none" onchange="app.loadBgImage('home',this)">
 <input type="file" id="bg_app_input"  accept="image/*" style="display:none" onchange="app.loadBgImage('app',this)">
 <input type="file" id="json_char_input" accept=".json" style="display:none" onchange="app.loadJSON(this)">
 <input type="file" id="respaldo_input" accept=".json,application/json" style="display:none" onchange="app.restaurarRespaldo(this)">
 <input type="file" id="json_rules_input" accept=".json" style="display:none" onchange="app.loadRulesFile(this)">
-
 <div id="home-screen" class="screen" role="main">
+  <!-- ── Header: title + deco (identidad visual preservada) ── -->
   <div class="home-hdr">
     <h1 class="home-title">Stars &amp; Sorcery</h1>
-    <p class="home-sub">Director</p>
+    <p class="home-sub">Companion</p>
     <div class="home-deco"></div>
   </div>
 
+  <!-- ── Body ── -->
   <div class="home-body">
+
+    <!-- Primary actions -->
     <div class="home-actions-primary">
-      <button class="home-btn-new" data-action="newChar" aria-label="Crear una amenaza nueva">
+      <button class="home-btn-new" data-action="newChar" aria-label="Crear nuevo personaje">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nueva Amenaza
+        Nuevo Personaje
       </button>
-      <button class="home-btn-import" data-action="abrirBestiario" aria-label="Abrir el bestiario">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H20v20H4.5A2.5 2.5 0 0 1 2 19.5v-15z"/><path d="M7 8h7M7 12h5"/></svg>
-        Bestiario
+      <button class="home-btn-import" onclick="app.toast('Selecciona un archivo .json de personaje','info');setTimeout(()=>document.getElementById('json_char_input').click(),80)" aria-label="Importar personaje JSON">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar
       </button>
     </div>
 
-    <button class="home-settings-btn home-mesa-btn" data-action="abrirMesa" aria-label="Abrir la Mesa del Director: encuentros, botín, zonas y facciones">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z"/><path d="M12 7.5l4.5 7.5h-9z"/></svg>
-      Mesa del Director
-    </button>
+    <!-- Settings button -->
     <button class="home-settings-btn" onclick="app.openSettings()" aria-label="Abrir ajustes y datos">
-      <svg class="ico ico-solo" style="width:14px;height:14px" aria-hidden="true"><use href="#i-gear"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Ajustes &amp; Datos
     </button>
 
+    <!-- Roster -->
     <div class="home-roster-wrap">
       <div class="home-roster-hdr">
-        <span class="home-roster-title">Amenazas</span>
+        <span class="home-roster-title">Personajes</span>
         <span class="home-roster-hint">desliza · → ordenar · ← eliminar</span>
       </div>
       <div class="home-roster-body">
@@ -165,36 +225,37 @@
       </div>
     </div>
 
+    <!-- Footer tools -->
     <div class="home-footer">
-      <button class="home-footer-btn" onclick="app.toast('Selecciona un archivo .json de amenaza','info');setTimeout(()=>document.getElementById('json_char_input').click(),80)" aria-label="Importar una amenaza desde un JSON">
+      <button class="home-footer-btn" onclick="app.toast('Selecciona un archivo .json de reglas','info');setTimeout(()=>document.getElementById('json_rules_input').click(),80)" aria-label="Importar reglas">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Importar
+        Importar Reglas
       </button>
       <div class="home-footer-sep"></div>
-      <button class="home-footer-btn" data-action="openDatabaseEditor" aria-label="Editor de reglas">
+      <button class="home-footer-btn" data-action="openDatabaseEditor" aria-label="Editor de base de datos">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
         Editor de Reglas
       </button>
     </div>
+
   </div>
 </div>
-
-<div id="app-screen" class="screen hidden" data-modo="ficha">
+<div id="app-screen" class="screen hidden">
   <div class="app-shell" role="main">
     <header class="app-hdr">
       <button class="app-hdr-back" data-action="goHome" title="Volver" aria-label="Volver al inicio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div style="flex:1;text-align:center;min-width:0">
-        <span class="app-hdr-ttl" id="app_hdr_ttl">Stars &amp; Sorcery</span>
+        <span class="app-hdr-ttl">Stars &amp; Sorcery</span>
         <div class="last-saved" id="last_saved_lbl"></div>
       </div>
-      <button class="app-hdr-save solo-ficha" data-action="saveChar" aria-label="Guardar la amenaza" title="Guardar">Guardar</button>
+      <button class="app-hdr-save" data-action="saveChar" aria-label="Guardar personaje" title="Guardar">Guardar</button>
       <div class="sdial" id="sdial">
-        <button class="sdial-btn" data-action="toggleDial" title="Acciones" aria-label="Abrir menú de acciones" aria-expanded="false"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-gear"/></svg></button>
+        <button class="sdial-btn" data-action="toggleDial" title="Acciones" aria-label="Abrir menú de acciones" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         <div class="sdial-menu" id="sdial_menu">
-          <button class="sdial-item solo-ficha" onclick="app.abrirPlantillas();app.toggleDial()" title="Aplicar una plantilla" aria-label="Aplicar una plantilla a esta amenaza"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6L20.5 9.5l-4.3 4.1 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.5 9.5l5.9-.9z"/></svg></button>
-          <button class="sdial-item solo-ficha" onclick="app.duplicarAmenaza();app.toggleDial()" title="Duplicar la amenaza" aria-label="Duplicar la amenaza"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/></svg></button>
-          <button class="sdial-item sdial-danger solo-ficha" onclick="app.deleteCurrentChar();app.toggleDial()" title="Eliminar la amenaza" aria-label="Eliminar la amenaza guardada"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-          <button class="sdial-item solo-ficha" id="sdial_modo_edicion" onclick="app.modoEdicion();app.toggleDial()" title="Modo edición: todas las tarjetas" aria-label="Modo edición: abrir todas las tarjetas en edición"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-quill"/></svg></button>
+          <button class="sdial-item" onclick="app.personajeAleatorio();app.toggleDial()" title="Personaje aleatorio" aria-label="Generar personaje aleatorio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></button>
+          <button class="sdial-item sdial-danger" onclick="app.confirmClear();app.toggleDial()" title="Resetear hoja" aria-label="Resetear hoja de personaje"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+          <button class="sdial-item sdial-danger" onclick="app.deleteCurrentChar();app.toggleDial()" title="Eliminar personaje" aria-label="Eliminar personaje guardado"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+          <button class="sdial-item" id="sdial_modo_edicion" onclick="app.modoEdicion();app.toggleDial()" title="Modo edición: todas las tarjetas" aria-label="Modo edición: abrir todas las tarjetas en edición"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-quill"/></svg></button>
           <button class="sdial-item" onclick="app.verHistorialTiradas();app.toggleDial()" title="Últimas tiradas" aria-label="Ver las últimas tiradas"><svg class="ico ico-solo" style="width:16px;height:16px" aria-hidden="true"><use href="#i-d20"/></svg></button>
           <button class="sdial-item" onclick="app.openSettings();app.toggleDial()" title="Ajustes y datos" aria-label="Abrir ajustes y datos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         </div>
@@ -203,27 +264,46 @@
 
     <div class="pages-wrapper" id="pages_wrapper">
       <div class="pages-track" id="pages_track">
+        <div class="page" id="page_0">
 
-        <!-- ══════════ FICHA DE AMENAZA ══════════ -->
-        <div class="page" id="page_0" data-modo="ficha">
-
-          <!-- Retrato, nombre e idea (paso 1 del Manual de Monstruos) -->
-          <div class="panel panel-accent" style="padding:0" id="card_personal">
-            <div id="personal_edit_view" style="display:none">
+          <!-- Retrato + Datos personales -->
+          <div class="panel panel-accent" style="padding:0">
+            <!-- EDIT MODE -->
+            <div id="personal_edit_view">
               <div style="padding:14px 16px 0;display:flex;justify-content:center">
-                <div class="port-card-edit" onclick="document.getElementById('img_input').click()" role="button" tabindex="0" aria-label="Cambiar el retrato de la criatura" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('img_input').click()">
+                <div class="port-card-edit" onclick="document.getElementById('img_input').click()" role="button" tabindex="0" aria-label="Cambiar retrato del personaje" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('img_input').click()">
                   <img id="char_img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='%23382f47'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E" alt="Retrato">
                   <div class="port-hint"><span>Cambiar Retrato</span></div>
                 </div>
               </div>
               <div style="padding:10px 12px">
-                <div style="margin-bottom:6px"><span class="fl">Nombre</span><input type="text" id="char_name" placeholder="ej. Tejedora del Techo" style="font-family:var(--fd);font-size:var(--fs-2xl);font-weight:600" autocomplete="off" spellcheck="false"></div>
-                <div style="margin-bottom:4px"><span class="fl">La idea <span class="is-field-note">— qué es y qué problema plantea</span></span><textarea id="char_concept" placeholder="Una araña que caza desde el techo y se lleva a quien se queda atrás." style="min-height:64px;font-size:var(--fs-xl)"></textarea></div>
-                <button type="button" class="btn btn-g dir-azar" data-action="nombreAlAzar"><svg class="ico" aria-hidden="true"><use href="#i-d20"/></svg>Nombre al azar</button>
-                <button class="bcnf" onclick="app.confirmSection('personal')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+                <div style="margin-bottom:6px"><span class="fl">Nombre</span><input type="text" id="char_name" placeholder="ej. Valerius el Audaz" style="font-family:var(--fd);font-size:var(--fs-2xl);font-weight:600" autocomplete="off" spellcheck="false"></div>
+                <div class="g2" style="gap:5px;margin-bottom:6px">
+                  <div><span class="fl">Nivel</span><input type="number" id="char_lvl" value="1" min="1" max="10" onchange="app.calc();app.updateXpHint()" inputmode="numeric" aria-label="Nivel del personaje"></div>
+                  <div><span class="fl">XP <span id="xp_next_lbl" style="font-size:var(--fs-xs);color:var(--muted);font-style:normal;letter-spacing:0;text-transform:none"></span></span><input type="number" id="char_xp" value="0" min="0" oninput="app.updateXpHint()" inputmode="numeric" aria-label="Puntos de experiencia"></div>
+                </div>
+                <div id="xp_bar_wrap" style="margin-bottom:6px;display:none">
+                  <div class="lbar" style="margin-top:0"><div id="xp_bar_fill" class="lfill" style="background:linear-gradient(90deg,var(--ice),var(--gold))"></div></div>
+                </div>
+                <button type="button" id="lvlup_btn" class="lvlup-btn" onclick="app.levelUp()" style="display:none">Subir de Nivel</button>
+                <div class="g2" style="gap:5px;margin-bottom:6px">
+                  <div><span class="fl">Puntos de Desarrollo</span><input type="number" id="char_pd" value="0" min="0" inputmode="numeric" onchange="app._markUnsaved()" aria-label="Puntos de Desarrollo disponibles"></div>
+                  <div><span class="fl">Talentos</span><div class="slots-box" id="talent_slots_lbl">0 / 3</div></div>
+                </div>
+                <div style="margin-bottom:6px">
+                  <span class="fl">Alineamiento</span>
+                  <div class="asel" id="align_sel"></div>
+                  <div id="align_feedback" style="min-height:1.4em;margin-top:5px;font-family:var(--fd);font-size:var(--fs-sm);color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;gap:5px;padding:0 2px;opacity:0;transition:opacity .2s">
+                    <span style="font-size:var(--fs-2xs);color:var(--goldb)">✦</span>
+                    <span id="align_feedback_txt"></span>
+                  </div>
+                </div>
+                <div style="margin-bottom:4px"><span class="fl">Biografía</span><textarea id="char_concept" placeholder="Bio del personaje…" style="min-height:44px;font-size:var(--fs-xl)"></textarea></div>
+                <button class="bcnf" data-action="confirmPersonal"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
               </div>
             </div>
-            <div id="personal_summary_view" style="padding:14px 16px 10px">
+            <!-- SUMMARY MODE -->
+            <div id="personal_summary_view" style="display:none;padding:14px 16px 10px">
               <div style="display:flex;flex-direction:column;align-items:center">
                 <div class="port-card">
                   <img id="char_img_summary" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='%23382f47'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E" alt="Retrato">
@@ -231,192 +311,496 @@
                 <div class="port-identity">
                   <div class="port-name" id="sum_name_ov">—</div>
                   <div class="port-divider"></div>
-                  <div class="port-lvl" id="sum_lvl_ov">NA 1</div>
+                  <div class="port-lvl" id="sum_lvl_ov">Nivel 1</div>
                 </div>
               </div>
               <div style="padding:6px 4px 10px;text-align:center">
+                <div id="sum_align_ov" class="port-align"></div>
                 <div id="sum_bio_ov" class="u-pre-wrap port-bio"></div>
+                <button class="bedit" onclick="app.editSection('personal')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
               </div>
             </div>
           </div>
 
-          <!-- Amenaza: NA, tipo, tamaño, Rol y estructura (pasos 2 a 4) -->
-          <div class="panel" id="card_identity">
-            <div class="ph identity-edit-header"><span class="pt">Amenaza</span></div>
-            <div id="identity_edit_view" style="display:none"></div>
-            <div id="identity_summary_view">
-              <div class="id-fila" id="id_fila"></div>
+          <!-- Identidad & Origen -->
+          <div class="panel">
+            <div class="ph identity-edit-header"><span class="pt">Identidad &amp; Origen</span></div>
+            <div id="identity_edit_view">
+              <div class="g2">
+                <div><span class="fl">Linaje (Raza)</span><select id="sel_desc" aria-label="Linaje del personaje" onchange="app.updateOptions()"></select><div id="desc_info" class="infobox"></div><div id="desc_choices"></div></div>
+                <div><span class="fl">Arquetipo (Clase)</span><select id="sel_arq" aria-label="Arquetipo del personaje" onchange="app.updateOptions()"></select><div id="arq_info" class="infobox"></div><span class="fl" style="margin-top:6px">Pericias (grado 0&ndash;3)</span><div id="filo_grades" class="per-grid"></div><select id="sel_filo" aria-label="Pericia de referencia (campo derivado, no editable)" onchange="app.calc()" hidden style="display:none"></select></div>
+              </div>
+              <div id="desc_mutaciones"></div>
+              <div style="margin-top:6px"><span class="fl">Trasfondo</span><select id="sel_bg" aria-label="Trasfondo del personaje" onchange="app.updateOptions()"></select><div id="bg_info" class="infobox"></div></div>
+              <button class="bcnf" onclick="app.confirmSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="identity_summary_view" style="display:none">
+              <div class="id-fila">
+                <span class="ibadge ib-desc"><span id="sum_desc_badge">—</span></span><span class="isep">·</span>
+                <span class="ibadge ib-arq"><span id="sum_arq_badge">—</span></span><span class="isep">·</span>
+                <span class="ibadge ib-bg"><span id="sum_bg_badge">—</span></span>
+              </div>
+              <button class="bedit" onclick="app.editSection('identity')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
             </div>
           </div>
 
-          <!-- Estado: los PV en mesa -->
+          <!-- Estado -->
           <details class="panel est4 fold" id="fold_estado" data-fold="estado" open style="padding:13px 14px">
             <summary class="ph" style="margin-bottom:11px"><span class="pt">Estado</span></summary>
-            <div class="e4-pv">
-              <div class="e4-row e4-row-pv">
-                <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Puntos de Vida</span>
-                <span class="e4-ctl">
-                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="-1" aria-label="Reducir puntos de vida">&minus;</button>
-                  <span class="e4-num"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin e4-fin" aria-label="Puntos de vida actuales"><span class="e4-sep">/</span><span class="e4-max" id="max_pv">0</span></span>
-                  <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="1" aria-label="Aumentar puntos de vida">+</button>
-                </span>
-              </div>
+
+            <!-- Puntos de Vida: protagonistas, centrados (v61) -->
+            <div class="e4-heroe e4-row-pv">
+              <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Puntos de Vida</span>
+              <span class="e4-ctl e4-ctl--heroe">
+                <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="-1" aria-label="Reducir puntos de vida">&minus;</button>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_pv" value="0" class="fin res-fin e4-fin" aria-label="Puntos de vida actuales"><span class="e4-sep">/</span><span class="e4-max" id="max_pv">0</span></span>
+                <button class="res-btn e4-btn" data-cur="cur_pv" data-max="max_pv" data-delta="1" aria-label="Aumentar puntos de vida">+</button>
+              </span>
               <div class="res-track e4-track" aria-hidden="true"><div class="res-fill res-fill-pv" id="res_fill_pv"></div></div>
             </div>
-            <p class="dir-nota" id="estado_nota"></p>
+
+            <!-- Adrenalina · Ingenio · Carne: el trío, en tres columnas -->
+            <div class="e4-trio">
+              <div class="e4-col e4-row-adr">
+                <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Adrenalina</span>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_adr" value="0" class="fin res-fin e4-fin" aria-label="Adrenalina actual"><span class="e4-sep">/</span><span class="e4-max" id="max_adr">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-adr" id="res_fill_adr"></div></div>
+                <span class="e4-ctl e4-pm">
+                  <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="-1" aria-label="Reducir adrenalina">&minus;</button>
+                  <button class="res-btn e4-btn" data-cur="cur_adr" data-max="max_adr" data-delta="1" aria-label="Aumentar adrenalina">+</button>
+                </span>
+              </div>
+              <div class="e4-col e4-row-ing">
+                <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Ingenio</span>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_ing" value="0" class="fin res-fin e4-fin" aria-label="Ingenio actual"><span class="e4-sep">/</span><span class="e4-max" id="max_ing">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-ing" id="res_fill_ing"></div></div>
+                <span class="e4-ctl e4-pm">
+                  <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="-1" aria-label="Reducir ingenio">&minus;</button>
+                  <button class="res-btn e4-btn" data-cur="cur_ing" data-max="max_ing" data-delta="1" aria-label="Aumentar ingenio">+</button>
+                </span>
+              </div>
+              <div class="e4-col e4-row-carne">
+                <span class="e4-name"><svg class="e4-joya" aria-hidden="true"><use href="#i-joya"/></svg>Carne</span>
+                <span class="e4-num"><input type="text" inputmode="numeric" id="cur_carne" value="0" class="fin res-fin e4-fin" aria-label="Carne actual"><span class="e4-sep">/</span><span class="e4-max" id="res_carne">0</span></span>
+                <div class="res-track e4-track e4-track-sm" aria-hidden="true"><div class="res-fill res-fill-carne" id="res_fill_carne"></div></div>
+                <span class="e4-ctl e4-pm">
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="-1" aria-label="Reducir carne">&minus;</button>
+                  <button class="res-btn e4-btn" data-cur="cur_carne" data-max="res_carne" data-delta="1" aria-label="Aumentar carne">+</button>
+                </span>
+              </div>
+            </div>
+
+            <!-- Descanso -->
             <details class="rest-panel" id="rest_panel">
-              <summary>Restablecer</summary>
+              <summary>Descansar</summary>
               <div class="rest-list" id="rest_list"></div>
             </details>
           </details>
 
-          <!-- Estadísticas: Velocidad, Alcance, Iniciativa y Moral; en edición,
-               el valor de la fórmula frente al tuyo. -->
-          <details class="panel fold" id="fold_stats" data-fold="stats" open>
-            <summary class="ph"><span class="pt">Estadísticas</span></summary>
-            <div id="stats_summary_view"></div>
-            <div id="stats_edit_view" style="display:none"></div>
-          </details>
-        </div><!-- /page 0 -->
+          <!-- Capacidades (v57.9): lo que era la parte baja de Estado —
+               Iniciativa, Velocidad, Competencia, Pericias—, la Carga y las
+               notas. Estado se queda con los recursos y el descanso. -->
+          <details class="panel est4 fold" id="fold_capacidades" data-fold="capacidades" open style="padding:13px 14px">
+            <summary class="ph" style="margin-bottom:11px"><span class="pt">Capacidades</span></summary>
+            <!-- Iniciativa · Velocidad · Comp. · Pericias -->
+            <div class="e4-stats">
+              <button type="button" class="e4-stat e4-stat-btn" onclick="app.rollCheck('Iniciativa', parseInt(document.getElementById('res_ini').textContent) || 0)" aria-label="Tirar Iniciativa">
+                <span class="e4-slbl">Iniciativa</span>
+                <span class="e4-sval" id="res_ini">+0</span>
+              </button>
+              <div class="e4-stat">
+                <span class="e4-slbl">Velocidad</span>
+                <span class="e4-sval e4-sval-sm" id="res_vel">30 pies</span>
+              </div>
+              <div class="e4-stat">
+                <span class="e4-slbl">Comp.</span>
+                <span class="e4-sval" id="res_prof">+2</span>
+              </div>
+              <div class="e4-stat">
+                <span class="e4-slbl">Pericias</span>
+                <span class="e4-sval e4-sval-per" id="res_filo_val">—</span>
+              </div>
+            </div>
 
-        <div class="page" id="page_1" data-modo="ficha">
-          <details class="panel fold" id="fold_salv" data-fold="salv" open>
-            <summary class="ph"><span class="pt">Atributos y Moral</span></summary>
-            <div id="saves_summary_view"></div>
-            <div id="saves_edit_view" style="display:none"></div>
+            <!-- Carga -->
+            <div class="e4-load">
+              <span class="e4-load-lbl">Carga</span>
+              <span class="e4-load-val" id="res_carga">0/0</span>
+            </div>
+            <div class="lbar e4-lbar"><div id="carga_bar" class="lfill"></div></div>
+            <p id="carga_warn" class="e4-warn">Sobrecargado</p>
+
+            <details class="e4-notes"><summary id="notes-summary">Notas Rápidas</summary><textarea id="char_notes" aria-label="Notas rápidas del personaje" aria-labelledby="notes-summary" style="min-height:52px;margin-top:4px;font-size:var(--fs-xl)" placeholder="Notas…"></textarea></details>
           </details>
 
+          <!-- Defensas (v57.9): Guardia, Desprevenido y Armadura de un
+               vistazo. Las cifras las calcula calc(); la tarjeta Guardia de
+               Stats es donde se ajustan. -->
+          <details class="panel fold def-card" id="fold_defensas" data-fold="defensas" open>
+            <summary class="ph"><span class="pt">Defensas</span></summary>
+            <div class="def-grid">
+              <div class="def-cell def-cell--guardia">
+                <span class="def-lbl">Guardia</span>
+                <span class="def-val" id="def_guardia">10</span>
+              </div>
+              <div class="def-cell">
+                <span class="def-lbl">Desprevenido</span>
+                <span class="def-val" id="def_desprev">10</span>
+              </div>
+              <div class="def-cell">
+                <span class="def-lbl">Armadura</span>
+                <span class="def-val" id="res_armor">0</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Ataques rápidos -->
           <details class="panel fold" id="fold_ataques" data-fold="ataques" open>
-            <summary class="ph" style="margin-bottom:4px"><span class="pt">Ataque</span></summary>
-            <div id="attack_summary_view"></div>
-            <div id="attack_edit_view" style="display:none"></div>
+            <summary class="ph" style="margin-bottom:4px"><span class="pt">Ataques</span></summary>
+            <div class="atk-card">
+              <div class="atk-hdr">
+                <span class="atk-nm" id="atk_name_1">Desarmado</span>
+                <span class="atk-role-badge">Principal</span>
+              </div>
+              <div class="atk-btns">
+                <button class="abtn abtn-a" onclick="app.rollWeaponAtk(1)" aria-label="Tirar ataque arma principal">
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
+                  <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="atk_bonus_1">+0</span></span>
+                </button>
+                <div class="atk-btn-sep"></div>
+                <button class="abtn abtn-d" onclick="app.rollWeaponDmg(1)" aria-label="Tirar daño arma principal">
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
+                  <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="atk_dmg_1">1</span></span>
+                </button>
+              </div>
+            </div>
+            <div class="atk-card secondary">
+              <div class="atk-hdr">
+                <span class="atk-nm" id="atk_name_2">Desarmado</span>
+                <span class="atk-role-badge">Secundaria</span>
+              </div>
+              <div class="atk-btns">
+                <button class="abtn abtn-a" onclick="app.rollWeaponAtk(2)" aria-label="Tirar ataque arma secundaria">
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
+                  <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="atk_bonus_2">+0</span></span>
+                </button>
+                <div class="atk-btn-sep"></div>
+                <button class="abtn abtn-d" onclick="app.rollWeaponDmg(2)" aria-label="Tirar daño arma secundaria">
+                  <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
+                  <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="atk_dmg_2">1</span></span>
+                </button>
+              </div>
+            </div>
           </details>
 
-          <!-- Defensa: Guardia, Armadura y la Guardia Desprevenida (sin Competencia) -->
-          <details class="panel fold def-card" id="fold_defensa" data-fold="defensa" open>
-            <summary class="ph"><span class="pt">Defensa</span></summary>
-            <div id="defensa_summary_view"></div>
-            <div id="defensa_edit_view" style="display:none"></div>
+        </div><!-- /page 0 -->
+        <div class="page" id="page_1">
+          <details class="panel fold" id="fold_pilares" data-fold="pilares" open>
+            <summary class="ph"><span class="pt">Los Seis Pilares</span></summary>
+            <div id="stats_edit_view">
+              <!-- Tarjeta consolidada por atributo: puntuación editable a la
+                   izquierda, modificador protagonista a la derecha (tocar el
+                   modificador tira el chequeo). El valor final con bonos de
+                   linaje se muestra bajo el modificador. -->
+              <div class="pillar-grid" style="margin-bottom:8px">
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">FUE</span><input type="number" id="base_FUE" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de FUE"></div><button type="button" class="pillar-mod" onclick="app.rollStat('FUE')" aria-label="Tirar chequeo de FUE"><span class="pillar-mod-val" id="pmod_FUE">+0</span><span class="pillar-final" id="pfinal_FUE">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">DES</span><input type="number" id="base_DES" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de DES"></div><button type="button" class="pillar-mod" onclick="app.rollStat('DES')" aria-label="Tirar chequeo de DES"><span class="pillar-mod-val" id="pmod_DES">+0</span><span class="pillar-final" id="pfinal_DES">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">CON</span><input type="number" id="base_CON" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de CON"></div><button type="button" class="pillar-mod" onclick="app.rollStat('CON')" aria-label="Tirar chequeo de CON"><span class="pillar-mod-val" id="pmod_CON">+0</span><span class="pillar-final" id="pfinal_CON">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">INT</span><input type="number" id="base_INT" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de INT"></div><button type="button" class="pillar-mod" onclick="app.rollStat('INT')" aria-label="Tirar chequeo de INT"><span class="pillar-mod-val" id="pmod_INT">+0</span><span class="pillar-final" id="pfinal_INT">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">SAB</span><input type="number" id="base_SAB" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de SAB"></div><button type="button" class="pillar-mod" onclick="app.rollStat('SAB')" aria-label="Tirar chequeo de SAB"><span class="pillar-mod-val" id="pmod_SAB">+0</span><span class="pillar-final" id="pfinal_SAB">8</span></button></div>
+                <div class="pillar-card"><div class="pillar-left"><span class="fl">CAR</span><input type="number" id="base_CAR" value="8" min="3" max="18" onchange="app.calc()" class="pillar-in" inputmode="numeric" aria-label="Puntuación base de CAR"></div><button type="button" class="pillar-mod" onclick="app.rollStat('CAR')" aria-label="Tirar chequeo de CAR"><span class="pillar-mod-val" id="pmod_CAR">+0</span><span class="pillar-final" id="pfinal_CAR">8</span></button></div>
+              </div>
+              <button class="bcnf" onclick="app.confirmSection('stats')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="stats_summary_view" style="display:none">
+              <div id="stats_summary_boxes" class="g6"></div>
+              <button class="bedit" onclick="app.editSection('stats')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
+          </details>
+
+          <details class="panel fold" id="fold_salvaciones" data-fold="salvaciones" open>
+            <summary class="ph"><span class="pt">Tiradas de Salvación</span></summary>
+            <div id="saves_edit_view">
+              <div class="g2">
+                <div>
+                  <h3 class="sub" style="font-size:var(--fs-md)">Comunes</h3>
+                  <label class="skill-opt"><input type="radio" name="save_common" value="DES" onchange="app.calc()"> Destreza</label>
+                  <label class="skill-opt"><input type="radio" name="save_common" value="CON" onchange="app.calc()"> Constitución</label>
+                  <label class="skill-opt"><input type="radio" name="save_common" value="SAB" onchange="app.calc()"> Sabiduría</label>
+                </div>
+                <div>
+                  <h3 class="sub" style="font-size:var(--fs-md)">Poco Comunes</h3>
+                  <label class="skill-opt"><input type="radio" name="save_uncommon" value="FUE" onchange="app.calc()"> Fuerza</label>
+                  <label class="skill-opt"><input type="radio" name="save_uncommon" value="INT" onchange="app.calc()"> Inteligencia</label>
+                  <label class="skill-opt"><input type="radio" name="save_uncommon" value="CAR" onchange="app.calc()"> Carisma</label>
+                </div>
+              </div>
+              <div id="saves_display" class="saves-grid"></div>
+              <button class="bcnf" onclick="app.confirmSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="saves_summary_view" style="display:none">
+              <div id="saves_summary_text" class="saves-grid" style="margin-top:0;border-top:none;padding-top:0"></div>
+              <button class="bedit" onclick="app.editSection('saves')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
+          </details>
+
+          <!-- Guardia — Manual v8.3 Cap.5 §3a. Lo difícil que es alcanzarte:
+               10 + PB + escudo + atributo defensivo. La armadura NO interviene
+               (solo aporta Reducción de Daño, en Equipo de Combate). -->
+          <details class="panel fold" id="fold_guardia" data-fold="guardia" open>
+            <summary class="ph"><span class="pt">Guardia</span></summary>
+            <div id="guard_edit_view">
+              <div class="guard-live">
+                <div class="guard-live-lbl">Guardia</div>
+                <div class="guard-live-val" id="guard_total_live">10</div>
+              </div>
+              <div class="guard-formula">
+                <div class="guard-part"><span class="guard-part-lbl">Base</span><span class="guard-part-val" id="guard_base_val">10</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Comp.</span><span class="guard-part-val" id="guard_prof_val">+2</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Esc.</span><span class="guard-part-val" id="guard_shield_val">+0</span></div>
+                <span class="guard-op">+</span>
+                <div class="guard-part"><span class="guard-part-lbl">Atrib.</span><span class="guard-part-val" id="guard_attr_val">+0</span></div>
+                <span class="guard-op" id="guard_attr2_op" style="display:none">+</span>
+                <div class="guard-part" id="guard_attr2_part" style="display:none"><span class="guard-part-lbl" id="guard_attr2_lbl">Atr.2</span><span class="guard-part-val" id="guard_attr2_val">+0</span></div>
+              </div>
+              <div style="margin-top:8px">
+                <span class="fl">Atributo defensivo (se elige al crear el personaje)</span>
+                <select id="sel_guard_attr" aria-label="Atributo defensivo de la Guardia" onchange="app.calc()">
+                  <option value="DES">Destreza</option>
+                  <option value="SAB">Sabiduría</option>
+                  <option value="CON">Constitución</option>
+                </select>
+              </div>
+              <!-- Los tres bonos comparten un rótulo: así cada etiqueta cabe en
+                   UNA línea y las tres cajas arrancan a la misma altura. Con
+                   «Bono de Atributo» y «Bono Mágico» partiendo en dos líneas y
+                   «Otro Bono» en una, la tercera caja subía 18 px. -->
+              <div style="margin-top:8px">
+                <span class="fl">Bonos a la Guardia</span>
+                <div class="guard-bonos">
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Atributo</span><select id="sel_guard_attr2" class="ap" aria-label="Atributo adicional que suma a la Guardia por Talento" onchange="app.calc()"><option value="">—</option><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Mágico</span><select id="sel_guard_magic" class="ap" aria-label="Bono mágico a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option></select></div>
+                  <div><span class="fl" style="font-size:var(--fs-2xs)">Otro</span><select id="sel_guard_other" class="ap" aria-label="Otro bono a la Guardia" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option></select></div>
+                </div>
+              </div>
+              <div class="ccard"><span class="clbl">Desprevenido</span><span class="cval" id="guard_unaware_val">—</span></div>
+              <div id="guard_alt_note" class="infobox"></div>
+              <button class="bcnf" onclick="app.confirmSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="guard_summary_view" style="display:none">
+              <!-- Generado por app._buildGuardSummary() desde app._combat -->
+            </div>
+          </details>
+
+          <details class="panel fold" id="fold_habilidades" data-fold="habilidades" open>
+            <summary class="ph"><span class="pt">Habilidades</span></summary>
+            <div id="skills_edit_view">
+              <div class="g2">
+                <div><h3 class="sub">Por Arquetipo (Elige <span id="limit_arq">2</span>)</h3><div id="skills_arq" class="skill-area"></div></div>
+                <div><h3 class="sub">Por Trasfondo (Elige 2)</h3><div id="skills_bg" class="skill-area"></div></div>
+              </div>
+              <div id="skills_grade_box" class="skg-box" style="display:none"></div>
+              <button class="bcnf" onclick="app.confirmSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="skills_summary_view" style="display:none;text-align:center">
+              <div id="final_skills_list" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px 0"></div>
+              <button class="bedit" onclick="app.editSection('skills')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
           </details>
         </div><!-- /page 1 -->
-
-        <div class="page" id="page_2" data-modo="ficha">
-          <details class="panel fold" id="fold_rasgos" data-fold="rasgos" open>
+        <div class="page" id="page_2">
+          <details class="panel fold" id="fold_talentos" data-fold="talentos" open>
             <summary class="ph">
-              <span class="pt">Rasgos y Aptitudes</span>
-              <div class="pill-badge" title="Potencial gastado / presupuesto">
-                <span id="peso_gastado" style="color:var(--gold);font-weight:700">0</span><span id="peso_max" style="color:var(--rim)">/0</span>
+              <span class="pt">Talentos</span>
+              <div class="pill-badge">
+                <span id="talent_count_main" style="color:var(--gold);font-weight:700">0</span><span id="talent_max_main" style="color:var(--rim)">/3</span>
               </div>
             </summary>
-            <div class="dir-load">
-              <span class="dir-load-lbl">Potencial</span>
-              <span class="dir-load-val" id="peso_txt">0/0</span>
+            <div style="text-align:center;margin-bottom:6px"><button class="btn btn-g" data-action="openTalentManager">Abrir Gestor de Talentos</button></div>
+            <div id="talents_summary_view" style="display:none"><div id="talents_summary_list" style="display:flex;flex-direction:column;gap:4px"></div></div>
+          </details>
+
+          <details class="panel fold" id="fold_rasgos" data-fold="rasgos" open>
+            <summary class="ph"><span class="pt">Rasgos</span><span style="font-family:var(--fm);font-size:var(--fs-xs);color:var(--muted);margin-left:auto">por linaje &amp; origen</span></summary>
+            <div id="traits_list" style="display:flex;flex-wrap:wrap;gap:3px;padding:2px 0"></div>
+          </details>
+
+          <!-- Trucos panel -->
+          <details class="panel fold" id="fold_trucos" data-fold="trucos" open>
+            <summary class="ph">
+              <span class="pt">Trucos</span>
+              <div class="pill-badge">
+                <span id="tricks_count" style="color:var(--ice);font-weight:700">0</span>
+              </div>
+            </summary>
+            <!-- Summary (default) -->
+            <div id="tricks_summary_view">
+              <div id="tricks_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin trucos</span><div class="es-hint">El Gestor te espera</div></div></div>
+              <div style="text-align:center;margin-top:8px">
+                <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('tricks')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Trucos</button>
+              </div>
             </div>
-            <div class="lbar"><div id="peso_bar" class="lfill"></div></div>
-            <p id="peso_warn" class="dir-warn"></p>
-            <div style="text-align:center;margin:10px 0 8px"><button class="btn btn-g" data-action="abrirBiblioteca">Abrir la Biblioteca</button></div>
-            <div id="rasgos_list" style="display:flex;flex-direction:column;gap:4px"></div>
+          </details>
+          <!-- Conjuros panel -->
+          <details class="panel fold" id="fold_conjuros" data-fold="conjuros" open>
+            <summary class="ph">
+              <span class="pt">Conjuros</span>
+              <div class="pill-badge">
+                <span id="spells_count" style="color:var(--ice);font-weight:700">0</span>
+              </div>
+            </summary>
+            <!-- Summary (default) -->
+            <div id="spells_summary_view">
+              <div id="spells_summary_list"><div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin conjuros</span><div class="es-hint">El Gestor te espera</div></div></div>
+              <div style="text-align:center;margin-top:8px">
+                <button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.openAptManager('spells')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Gestionar Conjuros</button>
+              </div>
+            </div>
           </details>
         </div><!-- /page 2 -->
-
-        <div class="page" id="page_3" data-modo="ficha">
-          <!-- Señal y contexto táctico (pasos 7 y 8) -->
-          <details class="panel fold" id="fold_senal" data-fold="senal" open>
-            <summary class="ph"><span class="pt">Señal y contexto</span></summary>
-            <div id="senal_summary_view"></div>
-            <div id="senal_edit_view" style="display:none"></div>
+        <div class="page" id="page_3">
+          <details class="panel fold" id="fold_combate" data-fold="combate" open>
+            <summary class="ph"><span class="pt">Equipo de Combate</span></summary>
+            <div id="combat_edit_view">
+              <div class="g2">
+                <div><span class="fl">Armadura</span><select id="sel_armor" aria-label="Armadura equipada" onchange="app.calc()"></select>
+                  <div style="margin-top:5px">
+                    <span class="fl" style="font-size:var(--fs-2xs)">Armadura extra (talentos, objetos)</span>
+                    <select id="sel_armor_extra" class="ap" aria-label="Armadura adicional por talentos u objetos" onchange="app.calc()"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option></select>
+                  </div>
+                  <div class="ccard"><span class="clbl">Armadura de la pieza</span><span class="cval" id="armor_base_val">—</span></div>
+                  <div id="armor_desc" class="infobox"></div>
+                  <div id="armor_pen_alert" class="armor-pen" hidden></div>
+                  <label class="armor-prof-ign" id="armor_prof_ignore_row" hidden>
+                    <input type="checkbox" id="armor_prof_ignore" onchange="app.calc()">
+                    <span>Tengo competencia por un Talento (no avisar)</span>
+                  </label>
+                </div>
+                <div><span class="fl">Escudo</span><select id="sel_shield" aria-label="Escudo equipado" onchange="app.calc()"></select>
+                  <div id="shield_desc" class="infobox" style="margin-top:5px"></div>
+                  <div class="infobox" style="margin-top:5px;font-style:italic">El escudo aporta Guardia, no Armadura. Ajusta la Guardia en su tarjeta (pestaña Stats).</div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:end;margin-top:8px">
+                <div><span class="fl">Arma Principal</span><select id="sel_weapon" aria-label="Arma principal" onchange="app.onWeaponChange('w1')"></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Ataque</span><select id="w1_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Daño</span><select id="w1_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+              </div>
+              <div class="ccard"><div><span class="clbl">Ataque</span><div class="cval" id="w1_atk_val">—</div></div><div style="text-align:right"><span class="clbl">Daño</span><div class="cval" id="w1_dmg_val">—</div></div></div>
+              <div class="calert" id="w1_alert"></div>
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:end;margin-top:6px">
+                <div><span class="fl">Arma Secundaria</span><select id="sel_weapon_sec" aria-label="Arma secundaria" onchange="app.onWeaponChange('w2')"></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Ataque</span><select id="w2_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+                <div><span class="fl" style="font-size:var(--fs-xs)">Mod. Daño</span><select id="w2_dmg_attr" class="ap" onchange="app.calc()"><option value="FUE">FUE</option><option value="DES">DES</option><option value="CON">CON</option><option value="INT">INT</option><option value="SAB">SAB</option><option value="CAR">CAR</option><option value="NONE">—</option></select></div>
+              </div>
+              <div class="ccard"><div><span class="clbl">Ataque</span><div class="cval" id="w2_atk_val">—</div></div><div style="text-align:right"><span class="clbl">Daño</span><div class="cval" id="w2_dmg_val">—</div></div></div>
+              <div class="calert" id="w2_alert"></div>
+              <button class="bcnf" onclick="app.confirmSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="combat_summary_view" style="display:none">
+              <!-- Contenido generado por app._buildCombatSummary() desde app._combat
+                   en cada calc(). Render completo desde estado: no puede divergir
+                   de los valores calculados. -->
+            </div>
           </details>
 
-          <details class="panel fold" id="fold_jefe" data-fold="jefe" open hidden>
-            <summary class="ph"><span class="pt">Jefe: fases y guarida</span></summary>
-            <div id="jefe_summary_view"></div>
-            <div id="jefe_edit_view" style="display:none"></div>
+          <!-- Raciones — Manual Básico 1.0, Cap. 10 «Recuperación y descanso».
+               Cada Respiro y cada Descanso Largo gasta 1 Ración; sin Ración no
+               hay recuperación. El recuento no es un dato aparte del personaje:
+               sale de las Raciones del inventario (js/raciones.js). -->
+          <details class="panel fold" id="rac_panel" data-fold="raciones" open>
+            <summary class="ph">
+              <span class="pt">Raciones</span>
+              <div class="pill-badge"><span id="rac_count" class="num-fig" style="color:var(--goldb);font-weight:700">0</span></div>
+            </summary>
+            <div class="rac-row">
+              <button type="button" class="rac-step" id="rac_minus" aria-label="Gastar una Ración">&minus;</button>
+              <div class="rac-num"><span id="rac_val">0</span><span class="rac-sub" id="rac_sub">raciones</span></div>
+              <button type="button" class="rac-step rac-step--mas" id="rac_plus" aria-label="Añadir una Ración">+</button>
+            </div>
+            <input type="number" id="rac_cur" value="0" min="0" style="display:none" aria-hidden="true" tabindex="-1">
+            <div class="rac-pips" id="rac_pips" role="group" aria-label="Raciones restantes"></div>
+            <span class="rac-extra" id="rac_extra" style="display:none"></span>
+            <p class="rac-note" id="rac_note"></p>
           </details>
 
-          <details class="panel fold" id="fold_revision" data-fold="revision" open>
-            <summary class="ph"><span class="pt">Revisión final</span></summary>
-            <div id="revision_list"></div>
-          </details>
-
-          <details class="panel fold" id="fold_notas" data-fold="notas" open>
-            <summary class="ph"><span class="pt">Notas</span></summary>
-            <textarea id="char_notes" aria-label="Notas de la amenaza" style="min-height:96px;font-size:var(--fs-xl)" placeholder="Lo que quieras recordar en mesa…"></textarea>
+          <details class="panel fold" id="fold_tesoro" data-fold="tesoro" open>
+            <summary class="ph"><span class="pt">Equipo &amp; Tesoro</span></summary>
+            <div id="equipment_edit_view">
+              <div style="background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:6px 8px;margin-bottom:8px">
+                <div style="display:grid;grid-template-columns:auto auto 1fr auto;gap:4px;align-items:end">
+                  <div><span class="fl">Categ.</span><select id="inv_db_category" aria-label="Categoría del objeto" onchange="app.updateDbSelect()" style="font-size:var(--fs-lg)"><option value="weapons">Armas</option><option value="armors">Armaduras</option><option value="shields">Escudos</option><option value="misc">Misc.</option><option value="chips">Chips</option></select></div>
+                  <div><span class="fl">Objeto</span><select id="inv_db_item" aria-label="Objeto a añadir" style="font-size:var(--fs-lg)"></select></div>
+                  <div></div>
+                  <button class="btn btn-p" style="font-size:var(--fs-sm);padding:6px 9px;align-self:end" data-action="addFromDB">+ Añadir</button>
+                </div>
+              </div>
+              <div class="coin" style="margin-bottom:8px"><label>Créditos (cr)</label><input type="number" id="gold_coins_edit" value="0" min="0" onchange="app.syncGold('edit')" inputmode="numeric" aria-label="Créditos"></div>
+              <div id="inv_backpack_list" style="display:flex;flex-direction:column;gap:4px"></div>
+              <div style="text-align:center;margin-top:8px"><button class="bedit" data-action="addCustomItem">+ Objeto Personalizado</button></div>
+              <button class="bcnf" onclick="app.confirmSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
+            <div id="equipment_summary_view" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;background:var(--deep);border:1px solid var(--rim);border-radius:var(--r);padding:5px 8px;margin-bottom:6px">
+                <span style="font-family:var(--fd);font-size:var(--fs-sm);color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Tesoro</span>
+                <span class="num-fig" style="color:var(--gold);font-weight:600"><span id="gold_coins_display">0</span> cr</span>
+              </div>
+              <div id="inv_summary_list" style="display:flex;flex-direction:column;gap:2px"></div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--rim);display:flex;justify-content:space-between">
+                <span style="font-family:var(--fd);font-size:var(--fs-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Carga Total</span>
+                <span id="load_summary_display" class="num-fig" style="font-weight:600;color:var(--gold)">0/0</span>
+              </div>
+              <button class="bedit" onclick="app.editSection('equipment')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
           </details>
         </div><!-- /page 3 -->
-
-        <!-- ══════════ MESA DEL DIRECTOR ══════════ -->
-        <div class="page" id="page_m0" data-modo="mesa">
-          <details class="panel fold" id="fold_grupo" data-fold="grupo" open>
-            <summary class="ph"><span class="pt">El grupo</span></summary>
-            <div id="grupo_body"></div>
-          </details>
-          <details class="panel fold" id="fold_encuentro" data-fold="encuentro" open>
-            <summary class="ph"><span class="pt">Encuentro</span></summary>
-            <div id="encuentro_body"></div>
-          </details>
-          <details class="panel fold" id="fold_combate" data-fold="combate" open>
-            <summary class="ph"><span class="pt">Combate</span></summary>
-            <div id="combate_body"></div>
-          </details>
-        </div>
-
-        <div class="page" id="page_m1" data-modo="mesa">
-          <details class="panel fold" id="fold_botin" data-fold="botin" open>
-            <summary class="ph"><span class="pt">Botín de la sesión</span></summary>
-            <div id="botin_body"></div>
-          </details>
-          <details class="panel fold" id="fold_objeto" data-fold="objeto" open>
-            <summary class="ph"><span class="pt">Objeto mágico</span></summary>
-            <div id="objeto_body"></div>
-          </details>
-          <details class="panel fold" id="fold_tesoro" data-fold="tesoro" open>
+        <div class="page" id="page_4">
+          <!-- Configuración de Campaña -->
+          <details class="panel fold" id="fold_campana" data-fold="campana" open>
             <summary class="ph">
-              <span class="pt">Tesoro guardado</span>
-              <div class="pill-badge"><span id="tesoro_count" style="color:var(--gold);font-weight:700">0</span></div>
+              <span class="pt">Configuración de Campaña</span>
             </summary>
-            <div id="tesoro_body"></div>
+            <!-- Summary view -->
+            <div id="campana_summary" style="padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+              <span class="leth-summary-badge" id="campana_leth_badge" data-tier="2">
+                <span id="campana_leth_label">Letalidad 2</span>
+              </span>
+              <button class="bedit" id="campana_edit_btn" data-action="editCampana"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>
+            </div>
+            <!-- Edit view -->
+            <div id="campana_edit" style="display:none;margin-top:8px">
+              <span class="fl" style="margin-bottom:8px;display:block">Nivel de Letalidad</span>
+              <div class="g3" style="gap:8px">
+                <button class="leth-card" id="leth_1" data-tier="1"
+                  onclick="app.setLethality(1)" onmousedown="this.blur()">
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
+                  <div class="leth-name">Letalidad 1</div>
+                  <div class="leth-bonus">+1 + MOD CON</div>
+                </button>
+                <button class="leth-card active" id="leth_2" data-tier="2"
+                  onclick="app.setLethality(2)" onmousedown="this.blur()">
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
+                  <div class="leth-name">Letalidad 2</div>
+                  <div class="leth-bonus">+2 + MOD CON</div>
+                </button>
+                <button class="leth-card" id="leth_3" data-tier="3"
+                  onclick="app.setLethality(3)" onmousedown="this.blur()">
+                  <div class="leth-check"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-check"/></svg></div>
+                  <div class="leth-name">Letalidad 3</div>
+                  <div class="leth-bonus">+3 + MOD CON</div>
+                </button>
+              </div>
+              <p style="font-family:var(--fm);font-size:var(--fs-sm);color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45">PV que se ganan por cada nivel a partir del 2, sumados al MOD de CON. El Manual v1.8 fija la Letalidad 2 como estándar. No afectan al Nivel 1.</p>
+              <button class="bcnf" data-action="confirmCampana"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+            </div>
           </details>
-          <details class="panel fold" id="fold_botin_ref" data-fold="botin_ref">
-            <summary class="ph"><span class="pt">Consulta</span></summary>
-            <div id="botin_ref_body"></div>
-          </details>
-        </div>
-
-        <div class="page" id="page_m2" data-modo="mesa">
-          <details class="panel fold" id="fold_tiradas" data-fold="tiradas" open>
-            <summary class="ph"><span class="pt">Tiradas de viaje</span></summary>
-            <div id="tiradas_body"></div>
-          </details>
-          <details class="panel fold" id="fold_zonas" data-fold="zonas" open>
-            <summary class="ph">
-              <span class="pt">Zonas</span>
-              <div class="pill-badge"><span id="zonas_count" style="color:var(--gold);font-weight:700">0</span></div>
-            </summary>
-            <div id="zonas_body"></div>
-          </details>
-          <details class="panel fold" id="fold_peligros" data-fold="peligros">
-            <summary class="ph"><span class="pt">Peligros y trampas</span></summary>
-            <div id="peligros_body"></div>
-          </details>
-        </div>
-
-        <div class="page" id="page_m3" data-modo="mesa">
-          <details class="panel fold" id="fold_facciones" data-fold="facciones" open>
-            <summary class="ph">
-              <span class="pt">Facciones</span>
-              <div class="pill-badge"><span id="facciones_count" style="color:var(--gold);font-weight:700">0</span></div>
-            </summary>
-            <div id="facciones_body"></div>
-          </details>
-          <details class="panel fold" id="fold_conflicto" data-fold="conflicto" open>
-            <summary class="ph"><span class="pt">Conflicto entre Facciones</span></summary>
-            <div id="conflicto_body"></div>
-          </details>
-          <details class="panel fold" id="fold_turno" data-fold="turno">
-            <summary class="ph"><span class="pt">Turno de Facción</span></summary>
-            <div id="turno_body"></div>
-          </details>
-        </div>
+          <details class="panel fold" id="fold_linaje" data-fold="linaje" open><summary class="ph"><span class="pt" id="detail_desc_title">Linaje: —</span></summary><div id="detail_desc_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p></div></details>
+          <details class="panel fold" id="fold_arquetipo" data-fold="arquetipo" open><summary class="ph"><span class="pt" id="detail_arq_title">Arquetipo: —</span></summary><div id="detail_arq_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p></div></details>
+          <details class="panel fold" id="fold_trasfondo" data-fold="trasfondo" open><summary class="ph"><span class="pt" id="detail_bg_title">Trasfondo: —</span></summary><div id="detail_bg_body"><p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Trasfondo.</p></div></details>
+          <details class="panel fold" id="fold_talentos_activos" data-fold="talentos_activos" open><summary class="ph"><span class="pt">Talentos Activos</span></summary><div id="detail_talents_list"><p class="txt-it-c">Sin talentos.</p></div></details>
+        </div><!-- /page 4 -->
 
       </div><!-- /pages-track -->
     </div><!-- /pages-wrapper -->
@@ -429,22 +813,15 @@
       </div>
       <button type="button" class="adv-fab-main" id="adv_fab_main" onclick="app.toggleAdvFab()" aria-haspopup="true" aria-expanded="false" aria-label="Tirada: Normal. Tocar para cambiar Ventaja/Desventaja" title="Ventaja / Desventaja"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg></button>
     </div>
-
-    <nav class="bnav bnav4" data-modo="ficha"><span class="nav-thread" aria-hidden="true"></span>
-      <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Perfil"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.4 0-8 3.2-8 7.5 0 2.6 1.3 4.6 3 5.9V19a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2.6c1.700-1.3 3-3.300 3-5.900C20 6.200 16.400 3 12 3z"/><circle cx="9" cy="11" r="1.6"/><circle cx="15" cy="11" r="1.6"/><path d="M10.500 20v-2.500M13.500 20v-2.500"/></svg></span><span class="nlbl">Perfil</span></button>
-      <button class="nbtn" onclick="app.goToPage(1)" aria-label="Ir a Combate"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v4.5L10.5 18l-4.5-4.5L15.5 4z"/><path d="M4.5 12l7.5 7.5"/><path d="M7 17l-3 3"/></svg></span><span class="nlbl">Combate</span></button>
-      <button class="nbtn" onclick="app.goToPage(2)" aria-label="Ir a Rasgos"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H20v20H4.5A2.5 2.5 0 0 1 2 19.5v-15z"/><path d="M20 2v20"/><path d="M7 8h7"/><path d="M7 12h5"/><path d="M7 16h7"/></svg></span><span class="nlbl">Rasgos</span></button>
-      <button class="nbtn" onclick="app.goToPage(3)" aria-label="Ir a Notas"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span><span class="nlbl">Notas</span></button>
-    </nav>
-    <nav class="bnav bnav4" data-modo="mesa"><span class="nav-thread" aria-hidden="true"></span>
-      <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Encuentro"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.500 4H20v5.500L9.500 20 4 14.500z"/><path d="M4 4l6 6M3 9l3-3M9 3L6 6"/></svg></span><span class="nlbl">Encuentro</span></button>
-      <button class="nbtn" onclick="app.goToPage(1)" aria-label="Ir a Botín"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="10" width="22" height="11" rx="1.5"/><path d="M1 10 Q1 3 12 3 Q23 3 23 10"/><line x1="1" y1="10" x2="23" y2="10"/><rect x="9" y="8.5" width="6" height="4" rx="1" stroke-width="1.5"/></svg></span><span class="nlbl">Botín</span></button>
-      <button class="nbtn" onclick="app.goToPage(2)" aria-label="Ir a Zonas"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.500 8.500L13 13l-4.500 2.500L11 11z"/></svg></span><span class="nlbl">Zonas</span></button>
-      <button class="nbtn" onclick="app.goToPage(3)" aria-label="Ir a Facciones"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.500 4L17 12H5"/></svg></span><span class="nlbl">Facciones</span></button>
+    <nav class="bnav"><span class="nav-thread" id="nav_thread" aria-hidden="true"></span>
+      <button class="nbtn active" onclick="app.goToPage(0)" aria-label="Ir a Perfil"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg></span><span class="nlbl">Perfil</span></button>
+      <button class="nbtn" onclick="app.goToPage(1)" aria-label="Ir a Stats"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="4" height="8" rx="1"/><rect x="9" y="8" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="17" rx="1"/></svg></span><span class="nlbl">Stats</span></button>
+      <button class="nbtn" onclick="app.goToPage(2)" aria-label="Ir a Aptitudes"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H20v20H4.5A2.5 2.5 0 0 1 2 19.5v-15z"/><path d="M20 2v20"/><path d="M7 8h7"/><path d="M7 12h5"/><path d="M7 16h7"/></svg></span><span class="nlbl">Aptitudes</span></button>
+      <button class="nbtn" onclick="app.goToPage(3)" aria-label="Ir a Equipo"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="10" width="22" height="11" rx="1.5"/><path d="M1 10 Q1 3 12 3 Q23 3 23 10"/><line x1="1" y1="10" x2="23" y2="10"/><rect x="9" y="8.5" width="6" height="4" rx="1" stroke-width="1.5"/><circle cx="12" cy="10.5" r="1" fill="currentColor" stroke="none"/><path d="M8.5 4.5 Q12 1.5 15.5 4.5" stroke-width="1.4"/></svg></span><span class="nlbl">Equipo</span></button>
+      <button class="nbtn" onclick="app.goToPage(4)" aria-label="Ir a Detalle"><span class="nico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span><span class="nlbl">Detalle</span></button>
     </nav>
   </div>
 </div><!-- /app-screen -->
-
 <dialog id="settings_modal" class="modal" aria-labelledby="settings_modal_title">
   <div class="mhd">
     <div class="mhd-left">
@@ -456,17 +833,20 @@
     </div>
     <button class="bcls" data-action="closeSettings" aria-label="Cerrar ajustes"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
   </div>
+  <!-- Secciones plegables: recuerdan si estaban abiertas (localStorage
+       ss_set_secs). Los id y clases que usa app.js se conservan. -->
   <div class="mbd set-body">
 
+    <!-- ── APARIENCIA ──────────────────────────────────────────── -->
     <details class="set-sec" data-sec="apariencia" open>
       <summary class="set-sum">Apariencia</summary>
       <div class="set-sec-bd">
         <div class="set-field">
           <span class="set-lbl">Tema</span>
           <div class="set-opts set-opts-3">
-            <button class="fs-btn theme-btn" data-theme="cripta" onclick="app.setTheme('cripta')"><span class="set-sw" style="--sw:#c2bb9c;--sw2:#0f1317"></span>Cripta</button>
-            <button class="fs-btn theme-btn" data-theme="forja" onclick="app.setTheme('forja')"><span class="set-sw" style="--sw:#e07b2a;--sw2:#130e0b"></span>Forja</button>
-            <button class="fs-btn theme-btn" data-theme="muerte" onclick="app.setTheme('muerte')"><span class="set-sw" style="--sw:#9ccc5a;--sw2:#0d120e"></span>Muerte viviente</button>
+            <button class="fs-btn theme-btn" data-theme="deco" onclick="app.setTheme('deco')"><span class="set-sw" style="--sw:#c9aa6f;--sw2:#100e18"></span>Art Déco</button>
+            <button class="fs-btn theme-btn" data-theme="void" onclick="app.setTheme('void')"><span class="set-sw" style="--sw:#aaaaaa;--sw2:#0c0c0c"></span>Vacío</button>
+            <button class="fs-btn theme-btn" data-theme="arcane" onclick="app.setTheme('arcane')"><span class="set-sw" style="--sw:#a060e8;--sw2:#0d0e22"></span>Arcano</button>
           </div>
         </div>
         <div class="set-field">
@@ -506,10 +886,10 @@
               <span id="bg_home_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
             </div>
             <div>
-              <span class="set-sublbl">Ficha y Mesa</span>
+              <span class="set-sublbl">Personaje</span>
               <div class="set-bg-btns">
                 <button class="fs-btn" onclick="document.getElementById('bg_app_input').click()"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Subir</button>
-                <button id="bg_app_clear" class="fs-btn set-bg-x" style="display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de la ficha" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
+                <button id="bg_app_clear" class="fs-btn set-bg-x" style="display:none" onclick="app.setBgImage('app','')" aria-label="Quitar fondo de personaje" title="Quitar fondo"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg></button>
               </div>
               <div id="bg_app_prev" class="bg-prev" hidden></div>
               <span id="bg_app_estado" class="set-hint bg-estado" aria-live="polite">Sin imagen</span>
@@ -519,9 +899,17 @@
       </div>
     </details>
 
+    <!-- ── RETRATO ─────────────────────────────────────────────── -->
     <details class="set-sec" data-sec="retrato">
       <summary class="set-sum">Retrato</summary>
       <div class="set-sec-bd">
+        <div class="set-field">
+          <span class="set-lbl">Aplicar a</span>
+          <div class="seg" role="group" aria-label="A quién se aplican los ajustes de retrato">
+            <button type="button" class="seg-btn" id="port_scope_char" onclick="app.setPortraitScope('char')" aria-pressed="false">Este personaje</button>
+            <button type="button" class="seg-btn active" id="port_scope_global" onclick="app.setPortraitScope('global')" aria-pressed="true">Todos</button>
+          </div>
+        </div>
         <div class="set-field">
           <span class="set-lbl">Tamaño</span>
           <div class="ps-row">
@@ -548,19 +936,22 @@
           </div>
           <button id="port_border_btn" class="toggle-btn" data-action="togglePortraitBorder" aria-pressed="true" aria-label="Borde dorado del retrato"></button>
         </div>
-        <span class="set-hint">Se aplica a todos los retratos y se guarda al momento.</span>
+        <span class="set-hint" id="port_scope_hint">Fija el predeterminado para nuevos personajes y para los que no tengan ajustes propios.</span>
+        <button class="bcnf set-apply" id="confirm_portrait_btn" data-action="applyPortraitSettings"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar para todos</button>
+        <button class="set-link" id="port_reset_btn" data-action="quitarRetratoPropio" hidden>Volver al predeterminado en este personaje</button>
       </div>
     </details>
 
+    <!-- ── PREFERENCIAS ────────────────────────────────────────── -->
     <details class="set-sec" data-sec="preferencias">
       <summary class="set-sum">Preferencias</summary>
       <div class="set-sec-bd">
         <div class="set-row">
           <div class="set-row-txt">
             <span class="set-lbl">Asistente de creación</span>
-            <span class="set-hint">«Nueva amenaza» abre los pasos guiados del Manual. Apagado, abre la ficha en blanco.</span>
+            <span class="set-hint">«Nuevo personaje» abre los pasos guiados. Apagado, abre la ficha en blanco.</span>
           </div>
-          <button id="wiz_toggle_btn" class="toggle-btn" data-action="toggleAsistente" aria-pressed="true" aria-label="Usar el asistente al crear una amenaza"></button>
+          <button id="wiz_toggle_btn" class="toggle-btn" data-action="toggleAsistente" aria-pressed="true" aria-label="Usar el asistente al crear un personaje"></button>
         </div>
         <div class="set-row">
           <div class="set-row-txt">
@@ -572,23 +963,24 @@
       </div>
     </details>
 
+    <!-- ── COPIAS Y DATOS ──────────────────────────────────────── -->
     <details class="set-sec" data-sec="datos">
       <summary class="set-sum">Copias y datos</summary>
       <div class="set-sec-bd">
         <div class="set-field">
-          <span class="set-lbl">Todo: amenazas y Mesa</span>
+          <span class="set-lbl">Todos los personajes</span>
           <div class="set-opts set-opts-2">
-            <button class="fs-btn set-act" data-action="exportarRespaldo" aria-label="Crear copia de seguridad de todas las amenazas y de la Mesa"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Crear copia</button>
+            <button class="fs-btn set-act" data-action="exportarRespaldo" aria-label="Crear copia de seguridad de todos los personajes"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Crear copia</button>
             <button class="fs-btn set-act" onclick="document.getElementById('respaldo_input').click()" aria-label="Restaurar una copia de seguridad"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Restaurar</button>
           </div>
-          <span class="set-hint bg-estado" id="respaldo_estado" aria-live="polite">Un solo archivo con todo. Hazla antes de cambiar de móvil.</span>
+          <span class="set-hint bg-estado" id="respaldo_estado" aria-live="polite">Un solo archivo con todos. Hazla antes de cambiar de móvil.</span>
           <span class="set-hint" id="espacio_estado"></span>
         </div>
         <div class="set-field">
-          <span class="set-lbl">Una amenaza (JSON)</span>
+          <span class="set-lbl">Un personaje (JSON)</span>
           <div class="set-opts set-opts-2">
-            <button class="fs-btn set-act" id="set_export_char" data-action="exportJSON" aria-label="Exportar la amenaza abierta"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar</button>
-            <button class="fs-btn set-act" data-action="triggerLoadJSON" aria-label="Importar una amenaza"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar</button>
+            <button class="fs-btn set-act" id="set_export_char" data-action="exportJSON" aria-label="Exportar el personaje abierto"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar</button>
+            <button class="fs-btn set-act" data-action="triggerLoadJSON" aria-label="Importar un personaje"><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg>Importar</button>
           </div>
         </div>
         <div class="set-field">
@@ -601,6 +993,7 @@
       </div>
     </details>
 
+    <!-- ── APLICACIÓN ──────────────────────────────────────────── -->
     <details class="set-sec" data-sec="app">
       <summary class="set-sum">Aplicación</summary>
       <div class="set-sec-bd">
@@ -613,23 +1006,24 @@
           <span>Servidor <b id="set_srv_ver">—</b></span>
           <span>Reglas <b id="set_rules_ver">—</b></span>
         </div>
-        <span class="set-hint">«Forzar» vuelve a descargar la app si App y Servidor no coinciden. No toca tus amenazas, tu Mesa ni las reglas.</span>
+        <span class="set-hint">«Forzar» vuelve a descargar la app si App y Servidor no coinciden. No toca personajes ni reglas.</span>
       </div>
     </details>
 
   </div>
 </dialog>
-
-<!-- ── Asistente de creación: los pasos del Manual de Monstruos, Cap. 4 ── -->
-<div id="wiz_panel" class="fs-panel" role="region" aria-label="Crear una amenaza paso a paso">
+<!-- ── Asistente de creación guiada ─────────────────────────────────
+     Los seis pasos del Manual Básico Cap.3, uno por pantalla. Todo su
+     contenido lo pinta js/asistente.js; aquí solo va el armazón. -->
+<div id="wiz_panel" class="fs-panel" role="region" aria-label="Crear personaje paso a paso">
   <div class="fs-hdr">
     <button class="fs-hdr-back" id="wiz_back" aria-label="Paso anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="fs-hdr-center">
-      <span class="fs-hdr-ttl" id="wiz_ttl">Crear amenaza</span>
+      <span class="fs-hdr-ttl" id="wiz_ttl">Crear personaje</span>
       <span class="fs-hdr-sub" id="wiz_sub"></span>
     </div>
     <div class="fs-hdr-actions">
-      <button class="btn btn-g wiz-dado" id="wiz_dado" aria-label="Generar una criatura al azar" title="Criatura al azar"><svg class="ico ico-solo" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/></svg></button>
+      <button class="btn btn-g wiz-dado" id="wiz_dado" aria-label="Generar personaje aleatorio" title="Personaje aleatorio"><svg class="ico ico-solo" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/></svg></button>
       <button class="btn btn-g wiz-manual" id="wiz_manual">A mano</button>
     </div>
   </div>
@@ -640,90 +1034,87 @@
     <span class="wiz-why" id="wiz_why"></span>
   </div>
 </div>
-
-<!-- ── Editor de reglas ── -->
 <div id="db_panel" class="fs-panel" role="region" aria-label="Editor de reglas">
   <div class="fs-hdr" style="background:linear-gradient(180deg,rgba(10,8,24,.97) 0%,var(--raised) 100%)">
     <button class="fs-hdr-back" data-action="closeDatabaseEditor" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="fs-hdr-center">
       <span class="fs-hdr-ttl" style="color:var(--ice)">Editor de Reglas</span>
-      <span class="fs-hdr-sub">Base de datos del Director</span>
+      <span class="fs-hdr-sub">Base de datos del sistema de juego</span>
     </div>
     <div class="fs-hdr-actions">
       <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px;color:var(--dim)" data-action="exportRulesDB" aria-label="Exportar reglas"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>Exportar</button>
     </div>
   </div>
+
   <div class="fs-body">
-    <div class="dbs" id="db_sidebar"></div>
+    <div class="dbs" id="db_sidebar">
+      <div class="dbs-section-label">Personaje</div>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('descriptors')" aria-label="Editar Linajes"><span class="catbtn-dot"></span>Linajes</button>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('archetypes')" aria-label="Editar Arquetipos"><span class="catbtn-dot"></span>Arquetipos</button>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('backgrounds')" aria-label="Editar Trasfondos"><span class="catbtn-dot"></span>Trasfondos</button>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('talents')" aria-label="Editar Talentos"><span class="catbtn-dot"></span>Talentos</button>
+      <div class="dbs-section-label">Equipo</div>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('weapons')" aria-label="Editar Armas"><span class="catbtn-dot"></span>Armas</button>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('armors')" aria-label="Editar Armaduras"><span class="catbtn-dot"></span>Armaduras</button>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('shields')" aria-label="Editar Escudos"><span class="catbtn-dot"></span>Escudos</button>
+      <div class="dbs-section-label">Magia</div>
+      <button class="catbtn db-cat" onclick="app.dbEditCategory('spells')" aria-label="Editar Trucos y Conjuros"><span class="catbtn-dot"></span>Trucos / Conjuros</button>
+      <div style="flex:1"></div>
+    </div>
     <div class="dbct">
       <div id="db_list_container">
         <div class="db-empty">
           <div class="db-empty-icon"><svg class="ico ico-solo" aria-hidden="true"><use href="#i-gear"/></svg></div>
-          <p>Selecciona una categoría</p>
+          <p>Selecciona una categoría<br>en el panel izquierdo</p>
         </div>
       </div>
       <div id="db_form_container" style="display:none"></div>
     </div>
   </div>
 </div>
-
-<!-- ── Biblioteca de Rasgos y Aptitudes (Manual de Monstruos, Cap. 3) ── -->
-<div id="lib_panel" class="fs-panel" role="region" aria-label="Biblioteca de Rasgos y Aptitudes">
+<div id="talent_panel" class="fs-panel" role="region" aria-label="Gestor de talentos">
   <div class="fs-hdr">
-    <button class="fs-hdr-back" data-action="cerrarBiblioteca" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="fs-hdr-back" data-action="closeTalentManager" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="fs-hdr-center">
-      <span class="fs-hdr-ttl">Biblioteca</span>
-      <span class="fs-hdr-sub" id="lib_sub">Rasgos y Aptitudes</span>
+      <span class="fs-hdr-ttl">Gestor de Talentos</span>
+      <span class="fs-hdr-sub">Elige hasta 3 talentos para el personaje</span>
     </div>
     <div class="fs-hdr-actions">
-      <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px" data-action="rasgoPropio"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Propio</button>
+      <button class="btn btn-g" style="font-size:var(--fs-xs);padding:5px 10px;min-height:36px;color:var(--blood);border-color:rgba(168,42,58,.4)" data-action="clearTalents"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Limpiar</button>
     </div>
   </div>
+
   <div class="fs-body">
     <div class="tm-toolbar">
-      <input class="tm-search" id="lib_search" type="search" placeholder="Buscar por nombre o efecto…" autocomplete="off" spellcheck="false" oninput="app._libFiltro()" aria-label="Buscar en la Biblioteca">
+      <input class="tm-search" id="tm_search" type="search"
+        placeholder="Buscar talento…" autocomplete="off" spellcheck="false"
+        oninput="app._talentFilter()" aria-label="Buscar talento por nombre o efecto">
       <div class="tm-filters">
-        <button type="button" class="tm-fchip" id="lib_f_caben" onclick="app._libChip('caben', this)" aria-pressed="false"><span class="tm-fchip-dot"></span>Caben en mi Potencial</button>
-        <button type="button" class="tm-fchip" id="lib_f_mias" onclick="app._libChip('mias', this)" aria-pressed="false"><span class="tm-fchip-dot"></span>Las que tiene</button>
+        <button type="button" class="tm-fchip" id="tm_filter_eligible"
+          onclick="app._toggleTalentFilter('eligible', this)" aria-pressed="false">
+          <span class="tm-fchip-dot"></span>Solo los que cumplo
+        </button>
+        <button type="button" class="tm-fchip" id="tm_filter_arq"
+          onclick="app._toggleTalentFilter('arq', this)" aria-pressed="false">
+          <span class="tm-fchip-dot"></span>Mi Arquetipo
+        </button>
       </div>
     </div>
     <div class="tm-cols" style="flex:1;min-height:0;display:flex;overflow:hidden">
-      <div class="tms" id="lib_cats" style="overflow-y:auto"></div>
-      <div class="tmct" id="lib_list">
-        <p class="tm-empty">Selecciona una familia.</p>
+      <div class="tms" id="tm_categories" style="overflow-y:auto"></div>
+      <div class="tmct" id="tm_list">
+        <p class="tm-empty">Selecciona una categoría.</p>
       </div>
     </div>
   </div>
+
   <div class="fs-footer">
     <div class="fs-footer-info">
-      Potencial: <span class="mft-count" id="lib_peso">0</span><span id="lib_peso_max" style="color:var(--border)">/0</span>
+      Talentos: <span class="mft-count" id="talent_count_modal">0</span><span id="talent_max_modal" style="color:var(--border)">/3</span>
     </div>
-    <button class="btn btn-gold" data-action="cerrarBiblioteca"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
+    <button class="btn btn-gold" data-action="closeTalentManager"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Confirmar</button>
   </div>
 </div>
-
-<!-- ── Selector genérico: bestiario, amenazas para un encuentro, plantillas ── -->
-<div id="sel_panel" class="fs-panel" role="region" aria-label="Selector">
-  <div class="fs-hdr">
-    <button class="fs-hdr-back" data-action="cerrarSelector" aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="fs-hdr-center">
-      <span class="fs-hdr-ttl" id="sel_ttl">Elegir</span>
-      <span class="fs-hdr-sub" id="sel_sub"></span>
-    </div>
-    <div class="fs-hdr-actions"></div>
-  </div>
-  <div class="fs-body">
-    <div class="tm-toolbar">
-      <input class="tm-search" id="sel_search" type="search" placeholder="Buscar…" autocomplete="off" spellcheck="false" oninput="app._selFiltro()" aria-label="Buscar">
-    </div>
-    <div class="tmct" id="sel_list" style="flex:1;min-height:0;overflow-y:auto"></div>
-  </div>
-  <div class="fs-footer">
-    <div class="fs-footer-info" id="sel_info"></div>
-    <button class="btn btn-gold" data-action="cerrarSelector"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Hecho</button>
-  </div>
-</div>
-
 <dialog id="crop_modal" class="modal" aria-labelledby="crop_modal_title">
   <div class="crl">
     <div class="mhd">
@@ -762,33 +1153,28 @@
 
 <!-- ── Scripts ──────────────────────────────────────────────────
      Orden de carga (defer respeta el orden de declaración):
-       reglas.js      Base de datos de reglas por defecto
-       constants.js   Constantes y temporizadores de la UI
-       storage.js     Persistencia (IndexedDB «ss-director»)
-       ui-dialogs.js  Diálogos modales (escudo anti ghost-click)
-       base.js        Piezas genéricas heredadas de S&S Companion
-       app.js         Núcleo: pantallas, roster, secciones, guardado
-       amenaza.js     La ficha: cálculo y tarjetas
-       biblioteca.js  Biblioteca de Rasgos y Aptitudes
-       mesa.js        Mesa del Director
-       asistente.js   Asistente de creación (los diez pasos del Manual)
-       editor.js      Editor de reglas
-       boot.js        Arranque + registro del Service Worker
+       1. data.js        Base de datos de reglas por defecto
+       2. constants.js   Constantes y temporizadores de la UI
+       3. storage.js     Persistencia versionada (localStorage)
+       4. ui-dialogs.js  Diálogos modales (escudo anti ghost-click)
+       5. app.js         Lógica principal de la aplicación
+       6. boot.js        Arranque + registro del Service Worker
      ───────────────────────────────────────────────────────────── -->
-<script defer src="js/reglas.js"></script>
+<script defer src="js/data.js"></script>
 <script defer src="js/constants.js"></script>
 <script defer src="js/storage.js"></script>
 <script defer src="js/ui-dialogs.js"></script>
-<script defer src="js/base.js"></script>
 <script defer src="js/app.js"></script>
-<script defer src="js/amenaza.js"></script>
-<script defer src="js/biblioteca.js"></script>
-<script defer src="js/mesa.js"></script>
-<script defer src="js/asistente.js"></script>
-<script defer src="js/editor.js"></script>
+<script defer src="js/pericias.js"></script>
+<script defer src="js/progresion.js"></script>
+<script defer src="js/efectos.js"></script>
+<script defer src="js/origen.js"></script>
 <script defer src="js/plegables.js"></script>
+<script defer src="js/raciones.js"></script>
+<script defer src="js/asistente.js"></script>
 <script defer src="js/respaldo.js"></script>
 <script defer src="js/historial.js"></script>
+<script defer src="js/edicion.js"></script>
 <script defer src="js/autocheck.js"></script>
 <script defer src="js/boot.js"></script>
 </body>

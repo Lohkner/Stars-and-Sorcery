@@ -1,20 +1,18 @@
 /* ══════════════════════════════════════════════════════════════
-   Copia de seguridad de TODO: las amenazas y la Mesa del Director.
-   (Heredado de S&S Companion.)
+   Copia de seguridad de TODOS los personajes.
+   Módulo aparte; se carga entre app.js y boot.js.
 
    Exportar: un solo archivo .json con el roster entero, tal y como está
-   guardado en este dispositivo (retratos incluidos), más la Mesa
-   (encuentros, tesoro, zonas y facciones).
-   Restaurar: lee ese archivo y añade sus amenazas al roster. Si alguna
-   ya existe con el mismo nombre —o si la copia trae una Mesa y aquí ya
-   hay una con contenido—, pregunta antes de reemplazar; si se cancela,
-   no se toca nada.
+   guardado en este dispositivo (retratos incluidos).
+   Restaurar: lee ese archivo y añade sus personajes al roster. Si alguno
+   ya existe con el mismo nombre, pregunta antes de reemplazarlo; si se
+   cancela, no se toca nada.
 
    Solo se admite el formato de este módulo, reconocible por su campo
-   `tipo`. Un JSON de una sola amenaza sigue entrando por «Importar».
+   `tipo`. Un JSON de un solo personaje sigue entrando por «Importar JSON».
 ══════════════════════════════════════════════════════════════ */
 (function () {
-  const TIPO = 'ss-director-respaldo';
+  const TIPO = 'ss-companion-respaldo';
   const VERSION = 1;
 
   const fecha = () => {
@@ -23,16 +21,20 @@
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   };
 
-  /** Una amenaza guardada es válida si es un objeto con su NA. Pasa por
-      normalizarCr, que deja el retrato solo si es un data-URL de imagen y
-      quita cualquier HTML de los textos. */
+  /** Un personaje guardado es válido si trae sus `inputs`. El retrato,
+      que se interpola en un src, solo se admite como data-URL de imagen:
+      lo mismo que exige la pantalla de Inicio al pintarlo. */
   function limpiar(p) {
-    if (!p || typeof p !== 'object' || Array.isArray(p) || !('na' in p)) return null;
-    return app.normalizarCr(p);
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return null;
+    if (!p.inputs || typeof p.inputs !== 'object' || Array.isArray(p.inputs)) return null;
+    const out = { ...p };
+    if (typeof out.portrait !== 'string' || !/^data:image\//.test(out.portrait)) delete out.portrait;
+    return out;
   }
 
   /** Aviso doble: toast y la línea de estado bajo los botones. Los botones
-      viven en Ajustes, un <dialog> modal que tapa los toasts. */
+      viven en Ajustes, un <dialog> modal que tapa los toasts; sin la línea,
+      el resultado no se vería mientras el panel está abierto. */
   function avisar(msg, tipo) {
     app.toast(msg, tipo);
     const est = document.getElementById('respaldo_estado');
@@ -42,23 +44,21 @@
     est.classList.toggle('is-err', tipo === 'err');
   }
 
-  const mesaConContenido = m => !!m && ['guardados', 'tesoro', 'zonas', 'facciones'].some(k => Array.isArray(m[k]) && m[k].length)
-    || !!(m && m.enc && Array.isArray(m.enc.items) && m.enc.items.length);
-
   app.exportarRespaldo = function () {
     const roster = STORAGE.loadRoster();
     const n = Object.keys(roster).length;
-    const conMesa = mesaConContenido(this.mesa);
-    if (!n && !conMesa) { avisar('No hay amenazas ni Mesa que copiar', 'err'); return; }
+    if (!n) { avisar('No hay personajes guardados que copiar', 'err'); return; }
     const datos = {
       tipo: TIPO, version: VERSION, creado: new Date().toISOString(),
       reglas: STORAGE.RULES_DATA_VERSION,
-      amenazas: roster,
-      mesa: this.mesa,
+      personajes: roster,
     };
-    app.guardarArchivo(`ss-director-respaldo-${fecha()}.json`, JSON.stringify(datos)).then(r => {
+    // app.guardarArchivo (v58): en el móvil abre Compartir («Guardar en
+    // Archivos», Drive…), porque la descarga por enlace no funcionaba en la
+    // app instalada; en el ordenador descarga el archivo.
+    app.guardarArchivo(`ss-companion-respaldo-${fecha()}.json`, JSON.stringify(datos)).then(r => {
       if (r === 'cancelado') { avisar('Copia cancelada', 'info'); return; }
-      avisar(`Copia ${r === 'compartido' ? 'compartida' : 'creada'}: ${n} ${n === 1 ? 'amenaza' : 'amenazas'}${conMesa ? ' y la Mesa' : ''} · ${fecha()}`, 'ok');
+      avisar(`Copia ${r === 'compartido' ? 'compartida' : 'creada'}: ${n} ${n === 1 ? 'personaje' : 'personajes'} · ${fecha()}`, 'ok');
     });
   };
 
@@ -71,47 +71,45 @@
       let datos;
       try { datos = JSON.parse(e.target.result); }
       catch (err) { avisar('El archivo no es un JSON válido', 'err'); return; }
-      if (!datos || datos.tipo !== TIPO || typeof datos.amenazas !== 'object' || Array.isArray(datos.amenazas)) {
-        avisar('No es una copia de seguridad de S&S Director. Para una sola amenaza usa «Importar».', 'err');
+      if (!datos || datos.tipo !== TIPO || typeof datos.personajes !== 'object' || Array.isArray(datos.personajes)) {
+        avisar('No es una copia de seguridad de S&S Companion. Para un solo personaje usa «Importar JSON».', 'err');
         return;
       }
       const entrantes = {};
       let descartados = 0;
-      Object.entries(datos.amenazas).forEach(([nombre, p]) => {
+      Object.entries(datos.personajes).forEach(([nombre, p]) => {
         const ok = limpiar(p);
         if (ok && String(nombre).trim()) entrantes[String(nombre)] = ok;
         else descartados++;
       });
       const nombres = Object.keys(entrantes);
-      const traeMesa = mesaConContenido(datos.mesa);
-      if (!nombres.length && !traeMesa) { avisar('La copia no contiene amenazas ni Mesa válidas', 'err'); return; }
+      if (!nombres.length) { avisar('La copia no contiene personajes válidos', 'err'); return; }
 
       const roster = STORAGE.loadRoster();
       const repetidos = nombres.filter(n => roster[n]);
-      const pisaMesa = traeMesa && mesaConContenido(this.mesa);
       const aplicar = () => {
-        if (!STORAGE.saveRoster({ ...roster, ...entrantes })) {
+        const nuevo = { ...roster, ...entrantes };
+        if (!STORAGE.saveRoster(nuevo)) {
           avisar('Sin espacio en este dispositivo para restaurar la copia', 'err');
           return;
         }
-        if (traeMesa) {
-          STORAGE.saveMesa(datos.mesa);
-          this.initMesa();
-        }
         if (typeof this.renderHome === 'function') this.renderHome();
         const extra = !descartados ? ''
-          : descartados === 1 ? ' (1 dañada, omitida)' : ` (${descartados} dañadas, omitidas)`;
-        avisar(`${nombres.length === 1 ? 'Restaurada 1 amenaza' : `Restauradas ${nombres.length} amenazas`}${traeMesa ? ' y la Mesa' : ''}${extra}`, 'ok');
+          : descartados === 1 ? ' (1 dañado, omitido)' : ` (${descartados} dañados, omitidos)`;
+        avisar(`${nombres.length === 1 ? 'Restaurado 1 personaje' : `Restaurados ${nombres.length} personajes`}${extra}`, 'ok');
       };
-      if (!repetidos.length && !pisaMesa) { aplicar(); return; }
+      if (!repetidos.length) { aplicar(); return; }
       // UI.confirm pinta con textContent: los nombres van tal cual.
       const lista = repetidos.slice(0, 6).map(n => '«' + n + '»').join(', ')
                   + (repetidos.length > 6 ? ` y ${repetidos.length - 6} más` : '');
-      const partes = [`La copia trae ${nombres.length} ${nombres.length === 1 ? 'amenaza' : 'amenazas'}.`];
-      if (repetidos.length) partes.push(`${repetidos.length === 1 ? 'Esta ya existe' : 'Estas ya existen'} en el dispositivo y se reemplazará${repetidos.length === 1 ? '' : 'n'} por la versión de la copia: ${lista}.`);
-      if (pisaMesa) partes.push('La Mesa del Director actual (encuentros, tesoro, zonas y facciones) se reemplazará por la de la copia.');
-      this._confirm('Restaurar copia', partes.join(' '), 'Restaurar', aplicar,
-        document.getElementById('settings_modal')?.open ? document.getElementById('settings_modal') : document.body);
+      this._confirm(
+        'Restaurar copia',
+        `La copia trae ${nombres.length} ${nombres.length === 1 ? 'personaje' : 'personajes'}. `
+          + `${repetidos.length === 1 ? 'Este ya existe' : 'Estos ya existen'} en el dispositivo y se reemplazará${repetidos.length === 1 ? '' : 'n'} por la versión de la copia: ${lista}.`,
+        'Restaurar',
+        aplicar,
+        document.getElementById('settings_modal')?.open ? document.getElementById('settings_modal') : document.body
+      );
     };
     r.onerror = () => avisar('No se pudo leer el archivo', 'err');
     r.readAsText(file);

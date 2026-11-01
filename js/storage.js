@@ -2,9 +2,8 @@
    STORAGE MODULE
    Versioned persistence with migration support
 
-   Heredado de S&S Companion v58. Los datos grandes (amenazas con retrato,
-   la Mesa del Director, reglas editadas y fondos de pantalla) viven en
-   IndexedDB —base «ss-director», propia de esta app—, no en localStorage. localStorage
+   v58.0 — Los datos grandes (personajes con retrato, reglas editadas y
+   fondos de pantalla) viven en IndexedDB, no en localStorage. localStorage
    tiene un cupo de ≈5 MB por origen y, con unos cuantos retratos y un
    fondo, se llenaba («¡Almacenamiento lleno!»). IndexedDB admite cientos de
    MB y, con navigator.storage.persist(), el navegador no lo borra por su
@@ -21,20 +20,19 @@
 const STORAGE = {
   SCHEMA_VERSION: 2,
   /** Bump when DEFAULT_DB rules data changes so cached rules refresh automatically. */
-  RULES_DATA_VERSION: 'v1-monstruos-guia-r18',
+  RULES_DATA_VERSION: 'v1-official-o28',
   KEYS: {
-    rules:          'ssd_rules',
-    rulesVer:       'ssd_rules_ver',
-    roster:         'ssd_roster',
-    mesa:           'ssd_mesa',
-    font:           'ssd_font_size',
-    scrollPreserve: 'ssd_scroll_preserve',
-    portSize:       'ssd_port_size',
-    portShape:      'ssd_port_shape',
-    version:        'ssd_schema_v'
+    rules:          'sands_rules',
+    rulesVer:       'sands_rules_ver',
+    roster:         'sands_roster',
+    font:           'ss_font_size',
+    scrollPreserve: 'ss_scroll_preserve',
+    portSize:       'ss_port_size',
+    portShape:      'ss_port_shape',
+    version:        'sands_schema_v'
   },
   /* Claves que pasan a IndexedDB (las mismas que usaba localStorage) */
-  GRANDES: ['ssd_roster', 'ssd_rules', 'ssd_rules_ver', 'ssd_mesa', 'ssd_bg_home', 'ssd_bg_app'],
+  GRANDES: ['sands_roster', 'sands_rules', 'sands_rules_ver', 'ss_bg_home', 'ss_bg_app'],
 
   _idb: null,          // conexión abierta, o null si se usa localStorage
   _mem: {},            // copia en memoria de las claves GRANDES
@@ -46,7 +44,7 @@ const STORAGE = {
   _abrir() {
     return new Promise((res, rej) => {
       if (!('indexedDB' in window)) { rej(new Error('sin IndexedDB')); return; }
-      const rq = indexedDB.open('ss-director', 1);
+      const rq = indexedDB.open('ss-companion', 1);
       rq.onupgradeneeded = () => { rq.result.createObjectStore('kv'); };
       rq.onsuccess = () => res(rq.result);
       rq.onerror = () => rej(rq.error);
@@ -92,7 +90,7 @@ const STORAGE = {
         } else if (ls !== null) {
           // El roster y las reglas se guardan ya parseados (menos trabajo al leer)
           let v = ls;
-          if (k === this.KEYS.roster || k === this.KEYS.rules || k === this.KEYS.mesa) { try { v = JSON.parse(ls); } catch (e) { v = null; } }
+          if (k === this.KEYS.roster || k === this.KEYS.rules) { try { v = JSON.parse(ls); } catch (e) { v = null; } }
           if (v !== null) { this._mem[k] = v; aMigrar[k] = v; }
         }
       });
@@ -181,23 +179,10 @@ const STORAGE = {
     return this.saveRoster(roster);
   },
 
-  /* ── Mesa del Director: encuentros, tesoro, zonas y facciones ── */
-  loadMesa() {
-    try {
-      const parsed = this._obj(this.KEYS.mesa);
-      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : null;
-    } catch (err) {
-      return null;
-    }
-  },
-  saveMesa(mesa) {
-    return this._set(this.KEYS.mesa, this._idb ? structuredClone(mesa) : JSON.stringify(mesa));
-  },
-
   /* ── Fondos de pantalla (data-URL) ─────────────────────────── */
-  getBg(target) { return this._get(target === 'home' ? 'ssd_bg_home' : 'ssd_bg_app') || ''; },
+  getBg(target) { return this._get(target === 'home' ? 'ss_bg_home' : 'ss_bg_app') || ''; },
   setBg(target, src) {
-    const k = target === 'home' ? 'ssd_bg_home' : 'ssd_bg_app';
+    const k = target === 'home' ? 'ss_bg_home' : 'ss_bg_app';
     if (!src) { this._del(k); return true; }
     this._del(k);                 // suelta primero la anterior (en localStorage, su hueco hace falta)
     return this._set(k, src);

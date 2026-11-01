@@ -1,18 +1,20 @@
 {
-  "name": "Stars & Sorcery Director",
-  "short_name": "S&S Director",
-  "description": "Herramienta del Director de Juego de Stars & Sorcery: crea amenazas, calibra encuentros y genera botín, zonas y facciones.",
+  "name": "Stars & Sorcery Companion",
+  "short_name": "S&S Companion",
+  "description": "Hoja de personaje digital para Stars & Sorcery RPG. Gestiona estadísticas, inventario, talentos y tiradas de dados.",
   "lang": "es",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#06080a",
-  "theme_color": "#06080a",
+  "background_color": "#07060a",
+  "theme_color": "#07060a",
   "icons": [
-    { "src": "Bone_Chill_Icon.webp", "sizes": "144x144", "type": "image/webp", "purpose": "any" },
-    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "Bind_Pact_Weapon.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any"
+    }
   ]
 }
