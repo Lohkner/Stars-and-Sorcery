@@ -2,14 +2,14 @@
    Historial de tiradas.
    Módulo aparte; se carga entre app.js y boot.js.
 
-   Todas las tiradas de la ficha —atributos, salvaciones, habilidades,
-   iniciativa, ataque y daño— pasan por app.showDiceRoll(). Se envuelve
+   Todas las tiradas —ataque, daño, salvaciones, iniciativa, Moral, Dados de
+   Uso, tablas, Dado de Riesgo, Reacción— pasan por app.showDiceRoll(). Se envuelve
    esa función y se apunta cada tirada antes de animarla: ninguna tirada
    cambia, y una nueva queda registrada sin tocar nada más.
 
-   Se guardan las 10 últimas del personaje abierto, solo en memoria: al
-   crear, cargar o importar otro personaje (todo pasa por clearCharData)
-   la lista empieza de cero. Se ven en dos sitios:
+   Se guardan las 10 últimas de la amenaza abierta (o de la Mesa), solo en
+   memoria: al abrir otra amenaza (todo pasa por limpiarFicha) la lista
+   empieza de cero. Se ven en dos sitios:
      · en la tarjeta del dado, en el desplegable «Últimas tiradas»;
      · desde el menú de acciones, sin tirar (app.verHistorialTiradas).
 ══════════════════════════════════════════════════════════════ */
@@ -78,12 +78,10 @@
     return _show.apply(this, arguments);
   };
 
-  // ── Otro personaje, otra lista.
-  const _clear = app.clearCharData;
-  app.clearCharData = function () {
-    // «Cancelar» de una tarjeta recarga la ficha por esta misma vía, pero
-    // sigue siendo el mismo personaje: su historial se conserva.
-    if (!app._restaurandoFicha) { tiradas = []; pintar(false); }
+  // ── Otra amenaza, otra lista.
+  const _clear = app.limpiarFicha;
+  app.limpiarFicha = function () {
+    tiradas = []; pintar(false);
     return _clear.apply(this, arguments);
   };
 

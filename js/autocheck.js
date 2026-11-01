@@ -1,21 +1,24 @@
 /* ══════════════════════════════════════════════════════════════
-   Autodiagnóstico.
+   Autodiagnóstico (heredado de S&S Companion).
    Se carga siempre pero NO hace nada salvo que la URL lleve `?check=1`.
    Sirve para responder en el móvil, antes de una partida, a la única
    pregunta que importa tras actualizar: ¿esta versión está sana?
 
-   Las comprobaciones no son decorativas: cada una corresponde a algo que
-   se rompió de verdad durante el desarrollo y que se descubrió tarde.
+     · Los elementos que la ficha y la Mesa necesitan existen
+     · El bestiario (Manual y Guía) sale de las fórmulas: atributos, PV,
+       Guardia, ataque, daño, CD, Iniciativa y Moral impresos
+     · El NA de encuentro de cada criatura es el de su línea «Encuentro»
+     · NA del encuentro: los ejemplos de la Guía; jefe +3/+4; cuatro esbirros
+     · Dificultad del encuentro por nivel y tamaño del grupo
+     · Texto que se sale de su caja · texto por debajo de 12 px
+     · Desbordamiento horizontal · tarjetas plegables · consola
 
-     · Guardia y PV contra su fórmula      — se falseaban con «Otro Bono»
-     · Texto que se sale de su caja        — los rótulos de la Guardia
-     · Texto por debajo de 12 px           — el suelo tipográfico de v55.2
-     · Ids que el JS busca y no existen    — al mover marcado de sitio
-     · Desbordamiento horizontal del cuerpo
-     · Errores de consola durante la pasada
-
-   No toca ningún personaje guardado: monta uno de prueba en memoria y al
+   No toca nada guardado: monta una amenaza del bestiario en memoria y al
    terminar deja la app en la pantalla de Inicio.
+
+   OJO al leer el resultado: «texto que se sale» da falsos positivos si
+   el panel del navegador está oculto o no tiene el ancho del móvil. Fija
+   el tamaño de la ventana antes de lanzarlo.
 ══════════════════════════════════════════════════════════════ */
 (function () {
   const PARAM = new URLSearchParams(location.search);
@@ -23,10 +26,7 @@
 
   const $ = id => document.getElementById(id);
   const esperar = ms => new Promise(r => setTimeout(r, ms));
-  const num = t => parseInt(t, 10) || 0;
 
-  /* Los errores de consola se recogen desde el principio: si la pasada
-     los provoca, el informe tiene que verlos. */
   const errores = [];
   const _error = console.error;
   console.error = function (...a) { errores.push(a.join(' ').slice(0, 120)); return _error.apply(this, a); };
@@ -37,8 +37,7 @@
 
   /** Texto más ancho que su caja. Descuenta dos falsos positivos conocidos:
       lo truncado a propósito con ellipsis y los pseudoelementos absolutos
-      que dan área táctil —los ± de Estado inflan scrollWidth sin que su
-      texto se salga—. */
+      que dan área táctil. */
   function textoDesbordado(raiz) {
     const malos = [];
     (raiz || document).querySelectorAll('*').forEach(e => {
@@ -72,78 +71,116 @@
     return [...malos];
   }
 
-  /** Ids que el código pide con getElementById y no existen en el documento.
-      Se mira solo la lista fija de los que la ficha necesita para calcular:
-      buscarlos todos exigiría analizar el JS, y eso no es trabajo de tiempo
-      de ejecución. */
   const IDS_CRITICOS = [
-    'base_FUE','base_DES','base_CON','base_INT','base_SAB','base_CAR',
-    'max_pv','cur_pv','max_adr','cur_adr','max_ing','cur_ing','res_carne','cur_carne',
-    'guard_total_live','guard_base_val','guard_prof_val','guard_shield_val',
-    'guard_attr_val','guard_attr2_val','sel_guard_attr','sel_guard_attr2','sel_guard_magic',
-    'sel_guard_other','sel_desc','sel_arq','sel_bg','char_name','char_lvl','char_xp',
-    'res_carga','rac_cur','rest_list','traits_list','detail_desc_title','detail_arq_title',
+    'home-roster', 'char_name', 'char_concept', 'char_img', 'char_img_summary', 'cur_pv', 'max_pv', 'res_fill_pv',
+    'id_fila', 'stats_summary_view', 'stats_edit_view', 'defensa_summary_view', 'defensa_edit_view', 'attack_summary_view', 'saves_summary_view', 'rasgos_list',
+    'peso_bar', 'peso_txt', 'senal_summary_view', 'revision_list', 'char_notes', 'rest_list',
+    'grupo_body', 'encuentro_body', 'combate_body', 'botin_body', 'objeto_body', 'tesoro_body',
+    'tiradas_body', 'zonas_body', 'peligros_body', 'facciones_body', 'conflicto_body', 'turno_body',
+    'lib_panel', 'lib_list', 'sel_panel', 'wiz_panel', 'db_panel', 'settings_modal', 'crop_modal', 'dice-overlay',
   ];
 
   async function correr() {
     const t0 = performance.now();
-    // ── personaje de prueba, en memoria ──
-    app.asistenteActivo = false;
-    app.newChar();
-    await esperar(600);
-    const set = (id, v) => { const e = $(id); if (e) { e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); } };
-    set('sel_desc', 'elfo'); await esperar(250);
-    set('sel_arq', 'sagaz'); set('sel_bg', 'erudito'); await esperar(450);
-    ['FUE','DES','CON','INT','SAB','CAR'].forEach((k, i) => {
-      const e = $('base_' + k);
-      if (e) { e.value = [10, 14, 15, 17, 12, 8][i]; e.dispatchEvent(new Event('input', { bubbles: true })); }
-    });
-    await esperar(500);
-    set('sel_guard_attr', 'DES'); set('sel_guard_attr2', 'SAB');
-    set('sel_guard_magic', '1'); set('sel_guard_other', '0');
-    await esperar(500);
-    app.calc();
-    await esperar(400);
 
     // ── 1 · ids críticos ──
     const faltan = IDS_CRITICOS.filter(i => !$(i));
-    comprobar('Los elementos que la ficha necesita existen', !faltan.length,
+    comprobar('Los elementos que la app necesita existen', !faltan.length,
       faltan.length ? 'faltan: ' + faltan.join(', ') : IDS_CRITICOS.length + ' comprobados');
 
-    // ── 2 · Guardia contra su fórmula ──
-    const mods = app._finalMods || {};
-    const pb = num($('res_pb')?.textContent) || num($('guard_prof_val')?.textContent);
-    const esperada = 10 + pb + num($('guard_shield_val')?.textContent) +
-      (mods.DES || 0) + (mods.SAB || 0) + 1;
-    const real = num($('guard_total_live').textContent);
-    comprobar('Guardia = 10 + PB + escudo + atributos + bonos', esperada === real,
-      `esperada ${esperada}, muestra ${real}`);
+    // ── 2 · el bestiario sale de las fórmulas (Manual de Monstruos, Cap. 1) ──
+    const B = DEFAULT_DB.bestiario;
+    const DBprev = app.DB;
+    app.DB = structuredClone(DEFAULT_DB); app._libCache = null;   // reglas de fábrica para la pasada
+    const malos = [], malPeso = [];
+    let n = 0;
+    Object.values(B).forEach(c => {
+      const imp = c.impreso; if (!imp) return;
+      n++;
+      const S = app.calcCr(app.normalizarCr(c));
+      // La Guardia impresa no lleva los Rasgos (Evasiva, Formación…); la calculada, sí.
+      const gSinRasgos = S.calc.guardia - S.infos.reduce((a, x) => a + ((x.i.mod && x.i.mod.g) || 0), 0);
+      const dif = [];
+      app.ATTRS.forEach(a => { if (S.mod[a] !== imp.attrs[a]) dif.push(`${a} ${S.mod[a]}/${imp.attrs[a]}`); });
+      [['PV', S.calc.pv, imp.pv], ['Guardia', S.aMano.includes('guardia') ? S.guardia : gSinRasgos, imp.g], ['Ataque', S.aMano.includes('ataque') ? S.ataque : S.calc.ataque, imp.atk], ['Daño', S.aMano.includes('dano') ? S.dano : S.calc.dano, imp.dano],
+       ['CD', S.cd, imp.cd], ['Iniciativa', S.calc.ini, imp.ini],
+       // Armadura y velocidad: con lo que suman los Rasgos (Piel Gruesa, Lenta) y el equipo
+       ['Armadura', S.armadura, imp.a], ['Velocidad', S.vel, imp.vel]].forEach(([k, sale, debe]) => { if (sale !== debe) dif.push(`${k} ${sale}/${debe}`); });
+      if (imp.moral == null ? !S.noMoral : (S.noMoral || S.calc.moral !== imp.moral)) dif.push(`Moral ${S.noMoral ? '—' : S.calc.moral}/${imp.moral == null ? '—' : imp.moral}`);
+      if (dif.length) malos.push(`${c.nombre}: ${dif.join(', ')}`);
+      // Su línea «Encuentro» (o su NA, si no la lleva): Potencial, jefe, área, tamaño y Axiomas
+      if (imp.enc != null && S.naEnc !== imp.enc) malPeso.push(`${c.nombre}: NA ${S.naEnc}/${imp.enc} (Potencial ${S.pesoGastado}/${S.pesoMax})`);
+    });
+    comprobar('El bestiario sale de las fórmulas: atributos, PV, Guardia, ataque, daño, CD', !malos.length,
+      malos.slice(0, 3).join(' | ') || `${n} criaturas del Manual y la Guía coinciden con lo impreso`);
+    comprobar('Su NA de encuentro es el de su línea «Encuentro»: Potencial, jefe, área, tamaño', !malPeso.length,
+      malPeso.slice(0, 4).join(' | ') || `${n} criaturas, con sus Rasgos de especie y su exceso de Potencial`);
 
-    // ── 3 · Carne = puntuación completa de CON ──
-    const con = app._statFinal('CON').final;
-    comprobar('Carne = puntuación de CON', num($('res_carne').textContent) === con,
-      `CON ${con}, Carne ${$('res_carne').textContent}`);
+    // ── 3 · NA del encuentro (Manual de Monstruos, Cap. 4, y los ejemplos de la Guía) ──
+    const base = app.nuevaCr();
+    const lin = (cambios, cuantas) => {
+      const S = app.calcCr(app.normalizarCr({ ...base, rasgos: [], ...cambios }));
+      return { na: S.naEnc, cuenta: S.cuenta * cuantas };
+    };
+    const enc = (...lineas) => app._naDeLineas(lineas).na;
+    const E = {
+      'ogro + lobo alfa': [enc(lin({ na: 4 }, 1), lin({ na: 2 }, 1)), 6],
+      'ogro + 2 lobos alfa': [enc(lin({ na: 4 }, 1), lin({ na: 2 }, 2)), 7],
+      '2×NA0': [enc(lin({ na: 0 }, 2)), 3],
+      '2×NA1': [enc(lin({ na: 1 }, 2)), 4],
+      '4×NA1': [enc(lin({ na: 1 }, 4)), 7],
+      '4×NA5': [enc(lin({ na: 5 }, 4)), 11],
+      '2×NA9': [enc(lin({ na: 9 }, 2)), 12],
+      '2×NA10': [enc(lin({ na: 10 }, 2)), 13],
+      'jefe NA3': [enc(lin({ na: 3, estructura: 'jefe' }, 1)), 6],
+      'jefe NA6': [enc(lin({ na: 6, estructura: 'jefe' }, 1)), 10],
+      'Enorme NA5': [enc(lin({ na: 5, tam: 'enorme' }, 1)), 6],
+      '4 esbirros NA2': [enc(lin({ na: 2, rol: 'esbirro' }, 4)), 2],
+      'grupo de 6 NA1': [enc(lin({ na: 1, estructura: 'horda', miembros: 6 }, 1)), 3],
+      'NA6 + 6×NA1': [enc(lin({ na: 6 }, 1), lin({ na: 1 }, 6)), 6],
+    };
+    const malEnc = Object.entries(E).filter(([, [sale, debe]]) => sale !== debe);
+    comprobar('NA del encuentro: 1 · ½ · ¼ según la distancia, jefe +3/+4, cuatro esbirros = uno', !malEnc.length,
+      malEnc.map(([k, [sale, debe]]) => `${k}: NA ${sale}, debía ser ${debe}`).join(' | ') ||
+      Object.entries(E).slice(0, 5).map(([k, [sale]]) => `${k} → NA ${sale}`).join(' · '));
 
-    // ── 4 · PV = base del Arquetipo + puntuación CON ──
-    const pvBase = (app.DB.archetypes?.[$('sel_arq').value]?.pv) || 0;
-    const nivel = num($('char_lvl').value) || 1;
-    const pvReal = num($('max_pv').textContent);
-    comprobar('PV incluyen la base del Arquetipo y CON', pvReal >= pvBase + con - 2,
-      `base ${pvBase} + CON ${con} · nivel ${nivel} → ${pvReal}`);
+    // ── 4 · dificultad por nivel y tamaño del grupo ──
+    const gPrev = { ...app.mesa.grupo };
+    app.mesa.grupo = { nivel: 3, pjs: 4 }; const p4 = app.umbrales();
+    app.mesa.grupo = { nivel: 3, pjs: 6 }; const p6 = app.umbrales();
+    app.mesa.grupo = { nivel: 9, pjs: 2 }; const p2 = app.umbrales();
+    app.mesa.grupo = gPrev;
+    comprobar('Dificultad por nivel y tamaño del grupo',
+      p4.f === 4 && p4.e === 5 && p4.p === 7 && p4.m === 8 && p6.p === 8 && p2.p === 11 &&
+      app._dificultad(7, p4).k === 'p' && app._dificultad(8, p4).k === 'm' && app._dificultad(3, p4).k === 't',
+      `Nv 3 ×4: NA ${p4.f}/${p4.e}/${p4.p}/${p4.m}+ · ×6 Peligroso NA ${p6.p} · Nv 9 ×2 Peligroso NA ${p2.p}`);
 
-    // ── 5 · recorrido visual de las cinco páginas ──
-    const nombres = ['Perfil','Stats','Aptitudes','Equipo','Detalle'];
+    // ── 5 · recorrido visual: la ficha y la Mesa ──
+    app.asistenteActivo = false;
+    app._abrirFicha(structuredClone(B.tejedora_del_techo), '');
+    await esperar(500);
     const desbordes = [], pequenos = [];
-    for (let p = 0; p < 5; p++) {
-      app.goToPage(p);
-      await esperar(380);
-      const pag = document.querySelectorAll('.page')[p];
-      textoDesbordado(pag).forEach(x => desbordes.push(nombres[p] + ' · ' + x));
-      textoPequeno(pag).forEach(x => pequenos.push(nombres[p] + ' · ' + x));
-      pag.scrollTop = 0;
-    }
+    const recorrer = async (nombres) => {
+      const pags = app._paginas();
+      for (let p = 0; p < pags.length; p++) {
+        app.goToPage(p);
+        await esperar(380);
+        textoDesbordado(pags[p]).forEach(x => desbordes.push(nombres[p] + ' · ' + x));
+        textoPequeno(pags[p]).forEach(x => pequenos.push(nombres[p] + ' · ' + x));
+        pags[p].scrollTop = 0;
+      }
+    };
+    await recorrer(['Perfil', 'Combate', 'Rasgos', 'Notas']);
+    // Las vistas de edición también cuentan
+    ['identity', 'stats', 'defensa', 'attack', 'saves', 'senal'].forEach(s => app.editSection(s));
+    await esperar(200);
+    await recorrer(['Perfil (edición)', 'Combate (edición)', 'Rasgos', 'Notas (edición)']);
+    app.limpiarFicha();
+    app.abrirMesa();
+    await esperar(400);
+    await recorrer(['Encuentro', 'Botín', 'Zonas', 'Facciones']);
     comprobar('Ningún texto se sale de su caja', !desbordes.length,
-      desbordes.slice(0, 4).join(' | ') || '5 páginas revisadas');
+      desbordes.slice(0, 4).join(' | ') || '12 páginas revisadas');
     comprobar('Ningún texto por debajo de 12 px', !pequenos.length,
       pequenos.slice(0, 4).join(' | ') || 'suelo tipográfico respetado');
 
@@ -163,6 +200,7 @@
     comprobar('Sin errores de consola', !errores.length,
       errores.slice(0, 3).join(' | ') || 'ninguno');
 
+    app.DB = DBprev; app._libCache = null;
     pintar(Math.round(performance.now() - t0));
     app.showScreen('home');
   }
@@ -170,8 +208,6 @@
   function pintar(ms) {
     const fallan = pruebas.filter(p => !p.ok);
     const caja = document.createElement('div');
-    /* id propio y no role="status": ese rol ya lo usa el contenedor de
-       avisos de la app, y buscarlo devolvía el toast en vez del informe. */
     caja.id = 'autocheck_report';
     caja.style.cssText = `position:fixed;inset:0;z-index:9999;overflow:auto;
       background:var(--deep,#0a0810);color:var(--text,#cfc0e4);
@@ -182,7 +218,7 @@
     h.textContent = fallan.length ? `${fallan.length} de ${pruebas.length} fallan` : `Todo en orden · ${pruebas.length} comprobaciones`;
     const sub = document.createElement('div');
     sub.style.cssText = 'font-family:var(--fm,monospace);font-size:12px;color:var(--muted,#8c7ea1);margin-bottom:18px';
-    sub.textContent = `${app._appVersion || ''} · ${ms} ms`;
+    sub.textContent = `${STORAGE.RULES_DATA_VERSION} · ${innerWidth}×${innerHeight} · ${ms} ms`;
     caja.append(h, sub);
     pruebas.forEach(p => {
       const f = document.createElement('div');
@@ -218,7 +254,6 @@
   const _init = app.init;
   app.init = function () {
     const r = _init.apply(this, arguments);
-    // Tras el arranque completo, para no medir una app a medio montar.
     setTimeout(() => correr().catch(e => {
       errores.push('la pasada se interrumpió: ' + e.message);
       comprobar('El autodiagnóstico llega hasta el final', false, e.message);

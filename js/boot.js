@@ -38,7 +38,7 @@
       // más y los dos botones parecen no haber hecho nada.
       app._avisoTrasActualizar && app._avisoTrasActualizar();
     } catch(err) {
-      console.error('S&S init error:', err);
+      console.error('S&S Director init error:', err);
     }
     // Dismiss loader after init — short delay so first paint is ready
     setTimeout(dismissLoader, TIMING.LOADER_DISMISS);

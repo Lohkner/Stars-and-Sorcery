@@ -1,0 +1,157 @@
+/* ══════════════════════════════════════════════════════════════
+   S&S DIRECTOR — identidad de color. GENERADO por herramientas/gen_temas.py:
+   no lo edites a mano; cambia la paleta allí y vuelve a ejecutarlo.
+
+   Tres temas que evocan tumbas, forjas y muerte viviente. Cripta es el
+   predeterminado. Las letras son las de S&S Companion, sin cambios.
+══════════════════════════════════════════════════════════════ */
+/* ── Cripta ── */
+:root,[data-theme="cripta"]{
+  --void:#06080a;
+  --deep:#090b0e;
+  --surface:#0f1317;
+  --raised:#161b21;
+  --panel:#1d242b;
+  --rim:#29323b;
+  --border:#37424d;
+  --muted:#87919b;
+  --dim:#9ba4ac;
+  --text:#cfd0c6;
+  --bright:#ecebe0;
+  --gold:#c2bb9c;
+  --goldb:#e3ddc2;
+  --crimson:#4a1c22;
+  --ember:#cf7d3c;
+  --ice:#6f9bb5;
+  --sage:#5fa38f;
+  --blood:#dd8f94; --blood-fill:#a8474f;
+  --void-rgb:6,8,10;
+  --deep-rgb:9,11,14;
+  --surface-rgb:15,19,23;
+  --raised-rgb:22,27,33;
+  --panel-rgb:29,36,43;
+  --border-rgb:55,66,77;
+  --muted-rgb:135,145,155;
+  --dim-rgb:155,164,172;
+  --gold-rgb:194,187,156;
+  --goldb-rgb:227,221,194;
+  --sage-rgb:95,163,143;
+  --ice-rgb:111,155,181;
+  --sangre-rgb:168,71,79; --joya-rgb:95,163,143;
+  --edge-soft:rgba(55,66,77,.3); --edge:rgba(55,66,77,.5); --edge-strong:rgba(55,66,77,.7);
+  --edge-gold:rgba(194,187,156,.4); --edge-gold-strong:rgba(194,187,156,.55);
+  --oro-metal:linear-gradient(140deg,#efead4 0%,#c2bb9c 38%,#7d7965 62%,#e3ddc2 100%);
+  --oro-metal-90:linear-gradient(140deg,#d7d3bf 0%,#afa88c 38%,#706d5b 62%,#ccc7af 100%);
+  --oro-suave:linear-gradient(140deg,#c4c0ae 0%,#aba589 38%,#7d7965 62%,#c1bca5 100%);
+  --medalla-a:#1c2026; --medalla-b:#12151a;
+  --medalla-a-rgb:28,32,38; --medalla-b-rgb:18,21,26;
+  --joya-img:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 26%22%3E%3Cdefs%3E%3ClinearGradient id=%22o%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23e4e2d6%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23a3a497%22/%3E%3Cstop offset=%221%22 stop-color=%22%23565a52%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=%2210,0 20,13 10,26 0,13%22 fill=%22url%28%23o%29%22 stroke=%22%231e2422%22 stroke-width=%22.8%22/%3E%3Cpolygon points=%2210,1.6 18.4,13 10,24.4 1.6,13%22 fill=%22none%22 stroke=%22%23fff%22 stroke-opacity=%22.28%22 stroke-width=%22.5%22/%3E%3Cg transform=%22translate%28.4 3.4%29 scale%28.8%29%22%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22%235fa38f%22/%3E%3Cpolygon points=%2212,1 3.5,12 8.4,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.45%22/%3E%3Cpolygon points=%2212,1 20.5,12 15.6,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.15%22/%3E%3Cpolygon points=%2220.5,12 12,23 12,17.8 15.6,12%22 fill=%22%23000%22 opacity=%22.4%22/%3E%3Cpolygon points=%223.5,12 12,23 12,17.8 8.4,12%22 fill=%22%23000%22 opacity=%22.2%22/%3E%3Cpolygon points=%2212,6.2 15.6,12 12,17.8 8.4,12%22 fill=%22%23fff%22 opacity=%22.12%22 stroke=%22%23fff%22 stroke-opacity=%22.35%22 stroke-width=%22.5%22/%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22none%22 stroke=%22%23000%22 stroke-opacity=%22.45%22 stroke-width=%22.8%22/%3E%3Cpath d=%22M7.2 9.6 9.8 5.8%22 stroke=%22%23fff%22 stroke-width=%221.1%22 stroke-linecap=%22round%22 opacity=%22.85%22/%3E%3C/g%3E%3C/svg%3E');
+  --emblema-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23c2bb9c'%3E%3Ccircle cx='50' cy='50' r='44' stroke-opacity='.35' stroke-width='.8'/%3E%3Ccircle cx='50' cy='50' r='39' stroke-opacity='.22' stroke-width='.6' stroke-dasharray='1.5 3'/%3E%3Cpath d='M50 28 65.5 34.5 72 50 65.5 65.5 50 72 34.5 65.5 28 50 34.5 34.5Z' stroke-opacity='.3' stroke-width='.7'/%3E%3Cpath d='M50 12 58.5 41.5 88 50 58.5 58.5 50 88 41.5 58.5 12 50 41.5 41.5Z' stroke-opacity='.8' stroke-width='1.1' fill='%23c2bb9c' fill-opacity='.07'/%3E%3Ccircle cx='50' cy='50' r='3.5' fill='%23c2bb9c' fill-opacity='.75' stroke='none'/%3E%3C/svg%3E");
+  --card-ink:#0f1317;
+  --res-pv:#a8474f; --res-pv-ink:#e3a3a7; --res-pv-bar:#5fa38f; --res-pv-bar-ink:#93cdb9;
+  --tipo-pasivo:#cfc8a8; --tipo-habilitador:#7fc3ad; --tipo-disparador:#d99a6a; --tipo-modificador:#a9b4d6;
+  --amber:#c9a96a;
+}
+
+/* ── Forja ── */
+[data-theme="forja"]{
+  --void:#070504;
+  --deep:#0b0807;
+  --surface:#130e0b;
+  --raised:#1b1410;
+  --panel:#241a14;
+  --rim:#33251c;
+  --border:#453327;
+  --muted:#a08a76;
+  --dim:#b39d88;
+  --text:#e0d2c0;
+  --bright:#f6ecdc;
+  --gold:#e07b2a;
+  --goldb:#f5a54a;
+  --crimson:#5a1a0c;
+  --ember:#ee5a2c;
+  --ice:#7aa2b6;
+  --sage:#86ac66;
+  --blood:#ec8c80; --blood-fill:#c0402c;
+  --void-rgb:7,5,4;
+  --deep-rgb:11,8,7;
+  --surface-rgb:19,14,11;
+  --raised-rgb:27,20,16;
+  --panel-rgb:36,26,20;
+  --border-rgb:69,51,39;
+  --muted-rgb:160,138,118;
+  --dim-rgb:179,157,136;
+  --gold-rgb:224,123,42;
+  --goldb-rgb:245,165,74;
+  --sage-rgb:134,172,102;
+  --ice-rgb:122,162,182;
+  --sangre-rgb:192,64,44; --joya-rgb:238,90,44;
+  --edge-soft:rgba(69,51,39,.3); --edge:rgba(69,51,39,.5); --edge-strong:rgba(69,51,39,.7);
+  --edge-gold:rgba(224,123,42,.4); --edge-gold-strong:rgba(224,123,42,.55);
+  --oro-metal:linear-gradient(140deg,#ffcf94 0%,#e07b2a 38%,#7a3a12 62%,#f5a54a 100%);
+  --oro-metal-90:linear-gradient(140deg,#e6ba85 0%,#ca6f26 38%,#6e3410 62%,#dc9443 100%);
+  --oro-suave:linear-gradient(140deg,#d1aa79 0%,#c56c25 38%,#7a3a12 62%,#d08c3f 100%);
+  --medalla-a:#231710; --medalla-b:#150d08;
+  --medalla-a-rgb:35,23,16; --medalla-b-rgb:21,13,8;
+  --joya-img:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 26%22%3E%3Cdefs%3E%3ClinearGradient id=%22o%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23b9aa9a%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%237c6c5e%22/%3E%3Cstop offset=%221%22 stop-color=%22%233d3129%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=%2210,0 20,13 10,26 0,13%22 fill=%22url%28%23o%29%22 stroke=%22%231a120d%22 stroke-width=%22.8%22/%3E%3Cpolygon points=%2210,1.6 18.4,13 10,24.4 1.6,13%22 fill=%22none%22 stroke=%22%23fff%22 stroke-opacity=%22.28%22 stroke-width=%22.5%22/%3E%3Cg transform=%22translate%28.4 3.4%29 scale%28.8%29%22%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22%23ee5a2c%22/%3E%3Cpolygon points=%2212,1 3.5,12 8.4,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.45%22/%3E%3Cpolygon points=%2212,1 20.5,12 15.6,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.15%22/%3E%3Cpolygon points=%2220.5,12 12,23 12,17.8 15.6,12%22 fill=%22%23000%22 opacity=%22.4%22/%3E%3Cpolygon points=%223.5,12 12,23 12,17.8 8.4,12%22 fill=%22%23000%22 opacity=%22.2%22/%3E%3Cpolygon points=%2212,6.2 15.6,12 12,17.8 8.4,12%22 fill=%22%23fff%22 opacity=%22.12%22 stroke=%22%23fff%22 stroke-opacity=%22.35%22 stroke-width=%22.5%22/%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22none%22 stroke=%22%23000%22 stroke-opacity=%22.45%22 stroke-width=%22.8%22/%3E%3Cpath d=%22M7.2 9.6 9.8 5.8%22 stroke=%22%23fff%22 stroke-width=%221.1%22 stroke-linecap=%22round%22 opacity=%22.85%22/%3E%3C/g%3E%3C/svg%3E');
+  --emblema-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23e07b2a'%3E%3Ccircle cx='50' cy='50' r='44' stroke-opacity='.35' stroke-width='.8'/%3E%3Ccircle cx='50' cy='50' r='39' stroke-opacity='.22' stroke-width='.6' stroke-dasharray='1.5 3'/%3E%3Cpath d='M50 28 65.5 34.5 72 50 65.5 65.5 50 72 34.5 65.5 28 50 34.5 34.5Z' stroke-opacity='.3' stroke-width='.7'/%3E%3Cpath d='M50 12 58.5 41.5 88 50 58.5 58.5 50 88 41.5 58.5 12 50 41.5 41.5Z' stroke-opacity='.8' stroke-width='1.1' fill='%23e07b2a' fill-opacity='.07'/%3E%3Ccircle cx='50' cy='50' r='3.5' fill='%23e07b2a' fill-opacity='.75' stroke='none'/%3E%3C/svg%3E");
+  --card-ink:#130e0b;
+  --res-pv:#c0402c; --res-pv-ink:#f0a094; --res-pv-bar:#86ac66; --res-pv-bar-ink:#b2d294;
+  --tipo-pasivo:#f0b878; --tipo-habilitador:#9cc487; --tipo-disparador:#f08a5a; --tipo-modificador:#c3a6e0;
+  --amber:#e8a84e;
+}
+
+/* ── Muerte viviente ── */
+[data-theme="muerte"]{
+  --void:#050706;
+  --deep:#080b09;
+  --surface:#0d120e;
+  --raised:#141b15;
+  --panel:#1b241c;
+  --rim:#263428;
+  --border:#344636;
+  --muted:#87957f;
+  --dim:#9aa892;
+  --text:#cbd3bf;
+  --bright:#e9efdc;
+  --gold:#9ccc5a;
+  --goldb:#c2e67e;
+  --crimson:#4a1414;
+  --ember:#cf763c;
+  --ice:#6aa7a0;
+  --sage:#6fb37a;
+  --blood:#e3918b; --blood-fill:#9c3a3a;
+  --void-rgb:5,7,6;
+  --deep-rgb:8,11,9;
+  --surface-rgb:13,18,14;
+  --raised-rgb:20,27,21;
+  --panel-rgb:27,36,28;
+  --border-rgb:52,70,54;
+  --muted-rgb:135,149,127;
+  --dim-rgb:154,168,146;
+  --gold-rgb:156,204,90;
+  --goldb-rgb:194,230,126;
+  --sage-rgb:111,179,122;
+  --ice-rgb:106,167,160;
+  --sangre-rgb:156,58,58; --joya-rgb:156,204,90;
+  --edge-soft:rgba(52,70,54,.3); --edge:rgba(52,70,54,.5); --edge-strong:rgba(52,70,54,.7);
+  --edge-gold:rgba(156,204,90,.4); --edge-gold-strong:rgba(156,204,90,.55);
+  --oro-metal:linear-gradient(140deg,#e2f4ae 0%,#9ccc5a 38%,#4f6e2a 62%,#c2e67e 100%);
+  --oro-metal-90:linear-gradient(140deg,#cbdc9d 0%,#8cb851 38%,#476326 62%,#afcf71 100%);
+  --oro-suave:linear-gradient(140deg,#b9c88f 0%,#89b44f 38%,#4f6e2a 62%,#a5c46b 100%);
+  --medalla-a:#172016; --medalla-b:#0e150e;
+  --medalla-a-rgb:23,32,22; --medalla-b-rgb:14,21,14;
+  --joya-img:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 26%22%3E%3Cdefs%3E%3ClinearGradient id=%22o%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23ebe6cf%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23b9b08f%22/%3E%3Cstop offset=%221%22 stop-color=%22%236e684f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=%2210,0 20,13 10,26 0,13%22 fill=%22url%28%23o%29%22 stroke=%22%2322241a%22 stroke-width=%22.8%22/%3E%3Cpolygon points=%2210,1.6 18.4,13 10,24.4 1.6,13%22 fill=%22none%22 stroke=%22%23fff%22 stroke-opacity=%22.28%22 stroke-width=%22.5%22/%3E%3Cg transform=%22translate%28.4 3.4%29 scale%28.8%29%22%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22%239ccc5a%22/%3E%3Cpolygon points=%2212,1 3.5,12 8.4,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.45%22/%3E%3Cpolygon points=%2212,1 20.5,12 15.6,12 12,6.2%22 fill=%22%23fff%22 opacity=%22.15%22/%3E%3Cpolygon points=%2220.5,12 12,23 12,17.8 15.6,12%22 fill=%22%23000%22 opacity=%22.4%22/%3E%3Cpolygon points=%223.5,12 12,23 12,17.8 8.4,12%22 fill=%22%23000%22 opacity=%22.2%22/%3E%3Cpolygon points=%2212,6.2 15.6,12 12,17.8 8.4,12%22 fill=%22%23fff%22 opacity=%22.12%22 stroke=%22%23fff%22 stroke-opacity=%22.35%22 stroke-width=%22.5%22/%3E%3Cpolygon points=%2212,1 20.5,12 12,23 3.5,12%22 fill=%22none%22 stroke=%22%23000%22 stroke-opacity=%22.45%22 stroke-width=%22.8%22/%3E%3Cpath d=%22M7.2 9.6 9.8 5.8%22 stroke=%22%23fff%22 stroke-width=%221.1%22 stroke-linecap=%22round%22 opacity=%22.85%22/%3E%3C/g%3E%3C/svg%3E');
+  --emblema-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%239ccc5a'%3E%3Ccircle cx='50' cy='50' r='44' stroke-opacity='.35' stroke-width='.8'/%3E%3Ccircle cx='50' cy='50' r='39' stroke-opacity='.22' stroke-width='.6' stroke-dasharray='1.5 3'/%3E%3Cpath d='M50 28 65.5 34.5 72 50 65.5 65.5 50 72 34.5 65.5 28 50 34.5 34.5Z' stroke-opacity='.3' stroke-width='.7'/%3E%3Cpath d='M50 12 58.5 41.5 88 50 58.5 58.5 50 88 41.5 58.5 12 50 41.5 41.5Z' stroke-opacity='.8' stroke-width='1.1' fill='%239ccc5a' fill-opacity='.07'/%3E%3Ccircle cx='50' cy='50' r='3.5' fill='%239ccc5a' fill-opacity='.75' stroke='none'/%3E%3C/svg%3E");
+  --card-ink:#0d120e;
+  --res-pv:#9c3a3a; --res-pv-ink:#e8a09a; --res-pv-bar:#a8433f; --res-pv-bar-ink:#e8a09a;
+  --tipo-pasivo:#c9d98e; --tipo-habilitador:#7fc3a0; --tipo-disparador:#e09a62; --tipo-modificador:#b3a8de;
+  --amber:#cdb45e;
+}
+
+/* ── Piezas que en Companion llevaban el oro escrito a mano ─────── */
+html,body{background:var(--void)!important}
+.port-name,.ibadge,#identity_summary_view .ibadge{color:color-mix(in srgb,var(--goldb) 92%,#000)}
+.char-lvl-badge{color:color-mix(in srgb,var(--gold) 92%,#000)}
+.js-grade-block.grade-on{color:var(--text)}
+::selection{background:rgba(var(--gold-rgb),.22)}

@@ -1,141 +1,140 @@
-const app = {
-  DB: {},
-  inventory: [],
-  gold: 0,
-  alignment: '',
-  currentPage: 0,
-  totalPages: 5,
-  activeTalentCat: null,
-  currentEditorCat: '',
-  scrollPreserve: false,        // persisted: whether to remember scroll per page
-  _pageScrolls: {},             // in-memory scroll positions per page index
-  cropState: {img:null, x:0, y:0, zoom:1, rot:0, minZoom:.05, isDragging:false, lastX:0, lastY:0, pinch:null, velX:0, velY:0},
-  _weaponDmgData: [{formula:'1',name:'Desarmado'},{formula:'1',name:'Desarmado'}],
+/* ══════════════════════════════════════════════════════════════
+   S&S DIRECTOR — núcleo
+   Pantallas, roster de amenazas, secciones editar/confirmar, guardado,
+   exportación e importación. Se apoya en base.js (piezas genéricas
+   heredadas de S&S Companion) y lo completan amenaza.js, biblioteca.js,
+   mesa.js, asistente.js y editor.js.
 
-  /** Estado único del resumen de Equipo de Combate. calc() lo escribe y
-      _buildCombatSummary() SOLO lee de aquí — nunca del DOM de otras vistas.
-      (La versión anterior raspaba textContent de la vista de edición, y si
-      el orden de carga cambiaba, el resumen quedaba rancio.) */
-  _combat: {
-    rd: 0, rdCap: 7, rdCapped: false, guardia: 10, guardAttr: 'DES',
-    armorName: 'Sin Armadura', armorType: 'none',
-    shieldName: 'Sin Escudo', shieldGuard: 0, shieldBlock: 0,
-    w: [
-      { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
-      { name: 'Desarmado', atk: '+0', dmg: '1d4', alert: '' },
-    ],
+   A diferencia de Companion, la ficha NO vive en los campos del DOM: la
+   amenaza abierta es un objeto (`app.cr`) y las tarjetas se pintan a
+   partir de él. Editar una tarjeta escribe en ese objeto; «Cancelar»
+   restaura la foto que se tomó al abrirla.
+══════════════════════════════════════════════════════════════ */
+Object.assign(app, {
+  DB: {},
+  cr: null,                     // la amenaza abierta
+  modo: 'ficha',                // 'ficha' (una amenaza) | 'mesa' (Mesa del Director)
+  currentPage: 0,
+  totalPages: 4,
+  scrollPreserve: false,
+  _pageScrolls: {},
+  cropState: {img:null, x:0, y:0, zoom:1, rot:0, minZoom:.05, isDragging:false, lastX:0, lastY:0, pinch:null, velX:0, velY:0},
+  _charLoading: false,          // silencia _markUnsaved mientras se carga o se limpia
+  _nombreOriginal: '',          // clave del roster de la que salió la amenaza abierta
+  _fotos: {},                   // sección → foto de sus campos al entrar en edición
+
+  /* Qué campos de la amenaza toca cada tarjeta editable: es lo que
+     «Cancelar» devuelve a como estaba. */
+  SECS: {
+    personal: { card: 'card_personal', campos: ['nombre', 'idea', 'retrato'] },
+    identity: { card: 'card_identity', campos: ['na', 'tipo', 'tam', 'rol', 'estructura', 'miembros', 'rasgos', 'fuertes', 'debiles', 'moralNoTira', 'pvAct'] },
+    stats:    { card: 'fold_stats',    campos: ['manual', 'pvAct'] },
+    defensa:  { card: 'fold_defensa',  campos: ['manual', 'resisteTodo'] },
+    attack:   { card: 'fold_ataques',  campos: ['ataqueNombre', 'danoTipo', 'manual'] },
+    saves:    { card: 'fold_salv',     campos: ['fuertes', 'debiles', 'moralNoTira', 'pvAct'] },
+    senal:    { card: 'fold_senal',    campos: ['senal', 'contexto', 'habitat', 'quiere', 'pelea', 'botin'] },
+    jefe:     { card: 'fold_jefe',     campos: ['jefe'] },
   },
-  _weaponAtkData: [0, 0],
-  _editingCustomItem: null,
-  _charLoading: false,   // suppresses _markUnsaved during load/clear
-  _finalStats: {FUE:8,DES:8,CON:8,INT:8,SAB:8,CAR:8},  // P1 fix: cached final stat scores
-  _finalMods:  {FUE:0,DES:0,CON:0,INT:0,SAB:0,CAR:0},  // P1 fix: cached final modifiers
 
   init() {
-    STORAGE.alFallarEscritura = () => this.toast('No se pudo guardar en el dispositivo: exporta tus personajes', 'err');
-    // ── Event delegation for [data-action] (Mejora 6) ──
-    // A single listener dispatches simple no-arg calls to app methods.
-    // CSP-friendlier and lighter than dozens of inline onclick handlers.
+    STORAGE.alFallarEscritura = () => this.toast('No se pudo guardar en el dispositivo: crea una copia en Ajustes', 'err');
+    // Un solo oyente reparte los [data-action] sin argumentos.
     document.addEventListener('click', e => {
-      // Guard: if a confirm overlay is open (or just closed and is still
-      // intercepting the iOS-synthesised click), ignore clicks that don't
-      // originate inside it. Prevents tap bleed-through to buttons (e.g.
-      // "Guardar") sitting behind the modal.
       if (this._confirmOpen) return;
       const el = e.target.closest('[data-action]');
       if (!el) return;
       const fn = el.getAttribute('data-action');
       if (fn && typeof this[fn] === 'function') this[fn]();
     });
-
-    // ── UX numérica móvil ──
-    // Al enfocar un campo numérico se selecciona su contenido: teclear
-    // reemplaza el valor en vez de concatenarlo (evita el clásico "010").
-    // rAF porque iOS anula select() si se llama dentro del propio focus.
+    // Al enfocar un campo numérico se selecciona su contenido.
     document.addEventListener('focusin', e => {
       const el = e.target;
       if (el.tagName !== 'INPUT') return;
       if (el.type !== 'number' && el.getAttribute('inputmode') !== 'numeric') return;
-      requestAnimationFrame(() => { try { el.select(); } catch(_) {} });
+      requestAnimationFrame(() => { try { el.select(); } catch (_) {} });
     });
-    // Enter/Intro del teclado en pantalla confirma y cierra el teclado
-    // (blur dispara los handlers de change/recalculo ya existentes).
     document.addEventListener('keydown', e => {
       if (e.key !== 'Enter') return;
       const el = e.target;
       if (el.tagName === 'INPUT' && (el.type === 'number' || el.getAttribute('inputmode') === 'numeric')) el.blur();
     });
-    // Las barras de Estado también reaccionan al tecleo directo en los recursos
-    ['cur_pv', 'cur_adr', 'cur_ing', 'cur_carne'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', () => this._updateResBars());
-    });
 
-    // Load rules — fallback to DEFAULT_DB if storage is corrupt
-    try {
-      this.DB = STORAGE.loadRules();
-    } catch(e) {
-      this.DB = structuredClone(DEFAULT_DB);
-    }
-    // Init weapon data stores
-    this._weaponAtkData = [0, 0];
-    // Debounced calc — prevents cascading recalculations during rapid input
-    this._debouncedCalc = this._debounce(this.calc, 80);
-    // Build home screen
+    try { this.DB = STORAGE.loadRules(); }
+    catch (e) { this.DB = structuredClone(DEFAULT_DB); }
+    this._asegurarDB();
+
+    this.cr = this.nuevaCr();
     this.renderHome();
-    // Setup alignment for app
-    this.buildAlignmentPicker();
     this.setupSwipe();
     this._initDiceSwipe();
     this._setupEscapeKey();
     this._initGrainTexture();
-    // Crop wheel zoom (registered once, guarded inside handler)
     const ws = document.getElementById('crop_ws');
-    if (ws) ws.addEventListener('wheel', e => this._cropWheel(e), {passive:false});
+    if (ws) ws.addEventListener('wheel', e => this._cropWheel(e), { passive: false });
     this._restoreFontSize();
     this._restoreScrollPreserve();
     this._restorePortraitSettings();
     this._restoreTheme();
     this._restoreEstiloLetra();
     this._restoreBgImages();
-    // Long-press repeat on resource +/- buttons
     this._initResLongPress();
     this._initAdvFabAutoOcultar();
-    this._initUnsavedWatch();
-
-    // Mark unsaved on manual resource edits (type directly in cur_pv etc.)
-    ['cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', () => this._markUnsaved());
-    });
-
-    // Live calc on notes changes
-    const notes = document.getElementById('char_notes');
-    if (notes) notes.addEventListener('input', () => this._markUnsaved());
-    const concept = document.getElementById('char_concept');
-    if (concept) concept.addEventListener('input', () => this._markUnsaved());
+    this._montarSecciones();
+    this._enlazarFicha();
+    this.initMesa();
   },
 
+  /** Si unas reglas importadas o antiguas no traen alguna categoría, se
+      completa con la de fábrica: la app nunca se queda sin una tabla. */
+  _asegurarDB() {
+    Object.keys(DEFAULT_DB).forEach(k => {
+      const v = this.DB[k];
+      if (v == null || typeof v !== 'object') this.DB[k] = structuredClone(DEFAULT_DB[k]);
+    });
+    Object.keys(DEFAULT_DB.tablas).forEach(k => {
+      if (!this.DB.tablas[k] || !Array.isArray(this.DB.tablas[k].filas)) this.DB.tablas[k] = structuredClone(DEFAULT_DB.tablas[k]);
+    });
+  },
+
+  /* ── Utilidades ───────────────────────────────────────────────── */
+  h(tag, cls, txt) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  },
+  _el(id) { return document.getElementById(id); },
+  _signo(n) { return (n >= 0 ? '+' : '−') + Math.abs(n); },
+  _azar(lista) { return lista[Math.floor(Math.random() * lista.length)]; },
+  _d(caras) { return 1 + Math.floor(Math.random() * caras); },
+  _norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); },
+  _slug(s) { return this._norm(s).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''); },
+  _ico(id) { return `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`; },
+  _uidSeq: 0,
+  _uid() { this._uidSeq = Math.max(this._uidSeq + 1, Date.now()); return String(this._uidSeq); },
+
+  /** Tira en una tabla de la base de reglas y la enseña en la tarjeta del
+      dado. Devuelve el texto de la fila. */
+  tirarTabla(clave, etiqueta) {
+    const t = this.DB.tablas[clave];
+    if (!t || !t.filas.length) return '';
+    const n = t.filas.length;
+    const r = this._d(n);
+    this.showDiceRoll({ label: etiqueta || t.name, die: n, finalFaces: [r], isCrit: false, isFail: false,
+      detail: t.filas[r - 1], total: r, totalLabel: 'Daño' });
+    return t.filas[r - 1];
+  },
+
+  /* ── Pantallas ────────────────────────────────────────────────── */
   showScreen(id) {
     document.getElementById('home-screen').classList.toggle('hidden', id !== 'home');
     document.getElementById('app-screen').classList.toggle('hidden', id !== 'app');
-
-    // ── iOS fix: reset pages-track to page 0 with no transition whenever
-    // we leave the app screen.  A non-zero translateX on a will-change:transform
-    // ancestor creates a new stacking context that shifts position:fixed children
-    // (including #home-screen) on iOS Safari.
     if (id === 'home') {
+      // iOS: un translateX distinto de cero en el carril desplaza los fixed.
       const track = document.getElementById('pages_track');
-      if (track) {
-        track.style.transition = 'none';
-        track.style.transform  = 'translateX(0)';
-      }
+      if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)'; }
       this.currentPage = 0;
-      document.querySelectorAll('.nbtn').forEach((b, i) => b.classList.toggle('active', i === 0));
     }
-
-    // Limpiar el listener de cierre de swipe cuando salimos de la home,
-    // para evitar que se acumulen listeners en document con cada visita.
     if (id !== 'home') {
       const el = document.getElementById('home-roster');
       if (el?._swipeCloseHandler) {
@@ -145,89 +144,102 @@ const app = {
     }
   },
 
-  goHome() {
-    const name = document.getElementById('char_name')?.value?.trim();
-    const lbl  = document.getElementById('last_saved_lbl');
-    const hasUnsaved = lbl?.classList.contains('unsaved');
-    if (name && hasUnsaved) {
-      this._confirm('¿Salir sin guardar?', `"${this._esc(name)}" tiene cambios sin guardar. Se perderán.`, 'Salir', () => {
-        this.renderHome(); this.showScreen('home');
-      });
-    } else {
-      this.renderHome(); this.showScreen('home');
-    }
-  },
-
-  newChar() {
-    this._charLoading = true;
-    this.clearCharData();
-    // Pre-reset track before showing app screen (same iOS fix as loadCharToApp)
+  /** La ficha y la Mesa comparten armazón (cabecera, carril de páginas y
+      barra inferior): `data-modo` decide qué páginas y qué barra se ven. */
+  _ponerModo(modo) {
+    this.modo = modo;
+    const s = document.getElementById('app-screen');
+    s.dataset.modo = modo;
+    this.totalPages = this._paginas().length;
+    this._pageScrolls = {};
     const track = document.getElementById('pages_track');
     if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)'; }
     this.currentPage = 0;
-    this.showScreen('app');
-    this.unlockApp();
-    this.goToPage(0);
-    this._pageScrolls = {}; // limpiar posiciones guardadas obsoletas
-    // Abrir todas las secciones en edición para flujo de creación.
-    // _bulkEditing suprime el scrollIntoView de combat/equipment para que
-    // el goToPage(0) de arriba no pierda la carrera contra el RAF.
-    this._bulkEditing = true;
+  },
+  _paginas() {
+    return [...document.querySelectorAll('#pages_track .page')].filter(p => p.dataset.modo === this.modo);
+  },
+  _nav() { return document.querySelector(`.bnav[data-modo="${this.modo}"]`); },
+
+  goToPage(n, snapMs) {
+    if (n !== this.currentPage && navigator.vibrate) navigator.vibrate(4);
+    const pags = this._paginas();
+    if (this.scrollPreserve && pags[this.currentPage]) this._pageScrolls[this.currentPage] = pags[this.currentPage].scrollTop;
+    this.currentPage = n;
+    const w = document.getElementById('pages_wrapper');
+    const track = document.getElementById('pages_track');
+    const pageW = w ? w.clientWidth : window.innerWidth;
+    track.style.transition = `transform ${snapMs || 220}ms cubic-bezier(.25,.46,.45,.94)`;
+    this._snapUntil = Date.now() + (snapMs || 220) + 60;
+    track.style.transform = `translateX(-${n * pageW}px)`;
+    const nav = this._nav();
+    if (nav) {
+      nav.querySelectorAll('.nbtn').forEach((b, i) => b.classList.toggle('active', i === n));
+      const thread = nav.querySelector('.nav-thread');
+      if (thread) thread.style.transform = `translateX(${n * 100}%)`;
+    }
+    const dest = pags[n];
+    if (dest) {
+      const saved = this._pageScrolls[n];
+      if (this.scrollPreserve && saved != null) requestAnimationFrame(() => { dest.scrollTop = saved; });
+      else dest.scrollTop = 0;
+    }
+  },
+
+  goHome() {
+    const salir = () => { this._salirModoEdicion(); this.renderHome(); this.showScreen('home'); };
+    const lbl = document.getElementById('last_saved_lbl');
+    if (this.modo === 'ficha' && lbl?.classList.contains('unsaved')) {
+      const n = this.cr?.nombre || 'Esta amenaza';
+      this._confirm('¿Salir sin guardar?', `«${n}» tiene cambios sin guardar. Se perderán.`, 'Salir', salir);
+    } else salir();
+  },
+
+  /* ── Amenazas: crear, abrir, ordenar, borrar ──────────────────── */
+  /** «Nueva amenaza». asistente.js lo envuelve para abrir los pasos guiados. */
+  newChar() { this.nuevaAmenazaManual(); },
+
+  nuevaAmenazaManual() {
+    this._abrirFicha(this.nuevaCr(), '');
+    this._bulk = true;
     this.editSection('personal');
     this.editSection('identity');
-    this.editSection('stats');
-    this.editSection('saves');
-    this.editSection('skills');
-    this.editSection('guard');
-    this.editSection('combat');
-    this.editSection('equipment');
-    this._bulkEditing = false;
-    this._charLoading = false;
-    // Clear header label for fresh character
+    this._bulk = false;
+    requestAnimationFrame(() => document.getElementById('char_name')?.focus());
+  },
+
+  /** Pone una amenaza en la ficha (sin guardarla) y enseña la pantalla. */
+  _abrirFicha(cr, nombreOriginal) {
+    this._charLoading = true;
+    this.limpiarFicha();
+    this.cr = this.normalizarCr(cr);
+    this._nombreOriginal = nombreOriginal || '';
+    this._ponerModo('ficha');
+    this.showScreen('app');
+    this.pintarFicha(true);
+    this.goToPage(0);
     const lbl = document.getElementById('last_saved_lbl');
     if (lbl) { lbl.textContent = ''; lbl.className = 'last-saved'; }
-    // Enfocar el campo nombre automáticamente
-    requestAnimationFrame(() => {
-      const nameInput = document.getElementById('char_name');
-      if (nameInput) nameInput.focus();
-    });
+    const ttl = document.getElementById('app_hdr_ttl');
+    if (ttl) ttl.textContent = 'Stars & Sorcery';
+    this._charLoading = false;
   },
 
   loadCharToApp(name) {
     const roster = STORAGE.loadRoster();
     const data = roster[name];
     if (!data) return;
-    this._charLoading = true;
-    this.clearCharData();
-    // Reset track to page 0 with no transition BEFORE making app-screen visible.
-    // This prevents the iOS stacking-context bug where a non-zero translateX
-    // on the will-change:transform track shifts position:fixed elements.
-    const track = document.getElementById('pages_track');
-    if (track) { track.style.transition = 'none'; track.style.transform = 'translateX(0)'; }
-    this.currentPage = 0;
-    this.showScreen('app');
-    this.unlockApp();
-    this.applyCharData(data);
-    this.goToPage(0);
-    // Clear last-saved label and reset unsaved state cleanly
-    const lbl = document.getElementById('last_saved_lbl');
-    if (lbl) { lbl.textContent = ''; lbl.className = 'last-saved'; }
-    this._charLoading = false;
-    this.toast(`Cargado: ${this._esc(name)}`, 'ok');
+    this._abrirFicha(data, name);
+    this.toast(`Cargada: ${name}`, 'ok');
   },
 
-  _esc(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  /** Deja la ficha sin amenaza: cierra ediciones y olvida las fotos. */
+  limpiarFicha() {
+    Object.keys(this._fotos).forEach(k => delete this._fotos[k]);
+    Object.keys(this.SECS).forEach(s => this._verSeccion(s, false));
+    this._salirModoEdicion();
   },
 
-  /* Strip HTML tags from imported JSON text — prevents XSS from malicious rule files */
-  _sanitize(str) {
-    return String(str || '').replace(/<[^>]*>/g, '').replace(/javascript:/gi, '');
-  },
-
-  /** Renders the saved-character roster on the home screen. */
-  /** Mueve un personaje una posición arriba/abajo en el roster.
-      El roster es un objeto: el orden de inserción de claves ES el orden. */
   moveChar(name, dir) {
     const roster = STORAGE.loadRoster();
     const keys = Object.keys(roster);
@@ -239,134 +251,72 @@ const app = {
     keys.forEach(k => { reordered[k] = roster[k]; });
     STORAGE.saveRoster(reordered);
     if (navigator.vibrate) navigator.vibrate(6);
-    /* Antes se repintaba el roster entero: todas las tarjetas volvían a
-       entrar con su animación y el panel de ordenar se cerraba, así que
-       cada paso obligaba a deslizar otra vez. Ahora solo cambian de sitio
-       las dos tarjetas implicadas y la que se mueve conserva sus botones. */
-    const el = document.getElementById('home-roster');
-    const wraps = el ? [...el.querySelectorAll(':scope > .char-card-wrap')] : [];
-    const a = wraps[i], b = wraps[j];
-    if (!a || !b || wraps.length !== keys.length) { this.renderHome(); return; }
-    const y0 = [a.getBoundingClientRect().top, b.getBoundingClientRect().top];
-    // Mover un nodo reinicia su animación de entrada: se le quita antes.
-    [a, b].forEach(w => { w.style.animation = 'none'; w.style.opacity = '1'; });
-    if (dir < 0) el.insertBefore(a, b); else el.insertBefore(b, a);
-    this._ordenBotones(el);
-    const calma = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!calma && a.animate) {
-      [a, b].forEach((w, k) => {
-        const dy = y0[k] - w.getBoundingClientRect().top;
-        if (dy) w.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
-                          { duration: 170, easing: 'cubic-bezier(.22,.61,.36,1)' });
-      });
-    }
+    this.renderHome();
   },
 
-  /** «Subir» apagado en la primera tarjeta y «Bajar» en la última. */
-  _ordenBotones(el) {
-    const wraps = [...el.querySelectorAll(':scope > .char-card-wrap')];
-    wraps.forEach((w, k) => {
-      const [sube, baja] = w.querySelectorAll('.char-card-order .char-ord-btn');
-      if (sube) sube.disabled = k === 0;
-      if (baja) baja.disabled = k === wraps.length - 1;
-    });
+  /** Retrato fiable: solo data-URL de imagen (viene de JSON importado y se
+      interpola en un src). */
+  _retratoOk(src) {
+    return typeof src === 'string' && src !== DEFAULT_PORTRAIT &&
+      /^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=]+$/.test(src);
   },
 
-  /** Escudo anti-traspaso: absorbe el toque fantasma que sigue a abrir o
-      cerrar una capa (modal, panel, FAB). Invisible y se autodestruye. */
-  _tapShield(ms = 320) {
-    const now = Date.now();
-    // Singleton: si ya hay un escudo vivo, solo se extiende su fecha
-    // límite — nunca se apilan velos.
-    if (this._shieldEl && this._shieldEl.isConnected) {
-      this._shieldDeadline = now + ms;
-      return;
-    }
-    const s = document.createElement('div');
-    s.className = 'tap-shield';
-    this._shieldEl = s;
-    this._shieldDeadline = now + ms;
-    const remove = () => { s.remove(); if (this._shieldEl === s) this._shieldEl = null; };
-    const kill = e => {
-      // Autodefensa anti-congelación: si el temporizador quedó estrangulado
-      // (pestaña en segundo plano), el primer toque tras la fecha límite
-      // retira el velo en lugar de tragarse la interacción para siempre.
-      if (Date.now() >= this._shieldDeadline) { remove(); return; }
-      e.stopPropagation(); e.preventDefault();
-    };
-    ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(t =>
-      s.addEventListener(t, kill, { capture: true, passive: false }));
-    document.body.appendChild(s);
-    const tick = () => {
-      if (!s.isConnected) return;
-      if (Date.now() >= this._shieldDeadline) remove();
-      else setTimeout(tick, 60);
-    };
-    setTimeout(tick, ms);
-    // Cinturón extra: al volver a la pestaña, fuera el velo
-    document.addEventListener('visibilitychange', remove, { once: true });
+  /** Línea corta de una amenaza: «Bestia grande · Acechador». */
+  _lineaCr(cr) {
+    const tipo = this.DB.tipos[cr.tipo]?.name || '';
+    const tam = this.DB.tamanos[cr.tam]?.name || '';
+    const rol = this.DB.roles[cr.rol]?.name || 'Sin Rol';
+    const cuerpo = [tipo, tam && tam !== 'Mediano' ? tam.toLowerCase() : ''].filter(Boolean).join(' ');
+    return [cuerpo, rol].filter(Boolean).join(' · ');
+  },
+  _etiquetaNA(cr) {
+    // Una horda es una sola criatura de su NA efectivo: ese es el que se enseña
+    const horda = cr.estructura === 'horda';
+    const na = horda ? Math.min(15, cr.na + this._horda(cr.miembros).na) : cr.na;
+    return 'NA ' + na + (cr.estructura === 'jefe' ? ' · Jefe' : horda ? ' · Horda' : '');
   },
 
   renderHome() {
     const el = document.getElementById('home-roster');
-
-    // Clean up previous document-level listener
     if (el._swipeCloseHandler) {
       document.removeEventListener('touchstart', el._swipeCloseHandler);
       el._swipeCloseHandler = null;
     }
-
     const roster = STORAGE.loadRoster();
-    const keys   = Object.keys(roster);
-
+    const keys = Object.keys(roster);
     if (!keys.length) {
       el.innerHTML = `
         <div class="home-empty">
           <div class="home-empty-icon">✦</div>
-          <div class="home-empty-title">Sin personajes guardados</div>
-          <div class="home-empty-sub">Crea uno nuevo o importa<br>un archivo JSON para comenzar.</div>
+          <div class="home-empty-title">Sin amenazas guardadas</div>
+          <div class="home-empty-sub">Crea una nueva o tráela<br>del Bestiario para comenzar.</div>
         </div>`;
       return;
     }
-
     el.innerHTML = '';
     const SNAP = 'transform .2s cubic-bezier(.25,.46,.45,.94)';
-    const BTN_W = 80; // must match .char-card-delete width
+    const BTN_W = 80, ORD_W = 80;
 
     keys.forEach((name, i) => {
-      const data = roster[name];
-      const lvl  = data.inputs?.char_lvl || '1';
-      const arq  = data.selects?.sel_arq  ? (this.DB.archetypes?.[data.selects.sel_arq]?.name  || data.selects.sel_arq) : '—';
-      const desc = data.selects?.sel_desc ? (this.DB.descriptors?.[data.selects.sel_desc]?.name || '') : '';
-      const bg   = data.selects?.sel_bg   ? (this.DB.backgrounds?.[data.selects.sel_bg]?.name   || '') : '';
-
-      // Seguridad: el retrato viene de JSON importado (dato no confiable) y se
-      // interpola en un atributo src — solo se admite un data-URL de imagen.
-      // Sin esta validación, un JSON manipulado inyectaría HTML en el roster.
-      const hasPortrait = data.portrait && data.portrait !== DEFAULT_PORTRAIT &&
-        /^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=]+$/.test(data.portrait);
-      const portHtml = hasPortrait
-        ? `<img class="char-port" src="${data.portrait}" alt="">`
+      const data = this.normalizarCr(roster[name]);
+      const portHtml = this._retratoOk(data.retrato)
+        ? `<img class="char-port" src="${data.retrato}" alt="">`
         : `<div class="char-port-ph">✦</div>`;
 
-      // ── DOM ──────────────────────────────────────────────────────
-      const wrap = document.createElement('div');
-      wrap.className = 'char-card-wrap';
+      const wrap = this.h('div', 'char-card-wrap');
       wrap.style.animationDelay = `${i * 50}ms`;
 
-      const delBtn = document.createElement('button');
-      delBtn.className = 'char-card-delete';
+      const delBtn = this.h('button', 'char-card-delete');
       delBtn.setAttribute('aria-label', `Eliminar ${name}`);
       delBtn.innerHTML = `<span class="del-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span><span>Borrar</span>`;
 
-      const card = document.createElement('div');
-      card.className = 'char-card';
+      const card = this.h('div', 'char-card');
       card.innerHTML = `
         ${portHtml}
         <div class="char-ci">
           <div class="char-cn">${this._esc(name)}</div>
-          <div class="char-cs">${this._esc(desc||'—')} · ${this._esc(arq)}${bg?' · '+this._esc(bg):''}</div>
-          <div style="margin-top:3px"><span class="char-lvl-badge">Nivel ${this._esc(lvl)}</span></div>
+          <div class="char-cs">${this._esc(this._lineaCr(data))}</div>
+          <div style="margin-top:3px"><span class="char-lvl-badge">${this._esc(this._etiquetaNA(data))}</span></div>
         </div>
         <span class="char-card-arrow">›</span>`;
 
@@ -374,14 +324,9 @@ const app = {
       wrap.appendChild(card);
       el.appendChild(wrap);
 
-      // ── Helpers ───────────────────────────────────────────────────
-      // ── Panel de reordenar (se revela con swipe a la DERECHA) ──────
-      const ORD_W = 80; // must match .char-card-order width
-      const ordPanel = document.createElement('div');
-      ordPanel.className = 'char-card-order';
-      [[-1, 'Subir', 'M6 15l6-6 6 6'], [1, 'Bajar', 'M6 9l6 6 6-6']].forEach(([dir, lbl]) => {
-        const b = document.createElement('button');
-        b.className = 'char-ord-btn';
+      const ordPanel = this.h('div', 'char-card-order');
+      [[-1, 'Subir'], [1, 'Bajar']].forEach(([dir, lbl]) => {
+        const b = this.h('button', 'char-ord-btn');
         b.type = 'button';
         b.setAttribute('aria-label', `${lbl} a ${name}`);
         b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${dir < 0 ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'}"/></svg>`;
@@ -394,6043 +339,399 @@ const app = {
 
       const setPos = (x, animated) => {
         const t = animated ? SNAP : 'none';
-        card.style.transition     = t;
-        delBtn.style.transition   = t;
-        ordPanel.style.transition = t;
-        card.style.transform      = `translateX(${x}px)`;
-        // delBtn entra desde la derecha (x<0); el panel de orden desde la izquierda (x>0)
-        delBtn.style.transform    = `translateX(${100 + (Math.min(x, 0) / BTN_W) * 100}%)`;
-        ordPanel.style.transform  = `translateX(${-100 + (Math.max(x, 0) / ORD_W) * 100}%)`;
+        card.style.transition = t; delBtn.style.transition = t; ordPanel.style.transition = t;
+        card.style.transform = `translateX(${x}px)`;
+        delBtn.style.transform = `translateX(${100 + (Math.min(x, 0) / BTN_W) * 100}%)`;
+        ordPanel.style.transform = `translateX(${-100 + (Math.max(x, 0) / ORD_W) * 100}%)`;
       };
-
       const reveal  = () => { setPos(-BTN_W, true); card._swiped = true;  card._swipedR = false; };
       const revealR = () => { setPos(ORD_W,  true); card._swipedR = true; card._swiped  = false; };
-      const conceal = () => { setPos(0,       true); card._swiped = false; card._swipedR = false; };
+      const conceal = () => { setPos(0,      true); card._swiped = false; card._swipedR = false; };
       card._conceal = conceal;
 
-      // ── Swipe gesture ─────────────────────────────────────────────
-      let startX = 0, startY = 0, curX = 0;
-      let axisLocked = false, isHoriz = false;
-
+      let startX = 0, startY = 0, curX = 0, axisLocked = false, isHoriz = false;
       card.addEventListener('touchstart', e => {
         const t = e.touches[0];
         startX = curX = t.clientX; startY = t.clientY;
         axisLocked = false; isHoriz = false;
-        card.style.transition   = 'none';
-        delBtn.style.transition = 'none';
-      }, {passive:true});
-
+        card.style.transition = 'none'; delBtn.style.transition = 'none';
+      }, { passive: true });
       card.addEventListener('touchmove', e => {
-        const t   = e.touches[0];
-        const ddx = t.clientX - startX;
-        const ddy = t.clientY - startY;
-
+        const t = e.touches[0];
+        const ddx = t.clientX - startX, ddy = t.clientY - startY;
         if (!axisLocked) {
           if (Math.abs(ddx) < 4 && Math.abs(ddy) < 4) return;
-          isHoriz    = Math.abs(ddx) > Math.abs(ddy);
+          isHoriz = Math.abs(ddx) > Math.abs(ddy);
           axisLocked = true;
         }
         if (!isHoriz) return;
-
         e.preventDefault();
         curX = t.clientX;
-
-        // Clamp bidireccional: borrar hasta -BTN_W · ordenar hasta +ORD_W
         const base = card._swiped ? -BTN_W : card._swipedR ? ORD_W : 0;
-        const raw  = base + (curX - startX);
-        const clamped = Math.max(-BTN_W, Math.min(ORD_W, raw));
-        setPos(clamped, false);
-      }, {passive:false});
-
+        setPos(Math.max(-BTN_W, Math.min(ORD_W, base + (curX - startX))), false);
+      }, { passive: false });
       card.addEventListener('touchend', () => {
         if (!axisLocked || !isHoriz) return;
         const delta = curX - startX;
-        if (card._swiped) {
-          // Borrado abierto: cerrar si desliza a la derecha lo bastante
-          delta > 20 ? conceal() : reveal();
-        } else if (card._swipedR) {
-          // Orden abierto: cerrar si desliza a la izquierda lo bastante
-          delta < -20 ? conceal() : revealR();
-        } else {
-          // Cerrado: ← abre borrar · → abre ordenar
-          if (delta < -30) reveal();
-          else if (delta > 30) revealR();
-          else conceal();
-        }
-      }, {passive:true});
+        if (card._swiped) delta > 20 ? conceal() : reveal();
+        else if (card._swipedR) delta < -20 ? conceal() : revealR();
+        else if (delta < -30) reveal();
+        else if (delta > 30) revealR();
+        else conceal();
+      }, { passive: true });
 
-      // ── Delete action — direct, no confirm dialog ─────────────────
-      // Tap the delete button → delete immediately + undo toast
-      delBtn.addEventListener('pointerup', (e) => {
-        e.stopPropagation();
-        this._deleteCharWithUndo(name);
-      });
-
-      // ── Open char ─────────────────────────────────────────────────
-      card.addEventListener('click', (e) => {
+      delBtn.addEventListener('pointerup', e => { e.stopPropagation(); this._borrarAmenaza(name); });
+      card.addEventListener('click', () => {
         if (card._swiped || card._swipedR) { conceal(); return; }
         this.loadCharToApp(name);
       });
     });
 
-    // Close any open card (borrar u ordenar) when touching outside it
-    el._swipeCloseHandler = (e) => {
+    el._swipeCloseHandler = e => {
       el.querySelectorAll('.char-card').forEach(c => {
         if (!c._swiped && !c._swipedR) return;
         if (!c.closest('.char-card-wrap').contains(e.target) && c._conceal) c._conceal();
       });
     };
-    document.addEventListener('touchstart', el._swipeCloseHandler, {passive:true});
+    document.addEventListener('touchstart', el._swipeCloseHandler, { passive: true });
   },
 
-  /** Delete character — shows confirm dialog, same pattern as confirmClear. */
-  _deleteCharWithUndo(name) {
-    this._confirm(
-      '¿Eliminar personaje?',
-      `"${this._esc(name)}" será eliminado permanentemente.`,
-      'Eliminar',
-      () => {
-        STORAGE.deleteChar(name);
-        this.renderHome();
-        this.toast(`"${this._esc(name)}" eliminado`, 'ok');
-      }
-    );
-  },
-
-  /* ── CONFIRM HELPER ──
-   * @param {string}      title
-   * @param {string}      body
-   * @param {string}      confirmLabel
-   * @param {Function}    onConfirm
-   * @param {Element}     [container=document.body]  Pass an open <dialog> when
-   *                      calling from inside one so the overlay renders above it.
-   */
-  _confirm(title, body, confirmLabel, onConfirm, container = document.body, onCancel = null) {
-    // Delegado en UI.confirm (js/ui-dialogs.js): diálogo accesible con
-    // escudo anti ghost-click — el toque sobre "Confirmar" ya no puede
-    // traspasar y activar lo que esté detrás del diálogo.
-    this._confirmOpen = true;            // pausa el dispatcher [data-action]
-    UI.confirm(title, body, confirmLabel, onConfirm, container, onCancel);
-  },
-
-  unlockApp() {
-    // Preserve current identity selections before rebuilding selects
-    const prevDesc = document.getElementById('sel_desc')?.value || '';
-    const prevArq  = document.getElementById('sel_arq')?.value  || '';
-    const prevBg   = document.getElementById('sel_bg')?.value   || '';
-
-    this.fillSelect('sel_desc', this.DB.descriptors || {});
-    this.fillSelect('sel_arq',  this.DB.archetypes  || {});
-    this.fillSelect('sel_bg',   this.DB.backgrounds || {});
-
-    // Restore if the key still exists in the (possibly updated) DB
-    const sd = document.getElementById('sel_desc');
-    const sa = document.getElementById('sel_arq');
-    const sb = document.getElementById('sel_bg');
-    if (sd && prevDesc && this.DB.descriptors?.[prevDesc]) sd.value = prevDesc;
-    if (sa && prevArq  && this.DB.archetypes?.[prevArq])   sa.value = prevArq;
-    if (sb && prevBg   && this.DB.backgrounds?.[prevBg])   sb.value = prevBg;
-
-    this.updateDbSelect();
-    this.syncCombatOptions();
-    this.initTalentManager();
-    // reset=false → keeps skill checkboxes already selected
-    this.updateOptions(false);
-    this.renderInventory();
-  },
-
-  /** Sustituye el grano SVG (feTurbulence) por un PNG generado en canvas.
-      El filtro SVG se re-rasteriza en cada repintado — carísimo en móvil y
-      una de las causas del lag del swipe; un PNG es un raster cacheado. */
-
-  /** Golden noise sutil pre-rasterizado (PNG vía canvas): coste de pintado
-      trivial, sin filtros SVG. Grano dorado con media de opacidad ~4%;
-      el CSS lo desvanece a cero en el 40% superior de cada tarjeta. */
-  _initGrainTexture() {
-    try {
-      const c = document.createElement('canvas'); c.width = c.height = 160;
-      const ctx = c.getContext('2d');
-      const img = ctx.createImageData(160, 160);
-      const d = img.data;
-      for (let i = 0; i < d.length; i += 4) {
-        // Ruido púrpura claro, muy ligero: luminancia suave sobre lavanda,
-        // alpha media ~2% (presencia apenas perceptible, sin destellos)
-        const v = 0.8 + Math.random() * 0.4;
-        d[i]   = Math.min(255, 178 * v) | 0;
-        d[i+1] = Math.min(255, 158 * v) | 0;
-        d[i+2] = Math.min(255, 214 * v) | 0;
-        d[i+3] = (Math.random() * 0.045 * 255) | 0;
-      }
-      ctx.putImageData(img, 0, 0);
-      document.documentElement.style.setProperty('--gnoise', `url("${c.toDataURL('image/png')}")`);
-    } catch (e) { /* sin ruido: el CSS cae a none */ }
-  },
-
-  setupSwipe() {
-    const w     = document.getElementById('pages_wrapper');
-    const track = document.getElementById('pages_track');
-
-    // ── Tuning — matches native iOS/Android feel ──
-    const DEAD_PX     = 6;     // px before ANY axis locks
-    const V_BIAS      = 1.5;   // H/V ratio for axis lock (1.5 = diagonal amable)
-    const MIN_DIST    = 38;    // px minimum travel to count a slow drag
-    const FLICK_DIST  = 22;    // px minimum travel to count a fast flick
-    const FLICK_VEL   = 0.25;  // px/ms velocity threshold for flick
-    const DRAG_RATIO  = 0.30;  // fraction of page width for slow drag commit
-    const SNAP_MS     = 320;   // ms for snap animation
-    const SNAP_EASE   = 'cubic-bezier(.25,.46,.45,.94)'; // iOS ease-out
-    const SCROLL_SEL  = '.skill-area,.tms,.dbs,.tmct,.dbct,.mbd,[data-scroll]';
-
-    // ── Velocity window — track last N samples, use peak ──
-    const VEL_SAMPLES = 4;
-    let velSamples = [];
-    const peakVel = () => {
-      if (!velSamples.length) return 0;
-      return velSamples.reduce((a,b) => Math.abs(a)>Math.abs(b)?a:b, 0);
-    };
-    const addVelSample = (v) => {
-      velSamples.push(v);
-      if (velSamples.length > VEL_SAMPLES) velSamples.shift();
-    };
-
-    // ── State ──
-    let startX=0, startY=0, startT=0, lastX=0, lastT=0;
-    let dragging=false, locked=false, totalDist=0;
-
-    // ── Ghost-click suppression ──
-    // NOTE: inputs, textareas and selects are always excluded so the user
-    // can tap, select text, and position the cursor without interference.
-    let _suppress = false;
-    const GUARD_EVENTS = ['touchstart','pointerdown','mousedown','click'];
-    const _guard = e => {
-      if (!_suppress) return;
-      if (e.target.closest('input,textarea,select')) return; // never suppress text fields
-      e.stopPropagation(); e.preventDefault();
-    };
-    GUARD_EVENTS.forEach(t => w.addEventListener(t, _guard, {capture:true,passive:false}));
-    const suppressFor = (ms = TIMING.SWIPE_SUPPRESS) => {
-      _suppress = true; setTimeout(() => { _suppress = false; }, ms);
-    };
-
-    const pageW = () => w.clientWidth || window.innerWidth;
-
-    // ── Continuación desde snap en vuelo ──
-    // Si el dedo atrapa la pista a mitad de una animación, el arrastre debe
-    // continuar desde donde ESTÁ, no saltar a la posición de reposo.
-    // originOffset = desplazamiento congelado respecto al reposo de la página.
-    let originOffset = 0;
-    const currentTx = () => {
-      try { return new DOMMatrixReadOnly(getComputedStyle(track).transform).m41 || 0; }
-      catch (e) { return -this.currentPage * pageW(); }
-    };
-
-    // ── Rubber-band asintótico (curva iOS) ──
-    // Resistencia progresiva: cuanto más arrastras más cuesta, con límite
-    // suave en ~40% del ancho. Mucho más natural que un factor lineal.
-    const rubber = (x, w2) => {
-      const d = w2 * 0.4;
-      return (1 - 1 / ((Math.abs(x) * 0.55 / d) + 1)) * d * Math.sign(x);
-    };
-
-    // ── Live drag with rubber-band ──
-    const setLive = rawDx => {
-      const base   = -this.currentPage * pageW();
-      const dx     = originOffset + rawDx;
-      const atEdge = (this.currentPage === 0 && dx > 0) ||
-                     (this.currentPage === this.totalPages-1 && dx < 0);
-      track.style.transition = 'none';
-      track.style.transform  = `translateX(${base + (atEdge ? rubber(dx, pageW()) : dx)}px)`;
-    };
-
-
-    // ── Snap decision ──
-    const decide = (dx, vel) => {
-      const pW   = pageW();
-      const cur  = this.currentPage;
-      const max  = this.totalPages - 1;
-      const dist = Math.abs(dx);
-      const dir  = dx < 0 ? 1 : -1; // +1 = forward, -1 = back
-
-      const isFlick = Math.abs(vel) >= FLICK_VEL && dist >= FLICK_DIST;
-      const isDrag  = dist >= MIN_DIST && dist/pW >= DRAG_RATIO;
-
-      if (isFlick) {
-        if (vel < 0 && cur < max) return cur + 1;
-        if (vel > 0 && cur > 0)   return cur - 1;
-      }
-      if (isDrag) {
-        if (dir > 0 && cur < max) return cur + 1;
-        if (dir < 0 && cur > 0)   return cur - 1;
-      }
-      return cur;
-    };
-
-    // ── Snap to target ──
-    // Duración proporcional a lo que queda por recorrer y a la velocidad de
-    // soltado: un flick rápido asienta antes; un soltado lento, con más peso.
-    const snapTo = (target, vel = 0) => {
-      suppressFor();
-      setTimeout(() => track.classList.remove('is-dragging'), TIMING.SWIPE_SUPPRESS);
-      const remaining = Math.abs((-target * pageW()) - currentTx());
-      const ms = Math.round(Math.max(160, Math.min(320, remaining / Math.max(Math.abs(vel), 0.9))));
-      this.goToPage(target, ms);
-    };
-
-    // ══ TOUCH ══
-    w.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) return;
-      // Never hijack touches that begin on a text field
-      if (e.target.closest('input,textarea,select')) return;
-      const t = e.touches[0];
-      startX = lastX = t.clientX;
-      startY = t.clientY;
-      startT = lastT = Date.now();
-      dragging = false; locked = false;
-      totalDist = 0; velSamples = [];
-      // Congelar el snap SOLO si hay uno en vuelo: getComputedStyle fuerza
-      // un reflow y en touchstart eso congelaba el primer frame del gesto.
-      if (Date.now() < (this._snapUntil || 0)) {
-        const cur = getComputedStyle(track).transform;
-        track.style.transition = 'none';
-        track.style.transform  = cur;
-        originOffset = currentTx() - (-this.currentPage * pageW());
-      } else {
-        track.style.transition = 'none';
-        originOffset = 0;
-      }
-      // Only steal focus away from non-text elements (never blur inputs/textareas)
-      const focused = w.querySelector(':focus');
-      if (focused && !focused.matches('input,textarea,select')) focused.blur();
-    }, {passive:true});
-
-    w.addEventListener('touchmove', e => {
-      if (!e.cancelable || e.touches.length > 1) return;
-      const t  = e.touches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-
-      if (!locked) {
-        // Never intercept swipes that started on a text field
-        if (e.target.closest('input,textarea,select')) { locked = true; return; }
-        if (e.target.closest(SCROLL_SEL)) { locked = true; return; }
-        if (Math.abs(dx) < DEAD_PX && Math.abs(dy) < DEAD_PX) return;
-        if (Math.abs(dx) > Math.abs(dy) * V_BIAS) {
-          locked = true; dragging = true;
-          track.classList.add('is-dragging');
-        } else {
-          locked = true; return;
-        }
-      }
-      if (!dragging) return;
-      e.preventDefault();
-
-      const now = Date.now();
-      const dt  = Math.max(now - lastT, 1);
-      const iv  = (t.clientX - lastX) / dt;
-      addVelSample(iv);
-      totalDist += Math.abs(t.clientX - lastX);
-      lastX = t.clientX; lastT = now;
-      setLive(dx);
-    }, {passive:false});
-
-    w.addEventListener('touchend', e => {
-      track.classList.remove('is-dragging');
-      if (!dragging) {
-        dragging=false; locked=false; velSamples=[];
-        // Un tap que atrapó una animación en vuelo la dejó congelada entre
-        // páginas: re-asentar en la página actual.
-        if (Math.abs(originOffset) > 1) this.goToPage(this.currentPage);
-        return;
-      }
-      // La decisión usa el desplazamiento EFECTIVO (incluye el offset de una
-      // animación atrapada en vuelo), igual que lo que se ve en pantalla.
-      const dx = originOffset + (e.changedTouches[0].clientX - startX);
-      const vel = peakVel();
-      dragging = false; locked = false;
-      snapTo(decide(dx, vel), vel);
-    }, {passive:true});
-
-    w.addEventListener('touchcancel', () => {
-      track.classList.remove('is-dragging');
-      dragging=false; locked=false; velSamples=[];
-      this.goToPage(this.currentPage);
-    }, {passive:true});
-
-    // ══ MOUSE ══
-    let ms = null;
-    w.addEventListener('mousedown', e => {
-      if (e.target.closest('input,select,textarea,button,label')) return;
-      ms = {x:e.clientX, lx:e.clientX, lt:Date.now(), samples:[], drag:false, dist:0};
-      track.style.transition = 'none';
-      originOffset = (Date.now() < (this._snapUntil || 0)) ? currentTx() - (-this.currentPage * pageW()) : 0;
+  _borrarAmenaza(name) {
+    this._confirm('¿Eliminar amenaza?', `«${name}» se eliminará de este dispositivo.`, 'Eliminar', () => {
+      STORAGE.deleteChar(name);
+      this.renderHome();
+      this.toast(`«${name}» eliminada`, 'ok');
     });
-    w.addEventListener('mousemove', e => {
-      if (!ms) return;
-      if (!ms.drag && Math.abs(e.clientX-ms.x)>8) {
-        ms.drag=true; track.classList.add('is-dragging');
-      }
-      if (ms.drag) {
-        const dt=Math.max(Date.now()-ms.lt,1);
-        const iv=(e.clientX-ms.lx)/dt;
-        ms.samples.push(iv); if(ms.samples.length>VEL_SAMPLES) ms.samples.shift();
-        ms.dist += Math.abs(e.clientX-ms.lx);
-        ms.lx=e.clientX; ms.lt=Date.now();
-        setLive(e.clientX-ms.x);
-      }
-    });
-    const endMouse = cx => {
-      track.classList.remove('is-dragging');
-      if (!ms) return;
-      const {x,drag,samples,dist} = ms; ms=null;
-      if (!drag) return;
-      const vel = samples.reduce((a,b)=>Math.abs(a)>Math.abs(b)?a:b, 0);
-      snapTo(decide(originOffset + (cx-x), vel), vel);
-    };
-    w.addEventListener('mouseup',    e=>endMouse(e.clientX));
-    w.addEventListener('mouseleave', e=>endMouse(e.clientX));
-
-    // ══ RESIZE/ROTATION ══
-    const _reSnap = this._debounce(() => {
-      if (document.getElementById('app-screen')?.classList.contains('hidden')) return;
-      track.style.transition='none';
-      track.style.transform=`translateX(-${this.currentPage*pageW()}px)`;
-    }, 100);
-    window.addEventListener('resize',            _reSnap, {passive:true});
-    window.addEventListener('orientationchange', _reSnap, {passive:true});
   },
-  goToPage(n, snapMs) {
-    if (n !== this.currentPage && navigator.vibrate) navigator.vibrate(4);
 
-    // Save current page's scroll position if preserve mode is on
-    if (this.scrollPreserve) {
-      const curPage = document.getElementById('page_' + this.currentPage);
-      if (curPage) this._pageScrolls[this.currentPage] = curPage.scrollTop;
-    }
+  deleteCurrentChar() {
+    const name = this._nombreOriginal;
+    if (!name || !STORAGE.loadRoster()[name]) { this.toast('Esta amenaza aún no está guardada', 'err'); return; }
+    this._confirm('¿Eliminar amenaza?', `«${name}» se eliminará de este dispositivo.`, 'Eliminar', () => {
+      STORAGE.deleteChar(name);
+      this.renderHome();
+      this.showScreen('home');
+      this.toast(`«${name}» eliminada`, 'ok');
+    });
+  },
 
-    this.currentPage = n;
-    const w = document.getElementById('pages_wrapper');
-    const track = document.getElementById('pages_track');
-    const pageW = w ? w.clientWidth : window.innerWidth;
-    // Duración: fija (220ms) desde la navegación; proporcional a distancia y
-    // velocidad de soltado cuando viene de un swipe (snapTo la calcula).
-    track.style.transition = `transform ${snapMs || 220}ms cubic-bezier(.25,.46,.45,.94)`;
-    this._snapUntil = Date.now() + (snapMs || 220) + 60;
-    track.style.transform  = `translateX(-${n * pageW}px)`;
-    document.querySelectorAll('.nbtn').forEach((b,i) => b.classList.toggle('active', i===n));
-    const thread = document.getElementById('nav_thread');
-    if (thread) thread.style.transform = `translateX(${n * 100}%)`;
-    if (n === 4) this.buildDetailPage();
-    if (n === 2) this.buildAptitudesPage();
+  /** Nombre libre en el roster a partir de uno base: «Lobo», «Lobo 2»… */
+  _nombreLibre(base, roster) {
+    roster = roster || STORAGE.loadRoster();
+    if (!roster[base]) return base;
+    let n = 2;
+    while (roster[`${base} ${n}`]) n++;
+    return `${base} ${n}`;
+  },
 
-    const destPage = document.getElementById('page_' + n);
-    if (destPage) {
-      if (this.scrollPreserve && this._pageScrolls[n] !== null && this._pageScrolls[n] !== undefined) {
-        // Restore saved scroll position after the transition settles
-        const saved = this._pageScrolls[n];
-        requestAnimationFrame(() => { destPage.scrollTop = saved; });
-      } else {
-        destPage.scrollTop = 0;
-      }
+  duplicarAmenaza() {
+    const copia = structuredClone(this.cr);
+    copia.nombre = this._nombreLibre((this.cr.nombre || 'Amenaza') + ' (copia)');
+    this._abrirFicha(copia, '');
+    this._markUnsaved();
+    this.toast('Copia abierta: guárdala para conservarla', 'info');
+  },
+
+  /* ── Secciones: editar · confirmar · cancelar ─────────────────── */
+  _vista(sec, cual) { return document.getElementById(`${sec}_${cual}_view`); },
+  _enEdicion(sec) {
+    const v = this._vista(sec, 'edit');
+    return !!v && v.style.display !== 'none';
+  },
+  /** Enseña la vista de edición o la de resumen de una tarjeta. */
+  _verSeccion(sec, editar) {
+    const ev = this._vista(sec, 'edit'), sv = this._vista(sec, 'summary');
+    if (ev) ev.style.display = editar ? 'block' : 'none';
+    if (sv) sv.style.display = editar ? 'none' : 'block';
+    const card = document.getElementById(this.SECS[sec].card);
+    if (card) {
+      card.classList.toggle('editando', !!editar);
+      if (sec === 'identity') card.classList.toggle('identity-editing', !!editar);
+      const pen = card.querySelector(`.edit-pen[data-sec="${sec}"]`);
+      if (pen) pen.hidden = !!editar;
     }
   },
 
   editSection(sec) {
-    if (sec === 'personal') {
-      const ev = document.getElementById('personal_edit_view');
-      const sv = document.getElementById('personal_summary_view');
-      if (ev) { ev.style.display = 'block'; ev.classList.remove('section-reveal'); void ev.offsetWidth; ev.classList.add('section-reveal'); }
-      if (sv) sv.style.display = 'none';
-      // Restore alignment button active state
-      if (this.alignment) this._syncAlignmentUI();
-    } else {
-      const ev = document.getElementById(`${sec}_edit_view`);
-      const sv = document.getElementById(`${sec}_summary_view`);
-      if (ev) { ev.style.display = 'block'; ev.classList.remove('section-reveal'); void ev.offsetWidth; ev.classList.add('section-reveal'); }
-      if (sv) sv.style.display = 'none';
-      // Show panel header only while in edit mode for identity
-      if (sec === 'identity') ev?.closest('.panel')?.classList.add('identity-editing');
-      if (sec === 'skills') this._buildSkillsEditControls();
-      if (sec === 'equipment') { this.updateDbSelect(); this.renderInventory(); }
-      // Scroll al panel en page_3 para que sea visible al expandirse.
-      // Omitido durante resets en masa (_bulkEditing) para evitar que el RAF
-      // se ejecute después de goToPage(0) y desincronice el pages-track.
-      if ((sec === 'combat' || sec === 'equipment') && !this._bulkEditing) {
-        requestAnimationFrame(() => {
-          const panel = ev?.closest('.panel');
-          if (panel) panel.scrollIntoView({behavior:'smooth', block:'start'});
-        });
-      }
-    }
-  },
-
-  confirmPersonal() {
-    this._flashConfirm('personal');
-    this._markUnsaved();
-    const img = document.getElementById('char_img');
-    this._syncPortrait(img?.src);
-    const name = document.getElementById('char_name').value || 'Sin nombre';
-    const lvl = document.getElementById('char_lvl').value || '1';
-    const sno = document.getElementById('sum_name_ov'); if(sno) sno.textContent = name;
-    const slo = document.getElementById('sum_lvl_ov'); if(slo) slo.textContent = 'Nivel ' + lvl;
-    const sao = document.getElementById('sum_align_ov'); if(sao) sao.textContent = this.alignment || '';
-    const sbo = document.getElementById('sum_bio_ov'); if(sbo) sbo.textContent = document.getElementById('char_concept')?.value || '';
-    const ev = document.getElementById('personal_edit_view'); if(ev) ev.style.display = 'none';
-    const sv = document.getElementById('personal_summary_view'); if(sv) { sv.style.display = 'block'; }
-  },
-
-  /** Fires success animation on the confirm button before collapsing the section. */
-  _flashConfirm(sec) {
-    const ev = document.getElementById(`${sec}_edit_view`);
-    const btn = ev?.querySelector('.bcnf');
-    if (!btn) return;
-    btn.classList.add('success');
-    if (navigator.vibrate) navigator.vibrate([6, 40, 10]);
-    setTimeout(() => btn.classList.remove('success'), TIMING.CONFIRM_FLASH);
+    if (!this.SECS[sec] || this._enEdicion(sec)) return;
+    const foto = {};
+    this.SECS[sec].campos.forEach(c => { foto[c] = structuredClone(this.cr[c]); });
+    this._fotos[sec] = foto;
+    const pintar = this['_editar_' + sec];
+    if (typeof pintar === 'function') pintar.call(this);
+    this._verSeccion(sec, true);
+    const ev = this._vista(sec, 'edit');
+    if (ev) { ev.classList.remove('section-reveal'); void ev.offsetWidth; ev.classList.add('section-reveal'); }
+    const card = document.getElementById(this.SECS[sec].card);
+    if (card && card.tagName === 'DETAILS') card.open = true;
   },
 
   confirmSection(sec) {
+    if (!this.SECS[sec]) return;
     this._flashConfirm(sec);
-    this._markUnsaved();
-    // Update summary content then switch views
-    if (sec === 'identity') {
-      const desc = this.DB.descriptors?.[document.getElementById('sel_desc').value];
-      const arq = this.DB.archetypes?.[document.getElementById('sel_arq').value];
-      const bg = this.DB.backgrounds?.[document.getElementById('sel_bg').value];
-      document.getElementById('sum_desc_badge').textContent = desc?.name || '—';
-      document.getElementById('sum_arq_badge').textContent = arq?.name || '—';
-      document.getElementById('sum_bg_badge').textContent = bg?.name || '—';
-    }
-    if (sec === 'stats') this._buildStatsSummary();
-    if (sec === 'saves') this._buildSavesSummary();
-    if (sec === 'skills') this._buildSkillsSummary();
-    if (sec === 'guard') this._buildGuardSummary();
-    if (sec === 'combat') this._buildCombatSummary();
-    if (sec === 'equipment') this.renderInventory();
-
-    const ev = document.getElementById(`${sec}_edit_view`);
-    const sv = document.getElementById(`${sec}_summary_view`);
-    if (ev) ev.style.display = 'none';
-    if (sv) {
-      sv.style.display = 'block';
-      sv.classList.remove('sum-reveal'); void sv.offsetWidth; sv.classList.add('sum-reveal');
-    }
-    // Hide panel header when collapsing identity section back to summary
-    if (sec === 'identity') ev?.closest('.panel')?.classList.remove('identity-editing');
-
-    // combat/equipment viven en page_3. Al colapsar el edit_view el contenido
-    // encoge y el scrollTop queda apuntando a zona vacía (pantalla negra).
-    // Solución directa: resetear scroll a 0 siempre al confirmar.
-    if (sec === 'combat' || sec === 'equipment') {
-      const page = document.getElementById('page_3');
-      if (page) page.scrollTop = 0;
-    }
-  },
-
-  /** MOD final de un atributo (base + bonos de linaje) y su valor final. */
-  /** Mods de atributo del Linaje: los fijos de `mods` MÁS los que el
-      jugador eligió cuando el Descriptor deja elegir («+1 a dos Atributos
-      a elección», «+2 FUE o DES»…). Antes solo se leía `mods`, así que un
-      Humano o un Medio Elfo no recibían NINGÚN bono racial y los cuatro
-      Linajes con rama a elegir tenían una cableada en los datos.
-      Punto único: lo usan _statFinal, _buildStatsSummary y calc(). */
-  /** Tarjeta «Rasgos» de la pestaña Aptitudes. Vive aparte de
-      updateOptions() porque también hay que repintarla al resolver una
-      Elección, y eso no pasa por ahí.
-
-      Del Linaje se toman solo los rasgos FIJOS: sus líneas «Elección: A o
-      B» son un menú, no algo que el personaje tenga. De ellas se muestra
-      la opción escogida, marcada, y lo que quede por decidir. */
-  _renderTraits() {
-    const tl = document.getElementById('traits_list');
-    if (!tl) return;
-    const desc = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
-    const bg   = this.DB.backgrounds?.[document.getElementById('sel_bg')?.value];
-    tl.innerHTML = '';
-    [...this._grantFijos(desc), ...(bg?.grant || [])].forEach(g => {
-      const b = document.createElement('span');
-      b.className = 'tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); b.textContent = '✦ ' + this._sinPrefijoRasgo(g);
-      tl.appendChild(b);
-    });
-    const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
-    elegidas.forEach(({ valor, texto }) => {
-      const b = document.createElement('span');
-      b.className = 'tbadge tbadge-elegido';
-      b.textContent = '✦ ' + valor + (texto ? ': ' + texto : '');
-      tl.appendChild(b);
-    });
-    const mu = this._mutaciones ? this._mutaciones() : null;
-    if (mu && mu.libre > 0) {
-      const b = document.createElement('span');
-      b.className = 'tbadge tbadge-pendiente';
-      b.textContent = `Potencial sin gastar: ${mu.libre}`;
-      tl.appendChild(b);
-    }
-    // Pendientes = ranuras vacías, no líneas de `grant` sin resolver: una
-    // sola línea puede abrir varias («Elige DOS Mutaciones»).
-    const ranuras = document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').length;
-    const pendientes = Math.max(0, ranuras - elegidas.length);
-    if (pendientes > 0) {
-      const b = document.createElement('span');
-      b.className = 'tbadge tbadge-pendiente';
-      b.textContent = pendientes === 1
-        ? 'Elección sin resolver' : `${pendientes} elecciones sin resolver`;
-      tl.appendChild(b);
-    }
-  },
-
-  /** Una entrada de `grant` es una ELECCIÓN si abre un desplegable en la
-      ficha: «Elección: A o B» o «Elige DOS Cosas: A / B / C». El Editor de
-      Reglas las presenta en su propio campo; el resto son rasgos fijos.
-      El mismo criterio que usa js/origen.js al pintarlas. */
-  _esEleccion(g) {
-    return /^Elecci[óo]n\s*(?:de Experiencia)?\s*[:—–-]/i.test(g)
-        || /^Elige\s+\S+\s+[^:]+:/i.test(g);
-  },
-  _grantFijos(d)      { return (d?.grant || []).filter(g => !this._esEleccion(g)); },
-  /** Solo para pintar: «Rasgo — Implacable: …» → «Implacable: …». */
-  _sinPrefijoRasgo(g) { return String(g || '').replace(/^\s*Rasgo\s*[—–-]\s*/i, ''); },
-  /** Solo para pintar: los Inconvenientes llevan otro color de filete. */
-  _esInconveniente(g) { return /^\s*Inconveniente\b/i.test(String(g || '')); },
-  _grantElecciones(d) { return (d?.grant || []).filter(g =>  this._esEleccion(g)); },
-
-  _descMods(descKey) {
-    const d = this.DB.descriptors?.[descKey];
-    if (!d) return {};
-    const out = { ...(d.mods || {}) };
-    if (d.pick) {
-      const n = pickN(d.pick);
-      for (let i = 1; i <= n; i++) {
-        const a = document.getElementById('desc_pick_' + i)?.value;
-        if (a) out[a] = (out[a] || 0) + pickVal(d.pick, i - 1);
-      }
-    }
-    // Atributos que da la Experiencia elegida (Protocolo Coloso: +2 FUE).
-    Object.entries(this._eleccionMods(d)).forEach(([a, v]) => {
-      if (STATS.includes(a)) out[a] = (out[a] || 0) + v;
-    });
-    return out;
-  },
-
-  /** Suma de lo que dan las Experiencias elegidas del Linaje (eleccionMods),
-      atributos y VEL. */
-  _eleccionMods(d) {
-    const out = {};
-    if (!d?.eleccionMods) return out;
-    document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]').forEach(s => {
-      Object.entries(d.eleccionMods[s.value] || {}).forEach(([a, v]) => { out[a] = (out[a] || 0) + v; });
-    });
-    return out;
-  },
-
-  _statFinal(s) {
-    const descKey  = document.getElementById('sel_desc')?.value || '';
-    const descMods = this._descMods(descKey);
-    const base  = parseInt(this._el('base_'+s)?.value) || 8;
-    const final = base + (descMods[s] || 0);
-    return { final, mod: this.getMod(final) };
-  },
-
-  /** Tirada de chequeo de atributo desde la tarjeta de pilar. */
-  rollStat(s) {
-    const { mod } = this._statFinal(s);
-    this.rollCheck(s, mod);
-  },
-
-  _buildStatsSummary() {
-    const makeBox = s => {
-      const { final, mod } = this._statFinal(s);
-      const modStr = (mod >= 0 ? '+' : '') + mod;
-      const box = document.createElement('div');
-      box.className = 'sbox';
-      box.addEventListener('click', () => this.rollCheck(s, mod));
-      box.innerHTML = `<div class="lbl">${s}</div><div class="mod">${modStr}</div><div class="val">${final}</div>`;
-      return box;
-    };
-
-    const c = this._el('stats_summary_boxes');
-    if (c) {
-      c.innerHTML = '';
-      STATS.forEach(s => c.appendChild(makeBox(s)));
-    }
-
-    // Tarjetas de pilar (vista de edición): modificador y valor final en vivo
-    STATS.forEach(s => {
-      const { final, mod } = this._statFinal(s);
-      const mv = this._el('pmod_'+s);
-      const fv = this._el('pfinal_'+s);
-      if (mv) mv.textContent = (mod >= 0 ? '+' : '') + mod;
-      if (fv) fv.textContent = final;
-    });
-  },
-
-  _buildSavesSummary() {
-    const common   = document.querySelector('input[name="save_common"]:checked')?.value;
-    const uncommon = document.querySelector('input[name="save_uncommon"]:checked')?.value;
-    const prof     = parseInt(this._el('res_prof')?.textContent) || 2;
-
-    // Compute save totals once — shared across both container renders
-    const descKey  = this._el('sel_desc')?.value || '';
-    const descMods = this._descMods(descKey);
-    const saveData = STATS.map(s => {
-      const base   = parseInt(this._el('base_'+s)?.value) || 8;
-      const final  = base + (descMods[s] || 0);
-      const mod    = this.getMod(final);
-      const isProf = (s === common || s === uncommon);
-      const total  = mod + (isProf ? prof : 0);
-      return { s, total, isProf };
-    });
-
-    ['saves_display', 'saves_summary_text'].forEach(id => {
-      const c = this._el(id);
-      if (!c) return;
-      c.innerHTML = '';
-      saveData.forEach(({ s, total, isProf }) => {
-        const box = document.createElement('div');
-        box.className = 'svsbox' + (isProf ? ' prof' : '');
-        box.addEventListener('click', () => this.rollCheck('Salvación ' + s, total));
-        box.innerHTML = `<span class="svslbl">${s}</span>${total >= 0 ? '+' : ''}${total}`;
-        c.appendChild(box);
-      });
-    });
-  },
-
-  /** Modo LECTURA: botones de tirada con su Grado y atributo. No editable. */
-  _buildSkillsSummary() {
-    const c = this._el('final_skills_list');
-    if (!c) return;
-    c.innerHTML = '';
-    const counts = this._skillCounts(), grants = this._lineageGrants();
-    const present = this._presentSkills().sort((a,b)=>a.localeCompare(b,'es'));
-    if (!present.length) { c.innerHTML = '<span style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Sin habilidades.</span>'; return; }
-    present.forEach(sk => {
-      const grade = this._skillGrade(sk, counts, grants);
-      const attr  = this._skillAttrEffective(sk);
-      const spec  = SKILL_SPECIALIZED.has(sk);
-
-      const row = document.createElement('div');
-      row.className = 'skill-roll';
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'skill-roll-main';
-      btn.setAttribute('aria-label', `Tirar ${sk}: 2d10 + modificador de ${attr} + Grado ${grade}`);
-      btn.innerHTML = `<span class="sk-name">${this._esc(sk)}${spec ? ' <span class="sk-spec" title="Especializada">✦</span>' : ''}</span>`
-                    + `<span class="sk-meta">2d10 · ${attr}</span>`;
-      btn.addEventListener('click', () => this.rollSkill(sk));
-
-      // Cuatro engastes que reciben una gema de talla brillante por Grado
-      // (v57.8): azul de Ingenio si la habilidad va con un atributo mental
-      // (INT, SAB, CAR), naranja de Adrenalina si va con uno físico (FUE,
-      // DES, CON). Grado 0 = los cuatro vacíos, sin distinción. El nombre
-      // del Grado va en el title y en el aria-label.
-      const badge = document.createElement('span');
-      badge.className = 'sk-g-badge read sk-pips '
-        + (['FUE', 'DES', 'CON'].includes(attr) ? 'sk-fisica' : 'sk-mental');
-      badge.dataset.grade = grade;
-      badge.title = `Grado ${grade} · ${SKILL_GRADE_NAMES[grade] || ''}`;
-      badge.setAttribute('role', 'img');
-      badge.setAttribute('aria-label', badge.title);
-      if (grade >= 5) {
-        // Grado 5 (Maestría Absoluta): un orbe legendario en montura de
-        // filigrana ocupa el sitio de los cuatro, del color de la reserva
-        // como las gemas de los grados inferiores (v57.14).
-        badge.classList.add('sk-mitico');
-        const res = ['FUE', 'DES', 'CON'].includes(attr) ? 'adr' : 'ing';
-        badge.innerHTML = `<svg class="sk-mitico-halo" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg><svg class="sk-mitico-g" aria-hidden="true"><use href="#i-sk-mitico-${res}"/></svg>`;
-      } else {
-        badge.innerHTML = [1, 2, 3, 4].map(i => i <= grade
-          ? '<svg class="sk-slot on" aria-hidden="true"><use href="#i-sk-gema"/></svg>'
-          : '<svg class="sk-slot" aria-hidden="true"><use href="#i-sk-slot"/></svg>').join('');
-      }
-
-      row.append(btn, badge);
-      c.appendChild(row);
-    });
-  },
-
-  /** Modo EDICIÓN: caja bajo los selectores con, por habilidad, el stepper de
-      Grado (con suelo automático) y el selector de atributo. */
-  _buildSkillsEditControls() {
-    const box = document.getElementById('skills_grade_box');
-    if (!box) return;
-    const counts = this._skillCounts(), grants = this._lineageGrants();
-    const present = this._presentSkills().sort((a,b)=>a.localeCompare(b,'es'));
-    box.innerHTML = '';
-    if (!present.length) { box.style.display = 'none'; return; }
-    box.style.display = 'block';
-
-    const lbl = document.createElement('div');
-    lbl.className = 'skg-title';
-    lbl.textContent = 'Grado y Atributo';
-    box.appendChild(lbl);
-
-    present.forEach(sk => {
-      const min     = this._skillMinGrade(sk, counts, grants);
-      const grade   = this._skillGrade(sk, counts, grants);
-      const auto    = this._skillAttrAuto(sk);
-      const spec    = SKILL_SPECIALIZED.has(sk);
-      const lin     = grants[sk];
-
-      const row = document.createElement('div');
-      row.className = 'skg-row';
-
-      const head = document.createElement('div');
-      head.className = 'skg-head';
-      const src = [];
-      if (lin != null) src.push(`linaje G${lin}`);
-      if (counts[sk]) src.push(`${counts[sk]}× sel.`);
-      head.innerHTML = `<span class="skg-name">${this._esc(sk)}${spec ? ' <span class="sk-spec">✦</span>' : ''}</span>`
-                     + `<span class="skg-src">${src.join(' · ') || '—'} · mín G${min}</span>`;
-
-      const ctr = document.createElement('div');
-      ctr.className = 'skg-controls';
-
-      const gc = document.createElement('div');
-      gc.className = 'sk-grade';
-      const dn = document.createElement('button');
-      dn.type='button'; dn.className='sk-g-btn'; dn.textContent='−';
-      dn.disabled = grade <= min;
-      dn.setAttribute('aria-label', `Bajar Grado de ${sk}`);
-      dn.addEventListener('click', () => this.adjustSkillBonus(sk, -1));
-      const badge = document.createElement('span');
-      badge.className='sk-g-badge'; badge.textContent='G'+grade;
-      badge.title = SKILL_GRADE_NAMES[grade] || '';
-      const up = document.createElement('button');
-      up.type='button'; up.className='sk-g-btn'; up.textContent='+';
-      up.disabled = grade >= 5;
-      up.setAttribute('aria-label', `Subir Grado de ${sk}`);
-      up.addEventListener('click', () => this.adjustSkillBonus(sk, 1));
-      gc.append(dn, badge, up);
-
-      const sel = document.createElement('select');
-      sel.className = 'skg-attr';
-      sel.setAttribute('aria-label', `Atributo de ${sk}`);
-      const autoOpt = document.createElement('option');
-      autoOpt.value=''; autoOpt.textContent=`Auto · ${auto}`;
-      sel.appendChild(autoOpt);
-      STATS.forEach(a => { const o=document.createElement('option'); o.value=a; o.textContent=a; sel.appendChild(o); });
-      const pick = this._skillAttrPick?.[sk];
-      sel.value = (pick && STATS.includes(pick)) ? pick : '';
-      sel.addEventListener('change', () => this.setSkillAttr(sk, sel.value));
-
-      ctr.append(gc, sel);
-      row.append(head, ctr);
-      box.appendChild(row);
-    });
-  },
-
-  /** Modo lectura de Equipo de Combate — reconstruido desde cero.
-      Regenera la vista COMPLETA desde el estado _combat que calc() acaba de
-      escribir. Cero lecturas del DOM de otras vistas ⇒ cero posibilidad de
-      quedar desincronizado por el orden de carga o renderizado. */
-  _buildCombatSummary() {
-    const view = this._el('combat_summary_view');
-    if (!view) return;
-    const c = this._combat;
-    const typeLbl = {none:'Sin restricción', light:'Ligera', medium:'Media', heavy:'Pesada'}[c.armorType] || c.armorType;
-    const card = (n, role, extraCls) => {
-      const w = c.w[n-1] || { name:'Desarmado', atk:'+0', dmg:'1d4', alert:'' };
-      return `
-      <div class="atk-card${extraCls}">
-        <div class="atk-hdr">
-          <span class="atk-nm" id="sum_wep${n}_name">${this._esc(w.name)}</span>
-          <span class="atk-role-badge">${role}</span>
-        </div>
-        ${w.alert ? `<div class="calert" style="display:block">${this._esc(w.alert)}</div>` : ''}
-        <div class="atk-btns">
-          <button class="abtn abtn-a" onclick="app.rollWeaponAtk(${n})" aria-label="Tirar ataque arma ${role.toLowerCase()}">
-            <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-sword"/></svg></span>
-            <span class="abtn-text"><span class="asub">Atacar</span><span class="aval" id="sum_atk${n}_bonus">${this._esc(w.atk)}</span></span>
-          </button>
-          <div class="atk-btn-sep"></div>
-          <button class="abtn abtn-d" onclick="app.rollWeaponDmg(${n})" aria-label="Tirar daño arma ${role.toLowerCase()}">
-            <span class="abtn-icon" aria-hidden="true"><svg class="ico ico-solo"><use href="#i-d20"/></svg></span>
-            <span class="abtn-text"><span class="asub">Daño</span><span class="aval" id="sum_atk${n}_dmg">${this._esc(w.dmg)}</span></span>
-          </button>
-        </div>
-      </div>`;
-    };
-    // Modo consulta v8.3: la tarjeta ya no reporta CA. Reporta la Armadura
-    // (tipo + valor de RD) y lo que el escudo aporta a la Guardia, que vive
-    // en su propia tarjeta (pestaña Stats).
-    // Dos líneas a propósito: en una sola no cabía y se partía por donde caía.
-    const shieldLine = c.shieldGuard
-      ? `+${c.shieldGuard} Guardia\n+${c.shieldBlock} Bloqueo`
-      : (c.shieldBlock ? `+${c.shieldBlock} Bloqueo` : '—');
-    view.innerHTML = `
-      <div class="g3 g3-combate" style="margin-bottom:6px">
-        <div class="fbox"><div class="flbl g">Armadura</div><div class="fval" style="color:var(--goldb);font-size:1.1rem"><span id="sum_rd">${this._esc(String(c.rd))}</span></div></div>
-        <div class="fbox"><div class="flbl">Tipo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_armor_name">${this._esc(c.armorName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted)" id="sum_armor_type">${this._esc(typeLbl)}</span></div></div>
-        <div class="fbox"><div class="flbl">Escudo</div><div class="fval" style="font-size:var(--fs-lg);flex-direction:column;gap:1px"><span id="sum_shield">${this._esc(c.shieldName)}</span><span style="font-size:var(--fs-2xs);color:var(--muted);white-space:pre-line;text-align:center;line-height:1.25" id="sum_shield_bonus">${this._esc(shieldLine)}</span></div></div>
-      </div>
-      ${c.rdCapped ? `<div class="calert" style="display:block">Armadura limitada por el techo del sistema (5 + PB = ${c.rdCap})</div>` : ''}
-      ${c.armorPenalty && !c.armorPenaltyIgnored ? `<div class="armor-pen">
-        <span>${this._esc(this._textoPenalizacionArmadura(c.armorType))}</span>
-        <button type="button" class="armor-pen-ign" onclick="app.ignorarPenalizacionArmadura(true)" aria-label="Ignorar el aviso: tengo competencia por un Talento">Ignorar</button>
-      </div>` : ''}
-      ${card(1, 'Principal', '')}
-      ${card(2, 'Secundaria', ' secondary')}
-      <button class="bedit" onclick="app.editSection('combat')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
-  },
-
-  _textoPenalizacionArmadura(tipo) {
-    const t = { medium: 'Media', heavy: 'Pesada' }[tipo] || '';
-    return `Sin competencia con armadura ${t}: tus Axiomas se tiran con Desventaja (ataque y Concentración) y cuestan el doble de Reserva.`;
-  },
-
-  /** «Ignorar»: el jugador declara que un Talento le da la competencia.
-      Vive en una casilla de la ficha, así que se guarda con el personaje. */
-  ignorarPenalizacionArmadura(v) {
-    const chk = document.getElementById('armor_prof_ignore');
-    if (chk) chk.checked = !!v;
-    this._markUnsaved();
-    this.calc();
-  },
-
-  /** Modo lectura de Guardia. Igual que el de combate: se regenera entero
-      desde el estado _combat que calc() acaba de escribir, nunca leyendo el
-      DOM de la vista de edición. */
-  _buildGuardSummary() {
-    const view = this._el('guard_summary_view');
-    if (!view) return;
-    const c = this._combat;
-    const ATTR_LBL = { DES:'Destreza', SAB:'Sabiduría', CON:'Constitución' };
-    const attrLbl = ATTR_LBL[c.guardAttr] || c.guardAttr;
-    const unaware = this._el('guard_unaware_val')?.textContent || '—';
-    view.innerHTML = `
-      <div class="def-grid def-grid--guardia">
-        <div class="def-cell def-cell--guardia"><span class="def-lbl">Guardia</span><span class="def-val" id="sum_guardia">${this._esc(String(c.guardia))}</span></div>
-        <div class="def-cell"><span class="def-lbl">Atributo</span><span class="def-val def-val--txt" id="sum_guard_attr">${this._esc(attrLbl)}</span></div>
-        <div class="def-cell"><span class="def-lbl">Desprevenido</span><span class="def-val" id="sum_guard_unaware">${this._esc(unaware)}</span></div>
-      </div>
-      <button class="bedit" onclick="app.editSection('guard')"><svg class="ico" aria-hidden="true"><use href="#i-quill"/></svg>Editar</button>`;
-  },
-
-  _getInventoryItem(uid) {
-    return this.inventory.find(i => String(i.uid) === String(uid));
-  },
-
-  /** uid monotónico para items de inventario. Date.now() a secas colisiona
-      cuando se añaden varios items en el mismo milisegundo (el generador
-      toques rápidos) y un uid duplicado hace que _getInventoryItem y los
-      <select> de combate resuelvan al item EQUIVOCADO. */
-  _uidSeq: 0,
-  _nextUid() {
-    this._uidSeq = Math.max(this._uidSeq + 1, Date.now());
-    return String(this._uidSeq);
-  },
-
-  /** Single source of truth for portrait sync — keeps both img elements in step. */
-  _syncPortrait(src) {
-    const s = src || DEFAULT_PORTRAIT;
-    const a = document.getElementById('char_img');
-    const b = document.getElementById('char_img_summary');
-    if (a) a.src = s;
-    if (b) b.setAttribute('src', s);
-  },
-
-  /** Shorthand for document.getElementById — used throughout for brevity. */
-  _el(id) { return document.getElementById(id); },
-
-  /** Set textContent of element by id, safely no-ops if element is missing. */
-
-  fillSelect(id, data) {
-    const s = document.getElementById(id);
-    if (!s) return;
-    s.innerHTML = '<option value="" disabled selected>— Seleccionar —</option>';
-    // Las Vocaciones (regla opcional del Manual v1) van en su propio grupo.
-    let grupo = null;
-    for (const k in data) {
-      const o = document.createElement('option');
-      o.value = k; o.textContent = String(data[k].name || k);
-      if (data[k].vocacion) {
-        if (!grupo) { grupo = document.createElement('optgroup'); grupo.label = 'Vocaciones (regla opcional)'; }
-        grupo.appendChild(o);
-      } else s.appendChild(o);
-    }
-    if (grupo) s.appendChild(grupo);
-  },
-
-  getMod(val) {
-    // Tabla de modificadores de atributo S&S — NO es floor((val-10)/2)
-    // 3→-3 · 4-5→-2 · 6-8→-1 · 9-11→0 · 12-14→+1 · 15-16→+2 · 17-18→+3 · 19-20→+4
-    // 21-22→+5, 23-24→+6 y así sucesivamente: solo con la Trascendencia o
-    // los Hitos de Legado.
-    if (val <= 3)  return -3;
-    if (val <= 5)  return -2;
-    if (val <= 8)  return -1;
-    if (val <= 11) return  0;
-    if (val <= 14) return +1;
-    if (val <= 16) return +2;
-    if (val <= 18) return +3;
-    return val <= 20 ? +4 : 5 + Math.floor((val - 21) / 2);
-  },
-
-  // Tabla de XP necesario para subir al siguiente nivel (acumulativo)
-  // XP_TABLE is defined as a top-level constant
-
-  updateXpHint() {
-    const lvl  = parseInt(document.getElementById('char_lvl')?.value) || 1;
-    const xp   = parseInt(document.getElementById('char_xp')?.value)  || 0;
-    const lbl  = document.getElementById('xp_next_lbl');
-    const bar  = document.getElementById('xp_bar_fill');
-    const barW = document.getElementById('xp_bar_wrap');
-    if (lvl >= 10) {
-      if (lbl) { lbl.textContent = '(máx nivel)'; lbl.style.color = 'var(--gold)'; lbl.style.fontWeight = '700'; }
-      if (barW) barW.style.display = 'none';
-      return;
-    }
-    const need = XP_TABLE[lvl] || 0;
-    const prev = lvl > 1 ? (XP_TABLE[lvl-1] || 0) : 0;
-    const left = need - xp;
-    const pct  = need > prev ? Math.min(100, Math.max(0, ((xp - prev) / (need - prev)) * 100)) : 100;
-    if (lbl) {
-      if (left <= 0) {
-        lbl.textContent = '¡Sube de nivel!';
-        lbl.style.color = 'var(--sage)';
-        lbl.style.fontWeight = '700';
-      } else {
-        lbl.textContent = `(faltan ${left.toLocaleString('es')})`;
-        lbl.style.color = left < need * 0.2 ? 'var(--gold)' : 'var(--muted)';
-        lbl.style.fontWeight = '';
-      }
-    }
-    if (bar)  bar.style.width = pct + '%';
-    if (barW) barW.style.display = lvl < 10 ? '' : 'none';
-  },
-
-  buildAlignmentPicker() {
-    const c = document.getElementById('align_sel');
-    if (!c || c.dataset.built) return; // idempotente — construir una sola vez
-    c.dataset.built = '1';
-    ALIGNMENTS.forEach(a => {
-      const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'aopt'; btn.textContent = a;
-      btn.dataset.ali = a;
-      // preventDefault en mousedown evita que el botón robe el foco
-      // y que el outline dorado de :focus-visible aparezca en el campo anterior
-      btn.addEventListener('mousedown', e => e.preventDefault());
-      btn.addEventListener('click', () => {
-        this.alignment = a;
-        this._syncAlignmentUI();
-      });
-      c.appendChild(btn);
-    });
-  },
-
-  /** Sincroniza los botones .aopt con this.alignment (fuente única de verdad). */
-  _syncAlignmentUI() {
-    document.querySelectorAll('.aopt').forEach(b =>
-      b.classList.toggle('active', b.dataset.ali === this.alignment)
-    );
-    // Update feedback label
-    const fb    = document.getElementById('align_feedback');
-    const fbTxt = document.getElementById('align_feedback_txt');
-    if (fb && fbTxt) {
-      if (this.alignment) {
-        fbTxt.textContent = this.alignment;
-        fb.style.opacity  = '1';
-      } else {
-        fb.style.opacity  = '0';
-      }
-    }
-  },
-
-  /** Rebuilds dependent selects (filo, skills, traits) after identity changes. */
-  /** Ficha corta del Linaje bajo el selector de Identidad.
-      Antes se volcaba `bonus` + TODO `grant` unido por comas: un muro de
-      texto en cursiva de doce líneas donde no se distinguía nada. Aquí se
-      queda solo lo que hace falta para ELEGIR linaje:
-        · la frase de sabor,
-        · los bonos de atributo,
-        · la Afinidad, porque decide tu Fuente,
-        · el Inconveniente, si unas reglas propias lo traen (el Manual v1
-          ya no da ninguno).
-      Los demás Rasgos viven en la pestaña Detalle, y la Elección de
-      Experiencia tiene su propio desplegable justo debajo (origen.js), así
-      que repetirla aquí era decir dos veces lo mismo. */
-  _pintarDescInfo(desc) {
-    const box = document.getElementById('desc_info');
-    if (!box) return;
-    box.textContent = '';
-    if (!desc) return;
-    const linea = (txt, cls) => {
-      if (!txt) return;
-      const d = document.createElement('div');
-      d.className = 'di-linea' + (cls ? ' ' + cls : '');
-      d.textContent = txt;
-      box.appendChild(d);
-    };
-    const grants = desc.grant || [];
-    linea(desc.txt, 'di-flavor');
-    linea(desc.bonus, 'di-bonus');
-    linea(grants.find(g => /^Rasgo\s*[—–-]\s*Afinidad/i.test(g)), 'di-afin');
-    linea(grants.find(g => /^Inconveniente/i.test(g)), 'di-contra');
-  },
-
-  updateOptions(reset=false) {
-    if (!this.DB.archetypes) return;
-    const descKey = document.getElementById('sel_desc').value;
-    const arqKey = document.getElementById('sel_arq').value;
-    const bgKey = document.getElementById('sel_bg').value;
-    const desc = this.DB.descriptors?.[descKey];
-    const arq = this.DB.archetypes?.[arqKey];
-    const bg = this.DB.backgrounds?.[bgKey];
-
-    // La Afinidad del Linaje habilita su Fuente. Se vuelve a sincronizar desde
-    // origen.js en cuanto repinta las elecciones: la del Mutante depende de
-    // una de ellas y aquí todavía están los desplegables del Linaje anterior.
-    this._sincronizarFuenteAfinidad();
-
-    // Info boxes
-    this._pintarDescInfo(desc);
-    document.getElementById('arq_info').textContent = arq ? `PV base: ${arq.pv}+CON · Adr: FUE/DES+Niv+${arq.adr_bonus||0} · Ing: INT/SAB/CAR+Niv+${arq.ing_bonus||0} · Skills: ${arq.skills_count||2}` : '';
-    document.getElementById('bg_info').textContent = bg ? `Habilidades: ${bg.skills?.join(', ')||'—'}${bg.defecto?' · '+bg.defecto:''}` : '';
-
-    // Pericia select
-    const filoSel = document.getElementById('sel_filo');
-    const curFilo = filoSel.value;
-    filoSel.innerHTML = '<option value="">— Sin filo —</option>';
-    if (arq?.edges) {
-      arq.edges.forEach(e => {
-        const o = document.createElement('option');
-        o.value = e; o.textContent = e;
-        filoSel.appendChild(o);
-      });
-      if (arq.edges.includes(curFilo)) filoSel.value = curFilo;
-    }
-
-    // Skills
-    // Antes de reconstruir, leer y guardar la selección actual en _skillsSel
-    // para que no se pierda cuando updateOptions reconstruye el DOM.
-    if (reset) {
-      this._skillsSel = { arq: new Set(), bg: new Set() };
-    } else {
-      // Preservar el estado actual del DOM si existe, o usar _skillsSel guardado
-      const curArq = Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value);
-      const curBg  = Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e=>e.value);
-      if (curArq.length || curBg.length) {
-        this._skillsSel = { arq: new Set(curArq), bg: new Set(curBg) };
-      } else if (!this._skillsSel) {
-        this._skillsSel = { arq: new Set(), bg: new Set() };
-      }
-    }
-
-    const buildSkills = (containerId, skills, name, limit) => {
-      const div = document.getElementById(containerId);
-      if (!div) return;
-      const saved = name === 'chk_arq' ? this._skillsSel.arq : this._skillsSel.bg;
-      div.innerHTML = '';
-      (skills || []).forEach(s => {
-        const lbl = document.createElement('label');
-        lbl.className = 'skill-opt';
-        const chk = document.createElement('input');
-        chk.type = 'checkbox';
-        chk.name = name;
-        chk.value = s;
-        chk.addEventListener('change', () => {
-          app.checkLimit(name, limit);
-          // Mantener _skillsSel sincronizado con el DOM
-          const set = name === 'chk_arq' ? this._skillsSel.arq : this._skillsSel.bg;
-          if (chk.checked) set.add(s); else set.delete(s);
-          app.calc();
-          app._buildSkillsEditControls();
-          app._buildSkillsSummary();
-        });
-        if (saved.has(s)) chk.checked = true;
-        lbl.appendChild(chk);
-        lbl.append(' ' + s);
-        div.appendChild(lbl);
-      });
-    };
-    const arqLimit = arq?.skills_count || 2;
-    const limitEl = document.getElementById('limit_arq'); if(limitEl) limitEl.textContent = arqLimit;
-    buildSkills('skills_arq', arq?.skills, 'chk_arq', arqLimit);
-    buildSkills('skills_bg', bg?.skills, 'chk_bg', 2);
-    // Reflejar grados/atributos (incluye grants de linaje, que dependen del Descriptor)
-    this._buildSkillsEditControls();
-    this._buildSkillsSummary();
-
-    // Traits
-    this._renderTraits();
-
-    this.calc();
-  },
-
-  checkLimit(name, limit) {
-    const checked = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`));
-    if (checked.length > limit) {
-      const removed = checked[checked.length-1];
-      removed.checked = false;
-      // Parpadeo visual en la label del checkbox removido
-      const lbl = removed.closest('label');
-      if (lbl) {
-        lbl.style.transition = 'background .1s';
-        lbl.style.background = 'rgba(176,48,64,.18)';
-        setTimeout(() => { lbl.style.background = ''; }, TIMING.SKILL_FLASH);
-      }
-      this.toast(`Máximo ${limit} habilidades`,'err');
-    }
-  },
-
-  /** Recalculates all derived stats and updates the DOM. Called on any input change. */
-  calc() {
-    // Local alias for readability within this dense function (mirrors this._el)
-    const $ = id => document.getElementById(id);
-    // Read base stat values
-    const raw = {};
-    STATS.forEach(s => raw[s] = parseInt($('base_'+s)?.value)||8);
-
-    // Descriptor mods
-    const descKey = $('sel_desc').value;
-    const desc = this.DB.descriptors?.[descKey];
-    const final = {...raw};
-    Object.entries(this._descMods(descKey)).forEach(([k,v]) => final[k]=(final[k]||0)+v);
-
-    const mods = {};
-    STATS.forEach(s => mods[s] = this.getMod(final[s]));
-
-    // Cache final stats for helpers (calcInventory, _calcWeapon) — P1 bug fix
-    this._finalStats = {...final};
-    this._finalMods  = {...mods};
-
-    // Archetype
-    const arqKey = $('sel_arq').value;
-    const arq = this.DB.archetypes?.[arqKey];
-    const lvl = parseInt($('char_lvl')?.value)||1;
-    this.updateXpHint();
-    const prof = (PROF_THRESHOLDS.find(([min]) => lvl >= min) ?? [1,2])[1];
-
-    // Resources — fórmulas según tabla de Arquetipos (Manual v1.8 Cap.3)
-    // PV Nivel 1: base_arquetipo + Puntuación CON
-    // PV Nivel 2+: + (índice de Letalidad + MOD_CON) por cada nivel.
-    //
-    // El manual fija «PV por nivel posterior = 2 + MOD CON, igual para los
-    // tres Arquetipos» y remite al índice de Letalidad para moverlo. Ese
-    // índice ES el sumando fijo, así que Letalidad N da +N por nivel y la
-    // 2 es el estándar del manual. Antes se restaba uno (`lethality - 1`),
-    // de modo que la Letalidad 1 no sumaba nada pese a que su etiqueta
-    // prometía «+1 PV/nivel»: la ficha quedaba por debajo del manual en
-    // 2 PV por nivel — 18 PV al Nivel 10.
-    const conScoreForPV = final.CON || 8;
-    const pvNivel1 = (arq?.pv||6) + conScoreForPV;
-    const lethBonus = this.lethality || LETHALITY_DEFAULT;
-    const maxPv = pvNivel1 + ((mods.CON + lethBonus) * Math.max(0, lvl - 1));
-    // Adrenalina: max(Puntuación FUE, Puntuación DES) + Nivel + bonus
-    const adrScore = Math.max(final.FUE||8, final.DES||8);
-    const maxAdr = adrScore + lvl + (arq?.adr_bonus||0);
-    // Ingenio: max(Puntuación INT, Puntuación SAB, Puntuación CAR) + Nivel + bonus
-    const ingScore = Math.max(final.INT||8, final.SAB||8, final.CAR||8);
-    let maxIng = ingScore + lvl + (arq?.ing_bonus||0);
-
-    // Reglas v5.5.2: ningún talento de la Vía de Axiomas modifica el Ingenio
-    // máximo (Despertar Sobrenatural ya no otorga +6). La Afinidad Mística
-    // Innata de ciertos Descriptores suma +3 si se elige (no automática).
-    const hasTalent = (id) => !!document.querySelector(`input[name="chk_talents_hidden"][data-id="${id}"]`);
-
-    $('max_pv').textContent = maxPv;
-    $('max_adr').textContent = Math.max(0, maxAdr);
-    $('max_ing').textContent = Math.max(0, maxIng);
-    $('res_prof').textContent = '+'+prof;
-
-    // Pericia — la pinta pericias.js, que envuelve este calc() y es el único
-    // dueño de `res_filo_val`. Aquí se escribía además el nombre pelado de
-    // `sel_filo` («Mental»), que el módulo sobrescribía acto seguido por las
-    // insignias con grado («Mental 2 · Flexible 1»): dos dueños para una
-    // celda, y el valor equivocado si el módulo no llega a cargar.
-
-    // Iniciativa — MOD de DES para todos. El Sagaz ya no la tira con el
-    // atributo de su Fuente: «Conducción Arcana» desapareció en el Manual
-    // v1.8 (ver _calcGuardia), que le deja el Misticismo Innato como único
-    // rasgo pasivo.
-    const ini = mods.DES;
-    $('res_ini').textContent = (ini>=0?'+':'')+ini;
-
-    // Velocidad
-    // Más lo que dé la Experiencia del Linaje (Hostigador, Velocidad y Sentidos).
-    const spd = (arq?.speed || 30) + (this._eleccionMods(desc).VEL || 0);
-    $('res_vel').textContent = spd+' pies';
-
-    // Flesh/Carne = puntuación de CON FINAL (el número, no el modificador),
-    // con todos los bonos del Linaje: también los elegidos (Ambicioso con
-    // +2 a CON) y los de su Experiencia. Antes solo sumaba los fijos.
-    const carneVal = final.CON || 8;
-    $('res_carne').textContent = carneVal;
-
-    // ── ARMADURA (RD) y GUARDIA — las dos defensas (Manual v8.3, Cap.5 §3a) ──
-    // Ejes separados: la Armadura NO toca la Guardia. La armadura equipada
-    // aporta Reducción de Daño; el escudo aporta Guardia (defensa activa).
-    const armorUID = $('sel_armor').value;
-    const shieldUID = $('sel_shield').value;
-    let armorItem = this._getInventoryItem(armorUID);
-    let armorData = armorItem ? (armorItem.dbData || this.DB.armors?.[armorItem.dbKey]) : this.DB.armors?.[armorUID];
-    const shieldItem = this._getInventoryItem(shieldUID);
-    let shieldData = shieldItem ? (shieldItem.dbData || this.DB.shields?.[shieldItem.dbKey]) : this.DB.shields?.[shieldUID];
-    // Items sin datos de juego: conservar el NOMBRE elegido por el jugador
-    // (con valores neutros) en lugar de mostrar "Sin Armadura/Escudo"
-    // mientras el select dice otra cosa.
-    if (!armorData && armorItem)   armorData  = { name: armorItem.name + ' (sin datos)',  rd: 0, type: 'none' };
-    if (!shieldData && shieldItem) shieldData = { name: shieldItem.name + ' (sin datos)', guardia: 0, block: 0 };
-
-    const armorType = armorData?.type || 'none';
-    const armorRD   = this._armorRdOf(armorData);
-    const extraRD   = parseInt($('sel_armor_extra')?.value) || 0;
-    // Techo de Armadura del sistema: 5 + PB (Cap.5 §3a). Todo lo que exceda
-    // se pierde; se muestra al jugador para que sepa por qué no sube.
-    const rdCap     = 5 + prof;
-    const rdRaw     = armorRD + extraRD;
-    const rdFinal   = Math.min(rdRaw, rdCap);
-
-    const armorEl = $('res_armor');
-    if (armorEl) armorEl.textContent = rdFinal;
-    const armorBaseEl = $('armor_base_val');
-    if (armorBaseEl) armorBaseEl.textContent = armorRD;
-    // Estado para el resumen de combate (lo renderiza _buildCombatSummary)
-    this._combat.rd         = rdFinal;
-    this._combat.rdCapped   = rdRaw > rdCap;
-    this._combat.rdCap      = rdCap;
-    this._combat.armorName  = armorData?.name  || 'Sin Armadura';
-    this._combat.armorType  = armorType;
-    this._combat.shieldName = shieldData?.name || 'Sin Escudo';
-    this._combat.shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
-    this._combat.shieldBlock = shieldData ? (shieldData.block || 0) : 0;
-
-    // Penalización al usar Axiomas (Manual 1.0, Ap. A): armadura Media o
-    // Pesada SIN competencia → Desventaja en las tiradas de Axioma y el doble
-    // de su Coste. No aplica a las armaduras avanzadas («Magitec»: su
-    // ingeniería lo compensa, y la Coraza resonante tiene la propiedad
-    // Fuente) ni a quien no usa Axiomas. La competencia que da un Talento
-    // no se puede leer de la ficha: por eso existe «Ignorar».
-    {
-      const pesa = armorType === 'medium' || armorType === 'heavy';
-      const avanzada = /^\s*Magitec\b/i.test(armorData?.notes || '');
-      const compet = (arq?.armorProf || []).includes(armorType);
-      const usaAxiomas = typeof this._fuentesIniciadas === 'function'
-        ? this._fuentesIniciadas().size > 0 : true;
-      this._combat.armorPenalty = pesa && !avanzada && !compet && usaAxiomas;
-      this._combat.armorPenaltyIgnored = !!$('armor_prof_ignore')?.checked;
-      const pen = $('armor_pen_alert');
-      if (pen) {
-        const activa = this._combat.armorPenalty && !this._combat.armorPenaltyIgnored;
-        pen.hidden = !activa;
-        pen.textContent = activa ? this._textoPenalizacionArmadura(armorType) : '';
-      }
-      const ign = $('armor_prof_ignore_row');
-      if (ign) ign.hidden = !this._combat.armorPenalty;
-    }
-    // El nombre de la armadura ya no se repite en Estado (basta el puntaje);
-    // sigue en Equipo de Combate vía _combat.armorName y #armor_desc.
-
-    // Armor desc
-    const adesc = $('armor_desc');
-    if (adesc) adesc.textContent = armorData
-      ? `${armorData.name} · Armadura ${armorRD} · ${({none:'Sin restricción',light:'Ligera',medium:'Media',heavy:'Pesada'}[armorType]||armorType)}`
-      : '';
-    const sdesc = $('shield_desc');
-    if (sdesc) sdesc.textContent = shieldData
-      ? `${shieldData.name} · +${shieldData.guardia||0} Guardia · +${shieldData.block||0} al Bloqueo`
-      : '';
-
-    // Guardia = 10 + PB + escudo + atributo defensivo (+ bonos declarados)
-    this._calcGuardia(mods, prof, arqKey, shieldData);
-
-    // Weapons
-    this._calcWeapon('w1', $('sel_weapon').value, $('w1_attr').value, $('w1_dmg_attr')?.value||'FUE', mods, prof, arq);
-    this._calcWeapon('w2', $('sel_weapon_sec').value, $('w2_attr').value, $('w2_dmg_attr')?.value||'FUE', mods, prof, arq);
-
-    // Attack panel (page 0) sync
-    ['1','2'].forEach(n => {
-      const atkEl = document.getElementById(`atk_bonus_${n}`);
-      const dmgEl = document.getElementById(`atk_dmg_${n}`);
-      const st    = this._combat.w[n-1];
-      if (atkEl && st) atkEl.textContent = st.atk;
-      if (dmgEl && st) dmgEl.textContent = st.dmg;
-    });
-
-    // Encumbrance
-    const inv = this.calcInventory();
-    $('res_carga').textContent = `${inv.current}/${inv.max}`;
-    const pct = inv.max > 0 ? Math.min(100, (inv.current/inv.max)*100) : 0;
-    const bar = $('carga_bar');
-    if (bar) {
-      bar.style.width = pct+'%';
-      bar.style.background = inv.current > inv.max
-        ? 'linear-gradient(90deg,var(--blood),var(--ember))'
-        : inv.current >= inv.max * 0.8
-          ? 'linear-gradient(90deg,var(--gold),var(--ember))'
-          : 'linear-gradient(90deg,var(--gold),var(--goldb))';
-    }
-    // De 1 a 4 Slots de más: Sobrecargado (−10 pies, Desventaja en Proeza
-    // Física y Sigilo). Con 5 o más de más: velocidad 0 hasta soltar algo.
-    const warn = $('carga_warn');
-    const exceso = inv.current - inv.max;
-    warn.style.display = exceso > 0 ? 'block' : 'none';
-    if (exceso > 0) warn.textContent = exceso >= 5 ? 'Inmóvil: suelta algo' : 'Sobrecargado';
-    if ($('load_summary_display'))
-      $('load_summary_display').textContent = `${inv.current}/${inv.max}`;
-
-    // Saves display (live)
-    this._buildSavesSummary();
-    // Stats live display
-    this._buildStatsSummary();
-    // Barras de fracción de Estado
-    this._updateResBars();
-    // Resumen de Equipo de Combate (nombres y texto de ataque/daño).
-    // Sin esto, applyCharData lo construía vía confirmSection ANTES del
-    // recálculo final y quedaba rancio: el chip de tirada (sum_atk*) sí se
-    // actualizaba arriba, pero sum_wep*_name decía "Desarmado" y
-    // sum_wep*_stats mostraba los valores de desarmado tras cargar.
-    this._buildCombatSummary();
-    // Mismo motivo para Guardia: al cargar un personaje, confirmSection('guard')
-    // corre antes de que se apliquen sel_guard_attr/escudo, y el resumen
-    // mostraba la Guardia por defecto (DES) en vez de la ya calculada.
-    this._buildGuardSummary();
-  },
-
-  /** Valor de Armadura (RD) de una pieza. Usa el campo `rd` del Apéndice A
-      v8.3; para armaduras personalizadas guardadas bajo el esquema viejo
-      (solo `ca`, 10-18) aplica la equivalencia de la tabla oficial para que
-      no pasen a valer 0 al abrir la ficha.
-      La tabla de origen no es biyectiva —CA 12 era cuero (RD 1) y también
-      cota de anillas (RD 2); CA 13, escamas (2) y malla (3)—, así que en los
-      empates se toma el valor de la pieza más común de ese escalón. */
-  _armorRdOf(armorData) {
-    if (!armorData) return 0;
-    if (armorData.rd != null) return parseInt(armorData.rd) || 0;
-    const legacyCa = parseInt(armorData.ca);
-    if (!isFinite(legacyCa) || legacyCa <= 10) return 0;
-    const LEGACY_CA_TO_RD = { 11:1, 12:1, 13:3, 14:3, 15:4, 16:4, 17:5, 18:5 };
-    return LEGACY_CA_TO_RD[Math.min(18, legacyCa)] ?? 5;
-  },
-
-  /** Guardia = 10 + PB + bono de escudo + MOD del atributo defensivo
-      (DES/SAB/CON, elegido al crear el personaje) + bonos declarados.
-      La armadura NO interviene: solo aporta Reducción de Daño.
-
-      El Sagaz ya NO sustituye ese atributo por el de su Fuente: el Manual
-      v1.8 retiró «Conducción Arcana» —le deja un único rasgo pasivo, el
-      Misticismo Innato— y su propio ejemplo lo confirma (Sable, Sagaz con
-      INT 17/+3 y DES 12/+1, Guardia 13 = 10 + PB 2 + DES 1; con el rasgo
-      habrían sido 15). Sustituir el atributo defensivo sigue siendo
-      posible, pero solo por Talento (p. ej. Armadura de Magia), que entra
-      por los bonos declarados. */
-  _calcGuardia(mods, prof, arqKey, shieldData) {
-    const $ = id => document.getElementById(id);
-    const defKey = $('sel_guard_attr')?.value || 'DES';
-    let defMod = mods[defKey] || 0;
-    let altNote = '';
-    const shieldGuard = shieldData ? (shieldData.guardia || 0) : 0;
-    const magicBonus  = parseInt($('sel_guard_magic')?.value) || 0;
-    const otherBonus  = parseInt($('sel_guard_other')?.value) || 0;
-    /* Segundo atributo a la Guardia. Hay Talentos que suman el MOD de otro
-       atributo —Defensa sin Forma es el caso claro: 10 + PB + MOD DES + MOD
-       SAB, la única fórmula del sistema con dos—. Antes no había dónde
-       declararlo y había que falsearlo con «Otro Bono», que es un número
-       fijo y no seguía al atributo cuando subía. */
-    const attr2Key = $('sel_guard_attr2')?.value || '';
-    const attr2Mod = attr2Key ? (mods[attr2Key] || 0) : 0;
-    const total = 10 + prof + shieldGuard + defMod + magicBonus + otherBonus + attr2Mod;
-
-    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-    set('guard_base_val', 10);
-    set('guard_prof_val', (prof >= 0 ? '+' : '') + prof);
-    set('guard_shield_val', (shieldGuard >= 0 ? '+' : '') + shieldGuard);
-    set('guard_attr_val', (defMod >= 0 ? '+' : '') + defMod);
-    const op2 = $('guard_attr2_op'), part2 = $('guard_attr2_part');
-    if (op2)   op2.style.display   = attr2Key ? '' : 'none';
-    if (part2) part2.style.display = attr2Key ? '' : 'none';
-    if (attr2Key) {
-      set('guard_attr2_lbl', attr2Key);
-      set('guard_attr2_val', (attr2Mod >= 0 ? '+' : '') + attr2Mod);
-    }
-    set('guard_total_live', total);
-    const noteEl = $('guard_alt_note');
-    if (noteEl) noteEl.textContent = altNote ? `Fórmula alternativa activa: ${altNote}` : '';
-    // Desprevenido (§3d): sin PB ni escudo, conserva el atributo defensivo.
-    set('guard_unaware_val', 10 + defMod + attr2Mod + magicBonus + otherBonus);
-    // Tarjeta Defensas de Perfil (v57.9): las mismas cifras que la Guardia.
-    set('def_guardia', total);
-    set('def_desprev', 10 + defMod + attr2Mod + magicBonus + otherBonus);
-
-    this._combat.guardia = total;
-    this._combat.guardAttr = altNote ? altNote : defKey;
-    return total;
-  },
-
-  _calcWeapon(wid, uid, attr, dmgAttr, mods, prof, arq) {
-    const n = wid === 'w1' ? 1 : 2;
-    const weapon = this._getInventoryItem(uid);
-    let wData = weapon ? (weapon.dbData || this.DB.weapons?.[weapon.dbKey]) : this.DB.weapons?.[uid];
-    const nameEl  = document.getElementById(`atk_name_${n}`);
-    const atkEl   = document.getElementById(`${wid}_atk_val`);
-    const dmgEl   = document.getElementById(`${wid}_dmg_val`);
-    const alertEl = document.getElementById(`${wid}_alert`);
-
-    // Arma del inventario SIN datos de juego (personalizada antigua, o item
-    // que perdió dbData en un guardado anterior): respetar la selección del
-    // jugador — mostrar SU nombre y atacar como arma genérica 1d4 — en vez
-    // de degradar silenciosamente a "Desarmado" mientras el select muestra
-    // otra cosa. El aviso guía a definir el daño con el editor ✎.
-    let missingData = false;
-    if (!wData && weapon && weapon.type === 'weapons') {
-      missingData = true;
-      wData = { name: weapon.name, dmg: weapon.dmg || '1d4', atk_bonus: 0 };
-    }
-
-    if (!wData || uid === 'unarmed') {
-      if (nameEl) nameEl.textContent = 'Desarmado';
-      if (atkEl)  atkEl.textContent = (mods[attr]>=0?'+':'')+mods[attr];
-      if (dmgEl)  dmgEl.textContent = '1d4';
-      if (alertEl) alertEl.textContent = '';
-      // Mantener la caché de tiradas coherente con lo mostrado: antes este
-      // return dejaba el bono del arma ANTERIOR en _weaponAtkData y el botón
-      // de ataque tiraba con valores rancios que no coincidían con el texto.
-      if (!this._weaponAtkData) this._weaponAtkData = [0, 0];
-      this._weaponAtkData[n-1] = mods[attr] || 0;
-      this._weaponDmgData[n-1] = {formula:'1d4', name:'Desarmado', dmgMod:0, dmgModStr:''};
-      this._combat.w[n-1] = { name: 'Desarmado',
-        atk: (mods[attr]>=0?'+':'')+(mods[attr]||0), dmg: '1d4', alert: '' };
-      return;
-    }
-
-    if (nameEl) nameEl.textContent = wData.name;
-    const attrMod = mods[attr] || 0;
-    const atkBonus = attrMod + prof + (wData.atk_bonus||0);
-    // Store for rollWeaponAtk — avoids DOM race conditions
-    if (!this._weaponAtkData) this._weaponAtkData = [0, 0];
-    this._weaponAtkData[n-1] = atkBonus;
-    if (atkEl) atkEl.textContent = (atkBonus>=0?'+':'')+atkBonus;
-
-    // Damage mod from chosen attribute (NONE = 0)
-    const dmgMod = (dmgAttr && dmgAttr !== 'NONE') ? (mods[dmgAttr] || 0) : 0;
-    const dmgModStr = dmgMod > 0 ? `+${dmgMod}` : dmgMod < 0 ? `${dmgMod}` : '';
-    const baseDmg = wData.dmg || '1d4';
-    if (dmgEl) dmgEl.textContent = baseDmg + dmgModStr;
-
-    // Store for rollDice: formula includes modifier as static bonus
-    const formulaWithMod = dmgMod !== 0
-      ? `${baseDmg}${dmgMod >= 0 ? '+' : ''}${dmgMod}`
-      : baseDmg;
-    this._weaponDmgData[n-1] = {formula: formulaWithMod, name: wData.name, dmgMod, dmgModStr};
-
-    // Requirements — use final attribute scores (includes descriptor bonuses)
-    const fueFinal = this._finalStats?.FUE ?? (parseInt(document.getElementById('base_FUE')?.value)||8);
-    const desFinal = this._finalStats?.DES ?? (parseInt(document.getElementById('base_DES')?.value)||8);
-    let alert = '';
-    // El Audaz ignora los requisitos de FUE/DES de todo el equipo (Manual Cap.III).
-    const ignoreReq = !!arq?.ignoresGearReq;
-    if (missingData) alert = 'Sin datos de arma — daño 1d4 genérico. Edítala en Equipo para definirlos';
-    if (!ignoreReq && wData.req_FUE > 0 && fueFinal < wData.req_FUE) alert += `${alert?' · ':''}Requiere FUE ${wData.req_FUE}`;
-    if (!ignoreReq && wData.req_DES > 0 && desFinal < wData.req_DES) alert += `${alert?' · ':''}Requiere DES ${wData.req_DES}`;
-    if (alertEl) alertEl.textContent = alert;
-    this._combat.w[n-1] = { name: wData.name,
-      atk: (atkBonus>=0?'+':'')+atkBonus, dmg: baseDmg + dmgModStr, alert };
-  },
-
-  onWeaponChange(wid) {
-    const uid = document.getElementById(wid==='w1'?'sel_weapon':'sel_weapon_sec').value;
-    const attrSel    = document.getElementById(wid==='w1'?'w1_attr':'w2_attr');
-    const dmgAttrSel = document.getElementById(wid==='w1'?'w1_dmg_attr':'w2_dmg_attr');
-    const wItem = this._getInventoryItem(uid);
-    const wData = wItem ? (wItem.dbData||this.DB.weapons?.[wItem.dbKey]) : this.DB.weapons?.[uid];
-    // Auto-select atk attribute for ranged
-    if (wData?.type === 'ranged') {
-      if (attrSel?.value === 'FUE') attrSel.value = 'DES';
-      if (dmgAttrSel?.value === 'FUE') dmgAttrSel.value = 'DES';
-    }
-    this.calc();
-  },
-
-  updateDbSelect() {
-    const cat = document.getElementById('inv_db_category')?.value;
-    const sel = document.getElementById('inv_db_item');
-    if (!sel) return;
-    sel.innerHTML = '';
-    const data = this.DB[cat] || {};
-    Object.entries(data).forEach(([k,v]) => {
-      const o = document.createElement('option');
-      o.value = k; o.textContent = v.name;
-      sel.appendChild(o);
-    });
-  },
-
-  addFromDB() {
-    const cat = document.getElementById('inv_db_category').value;
-    const key = document.getElementById('inv_db_item').value;
-    if (!key) return;
-    const data = this.DB[cat]?.[key];
-    if (!data) return;
-    const item = {
-      uid: this._nextUid(),
-      name: data.name,
-      // `??` y no `||`: un chip (o el desarmado) ocupa 0 ranuras de verdad.
-      slots: data.slots ?? 1,
-      type: cat === 'chips' ? 'misc' : (cat === 'shields' ? 'shields' : cat),
-      dbKey: key,
-      // Copia, no referencia: con `dbData: data` el objeto del inventario
-      // apuntaba a la entrada viva de la base de reglas, y cualquier cambio
-      // sobre él se lo hacía a esa entrada para todos los personajes.
-      dbData: { ...data }
-    };
-    this.inventory.push(item);
-    this.renderInventory();
-    this.syncCombatOptions();
-    this.calc();
-    this._markUnsaved();
-    this.toast(`${data.name} añadido`,'ok');
-  },
-
-  addCustomItem() {
-    this._openCustomItemForm(null);
-  },
-
-  _openCustomItemForm(idx) {
-    this._editingCustomItem = idx;
-    const existing = idx !== null ? this.inventory[idx] : null;
-    // Datos de juego actuales del item (dbData propio, o su entrada de la DB)
-    const gd = existing
-      ? (existing.dbData || this.DB[existing.type]?.[existing.dbKey] || {})
-      : {};
-    const overlay = document.createElement('div');
-    overlay.id = 'custom_item_overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px';
-    overlay.innerHTML = `
-      <div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--rl);width:100%;max-width:340px;padding:16px">
-        <div style="font-family:var(--fd);color:var(--gold);font-size:var(--fs-xl);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">${idx!==null?'Editar':'Nuevo'} Objeto</div>
-        <div style="margin-bottom:8px"><span class="fl">Nombre</span><input type="text" id="ci_name" value="${this._esc(existing?.name||'')}" placeholder="Nombre del objeto"></div>
-        <div class="g2" style="gap:6px;margin-bottom:8px">
-          <div><span class="fl">Slots</span><input type="number" id="ci_slots" value="${existing?.slots ?? 1}" min="0" min="0" max="20"></div>
-          <div><span class="fl">Tipo</span><select id="ci_type" onchange="app._syncCustomItemFields()">
-            <option value="misc"${(!existing||existing.type==='misc')?' selected':''}>Miscelánea</option>
-            <option value="weapons"${existing?.type==='weapons'?' selected':''}>Arma</option>
-            <option value="armors"${existing?.type==='armors'?' selected':''}>Armadura</option>
-            <option value="shields"${existing?.type==='shields'?' selected':''}>Escudo</option>
-          </select></div>
-        </div>
-        <div id="ci_weapon_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
-          <div><span class="fl">Daño (ej. 1d8)</span><input type="text" id="ci_dmg" value="${this._esc(gd.dmg||'1d4')}" placeholder="1d4" inputmode="text" autocapitalize="off"></div>
-          <div><span class="fl">Bono ataque</span><input type="number" id="ci_atkb" value="${gd.atk_bonus||0}" min="-5" max="10"></div>
-        </div>
-        <div id="ci_armor_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
-          <div><span class="fl">Armadura (RD)</span><input type="number" id="ci_rd" value="${gd.rd ?? this._armorRdOf(gd) ?? 1}" min="0" max="5"></div>
-          <div><span class="fl">Categoría</span><select id="ci_armor_type">
-            <option value="light"${(!gd.type||gd.type==='light')?' selected':''}>Ligera</option>
-            <option value="medium"${gd.type==='medium'?' selected':''}>Media</option>
-            <option value="heavy"${gd.type==='heavy'?' selected':''}>Pesada</option>
-          </select></div>
-        </div>
-        <div id="ci_shield_fields" class="g2" style="gap:6px;margin-bottom:8px;display:none">
-          <div><span class="fl">Bono de Guardia</span><input type="number" id="ci_shield_guardia" value="${gd.guardia ?? gd.bonus ?? 1}" min="0" max="3"></div>
-          <div><span class="fl">Bono al Bloqueo</span><input type="number" id="ci_shield_block" value="${gd.block ?? 2}" min="0" max="5"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-g" style="flex:1" onclick="document.getElementById('custom_item_overlay').remove()">Cancelar</button>
-          <button class="btn btn-p" style="flex:1" data-action="saveCustomItem"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
-        </div>
-      </div>`;
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
-    document.body.appendChild(overlay);
-    this._syncCustomItemFields();
-  },
-
-  /** Muestra los campos de datos de juego que correspondan al tipo elegido. */
-  _syncCustomItemFields() {
-    const type = document.getElementById('ci_type')?.value;
-    const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
-    show('ci_weapon_fields', type === 'weapons');
-    show('ci_armor_fields',  type === 'armors');
-    show('ci_shield_fields', type === 'shields');
-  },
-
-  saveCustomItem() {
-    const name = document.getElementById('ci_name')?.value?.trim();
-    if (!name) { this.toast('Se requiere nombre','err'); return; }
-    const slots = parseInt(document.getElementById('ci_slots')?.value)||1;
-    const type = document.getElementById('ci_type')?.value||'misc';
-    const isEdit = this._editingCustomItem !== null;
-    const existing = isEdit ? this.inventory[this._editingCustomItem] : null;
-    // PRESERVAR la identidad y los datos del item al editar. La versión
-    // anterior reconstruía {uid,name,slots,type} y DESTRUÍA dbKey/dbData:
-    // un arma equipada que se editaba (aunque solo fuera el nombre) perdía
-    // sus datos de juego y pasaba a calcularse como "Desarmado" pese a
-    // seguir seleccionada como Principal/Secundaria.
-    const item = { ...(existing || {}), uid: existing?.uid ?? this._nextUid(), name, slots, type };
-    // Datos de juego según tipo, partiendo de los previos (conserva extras
-    // de la DB como req_FUE) y aplicando lo editado en el formulario.
-    const prevData = existing ? (existing.dbData || this.DB[existing.type]?.[existing.dbKey] || {}) : {};
-    if (type === 'weapons') {
-      const dmgRaw = document.getElementById('ci_dmg')?.value?.trim() || '1d4';
-      const dmg = /^\d{1,2}d\d{1,3}([+-]\d{1,3})?$/i.test(dmgRaw) ? dmgRaw.toLowerCase() : '1d4';
-      if (dmg !== dmgRaw.toLowerCase()) this.toast('Daño inválido — usa el formato 1d8 o 2d6+1. Aplicado 1d4','err');
-      item.dbData = { ...prevData, name, dmg, atk_bonus: parseInt(document.getElementById('ci_atkb')?.value)||0 };
-    } else if (type === 'armors') {
-      const rd = parseInt(document.getElementById('ci_rd')?.value);
-      // `ca` se elimina: en v8.3 la armadura no toca la Guardia. Dejarlo
-      // haría que _armorRdOf lo reinterpretara si algún día falta `rd`.
-      const { ca, ...restPrev } = prevData;
-      item.dbData = { ...restPrev, name,
-        rd:   Number.isNaN(rd) ? 1 : Math.max(0, Math.min(5, rd)),
-        type: document.getElementById('ci_armor_type')?.value||'light' };
-    } else if (type === 'shields') {
-      const sg = parseInt(document.getElementById('ci_shield_guardia')?.value);
-      const sbk = parseInt(document.getElementById('ci_shield_block')?.value);
-      const { bonus, ...restPrev } = prevData;
-      item.dbData = { ...restPrev, name,
-        guardia: Number.isNaN(sg) ? 1 : Math.max(0, Math.min(3, sg)),
-        block:   Number.isNaN(sbk) ? 2 : Math.max(0, Math.min(5, sbk)) };
-    } else if (item.dbData) {
-      // Cambió a miscelánea: el dbData previo ya no aplica al cálculo.
-      item.dbData = { ...prevData, name };
-    }
-    // El dbKey deja de ser fiable si los datos ya no son los de la DB.
-    if (item.dbData && existing?.dbKey && existing.dbData !== item.dbData) delete item.dbKey;
-    if (isEdit) this.inventory[this._editingCustomItem] = item;
-    else this.inventory.push(item);
-    document.getElementById('custom_item_overlay')?.remove();
-    this._editingCustomItem = null;
-    this.renderInventory();
-    this.syncCombatOptions();
-    this.calc();
-    this.toast(isEdit?'Actualizado':'Añadido','ok');
-  },
-
-  removeInvItem(idx) { this.inventory.splice(idx,1); this.renderInventory(); this.syncCombatOptions(); this.calc(); this._markUnsaved(); },
-  moveInvItem(idx, dir) {
-    const newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= this.inventory.length) return;
-    [this.inventory[idx], this.inventory[newIdx]] = [this.inventory[newIdx], this.inventory[idx]];
-    this.renderInventory(); this.syncCombatOptions(); this.calc();
-  },
-  updateInvItem(idx, field, value) {
-    if (field==='slots') value = parseInt(value)||0;
-    const item = this.inventory[idx];
-    if (!item) return;
-    item[field] = value;
-    // Renombrar en la lista solo cambiaba `name`, y la tarjeta de Equipo de
-    // Combate lee el nombre de los DATOS DE JUEGO (`dbData`), así que el
-    // ataque seguía llamándose como antes. Se mantienen en paso.
-    if (field === 'name') {
-      // dbData puede ser la MISMA referencia que la entrada de la base
-      // (addFromDB la asigna tal cual): se clona antes de tocarla, o
-      // renombrar un arma se lo cambiaría a ese arma para todos.
-      if (item.dbData) item.dbData = { ...item.dbData, name: value };
-      // Con datos propios ya no es la entrada de la base — mismo criterio
-      // que saveCustomItem, para que nada la vuelva a resolver desde ahí.
-      if (item.dbKey) delete item.dbKey;
-    }
-    if (field==='name'||field==='type') this.syncCombatOptions();
-    this.calc();
-  },
-  syncGold(src) {
-    if (src === 'edit') this.gold = parseInt(document.getElementById('gold_coins_edit').value) || 0;
-    // Update only the gold display elements — no need to re-render the full inventory list
-    const gd = document.getElementById('gold_coins_display'); if (gd) gd.textContent = this.gold;
-    const ge = document.getElementById('gold_coins_edit');
-    if (ge && document.activeElement !== ge) ge.value = this.gold;
-    this.calc();
-  },
-
-  /** Re-renders the inventory list and summary from this.inventory. */
-  renderInventory() {
-    const list = document.getElementById('inv_backpack_list');
-    if (list) {
-      list.innerHTML = '';
-      this.inventory.forEach((item, i) => {
-        const row = document.createElement('div'); row.className = 'iitem';
-        // Type select
-        const typeOpts = [{v:'misc',l:'ITEM'},{v:'weapons',l:'ARMA'},{v:'armors',l:'ARMR'},{v:'shields',l:'ESC'}];
-        const selEl = document.createElement('select'); selEl.className = 'ityp';
-        selEl.setAttribute('aria-label', 'Tipo de ítem');
-        typeOpts.forEach(o => { const op = document.createElement('option'); op.value = o.v; op.textContent = o.l; if(item.type===o.v) op.selected = true; selEl.appendChild(op); });
-        selEl.addEventListener('change', () => this.updateInvItem(i, 'type', selEl.value));
-        // Name input (safe: value, not innerHTML)
-        const nameIn = document.createElement('input'); nameIn.type = 'text'; nameIn.className = 'inm';
-        nameIn.value = String(item.name || ''); nameIn.setAttribute('aria-label', 'Nombre del ítem');
-        nameIn.addEventListener('change', () => this.updateInvItem(i, 'name', nameIn.value));
-        // Slots input
-        const slotsIn = document.createElement('input'); slotsIn.type = 'number'; slotsIn.className = 'isl';
-        slotsIn.value = item.slots || 0; slotsIn.min = 0; slotsIn.max = 20;
-        slotsIn.setAttribute('aria-label', 'Espacios del ítem');
-        slotsIn.addEventListener('change', () => this.updateInvItem(i, 'slots', slotsIn.value));
-        // Action buttons
-        const isFirst = i === 0, isLast = i === this.inventory.length - 1;
-        const mkBtn = (txt, label, fn, style = '') => {
-          const b = document.createElement('button');
-          b.className = 'idel';
-          if (String(txt).startsWith('<')) b.innerHTML = txt; else b.textContent = txt;
-          b.setAttribute('aria-label', label);
-          if (style) b.style.cssText = style;
-          b.addEventListener('click', fn);
-          return b;
-        };
-        const upBtn   = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-up"/></svg>','Mover arriba', () => this.moveInvItem(i,-1), `color:var(--muted);font-size:var(--fs-md);opacity:${isFirst?'0.2':'1'}`);
-        const dnBtn   = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-down"/></svg>','Mover abajo',  () => this.moveInvItem(i, 1), `color:var(--muted);font-size:var(--fs-md);opacity:${isLast?'0.2':'1'}`);
-        const editBtn = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-quill"/></svg>','Editar ítem',  () => this._openCustomItemForm(i), 'color:var(--dim);font-size:var(--fs-lg)');
-        const delBtn  = mkBtn('<svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg>','Eliminar ítem', () => this.removeInvItem(i));
-        if (isFirst) upBtn.disabled = true;
-        if (isLast)  dnBtn.disabled = true;
-        row.appendChild(selEl); row.appendChild(nameIn); row.appendChild(slotsIn);
-        row.appendChild(upBtn); row.appendChild(dnBtn); row.appendChild(editBtn); row.appendChild(delBtn);
-        list.appendChild(row);
-      });
-    }
-    const sumList = document.getElementById('inv_summary_list');
-    if (sumList) {
-      sumList.innerHTML = this.inventory.length ? '' : '<div style="font-style:italic;color:var(--muted);text-align:center;padding:8px">Mochila vacía.</div>';
-      this.inventory.forEach(item => {
-        const row = document.createElement('div'); row.className = 'irow irow-ico';
-        const nm = document.createElement('span'); nm.className = 'irow-nm';
-        const ic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        ic.setAttribute('class', 'ico irow-i'); ic.setAttribute('aria-hidden', 'true');
-        const us = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-        us.setAttribute('href', '#i-' + this._iconoObjeto(item));
-        ic.appendChild(us);
-        const tx = document.createElement('span'); tx.textContent = String(item.name||'');
-        nm.append(ic, tx);
-        const sl = document.createElement('span'); sl.className = 'num-fig'; sl.style.cssText = 'font-size:var(--fs-xl);color:var(--gold)'; sl.textContent = String(item.slots||0);
-        row.appendChild(nm); row.appendChild(sl);
-        sumList.appendChild(row);
-      });
-    }
-    const gd = document.getElementById('gold_coins_display'); if (gd) gd.textContent = this.gold;
-    const ge = document.getElementById('gold_coins_edit'); if (ge && document.activeElement!==ge) ge.value = this.gold;
-    // Note: calc() is intentionally NOT called here.
-    // renderInventory is always followed by calc() in its callers (addFromDB,
-    // saveCustomItem, syncCombatOptions chain, applyCharData, etc.).
-    // Calling it here would double-calculate on every inventory operation.
-  },
-
-  /** Icono de un arma según su tipo (v57.7). Se decide por las etiquetas
-      de sus notas y, si no las hay (un arma escrita a mano), por su nombre.
-      El orden importa: un arma de fuego también es «A distancia», y una
-      daga arrojadiza también es perforante; gana la primera regla. */
-  _iconoArma(item) {
-    const txt = `${item?.dbData?.notes || item?.notes || ''} ${item?.name || ''}`
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    if (/magitec/.test(txt) && /a distancia/.test(txt)) return 'arma-fuego';
-    if (/a distancia|arco|ballesta/.test(txt)) return 'arma-ballesta';
-    if (/arrojadiza|shuriken|jabalina/.test(txt)) return 'arma-shuriken';
-    if (/contundente|maza|martillo|mazo|garrote|mangual|baston/.test(txt)) return 'arma-maza';
-    if (/perforante|lanza|estoque|ropera/.test(txt)) return 'arma-lanza';
-    if (/energia/.test(txt)) return 'arma-energia';
-    return 'sword';                                   // cortantes y demás
-  },
-
-  /** Icono del sprite para un objeto del inventario. Solo decide el
-      dibujo: por tipo de dato y, si es un objeto suelto, por su nombre. */
-  _iconoObjeto(item) {
-    const t = item?.type || '';
-    if (t === 'weapons') return this._iconoArma(item);
-    if (t === 'armors')  return 'eq-armadura';
-    if (t === 'shields') return 'eq-escudo';
-    const n = String(item?.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const R = [
-      [/racion|comida|viveres|provision/, 'eq-comida'],
-      [/antorcha|linterna|lampara|vela|aceite|farol/, 'eq-luz'],
-      [/cantimplora|odre|agua|pocion|frasco|vial/, 'eq-agua'],
-      [/cuerda|escalada|garfio|gancho|cadena/, 'eq-cuerda'],
-      [/kit|herramient|ganzua|botiquin|instrumento|balanza|util|chip/, 'eq-kit'],
-      [/morral|mochila|saco|alforja/, 'eq-mochila'],
-      [/ropa|capa|tunica|vestido|abrigo|botas/, 'eq-ropa'],
-      [/foco|cristal|orbe|varita|baston|amuleto|simbolo|reliquia|gema/, 'eq-foco'],
-      [/brujula|astrolabio|mapa|catalejo/, 'eq-brujula'],
-      [/escudo/, 'eq-escudo'],
-      [/armadura|coraza|cota|peto/, 'eq-armadura'],
-    ];
-    if (/espada|daga|hacha|lanza|arco|ballesta|maza|martillo|pistola|rifle|sable|shuriken|jabalina|garrote|mangual/.test(n)) return this._iconoArma(item);
-    for (const [rx, ico] of R) if (rx.test(n)) return ico;
-    return 'eq-bolsa';
-  },
-
-  /** Clase visual del tipo de talento a partir de su glifo o su palabra. */
-  _tipoTalento(tipo) {
-    const t = String(tipo || '');
-    if (/^\s*◆|pasivo/i.test(t)) return 'pasivo';
-    if (/^\s*✦|habilitador/i.test(t)) return 'habilitador';
-    if (/^\s*⚡|disparador|trigger|reacci[óo]n/i.test(t)) return 'disparador';
-    if (/^\s*◈|modificador/i.test(t)) return 'modificador';
-    return '';
-  },
-
-  calcInventory() {
-    // Manual (20-10-2026): capacidad = 10 + MOD FUE (de 7 a 14), con la FUE
-    // final. El Morral ya no suma Slots: es lo que permite llevarlos, y
-    // todos los Arquetipos empiezan con uno, así que se da por supuesto.
-    // Todo lo que llevas ocupa Slots, también la armadura puesta.
-    const fueFinal = this._finalStats?.FUE ?? (parseInt(document.getElementById('base_FUE')?.value)||8);
-    // El Morral y la ropa no ocupan Slots: así quedan también las fichas
-    // guardadas antes, que los traían con 1.
-    const libre = i => /^\s*(morral|ropa)\b/i.test(String(i.name || ''));
-    // Cada 100 monedas completas ocupan 1 Slot; menos de 100, nada.
-    const monedas = Math.floor((parseInt(this.gold, 10) || 0) / 100);
-    return { current: this.inventory.reduce((s,i)=>s+(libre(i)?0:(i.slots||0)),0) + monedas, max: 10 + this.getMod(fueFinal) };
-  },
-
-  syncCombatOptions() {
-    const prev = {
-      armor: document.getElementById('sel_armor')?.value,
-      shield: document.getElementById('sel_shield')?.value,
-      armor_extra: document.getElementById('sel_armor_extra')?.value,
-      w1_dmg_attr: document.getElementById('w1_dmg_attr')?.value,
-      w2_dmg_attr: document.getElementById('w2_dmg_attr')?.value,
-      w1: document.getElementById('sel_weapon')?.value,
-      w2: document.getElementById('sel_weapon_sec')?.value
-    };
-    const fill = (id, type, defVal, defTxt) => {
-      const s = document.getElementById(id); if (!s) return;
-      s.innerHTML = `<option value="${defVal}">${defTxt}</option>`;
-      this.inventory.filter(i=>i.type===type).forEach(item => {
-        const o = document.createElement('option'); o.value = item.uid; o.textContent = item.name; s.appendChild(o);
-      });
-    };
-    fill('sel_armor','armors','none','Sin Armadura');
-    fill('sel_shield','shields','none','Sin Escudo');
-    fill('sel_weapon','weapons','unarmed','Desarmado');
-    fill('sel_weapon_sec','weapons','unarmed','Desarmado');
-    const restore = (id, val) => {
-      const s = document.getElementById(id); if (!s) return;
-      if (s.querySelector(`option[value="${val}"]`)) s.value = val;
-      else s.value = s.options[0]?.value;
-    };
-    restore('sel_armor',prev.armor); restore('sel_shield',prev.shield);
-    restore('sel_armor_extra',prev.armor_extra);
-    restore('w1_dmg_attr',prev.w1_dmg_attr); restore('w2_dmg_attr',prev.w2_dmg_attr);
-    restore('sel_weapon',prev.w1); restore('sel_weapon_sec',prev.w2);
-  },
-
-  /** Ventaja/Desventaja global aplicada a las tiradas (Manual, Glosario):
-      Ventaja = un dado extra del mismo tipo, usa el mejor; Desventaja, el peor.
-      -1 Desventaja · 0 Normal · +1 Ventaja. */
-  setAdvantage(v) {
-    this._advantage = (v === 1 || v === -1) ? v : 0;
-    document.querySelectorAll('#adv_fab .adv-opt').forEach(b => {
-      const on = String(this._advantage) === b.dataset.adv;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-    const fab = document.getElementById('adv_fab');
-    const main = document.getElementById('adv_fab_main');
-    if (fab) fab.dataset.state = String(this._advantage);
-    if (main) {
-      main.innerHTML = this._advantage > 0 ? '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-up"/></svg>' : this._advantage < 0 ? '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-down"/></svg>' : '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-adv-eq"/></svg>';
-      const lbl = this._advantage > 0 ? 'Ventaja' : this._advantage < 0 ? 'Desventaja' : 'Normal';
-      main.setAttribute('aria-label', `Tirada: ${lbl}. Tocar para cambiar Ventaja/Desventaja`);
-    }
-    this._closeAdvFab();
-  },
-
-  /** Despliega/colapsa el menú flotante de Ventaja/Desventaja. */
-  toggleAdvFab() {
-    this._tapShield();  // anti-traspaso de toques
-    const fab = document.getElementById('adv_fab');
-    if (!fab) return;
-    const open = fab.classList.toggle('open');
-    document.getElementById('adv_fab_main')?.setAttribute('aria-expanded', String(open));
-    if (open) {
-      // Cerrar al tocar fuera (una sola vez).
-      this._advFabOutside = (e) => { if (!fab.contains(e.target)) this._closeAdvFab(); };
-      setTimeout(() => document.addEventListener('pointerdown', this._advFabOutside, true), 0);
-    }
-  },
-
-  /** El flotante de Ventaja/Desventaja está fijo sobre el contenido: medido
-      a 375 px, en Normal llega a sentarse sobre 4 controles en Perfil (8 con
-      el menú abierto), campos de texto y desplegables incluidos. Pero en
-      Normal está el 95 % del tiempo, así que en ese estado se aparta:
-      encoge, se apaga y se va al desplazar hacia abajo. Activo —Ventaja o
-      Desventaja— nunca se esconde: olvidarse de que está puesto falsearía
-      todas las tiradas siguientes. */
-  _initAdvFabAutoOcultar() {
-    const fab = document.getElementById('adv_fab');
-    if (!fab) return;
-    let ultimo = 0, temporizador = 0;
-
-    const mostrar = () => {
-      fab.classList.remove('adv-fab--fuera');
-      clearTimeout(temporizador);
-    };
-    const esconder = () => {
-      // Solo en Normal, y nunca con el menú desplegado.
-      if (this._advantage || fab.classList.contains('open')) return;
-      fab.classList.add('adv-fab--fuera');
-    };
-
-    const alDesplazar = (e) => {
-      const y = (e.target && e.target.scrollTop) || 0;
-      const baja = y > ultimo + 4;
-      const sube = y < ultimo - 4;
-      ultimo = y;
-      if (baja) esconder(); else if (sube) mostrar();
-      // Al parar de desplazar siempre vuelve: nunca queda fuera de alcance.
-      clearTimeout(temporizador);
-      temporizador = setTimeout(mostrar, 900);
-    };
-
-    // Cada página tiene su propio contenedor con scroll, y `scroll` no
-    // burbujea: hay que escuchar en fase de captura.
-    document.addEventListener('scroll', alDesplazar, true);
-    // Cambiar de página o de estado lo devuelve a la vista.
-    ['goToPage', 'setAdvantage'].forEach(m => {
-      const orig = this[m];
-      if (typeof orig !== 'function') return;
-      this[m] = function () { const r = orig.apply(this, arguments); mostrar(); return r; };
-    });
-  },
-
-  _closeAdvFab() {
-    this._tapShield();  // anti-traspaso de toques
-    const fab = document.getElementById('adv_fab');
-    if (fab) fab.classList.remove('open');
-    document.getElementById('adv_fab_main')?.setAttribute('aria-expanded', 'false');
-    if (this._advFabOutside) {
-      document.removeEventListener('pointerdown', this._advFabOutside, true);
-      this._advFabOutside = null;
-    }
-  },
-
-  rollCheck(label, mod) {
-    const adv = this._advantage || 0;
-    const r20 = () => Math.floor(Math.random()*20)+1;
-    let used, faces;
-    if (adv === 0) { used = r20(); faces = [used]; }
-    else { const a = r20(), b = r20(); used = adv > 0 ? Math.max(a,b) : Math.min(a,b); faces = [a, b]; }
-    const total = used + mod;
-    const isCrit = used===20, isFail = used===1;
-    const modStr = (mod>=0?'+':'')+mod;
-    const advTxt = adv>0?' · Ventaja':adv<0?' · Desventaja':'';
-    const facesTxt = adv===0 ? `d20: ${used}` : `2d20: [${faces.join(', ')}] → ${used}`;
-    const detailTxt = `${facesTxt}${modStr !== '+0' ? `  (${modStr})` : ''}${advTxt}`;
-    this.showDiceRoll({
-      label, die: 20, finalFaces: faces, isCrit, isFail,
-      detail: detailTxt, total, totalLabel: 'Total'
-    });
-  },
-
-  /* ── Habilidades: grados, atributo y tirada ─────────────────────── */
-
-  /** Veces que cada habilidad está seleccionada (Arquetipo + Trasfondo). */
-  _skillCounts() {
-    const c = {};
-    document.querySelectorAll('input[name="chk_arq"]:checked, input[name="chk_bg"]:checked')
-      .forEach(el => { c[el.value] = (c[el.value] || 0) + 1; });
-    return c;
-  },
-
-  /** Grados de habilidad concedidos por el linaje activo (descriptors.skillGrants). */
-  _lineageGrants() {
-    const key = document.getElementById('sel_desc')?.value || '';
-    const m = {};
-    (this.DB.descriptors?.[key]?.skillGrants || []).forEach(g => {
-      m[g.skill] = Math.max(m[g.skill] || 0, g.grade || 0);
-    });
-    return m;
-  },
-
-  /** Habilidades presentes: seleccionadas o concedidas por linaje. */
-  _presentSkills() {
-    const counts = this._skillCounts(), grants = this._lineageGrants();
-    return [...new Set([...Object.keys(counts), ...Object.keys(grants)])];
-  },
-
-  /** Grado mínimo automático (no editable a la baja). Modelo de adquisiciones
-      (Manual Cap.II): la primera adquisición da Grado 0 y cada adquisición
-      adicional sube un grado. Un grant de linaje de grado G equivale a G+1
-      adquisiciones; cada selección en la ficha, a 1. */
-  _skillMinGrade(skill, counts, grants) {
-    counts = counts || this._skillCounts();
-    grants = grants || this._lineageGrants();
-    const lin = grants[skill];
-    const acq = (lin != null ? lin + 1 : 0) + (counts[skill] || 0);
-    return acq > 0 ? Math.max(0, Math.min(4, acq - 1)) : 0;
-  },
-
-  /** Grado que el personaje tiene en una habilidad, o −1 si no la tiene
-      (sin Grado 0 no está entrenado). Durante el Asistente sale de su
-      borrador (`_wizCtx.habilidades`), porque la ficha aún está vacía. */
-  _gradoHabilidad(skill) {
-    const ctx = this._wizCtx;
-    if (ctx && ctx.habilidades) return ctx.habilidades[skill] ?? -1;
-    const counts = this._skillCounts(), grants = this._lineageGrants();
-    const acq = (grants[skill] != null ? grants[skill] + 1 : 0) + (counts[skill] || 0);
-    if (acq <= 0 && !((this._skillBonus?.[skill] || 0) > 0)) return -1;
-    return this._skillGrade(skill, counts, grants);
-  },
-
-  /** Grado efectivo = mínimo automático + puntos extra manuales (clamp 0–5).
-      El 5 solo existe por Maestría Absoluta o un Hito de Legado (Manual 1.0):
-      el mínimo automático sigue topando en 4, así que solo se llega a mano. */
-  _skillGrade(skill, counts, grants) {
-    const min = this._skillMinGrade(skill, counts, grants);
-    const bonus = Math.max(0, this._skillBonus?.[skill] || 0);
-    return Math.max(0, Math.min(5, min + bonus));
-  },
-
-  /** Atributo sugerido: el de mayor modificador entre los candidatos del manual. */
-  _skillAttrAuto(skill) {
-    const mods = this._finalMods || {};
-    const cands = SKILL_ATTR[skill] || STATS;
-    let best = cands[0];
-    cands.forEach(a => { if ((mods[a] ?? 0) > (mods[best] ?? 0)) best = a; });
-    return best;
-  },
-
-  /** Atributo efectivo: override del jugador, o el sugerido por defecto. */
-  _skillAttrEffective(skill) {
-    const pick = this._skillAttrPick?.[skill];
-    return (pick && STATS.includes(pick)) ? pick : this._skillAttrAuto(skill);
-  },
-
-  /** Suma/resta puntos extra de Grado (en modo edición). Nunca baja del
-      mínimo automático ni pasa de 4. */
-  adjustSkillBonus(skill, delta) {
-    if (!this._skillBonus) this._skillBonus = {};
-    const cur = Math.max(0, this._skillBonus[skill] || 0);
-    const maxBonus = 5 - this._skillMinGrade(skill);   // Grado 5: Maestría Absoluta
-    const next = Math.max(0, Math.min(maxBonus, cur + delta));
-    if (next === cur) return;
-    this._skillBonus[skill] = next;
-    this._markUnsaved();
-    this._buildSkillsEditControls();
-    this._buildSkillsSummary();
-  },
-
-  /** Fija el atributo de una habilidad ('' = auto/sugerido). */
-  setSkillAttr(skill, attrKey) {
-    if (!this._skillAttrPick) this._skillAttrPick = {};
-    if (attrKey && STATS.includes(attrKey)) this._skillAttrPick[skill] = attrKey;
-    else delete this._skillAttrPick[skill];
-    this._markUnsaved();
-    this._buildSkillsEditControls();
-    this._buildSkillsSummary();
-  },
-
-  /** Tirada de habilidad — Manual Cap.VI §1: 2d10 + MOD Atributo + Grado.
-      Ventaja/Desventaja: 3d10 conservando los 2 más altos / más bajos.
-      Dobles del Destino (solo en 2d10 limpio): doble 10 = éxito auto, doble 1 =
-      fallo auto. El PB no se aplica. (El mínimo de 7 del Grado 3 desapareció
-      en el Manual v1.) */
-  rollSkill(skill) {
-    if (!this._finalMods) this.calc();
-    const grade   = this._skillGrade(skill);
-    const attrKey = this._skillAttrEffective(skill);
-    const attrMod = (this._finalMods?.[attrKey]) || 0;
-    const adv     = this._advantage || 0;
-    const r10 = () => Math.floor(Math.random()*10)+1;
-
-    let rolled, kept, diceSum;
-    if (adv === 0) {
-      const d1=r10(), d2=r10(); rolled=[d1,d2]; kept=[d1,d2]; diceSum=d1+d2;
-    } else {
-      const t=[r10(),r10(),r10()]; rolled=t;
-      const s=[...t].sort((a,b)=>a-b);
-      kept = adv>0 ? [s[1],s[2]] : [s[0],s[1]];   // 2 más altos / 2 más bajos
-      diceSum = kept[0]+kept[1];
-    }
-    const isCrit = adv===0 && rolled[0]===10 && rolled[1]===10;  // Doble 10
-    const isFail = adv===0 && rolled[0]===1  && rolled[1]===1;   // Doble 1
-    const total  = diceSum + attrMod + grade;
-
-    const modStr  = (attrMod>=0?'+':'')+attrMod;
-    const advTxt  = adv>0?' · Ventaja':adv<0?' · Desventaja':'';
-    const diceTxt = adv===0
-      ? `2d10: [${rolled.join(' + ')}]`
-      : `3d10: [${rolled.join(', ')}] → ${kept.join('+')}`;
-    let detail = `${diceTxt}  ${modStr} ${attrKey}  +${grade} G${grade}${advTxt}`;
-    if (isCrit) detail = '¡Doble 10! Éxito crítico · ' + detail;
-    if (isFail) detail = '¡Doble 1! Ojos de Serpiente · ' + detail;
-
-    this.showDiceRoll({
-      label: `${skill} · G${grade} (${attrKey})`,
-      die: 10,
-      finalFaces: rolled,
-      isCrit, isFail,
-      detail, total, totalLabel: 'Total'
-    });
-  },
-
-  rollDice(formula, label) {
-    const match = formula.match(/(\d+)d(\d+)([+-]\d+)?/i);
-    if (!match) { this.toast(`${label}: ${formula}`, 'info'); return; }
-    const num = parseInt(match[1]), die = parseInt(match[2]), bonus = parseInt(match[3] || 0);
-    const rolls = [];
-    let total = 0;
-    for (let i = 0; i < num; i++) { const r = Math.floor(Math.random() * die) + 1; rolls.push(r); total += r; }
-    total += bonus;
-    let bonusStr = '';
-    if      (bonus > 0) bonusStr = `+${bonus}`;
-    else if (bonus < 0) bonusStr = String(bonus);
-    // Format mirrors rollCheck: "2d6: [4 + 3]  (+2)"
-    const rollsPart = num > 1 ? `[${rolls.join(' + ')}]` : `${rolls[0]}`;
-    const detailTxt = `${num}d${die}: ${rollsPart}${bonusStr !== '' ? '  (' + bonusStr + ')' : ''}`;
-    this.showDiceRoll({
-      label,
-      die,
-      finalFaces: rolls,       // pass all rolls — overlay shows one face per die
-      isCrit: false, isFail: false,
-      detail: detailTxt,
-      total,
-      totalLabel: 'Daño'
-    });
-  },
-
-  /**
-   * Show the dice overlay.
-   * @param {object} opts
-   * @param {string}   opts.label
-   * @param {number}   opts.die          - die type (d6, d20…)
-   * @param {number[]} opts.finalFaces   - one value per die (NEW: array)
-   * @param {number}   opts.finalFace    - legacy single-die fallback
-   * @param {boolean}  opts.isCrit
-   * @param {boolean}  opts.isFail
-   * @param {string}   opts.detail
-   * @param {number}   opts.total
-   * @param {string}   opts.totalLabel
-   */
-  showDiceRoll({label, die, finalFaces, finalFace, isCrit, isFail, detail, total, totalLabel}) {
-    this._tapShield();  // anti-traspaso de toques
-    // Normalise: support both old finalFace (single) and new finalFaces (array)
-    const faces = finalFaces ?? [finalFace ?? 1];
-    const numDice = faces.length;
-
-    const overlay   = document.getElementById('dice-overlay');
-    const facesRow  = document.getElementById('dice-faces-row');
-    const labelEl   = document.getElementById('dice-label');
-    const detailEl  = document.getElementById('dice-detail');
-    const totalRow  = document.getElementById('dice-total-row');
-    const totalEl   = document.getElementById('dice-total');
-    const badgeEl   = document.getElementById('dice-badge');
-    const hintEl    = document.getElementById('dice-close-btn');
-    const cardEl    = document.getElementById('dice-card');
-
-    // ── Reset ──
-    overlay.classList.remove('closing');
-    cardEl.classList.remove('crit', 'fail');
-    detailEl.className  = 'dice-detail';
-    totalRow.className  = 'dice-total-row';
-    totalEl.className   = 'dice-total';
-    badgeEl.style.display = 'none';
-    hintEl.className    = 'dice-close-btn';
-    detailEl.textContent = '';
-    totalEl.textContent  = '';
-
-    // ── Build N die faces ──
-    facesRow.innerHTML = '';
-    facesRow.className = 'dice-faces-row'
-      + (numDice >= 5 ? ' many5' : numDice >= 3 ? ' many' : '');
-
-    const numEls = faces.map((_, i) => {
-      if (i > 0) {
-        const plus = document.createElement('span');
-        plus.className = 'dice-face-plus';
-        plus.textContent = '+';
-        facesRow.appendChild(plus);
-      }
-      const face = document.createElement('div');
-      face.className = 'dice-face';
-      const span = document.createElement('span');
-      span.className = 'dice-num';
-      span.textContent = Math.floor(Math.random() * die) + 1;
-      face.appendChild(span);
-      facesRow.appendChild(face);
-      return span;
-    });
-
-    labelEl.textContent = label;
-    overlay.classList.add('active');
-    if (navigator.vibrate) navigator.vibrate(12);
-
-    // ── Animate each die, staggered ──
-    const TICKS = 7;
-    let settled = 0;
-
-    numEls.forEach((numEl, dieIdx) => {
-      const finalVal = faces[dieIdx];
-      const staggerDelay = dieIdx * 55; // each die starts slightly later
-
-      const doTick = (tick) => {
-        numEl.classList.remove('rolling');
-        void numEl.offsetWidth;
-        numEl.classList.add('rolling');
-        if (tick < TICKS) {
-          numEl.textContent = Math.floor(Math.random() * die) + 1;
-          setTimeout(() => doTick(tick + 1), staggerDelay * (tick === 0 ? 1 : 0) + 35 + tick * 12);
-        } else {
-          numEl.textContent = finalVal;
-          numEl.classList.remove('rolling');
-          numEl.classList.add('result-pop');
-          // Crit/fail glow only on single d20 rolls
-          if (numDice === 1 && isCrit) numEl.classList.add('crit-glow');
-          if (numDice === 1 && isFail) numEl.classList.add('fail-glow');
-          settled++;
-          // Once all dice have settled, show summary
-          if (settled === numDice) {
-            setTimeout(() => {
-              detailEl.textContent = detail;
-              detailEl.classList.add('show');
-              totalEl.textContent = (total >= 0 && totalLabel !== 'Daño' ? '+' : '') + total;
-              if (isCrit) totalEl.classList.add('crit');
-              if (isFail) totalEl.classList.add('fail');
-              totalRow.classList.add('show');
-              if (isCrit) { badgeEl.textContent = '✦ Crítico ✦'; badgeEl.className = 'dice-badge crit'; badgeEl.style.display = ''; cardEl.classList.add('crit'); }
-              if (isFail) { badgeEl.textContent = 'Fallo Total'; badgeEl.className = 'dice-badge fail'; badgeEl.style.display = ''; cardEl.classList.add('fail'); }
-              hintEl.classList.add('show');
-            }, 160);
-          }
-        }
-      };
-      setTimeout(() => doTick(0), staggerDelay);
-    });
-  },
-
-  closeDiceOverlay() {
-    this._tapShield();  // anti-traspaso de toques
-    const overlay = document.getElementById('dice-overlay');
-    if (!overlay.classList.contains('active')) return;
-    overlay.classList.add('closing');
-    setTimeout(() => overlay.classList.remove('active','closing'), TIMING.DICE_CLOSE);
-  },
-
-  _initDiceSwipe() {
-    const card = document.getElementById('dice-card');
-    if (!card || card._swipeInit) return;
-    card._swipeInit = true;
-    let startY = 0, startX = 0;
-    card.addEventListener('touchstart', e => { startY = e.touches[0].clientY; startX = e.touches[0].clientX; }, {passive:true});
-    card.addEventListener('touchend', e => {
-      const dy = e.changedTouches[0].clientY - startY;
-      const dx = Math.abs(e.changedTouches[0].clientX - startX);
-      if (dy > 55 && dx < 60) this.closeDiceOverlay();
-    }, {passive:true});
-  },
-
-  rollWeaponAtk(n) {
-    // Read from stored calc data (avoids race conditions with DOM updates)
-    const stored = this._weaponAtkData?.[n-1];
-    const bonus = (stored !== undefined) ? stored : (parseInt(document.getElementById(`atk_bonus_${n}`)?.textContent) || 0);
-    this.rollCheck(`Ataque: ${this._weaponDmgData[n-1]?.name||'Arma'}`, bonus);
-  },
-  rollWeaponDmg(n) { this.rollDice(this._weaponDmgData[n-1]?.formula||'1', `Daño: ${this._weaponDmgData[n-1]?.name||'Arma'}`); },
-
-  /** Barras de fracción de la sección Estado (PV/ADR/ING).
-      Se refrescan desde calc(), adjustRes() y el tecleo directo. */
-  _updateResBars() {
-    const pairs = [
-      ['res_fill_pv',  'cur_pv',  'max_pv'],
-      ['res_fill_adr', 'cur_adr', 'max_adr'],
-      ['res_fill_ing', 'cur_ing', 'max_ing'],
-      ['res_fill_carne', 'cur_carne', 'res_carne'],
-    ];
-    pairs.forEach(([fillId, curId, maxId]) => {
-      const fill = document.getElementById(fillId);
-      if (!fill) return;
-      const cur = parseInt(document.getElementById(curId)?.value) || 0;
-      const max = parseInt(document.getElementById(maxId)?.textContent) || 0;
-      fill.style.width = (max > 0 ? Math.max(0, Math.min(100, cur / max * 100)) : 0) + '%';
-      // La cifra mide lo que sus dígitos: así «12 / 17» queda centrado (v61).
-      const campo = document.getElementById(curId);
-      if (campo) campo.style.setProperty('--dig', Math.max(1, String(campo.value || '0').trim().length));
-      if (fillId === 'res_fill_pv') fill.classList.toggle('res-low', max > 0 && cur / max <= .25);
-      // Botones ± en su tope: el − a 0 y el + lleno se atenúan (v57.3).
-      document.querySelectorAll(`.e4-btn[data-cur="${curId}"]`).forEach(b => {
-        const baja = String(b.dataset.delta || '').startsWith('-');
-        b.classList.toggle('is-tope', baja ? cur <= 0 : cur >= max);
-      });
-    });
-  },
-
-  adjustRes(curId, maxId, delta) {
-    const cur = document.getElementById(curId);
-    const max = document.getElementById(maxId);
-    if (!cur) return;
-    let val = parseInt(cur.value, 10) || 0;
-    // Ojo con el truco «|| 999»: con máximo 0 (personaje recién creado) el
-    // fallback dejaba subir el recurso hasta 999. NaN → sin tope; 0 → tope 0.
-    const parsedMax = parseInt(max?.textContent, 10);
-    const maxVal = Number.isNaN(parsedMax) ? 999 : parsedMax;
-    val = Math.max(0, Math.min(maxVal, val + delta));
-    cur.value = val;
-    // Flash feedback
-    cur.style.transition = 'color .15s';
-    cur.style.color = delta > 0 ? 'var(--sage)' : 'var(--blood)';
-    // Bump animation
-    cur.classList.remove('bump');
-    void cur.offsetWidth;
-    cur.classList.add('bump');
-    setTimeout(() => { cur.style.color = ''; cur.classList.remove('bump'); }, TIMING.RES_FLASH);
-    // Haptic feedback on supported devices
-    if (navigator.vibrate) navigator.vibrate(8);
-    // Mark unsaved
-    this._markUnsaved();
-    // Barras de fracción de Estado
-    this._updateResBars();
-  },
-
-  /** Pulsación y repetición por mantenido de los botones ± (.res-btn).
-   *  Se llama una vez desde init(). Lee data-cur / data-max / data-delta.
-   *
-   *  Un clic suma 1, y solo 1. Antes sumaba 2: el atributo `onclick` del
-   *  HTML y este `mousedown` llamaban los dos a adjustRes(), y el
-   *  `preventDefault()` del listener de `click` no cancela un manejador
-   *  inline (ya se registró antes y se ejecuta igual). Los onclick se
-   *  retiraron del HTML y el teclado se atiende aquí abajo, que si no
-   *  Enter/Espacio dejaban de funcionar al quitarlos. */
-  _initResLongPress() {
-    document.querySelectorAll('.res-btn').forEach(btn => {
-      const { cur: curId, max: maxId, delta: deltaStr } = btn.dataset;
-      // Skip buttons that don't carry the required data attributes
-      if (!curId || !maxId || deltaStr === undefined) return;
-      const delta = parseInt(deltaStr, 10);
-
-      let _t    = null;
-      let active = false;
-
-      const fire = () => this.adjustRes(curId, maxId, delta);
-
-      const start = () => {
-        if (active) return;
-        active = true;
-        fire(); // immediate first fire
-        let speed = 350; // initial repeat delay ms
-        const tick = () => {
-          if (!active) return;
-          fire();
-          speed = Math.max(TIMING.LONGPRESS_MIN, speed * 0.8); // accelerate: 350→280→224…→60
-          _t = setTimeout(tick, speed);
-        };
-        _t = setTimeout(tick, TIMING.LONGPRESS_HOLD); // hold threshold before repeat starts
-      };
-
-      const stop = () => {
-        active = false;
-        clearTimeout(_t);
-        _t = null;
-      };
-
-      btn.addEventListener('mousedown',   e => { e.preventDefault(); start(); });
-      btn.addEventListener('touchstart',  e => { e.preventDefault(); start(); }, {passive:false});
-      btn.addEventListener('mouseup',     stop);
-      btn.addEventListener('mouseleave',  stop);
-      btn.addEventListener('touchend',    stop);
-      btn.addEventListener('touchcancel', stop);
-      // El puntero ya disparó en mousedown/touchstart: el click posterior
-      // no debe volver a sumar.
-      btn.addEventListener('click',       e => e.preventDefault());
-      // Teclado: Enter/Espacio suman 1. Se ignora la repetición automática
-      // del sistema (e.repeat) para que dejar la tecla pulsada no dispare
-      // una ráfaga; para eso está el mantenido con el dedo o el ratón.
-      btn.addEventListener('keydown', e => {
-        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
-        e.preventDefault();
-        if (!e.repeat) fire();
-      });
-    });
-  },
-
-  toast(msg, type = 'info', action = null, opts = {}) {
-    const t = { 'ok':'ok','OK':'ok','✦':'ok','Error':'err','error':'err' }[type] ?? 'info';
-
-    // ── Deduplication: if an identical message is already visible, skip ──
-    const containerId = (t === 'err') ? 'toast-ct-err' : 'toast-ct';
-    const c = document.getElementById(containerId) || document.getElementById('toast-ct');
-    const msgStr = String(msg);
-    const existing = Array.from(c.querySelectorAll('.t-msg')).find(el => el.textContent === msgStr);
-    if (existing) {
-      // Bump opacity to full to give visual feedback that it was triggered again
-      const existingToast = existing.closest('.toast');
-      if (existingToast) {
-        existingToast.style.transition = 'none';
-        existingToast.style.opacity = '1';
-      }
-      return;
-    }
-
-    const icon = document.createElement('span');
-    icon.className = 't-icon';
-    if      (t === 'ok')  { icon.textContent = '✦'; icon.classList.add('gold'); }
-    else if (t === 'err') { icon.textContent = '✕'; icon.classList.add('err'); }
-    else                  { icon.textContent = '·'; icon.classList.add('dim'); }
-
-    const m = document.createElement('span');
-    m.className = 't-msg';
-    m.textContent = msgStr;
-
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;align-items:center;gap:9px';
-    wrap.appendChild(icon);
-    wrap.appendChild(m);
-
-    // Cap visible toasts at 2 in the polite container; 1 in the assertive one.
-    // Los toasts sticky (avisos que no deben perderse) no se expulsan por el
-    // tope: sin esto, dos toasts posteriores echaban el aviso de actualización.
-    const cap = (t === 'err') ? 1 : 2;
-    while (c.children.length >= cap) {
-      const victim = [...c.children].find(el => !el.classList.contains('t-sticky')) || c.firstChild;
-      c.removeChild(victim);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = `toast${t === 'err' ? ' terror' : ''}`;
-    // Position the error container identically to the main toast container
-    if (t === 'err') {
-      toast.style.cssText = 'position:relative;left:auto;transform:none';
-    }
-    toast.appendChild(wrap);
-    // Optional action: make the toast tappable and keep it on screen longer.
-    if (typeof action === 'function') {
-      toast.classList.add('t-action');   // pointer-events:auto + estilo pulsable (CSS)
-      toast.setAttribute('role', 'button');
-      toast.setAttribute('tabindex', '0');
-      const fire = () => { try { action(); } catch(e){} toast.remove(); };
-      toast.addEventListener('click', fire);
-      toast.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fire(); } });
-    }
-    c.appendChild(toast);
-
-    // opts.sticky: el toast no se autodescarta — queda hasta que el usuario
-    // lo toque (avisos que no deben perderse, p. ej. "Nueva versión").
-    if (opts.sticky) toast.classList.add('t-sticky');
-    if (!opts.sticky) {
-      // opts.hold: duración a medida en ms. La usa el aviso posterior a una
-      // actualización, que aparece justo cuando la app se está repintando
-      // tras recargar — con los 3,2 s normales se lo perdía casi siempre.
-      const visibleFor = opts.hold ? opts.hold
-        : (typeof action === 'function')
-          ? TIMING.TOAST_VISIBLE * 4   // give the user time to act on prompts
-          : TIMING.TOAST_VISIBLE;
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(8px)';
-        toast.style.transition = '.3s';
-        setTimeout(() => toast.remove(), TIMING.TOAST_FADE);
-      }, visibleFor);
-    }
-  },
-
-  initTalentManager() {
-    if (!this.DB.talents) return;
-    const cc = document.getElementById('tm_categories'); cc.innerHTML='';
-    Object.keys(this.DB.talents).forEach(k => {
-      const btn = document.createElement('button'); btn.className='catbtn'; btn.type='button';
-      btn.setAttribute('data-cat', k);
-      btn.textContent = k.charAt(0).toUpperCase()+k.slice(1);
-      btn.addEventListener('click', () => {
-        const sb = document.getElementById('tm_search'); if (sb) sb.value = '';
-        this.showTalentCategory(k, btn);
-      });
-      cc.appendChild(btn);
-    });
-  },
-
-  openTalentManager() {
-    this._tapShield();  // anti-traspaso de toques
-    if (!this.DB.talents) return;
-    this._talentModalOpener = document.activeElement;
-    const panel = document.getElementById('talent_panel');
-    panel.classList.add('fs-open');
-    document.body.style.overflow = 'hidden';
-    // Fresh stats for requirement checks; reset search box (keep filter chips sticky)
-    this.calc();
-    const sb = document.getElementById('tm_search'); if (sb) sb.value = '';
-    this._talentFilters = this._talentFilters || { eligible:false, arq:false };
-    const ec = document.getElementById('tm_filter_eligible');
-    const ac = document.getElementById('tm_filter_arq');
-    if (ec) { ec.classList.toggle('active', this._talentFilters.eligible); ec.setAttribute('aria-pressed', String(this._talentFilters.eligible)); }
-    if (ac) { ac.classList.toggle('active', this._talentFilters.arq); ac.setAttribute('aria-pressed', String(this._talentFilters.arq)); }
-    const firstKey = Object.keys(this.DB.talents)[0];
-    if (this.activeTalentCat) {
-      const btn = document.querySelector(`#tm_categories .catbtn[data-cat="${this.activeTalentCat}"]`);
-      this.showTalentCategory(this.activeTalentCat, btn);
-      // Scroll active chip into view on mobile
-      requestAnimationFrame(() => btn?.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}));
-    } else if (firstKey) {
-      this.showTalentCategory(firstKey, document.querySelector('#tm_categories .catbtn'));
-    }
-    this.updateTalentCount();
-    this._attachPanelSwipeBack(panel, () => this.closeTalentManager());
-  },
-
-  closeTalentManager() {
-    this._tapShield();  // anti-traspaso de toques
-    const panel = document.getElementById('talent_panel');
-    panel.style.transform = '';
-    panel.style.opacity   = '';
-    panel.classList.remove('fs-open');
-    document.body.style.overflow = '';
-    this.showTalentSummary();
-    this.updateTalentCount();
-    this.calc();
-    if (this._talentModalOpener?.focus) {
-      setTimeout(() => { try { this._talentModalOpener?.focus(); } catch(e){} this._talentModalOpener = null; }, 0);
-    }
-  },
-
-  /* ── Requirement parsing & eligibility (Mejora 2) ──
-     Parses free-text `req` like "FUE 13+ · Nivel 5+ · Despertar Sobrenatural"
-     into checkable atoms. Returns {atoms:[{kind,attr,val,raw,met}], met:bool,
-     unmet:[strings]}. Soft validation — informs, never blocks. */
-  _parseTalentReq(reqText) {
-    const out = { atoms: [], met: true, unmet: [] };
-    if (!reqText) return out;
-    // `_wizCtx` es el borrador del Asistente de creación: mientras dura, el
-    // personaje todavía no está en la ficha, así que los requisitos se
-    // evalúan contra lo que se lleva elegido en vez de contra un DOM vacío
-    // (o peor, contra los restos del personaje anterior). Fuera del
-    // asistente vale null y no cambia nada.
-    const ctx = this._wizCtx;
-    const stats = ctx?.stats || this._finalStats || (() => {
-      const s = {}; STATS.forEach(k => s[k] = parseInt(document.getElementById('base_'+k)?.value)||8); return s;
-    })();
-    const lvl = ctx?.lvl ?? (parseInt(document.getElementById('char_lvl')?.value) || 1);
-    // Talents the character currently has (by name + id)
-    const hidden = [...document.querySelectorAll('input[name="chk_talents_hidden"]')];
-    const haveNames = new Set(
-      (ctx ? ctx.talentos.map(t => t.name) : hidden.map(h => h.value || ''))
-        .map(v => v.toLowerCase())
-    );
-    const haveIds = new Set(
-      (ctx ? ctx.talentos.map(t => t.id) : hidden.map(h => h.getAttribute('data-id')))
-        .filter(Boolean)
-    );
-    // Split on · / • first; then split remaining chunks on commas that
-    // separate distinct requirements (a comma followed by a Level/attr token),
-    // while keeping attribute lists like "INT, SAB o CAR 13+" intact.
-    const rawParts = reqText.split(/[·•\u00B7]/).map(p => p.trim()).filter(Boolean);
-    const parts = [];
-    rawParts.forEach(chunk => {
-      // Break "DES 16+, Nv3+" → ["DES 16+","Nv3+"] but not "INT, SAB o CAR 13+"
-      // ni «INT 13+, SAB 13+ o CAR 13+»: una lista con «o» al final es UNA
-      // sola alternativa (Arquitecto de Constructos, Surcacielos).
-      if (/\d+\+?\s*,\s*(?:FUE|DES|CON|INT|SAB|CAR)\s*\d+\+?[^,]*\so\s/i.test(chunk)) { parts.push(chunk); return; }
-      const segs = chunk.split(/,\s*(?=(?:Nivel|Nv)\.?\s*\d|(?:FUE|DES|CON|INT|SAB|CAR)\s*\d)/i)
-                        .map(s => s.trim()).filter(Boolean);
-      segs.forEach(s => parts.push(s));
-    });
-    parts.forEach(part => {
-      let m;
-      // Attribute alternatives where EACH has its own threshold:
-      //   "FUE 13+ o DES 13+"  /  "FUE 14+ / DES 12+"
-      const altPairs = [...part.matchAll(/\b(FUE|DES|CON|INT|SAB|CAR)\s*(\d+)\+?/gi)];
-      const hasConnector = /\b(FUE|DES|CON|INT|SAB|CAR)\b[^·]*\b[\/o]\b[^·]*\b(FUE|DES|CON|INT|SAB|CAR)\s*\d/i.test(part);
-
-      // «El atributo de la Fuente 13+» (requisito de cada Iniciación): el de
-      // la Fuente elegida o, sin elegir, el mejor de INT, SAB o CAR.
-      const soloFuente = part.match(/^el atributo de la Fuente\s*(\d+)/i);
-      if (soloFuente) {
-        const FA = { 'Erudición': ['INT'], 'Psiónica': ['INT', 'SAB'], 'Divinidad': ['SAB', 'CAR'],
-          'Naturaleza': ['SAB'], 'Pacto': ['CAR'], 'Herencia': ['CAR'], 'Juramento': ['CAR'] };
-        const at = FA[this._powerSource] || ['INT', 'SAB', 'CAR'];
-        const need = parseInt(soloFuente[1]);
-        const met = Math.max(...at.map(a => stats[a] || 0)) >= need;
-        out.atoms.push({ kind:'attr', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(`${at.join('/')} ${need}+`); }
-        return;
-      }
-      // «el atributo de tu Fuente 13+»: cuenta el de la Fuente elegida.
-      const deFuente = part.match(/atributo de tu Fuente\s*(\d+)/i);
-      if (deFuente) {
-        const FUENTE_ATTR = { 'Erudición': ['INT'], 'Psiónica': ['INT', 'SAB'], 'Divinidad': ['SAB', 'CAR'],
-          'Naturaleza': ['SAB'], 'Pacto': ['CAR'], 'Herencia': ['CAR'], 'Juramento': ['CAR'] };
-        (FUENTE_ATTR[this._powerSource] || []).forEach(a => altPairs.push([a, a, deFuente[1]]));
-      }
-      const enLista = deFuente && altPairs.length >= 1;   // «DES 13+, CON 13+ o el atributo…»
-      if ((altPairs.length >= 2 && hasConnector) || enLista) {
-        // Satisfied if ANY one attribute meets its own threshold.
-        const met = altPairs.some(p => (stats[p[1].toUpperCase()] || 0) >= parseInt(p[2]));
-        out.atoms.push({ kind:'attr', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(altPairs.map(p => `${p[1].toUpperCase()} ${p[2]}+`).join(' o ')); }
-      }
-      // Shared-threshold form: "INT, SAB o CAR 13+"  /  "FUE/DES 13+"  /  "SAB o CAR 13+"
-      // One trailing threshold applies to a list of attributes joined by , / o.
-      else if (/\b(?:FUE|DES|CON|INT|SAB|CAR)\b[\s,\/o]*(?:\b(?:FUE|DES|CON|INT|SAB|CAR)\b[\s,\/o]*)*\d+\+?/i.test(part)
-               && (m = part.match(/(\d+)\+?\s*$/) || part.match(/(\d+)\+?/))) {
-        const need = parseInt(m[1]);
-        // collect every attribute token that appears before the number
-        const upto = part.slice(0, part.indexOf(m[1]) + m[1].length);
-        const attrs = [...upto.matchAll(/\b(FUE|DES|CON|INT|SAB|CAR)\b/gi)].map(x => x[1].toUpperCase());
-        if (attrs.length) {
-          const best = Math.max(...attrs.map(a => stats[a] || 0));
-          const met = best >= need;
-          out.atoms.push({ kind:'attr', raw: part, met });
-          if (!met) { out.met = false; out.unmet.push(`${[...new Set(attrs)].join('/')} ${need}+`); }
-        } else {
-          out.atoms.push({ kind:'info', raw: part, met:true });
-        }
-      }
-      // Level: "Nivel 5+" / "Nv3+"
-      else if ((m = part.match(/\b(?:Nivel|Nv)\.?\s*(\d+)\+?/i))) {
-        const need = parseInt(m[1]);
-        const met = lvl >= need;
-        out.atoms.push({ kind:'level', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(`Nivel ${need}+`); }
-      }
-      // Competencia de Kit [v5.2.2] / de armas [v5.3.5]: "Competencia en Herramientas…",
-      // "Competencia con armas ligeras" — informativo
-      else if (/^Competencia\s+(en|con)\s+/i.test(part)) {
-        out.atoms.push({ kind:'info', raw: part, met:true });
-      }
-      // Origen de Herencia [v5.3.5]: "Origen: Llama Interior" — elección narrativa, informativo
-      else if (/^Origen\s*:/i.test(part)) {
-        out.atoms.push({ kind:'info', raw: part, met:true });
-      }
-      // Iniciacion en una Fuente [Manual v5.0]. El requisito aparece en dos
-      // formas: «Iniciado en cualquier Fuente» —vale cualquiera de las siete—
-      // e «Iniciado en Pacto» —esa y solo esa—. Las satisface tanto el Talento
-      // de Iniciacion como la Afinidad del Descriptor, que el manual declara
-      // equivalente «para cumplir los requisitos de los Talentos de esa
-      // Fuente». Se acepta tambien el viejo «Iniciado Mistico» de las fichas
-      // anteriores a v5.0, que llevaba la Fuente entre parentesis.
-      else if (/^Iniciad[oa]\s+(en\b|M[íi]stico)/i.test(part)) {
-        const iniciadas = this._fuentesIniciadas();
-        const m = part.match(/^Iniciad[oa]\s+en\s+(.+)$/i);
-        const resto = (m ? m[1] : (part.match(/\(([^)]+)\)/) || [,''])[1]).trim();
-        let met, miss;
-        if (!resto || /cualquier|tu Fuente|una Fuente/i.test(resto)) {
-          met = iniciadas.size > 0;
-          miss = 'Iniciado en cualquier Fuente (un Talento de Iniciación o la Afinidad de tu Linaje)';
-        } else {
-          // «Iniciado en Juramento o en Divinidad»: basta una de las dos.
-          const pedidas = resto.split(/\s+o\s+|\s*[\/,]\s*/i)
-            .map(x => this._normSource(x.replace(/^en\s+/i, '')))
-            .filter(Boolean);
-          met = pedidas.some(f => iniciadas.has(f));
-          miss = 'Iniciado en ' + resto;
-        }
-        out.atoms.push({ kind:'talent', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(miss); }
-      }
-      // Despertar Sobrenatural / Poder\u00edo Arcano: requieren tener el talento Y,
-      // si el requisito nombra una Fuente, que coincida con la elegida.
-      else if (/^(Despertar Sobrenatural|Poder\u00edo Arcano)/i.test(part)) {
-        const tname = /^Despertar/i.test(part) ? 'despertar sobrenatural' : 'poder\u00edo arcano';
-        const tid   = /^Despertar/i.test(part) ? 'despertar_sobrenatural' : 'poderio_arcano';
-        const hasIt = haveNames.has(tname) || haveIds.has(tid);
-        const chosen = this._normSource(this._powerSource || '');
-        const KNOWN = ['eruricion','erudicion','pacto','herencia','divinidad','juramento','naturaleza','psionica'];
-        const m = part.match(/\(([^)]+)\)/);
-        const reqSources = m ? m[1].split(/\s+(?:o|y)\s+|\s*[\/,]\s*/i).map(x => this._normSource(x)).filter(x => KNOWN.includes(x)) : [];
-        let met;
-        if (reqSources.length) met = hasIt && !!chosen && reqSources.includes(chosen);
-        else met = hasIt;
-        out.atoms.push({ kind:'talent', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
-      }
-      // "Gracia" (antes "Voto") genérico como prerrequisito: la Senda de
-      // Juramento reparte siete talentos hermanos —Gracia del Centinela, de
-      // la Deuda Jurada, del Inquebrantable, del Guardián Ancestral, de
-      // Enemistad, de Conquista y del Rompejuramentos— y cualquiera de ellos
-      // satisface un requisito que pida "Gracia" a secas. Se sigue aceptando
-      // "Voto" por las fichas anteriores al Compendio v5.6, donde estos siete
-      // talentos se llamaban así.
-      else if (/^(Voto|Gracia)$/i.test(part.trim())) {
-        const met = [...haveNames].some(n =>
-          n.startsWith('gracia ') || n.startsWith('voto ') || n === 'rompejuramentos');
-        out.atoms.push({ kind:'talent', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push('Gracia de Juramento (cualquiera)'); }
-      }
-      // Grado en una habilidad: «Grado 0 en Naturaleza o Arcano», «Grado 1 en
-      // Sigilo». Basta una de las alternativas con ese Grado o más.
-      else if ((m = part.match(/^Grado\s+(\d)\s+en\s+(.+)$/i))) {
-        const need = parseInt(m[1]);
-        const opciones = m[2].split(/\s+o\s+|\s*,\s*/i).map(x => x.trim()).filter(Boolean);
-        const met = opciones.some(sk => this._gradoHabilidad(sk) >= need);
-        out.atoms.push({ kind:'skill', raw: part, met });
-        if (!met) { out.met = false; out.unmet.push(`Grado ${need} en ${opciones.join(' o ')}`); }
-      }
-      // Prerequisite talent (e.g., "Despertar Sobrenatural", "Iniciado Místico", "Pacto de la Hoja G1")
-      else if (/^[A-ZÁÉÍÓÚÑ]/.test(part) && !/cualquier arquetipo/i.test(part)) {
-        // strip trailing "G1"/grade hints and parentheticals for the name match
-        const baseName = part.replace(/\bG\d\b/g,'').replace(/\([^)]*\)/g,'').trim().toLowerCase();
-        // Reserva/condición special-cases we can't verify → treat as informational, not blocking.
-        // «Pericia Física 2» tenía rama propia: ningún talento del catálogo la
-        // pide (ni la pedirá), pero una base de reglas importada podría, y sin
-        // esto caería aquí como si fuera un TALENTO llamado así y bloquearía.
-        // El Compendio v5.6 añade atomos que NO son talentos y que antes
-        // caían aquí como si lo fueran, bloqueando el requisito para siempre:
-        // «Competencia con armas marciales», «elección permanente», «Modo»,
-        // «Don», «En Ruptura», «dos talentos de esta Senda». Son condiciones
-        // que la ficha no puede verificar sola: se muestran, no bloquean.
-        const informational = /reserva|sin armadura|sin despertar|restringido|racial|atributo de fuente|atributo clave|requisito|^competencia\b|elecci[óo]n permanente|^modo\b|^don$|^en ruptura$|talentos de esta senda|^(?:pericia|filo)\s+(?:f[íi]sic[ao]|flexible|mental)\s*\d/i.test(part);
-        if (informational || baseName.length < 4) {
-          out.atoms.push({ kind:'info', raw: part, met:true });
-        } else {
-          // Alternativas [v5.3.5]: "Armadura Arcana G1 o Armadura de Poder G1" — basta una.
-          const candidates = baseName.split(/\s+o\s+/i).map(s => s.trim()).filter(s => s.length >= 4);
-          const met = candidates.some(nm => {
-            const tid = this._slugify ? this._slugify(nm) : nm.replace(/[^a-z0-9]+/g,'_');
-            return haveNames.has(nm) || haveIds.has(tid);
-          });
-          out.atoms.push({ kind:'talent', raw: part, met });
-          if (!met) { out.met = false; out.unmet.push(part.replace(/\s+/g,' ').trim()); }
-        }
-      } else {
-        out.atoms.push({ kind:'info', raw: part, met:true });
-      }
-    });
-    return out;
-  },
-
-  /** Lightweight slug used to match prerequisite talent names to ids. */
-  _slugify(s) {
-    return (s||'').toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-  },
-
-  /** Normaliza el nombre de una Fuente de Poder (sin acentos, min\u00fasculas). */
-  _normSource(s) {
-    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-  },
-
-
-  /** Las siete Fuentes, en la forma normalizada que usan las comparaciones. */
-  FUENTES: ['Erudici\u00f3n', 'Psi\u00f3nica', 'Divinidad', 'Naturaleza', 'Pacto', 'Herencia', 'Juramento'],
-
-  /** La Fuente que otorga la Afinidad del Descriptor elegido, o ''.
-      Manual v5.0 Cap.3: la Afinidad da Acceso a una Fuente y cuenta como su
-      Talento de Iniciaci\u00f3n para los requisitos de esa Fuente.
-
-      Dos formas: fija (`afinidad`) o condicionada a una elecci\u00f3n
-      (`afinidadOpcional`) \u2014 el Mutante, cuya Afinidad Psi\u00f3nica es una de sus
-      dos Expresiones Mutantes y por tanto solo cuenta si la escoge.
-
-      `valores` opcional: mapa id\u2192valor de los desplegables, para consultarla
-      mientras se est\u00e1 repintando el bloque de elecciones y el DOM a\u00fan no
-      tiene los selects nuevos. */
-  _afinidadFuente(valores) {
-    const d = this.DB.descriptors?.[document.getElementById('sel_desc')?.value];
-    if (!d) return '';
-    if (d.afinidad) return d.afinidad;
-    const am = d.afinidadMutacion;
-    if (am) {
-      if (!document.getElementById('desc_mut_' + slugId(am.opcion))?.checked) return '';
-      const f = valores ? valores['desc_afin_fuente'] : document.getElementById('desc_afin_fuente')?.value;
-      return am.fuentes.includes(f) ? f : '';
-    }
-    const op = d.afinidadOpcional;
-    if (!op) return '';
-    const elegidas = valores
-      ? Object.keys(valores).filter(k => /^desc_eleccion/.test(k)).map(k => valores[k])
-      : [...document.querySelectorAll('#desc_choices select[id^="desc_eleccion"]')].map(s => s.value);
-    return elegidas.includes(op.opcion) ? op.fuente : '';
-  },
-
-  /** Mantiene la Fuente de Poder en sinton\u00eda con la Afinidad del Linaje.
-      Rellena la Fuente si no hay ninguna, la mueve si el jugador cambia de
-      Linaje, y la retira si deja de tener Afinidad (el Mutante que deselecciona
-      su Expresi\u00f3n Psi\u00f3nica). Una Fuente elegida a mano en el Gestor no se toca:
-      solo se pisa el valor que puso la Afinidad anterior. */
-  _sincronizarFuenteAfinidad() {
-    const afin = this._afinidadFuente();
-    if (afin) {
-      if (this._powerSource !== afin &&
-          (!this._powerSource || this._powerSource === this._afinidadPrevia)) {
-        this._powerSource = afin;
-      }
-    } else if (this._powerSource && this._powerSource === this._afinidadPrevia) {
-      this._powerSource = '';
-    }
-    this._afinidadPrevia = afin;
-  },
-
-  /** Fuentes en las que el personaje est\u00e1 iniciado, por talento \u00abIniciado en
-      X\u00bb o por la Afinidad de su Linaje. Devuelve nombres normalizados. */
-  _fuentesIniciadas() {
-    const out = new Set();
-    // Durante el Asistente, la Afinidad y los Talentos salen de su borrador:
-    // el Linaje todavía no está en `sel_desc` ni los Talentos en el DOM.
-    const ctx = this._wizCtx;
-    if (ctx) {
-      if (ctx.afinidad) out.add(this._normSource(ctx.afinidad));
-      ctx.talentos.forEach(t => {
-        const m = (t.name || '').match(/^Iniciad[oa]\s+en\s+(.+)$/i);
-        if (m) out.add(this._normSource(m[1]));
-      });
-      out.delete('');
-      return out;
-    }
-    const af = this._afinidadFuente();
-    if (af) out.add(this._normSource(af));
-    [...document.querySelectorAll('input[name="chk_talents_hidden"]')].forEach(h => {
-      const m = (h.value || '').match(/^Iniciad[oa]\s+en\s+(.+)$/i);
-      if (m) out.add(this._normSource(m[1]));
-      // Compatibilidad con fichas anteriores a v5.0: el viejo talento \u00fanico
-      // \u00abIniciado M\u00edstico (Fuente)\u00bb llevaba la Fuente entre par\u00e9ntesis.
-      const v = (h.value || '').toLowerCase();
-      if (v.startsWith('iniciado m\u00edstico') || h.getAttribute('data-id') === 'iniciado_mistico') {
-        const p = (h.value || '').match(/\(([^)]+)\)/);
-        out.add(p ? this._normSource(p[1]) : this._normSource(this._powerSource || ''));
-      }
-    });
-    out.delete('');
-    return out;
-  },
-
-  /** \u00bfEl Canal est\u00e1 abierto? Desde v5.0 el Sagaz YA NO lo abre gratis: el
-      manual dice que \u00absi quiere una Fuente, gasta un Talento como
-      cualquiera\u00bb. Quedan dos v\u00edas: un Talento de Iniciaci\u00f3n, o la Afinidad
-      del Descriptor. */
-  _channelOpen() {
-    return this._fuentesIniciadas().size > 0;
-  },
-
-  /** Fija la Fuente de Poder elegida y refresca talentos/res\u00famenes. */
-  setPowerSource(v) {
-    this._powerSource = v || '';
-    this._markUnsaved();
-    this.calc();
-    this.showTalentSummary();
-    this.buildDetailPage();
-    if (document.getElementById('talent_panel')?.classList.contains('fs-open')) this._renderTalentList();
-  },
-
-  /** Is a talent available to the currently selected Arquetipo?
-      Heuristic: certain category families are gated to a core Arquetipo,
-      but the system is open by design, so we only flag the explicit
-      "NÚCLEO DURO" / arquetipo mentions found in `req`. */
-  _talentMatchesArq(t) {
-    const arqKey = document.getElementById('sel_arq')?.value || '';
-    const arqs = this.DB.archetypes || {};
-    // Sin acentos y sin cablear la lista: el Arquetipo del medio se muestra
-    // como «Versátil» pero su clave sigue siendo 'sutil', así que hay que
-    // reconocer AMBOS —y cualquier renombrado futuro— leyendo de la DB.
-    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const blob = norm(t.req);
-    const named = Object.keys(arqs).filter(k =>
-      blob.includes(norm(k)) || blob.includes(norm(arqs[k].name)));
-    if (named.length === 0) return true;            // open to everyone
-    return named.includes(arqKey);
-  },
-
-  /** Toggle a talent filter chip and re-render. */
-  _toggleTalentFilter(which, btn) {
-    this._talentFilters = this._talentFilters || { eligible:false, arq:false };
-    this._talentFilters[which] = !this._talentFilters[which];
-    if (btn) {
-      btn.classList.toggle('active', this._talentFilters[which]);
-      btn.setAttribute('aria-pressed', String(this._talentFilters[which]));
-    }
-    this._renderTalentList();
-  },
-
-  /** Search input handler — debounced re-render. */
-  _talentFilter() {
-    if (!this._debouncedTalentRender) {
-      this._debouncedTalentRender = this._debounce(() => this._renderTalentList(), 90);
-    }
-    this._debouncedTalentRender();
-  },
-
-  showTalentCategory(key, btn) {
-    this.activeTalentCat = key;
-    document.querySelectorAll('#tm_categories .catbtn').forEach(b=>b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    this._renderTalentList();
-  },
-
-  /** Central renderer: respects active category, text search and filter chips. */
-  _renderTalentList() {
-    const list = document.getElementById('tm_list'); if (!list) return;
-    list.innerHTML = '';
-    if (!this.DB.talents) return;
-    this._talentFilters = this._talentFilters || { eligible:false, arq:false };
-    const q = (document.getElementById('tm_search')?.value || '').trim().toLowerCase();
-    const searching = q.length > 0;
-
-    // When searching, scan ALL categories; otherwise just the active one.
-    let entries = [];
-    if (searching) {
-      Object.entries(this.DB.talents).forEach(([cat, arr]) =>
-        (arr||[]).forEach(t => entries.push([cat, t])));
-    } else {
-      const cat = this.activeTalentCat;
-      (this.DB.talents[cat] || []).forEach(t => entries.push([cat, t]));
-    }
-
-    // Búsqueda con relevancia: el NOMBRE manda. Se exige que cada palabra de la
-    // consulta aparezca en algún campo (búsqueda AND), y se puntúa fuerte el
-    // nombre (exacto > prefijo > contiene) para que al teclear un nombre salga
-    // ese talento primero y no otros por coincidencias en su descripción.
-    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const qn = norm(q);
-    const tokens = qn.split(/\s+/).filter(Boolean);
-    const matchScore = t => {
-      if (!searching) return 1;
-      const name = norm(t.name), desc = norm(t.desc), grds = norm((t.grades||[]).map(g=>g.d).join(' '));
-      // Las notas también entran en la búsqueda: los seis regalos de «Las
-      // Concesiones» y los cuatro tabúes de «Lo Prohibido» viven ahí.
-      const nts = norm((t.notes||[]).join(' '));
-      if (!tokens.every(tok => name.includes(tok) || desc.includes(tok) || grds.includes(tok) || nts.includes(tok))) return 0;
-      let score = 0;
-      if (name === qn) score += 1000;
-      else if (name.startsWith(qn)) score += 500;
-      else if (name.includes(qn)) score += 220;
-      tokens.forEach(tok => {
-        if (name.startsWith(tok)) score += 60;
-        else if (name.includes(tok)) score += 40;
-        else if (desc.includes(tok)) score += 8;
-        else if (grds.includes(tok)) score += 3;
-      });
-      return score;
-    };
-    let rows = entries.map(e => [e, matchScore(e[1])]).filter(([,s]) => s > 0);
-    rows.sort((a,b) => b[1] - a[1]);
-    rows = rows.map(([e]) => e);
-    if (this._talentFilters.arq) rows = rows.filter(([,t]) => this._talentMatchesArq(t));
-    if (this._talentFilters.eligible) rows = rows.filter(([,t]) => this._parseTalentReq(t.req).met);
-
-    // Selector EDITABLE de Fuente de Poder (solo dentro del gestor, si el Canal está abierto).
-    if (this._channelOpen()) list.appendChild(this._fuentePickerEl());
-    if (!rows.length) {
-      const p = document.createElement('p'); p.className = 'tm-empty';
-      p.textContent = searching ? 'Ningún talento coincide con la búsqueda.' :
-        (this._talentFilters.eligible || this._talentFilters.arq)
-          ? 'Ningún talento de esta categoría pasa los filtros activos.'
-          : 'Esta categoría está vacía.';
-      list.appendChild(p);
-      return;
-    }
-
-    rows.forEach(([cat, t]) => {
-      const sel = !!document.querySelector(`input[name="chk_talents_hidden"][value="${t.name}"]`);
-      const reqInfo = this._parseTalentReq(t.req);
-      const card = document.createElement('div');
-      card.className = `tc${sel?' sel':''}${reqInfo.met?'':' tc-locked'}`;
-      const chkEl = document.createElement('input');
-      chkEl.type = 'checkbox'; chkEl.value = t.name;
-      if (t.id) chkEl.setAttribute('data-id', t.id);
-      chkEl.setAttribute('data-desc', t.desc||'');
-      if (sel) chkEl.checked = true;
-      chkEl.addEventListener('change', () => app.toggleTalent(chkEl, t.name, t.id||''));
-      const infoDiv = document.createElement('div');
-      const h4 = document.createElement('h4'); h4.textContent = t.name; infoDiv.appendChild(h4);
-      // When searching, show which category the talent belongs to
-      if (searching) {
-        const tag = document.createElement('span');
-        tag.className = 'js-grade-block';
-        tag.style.color = 'var(--gold)';
-        tag.textContent = cat.charAt(0).toUpperCase()+cat.slice(1);
-        infoDiv.appendChild(tag);
-      }
-      // Tipo del talento (◆ PASIVO, ✦ HABILITADOR, ⚡ DISPARADOR, ◈ MODIFICADOR)
-      // con sus etiquetas (FUNDACIONAL, GRADO ÚNICO, ACUMULABLE). Dice cómo
-      // entra en juego, que es lo primero que se busca al comparar dos.
-      if (t.tipo) {
-        const tp = document.createElement('span');
-        tp.className = 'tc-tipo';
-        tp.dataset.tipo = this._tipoTalento(t.tipo);
-        tp.textContent = t.tipo;
-        infoDiv.appendChild(tp);
-      }
-      const p = document.createElement('p'); p.textContent = t.desc||''; infoDiv.appendChild(p);
-      const grades = t.grades || [];
-      const hiddenSel = sel ? [...document.querySelectorAll('input[name="chk_talents_hidden"]')].find(el=>el.value===t.name) : null;
-      const maxG = grades.length ? Math.max(...grades.map(g=>g.g)) : 1;
-      const activeG = hiddenSel ? Math.min(Math.max(parseInt(hiddenSel.getAttribute('data-grade'))||1,1),maxG) : 0;
-      // Stepper de Grado para talentos ya elegidos (subir/bajar de grado en el gestor)
-      if (sel && grades.length > 1) {
-        const gsel = document.createElement('div'); gsel.className = 'dc-gsel gsel-stepper';
-        const lbl = document.createElement('span'); lbl.className = 'dc-gsel-lbl'; lbl.textContent = 'Grado';
-        const dn = document.createElement('button'); dn.type='button'; dn.className='dc-gstep'; dn.textContent='−';
-        dn.disabled = activeG <= 1; dn.setAttribute('aria-label', `Bajar grado de ${t.name}`);
-        dn.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(t.name, activeG-1); });
-        const cur = document.createElement('span'); cur.className='dc-gcur'; cur.textContent = `G${activeG} / ${maxG}`;
-        const up = document.createElement('button'); up.type='button'; up.className='dc-gstep'; up.textContent='+';
-        up.disabled = activeG >= maxG; up.setAttribute('aria-label', `Subir grado de ${t.name}`);
-        up.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(t.name, activeG+1); });
-        gsel.append(lbl, dn, cur, up);
-        infoDiv.appendChild(gsel);
-      }
-      grades.forEach(g => {
-        const sp = document.createElement('span');
-        let cls = 'js-grade-block';
-        if (sel) cls += (g.g<=activeG ? ' grade-on' : ' grade-off') + (g.g===activeG ? ' grade-active' : '');
-        sp.className = cls;
-        sp.textContent = `G${g.g}: ${g.d}` + (sel && g.g>activeG ? '  (aún no adquirido)' : '');
-        infoDiv.appendChild(sp);
-      });
-      // Notas del talento ENTERO (Sinergia, Respuesta, listas de opciones).
-      // En el Compendio viven fuera de los bloques de Grado, y meterlas dentro
-      // del último las escondía de quien solo tiene el Grado 1.
-      (t.notes || []).forEach(n => {
-        const nt = document.createElement('span');
-        nt.className = 'js-grade-block tc-nota';
-        nt.textContent = n;
-        infoDiv.appendChild(nt);
-      });
-      // Requirement line
-      if (t.req) {
-        const rq = document.createElement('span');
-        rq.className = 'tc-req' + (reqInfo.met ? ' tc-req-ok' : '');
-        rq.textContent = reqInfo.met ? `✓ Requisitos: ${t.req}` : `Te falta: ${reqInfo.unmet.join(' · ')}`;
-        infoDiv.appendChild(rq);
-      }
-      card.appendChild(chkEl); card.appendChild(infoDiv);
-      card.addEventListener('click', e => {
-        if (e.target.type === 'checkbox') return;
-        const chk = card.querySelector('input');
-        chk.checked = !chk.checked;
-        this.toggleTalent(chk, t.name, t.id || '');
-      });
-      list.appendChild(card);
-    });
-  },
-
-  toggleTalent(chk, name, id) {
-    let hidden = document.querySelector(`input[name="chk_talents_hidden"][value="${name}"]`);
-    const card = chk.closest('.tc');
-    if (chk.checked) {
-      const count = talentosQueCuentan();
-      // El tope sale del nivel (TALENT_SLOTS, v57.16): antes era un 3 fijo.
-      // El Dominio y la Gracia vienen con su Iniciación y no ocupan espacio.
-      const max = this._talentMax();
-      if (count >= max && !talentoIncluido(name)) {
-        this.toast(`Al Nivel ${this._nivel()} puedes elegir ${max} talentos.`, 'err');
-        chk.checked = false; return;
-      }
-      if (!hidden) {
-        hidden = document.createElement('input'); hidden.type='hidden'; hidden.name='chk_talents_hidden';
-        hidden.value=name; hidden.setAttribute('data-desc',chk.getAttribute('data-desc'));
-        if (id) hidden.setAttribute('data-id',id);
-        document.body.appendChild(hidden);
-      }
-      card?.classList.add('sel');
-    } else { hidden?.remove(); card?.classList.remove('sel'); }
-    this.updateTalentCount(); this.calc();
-    this._markUnsaved();
-    // Re-render so requirement states that depend on other talents (prereqs) refresh
-    if (document.getElementById('talent_panel')?.classList.contains('fs-open')) {
-      this._renderTalentList();
-    }
-  },
-
-  clearTalents() {
-    const panel = document.getElementById('talent_panel');
-    const container = panel?.classList.contains('fs-open') ? panel : document.body;
-    this._confirmInContainer(container, '¿Limpiar talentos?', 'Se eliminarán todos los talentos seleccionados.', 'Limpiar', () => this._doCleanTalents());
-  },
-
-  _confirmInContainer(container, title, body, confirmLabel, onConfirm) {
-    this._confirm(title, body, confirmLabel, onConfirm, container);
-  },
-
-  _doCleanTalents() {
-    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
-    document.querySelectorAll('#tm_list input[type="checkbox"]').forEach(c=>{c.checked=false;c.closest('.tc')?.classList.remove('sel')});
-    this.updateTalentCount(); this.calc();
-    this._markUnsaved();
-  },
-
-  /** Nivel actual (1-10) y Talentos que da (Tabla de progresión). */
-  _nivel() {
-    return Math.min(10, Math.max(1, parseInt(document.getElementById('char_lvl')?.value, 10) || 1));
-  },
-  _talentMax() { return TALENT_SLOTS[this._nivel()] || 3; },
-
-  updateTalentCount() {
-    const n = talentosQueCuentan();
-    const el1 = document.getElementById('talent_count_main');
-    if (el1) el1.textContent = n;
-    const el2 = document.getElementById('talent_count_modal');
-    if (el2) {
-      el2.textContent = n;
-      el2.classList.toggle('full', n >= this._talentMax());
-      // Pulse
-      el2.classList.remove('pulse');
-      void el2.offsetWidth;
-      el2.classList.add('pulse');
-    }
-    // Update category dots
-    if (this.DB.talents) {
-      Object.keys(this.DB.talents).forEach(k => {
-        const catBtn = document.querySelector(`#tm_categories .catbtn[data-cat="${k}"]`);
-        if (!catBtn) return;
-        const hasSel = (this.DB.talents[k]||[]).some(t=>!!document.querySelector(`input[name="chk_talents_hidden"][value="${t.name}"]`));
-        let dot = catBtn.querySelector('.cat-dot');
-        if (hasSel && !dot) { dot=document.createElement('span'); dot.className='cat-dot'; catBtn.appendChild(dot); }
-        else if (!hasSel && dot) dot.remove();
-      });
-    }
-  },
-
-  /** Localiza un talento en la DB por nombre o id. */
-  _findTalent(name, tid) {
-    if (!this.DB.talents) return null;
-    for (const arr of Object.values(this.DB.talents)) {
-      const f = arr.find(t => t.name === name || (tid && t.id === tid));
-      if (f) return f;
-    }
-    return null;
-  },
-
-  /** Tarjeta de talento rica (colapsable): nombre + Grado activo + selector de
-      Grado (editable) + grados con realce ACUMULATIVO (los de Grado ≤ activo se
-      muestran "adquiridos"; los superiores, atenuados). Reutilizada en el
-      resumen de Talentos y en la página de Detalle. */
-  _talentRichCard(h, opts = {}) {
-    const editable = opts.editable !== false;
-    const name = String(h.value || '');
-    const tid  = h.getAttribute('data-id');
-    const tal  = this._findTalent(name, tid);
-    const grades = tal?.grades || [];
-    const maxG = grades.length ? Math.max(...grades.map(g => g.g)) : 1;
-    const activeG = Math.min(Math.max(parseInt(h.getAttribute('data-grade')) || 1, 1), maxG);
-
-    const card = document.createElement('div'); card.className = 'dc';
-    const dch = document.createElement('div'); dch.className = 'dch';
-    dch.addEventListener('click', () => card.classList.toggle('open'));
-    const dct = document.createElement('span'); dct.className = 'dct'; dct.textContent = this._sanitize(name);
-    dch.appendChild(dct);
-    if (grades.length) { const gb = document.createElement('span'); gb.className = 'dc-gbadge'; gb.textContent = 'G' + activeG; dch.appendChild(gb); }
-    const dca = document.createElement('span'); dca.className = 'dca'; dca.textContent = '▾'; dch.appendChild(dca);
-
-    const dcb = document.createElement('div'); dcb.className = 'dcb';
-    if (!tal) {
-      // El talento guardado ya no existe con ese nombre/id en la base actual
-      // (renombrado o reestructurado por una actualización de reglas). Se
-      // conserva la leyenda original del personaje, pero se avisa: sin esto,
-      // la tarjeta parecía un talento completo mostrando solo su leyenda.
-      const warn = document.createElement('div');
-      warn.className = 'js-grade-block grade-off';
-      warn.style.color = 'var(--blood)';
-      warn.textContent = 'No encontrado en la versión actual de las reglas — se conserva el nombre y la leyenda guardados, sin sus Grados. Revísalo en el Gestor de Talentos.';
-      dcb.appendChild(warn);
-    }
-    if (tal?.tipo) {
-      const tp = document.createElement('div'); tp.className = 'tc-tipo';
-      tp.dataset.tipo = this._tipoTalento(tal.tipo);
-      tp.textContent = this._sanitize(String(tal.tipo));
-      dcb.appendChild(tp);
-    }
-    const desc = document.createElement('div'); desc.style.marginBottom = '6px';
-    desc.textContent = this._sanitize(tal?.desc || h.getAttribute('data-desc') || 'Sin descripción.');
-    dcb.appendChild(desc);
-
-    if (editable && grades.length > 1) {
-      const gsel = document.createElement('div'); gsel.className = 'dc-gsel';
-      const lbl = document.createElement('span'); lbl.className = 'dc-gsel-lbl'; lbl.textContent = 'Grado'; gsel.appendChild(lbl);
-      grades.forEach(g => {
-        const b = document.createElement('button'); b.type = 'button';
-        b.className = 'dc-gbtn' + (g.g === activeG ? ' active' : ''); b.textContent = 'G' + g.g;
-        b.addEventListener('click', e => { e.stopPropagation(); this.setTalentGrade(name, g.g); });
-        gsel.appendChild(b);
-      });
-      dcb.appendChild(gsel);
-    }
-    grades.forEach(g => {
-      const owned = g.g <= activeG;
-      const gd = document.createElement('div');
-      gd.className = 'js-grade-block ' + (owned ? 'grade-on' : 'grade-off') + (g.g === activeG ? ' grade-active' : '');
-      gd.textContent = 'G' + Number(g.g) + ': ' + this._sanitize(String(g.d || '')) + (owned ? '' : '  (aún no adquirido)');
-      dcb.appendChild(gd);
-    });
-    (tal?.notes || []).forEach(n => {
-      const nt = document.createElement('div');
-      nt.className = 'js-grade-block tc-nota';
-      nt.textContent = this._sanitize(String(n));
-      dcb.appendChild(nt);
-    });
-    card.appendChild(dch); card.appendChild(dcb);
-    return card;
-  },
-
-  /** Selector EDITABLE de Fuente de Poder (solo dentro del Gestor de Talentos). */
-  _fuentePickerEl() {
-    const wrap = document.createElement('div'); wrap.className = 'fuente-row';
-    const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
-    const sel = document.createElement('select'); sel.className = 'fuente-sel'; sel.setAttribute('aria-label', 'Fuente de Poder');
-    const opts = [['', '— Elige Fuente —'], ['Erudición', 'Erudición (INT)'], ['Pacto', 'Pacto (CAR)'],
-      ['Herencia', 'Herencia (CAR)'], ['Divinidad', 'Divinidad (SAB/CAR)'], ['Juramento', 'Juramento (CAR)'],
-      ['Naturaleza', 'Naturaleza (SAB)'], ['Psiónica', 'Psiónica (INT/SAB)']];
-    const afin = this._afinidadFuente();
-    opts.forEach(([v, t]) => {
-      const o = document.createElement('option'); o.value = v;
-      // La Fuente que abre la Afinidad del Linaje se marca en la propia lista:
-      // sigue siendo elegible otra, pero se ve de dónde sale la preseleccionada.
-      o.textContent = (afin && v === afin) ? t + ' — Afinidad de tu Linaje' : t;
-      sel.appendChild(o);
-    });
-    sel.value = this._powerSource || '';
-    sel.addEventListener('change', () => this.setPowerSource(sel.value));
-    wrap.appendChild(lbl); wrap.appendChild(sel);
-    return wrap;
-  },
-
-  /** Vista de SOLO LECTURA de la Fuente elegida (resumen/detalle). */
-  _fuenteReadonlyEl() {
-    const wrap = document.createElement('div'); wrap.className = 'fuente-row readonly';
-    const lbl = document.createElement('span'); lbl.className = 'fuente-lbl'; lbl.textContent = 'Fuente de Poder';
-    const val = document.createElement('span'); val.className = 'fuente-val';
-    const afin = this._afinidadFuente();
-    val.textContent = this._powerSource
-      ? this._powerSource + (this._powerSource === afin ? ' · Afinidad' : '')
-      : '— elígela en el Gestor —';
-    wrap.appendChild(lbl); wrap.appendChild(val);
-    return wrap;
-  },
-
-  showTalentSummary() {
-    const items = Array.from(document.querySelectorAll('input[name="chk_talents_hidden"]'));
-    const list = document.getElementById('talents_summary_list'); if (!list) return;
-    list.innerHTML = '';
-    const view = document.getElementById('talents_summary_view');
-    const channel = this._channelOpen();
-    const show = items.length > 0 || channel;
-    if (view) view.style.display = show ? 'block' : 'none';
-    if (!show) return;
-    if (channel) list.appendChild(this._fuenteReadonlyEl());
-    items.forEach(h => list.appendChild(this._talentRichCard(h, { editable: false })));
-  },
-
-  buildDetailPage() {
-    const descKey = document.getElementById('sel_desc').value;
-    const arqKey = document.getElementById('sel_arq').value;
-    const filoVal = document.getElementById('sel_filo').value;
-    const desc = this.DB.descriptors?.[descKey];
-    const arq = this.DB.archetypes?.[arqKey];
-
-    // Descriptor
-    const dt = document.getElementById('detail_desc_title');
-    const db = document.getElementById('detail_desc_body');
-    if (desc) {
-      dt.textContent = 'Linaje: '+this._sanitize(desc.name);
-      db.innerHTML = '';
-      // txt paragraph (DB content — sanitized)
-      const dtxt = document.createElement('p');
-      dtxt.className = 'js-detail-txt';
-      dtxt.textContent = this._sanitize(desc.txt||'');
-      db.appendChild(dtxt);
-      if (desc.bonus) {
-        const bw = document.createElement('div'); bw.style.marginBottom='8px';
-        const bs = document.createElement('span');
-        bs.className = 'js-badge-gold';
-        bs.textContent = this._sanitize(desc.bonus); bw.appendChild(bs); db.appendChild(bw);
-      }
-      // Rasgos: solo los FIJOS. Las líneas «Elección: A o B» no son un
-      // rasgo que el personaje tenga, son un menú — se resuelven abajo.
-      const fijos = this._grantFijos(desc);
-      if (fijos.length) {
-        const gl = document.createElement('div');
-        gl.className = 'js-section-lbl';
-        gl.textContent='Rasgos'; db.appendChild(gl);
-        const gw = document.createElement('div'); gw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        fijos.forEach(g => { const s=document.createElement('span'); s.className='tbadge' + (this._esInconveniente(g) ? ' tbadge-contra' : ''); s.textContent='✦ '+this._sanitize(this._sinPrefijoRasgo(g)); gw.appendChild(s); });
-        db.appendChild(gw);
-      }
-
-      // Lo que el jugador ELIGIÓ, no lo que podía elegir.
-      const elegidas = this._descEleccionesElegidas ? this._descEleccionesElegidas() : [];
-      const pendientes = this._grantElecciones(desc).length - elegidas.length;
-      if (elegidas.length || pendientes > 0) {
-        const el = document.createElement('div');
-        el.className = 'js-section-lbl';
-        el.textContent = 'Elecciones'; db.appendChild(el);
-        const ew = document.createElement('div'); ew.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        elegidas.forEach(({etiqueta, valor}) => {
-          const s=document.createElement('span'); s.className='tbadge';
-          s.textContent = `${this._sanitize(etiqueta)}: ${this._sanitize(valor)}`;
-          ew.appendChild(s);
-        });
-        if (pendientes > 0) {
-          const s=document.createElement('span'); s.className='tbadge';
-          s.style.cssText='color:var(--muted);border-style:dashed';
-          s.textContent = pendientes === 1 ? 'Sin elegir' : `${pendientes} sin elegir`;
-          ew.appendChild(s);
-        }
-        db.appendChild(ew);
-      }
-
-      // Modificadores: los fijos MÁS los que el jugador escogió, que es lo
-      // que de verdad se le suma a los atributos.
-      const picks = this._descPicksElegidos ? this._descPicksElegidos() : [];
-      const totales = this._descMods(descKey);
-      if (Object.keys(totales).length) {
-        const ml = document.createElement('div');
-        ml.className = 'js-section-lbl';
-        ml.textContent='Modificadores'; db.appendChild(ml);
-        const mw = document.createElement('div'); mw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
-        Object.entries(totales).forEach(([k,v]) => {
-          const elegido = picks.some(p => p.a === k);
-          const s=document.createElement('span');
-          s.style.cssText=`font-family:var(--fm);font-size:var(--fs-xl);color:${Number(v)>0?'var(--sage)':'var(--blood)'};background:var(--raised);border:1px solid ${elegido?'var(--edge-gold)':'var(--rim)'};border-radius:var(--r);padding:3px 8px`;
-          s.textContent=String(k)+' '+(Number(v)>0?'+':'')+Number(v)+(elegido?' ·elegido':'');
-          mw.appendChild(s);
-        });
-        db.appendChild(mw);
-      }
-    } else { dt.textContent='Linaje: —'; db.innerHTML='<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Linaje.</p>'; }
-
-    // Archetype
-    const at = document.getElementById('detail_arq_title');
-    const ab = document.getElementById('detail_arq_body');
-    if (arq) {
-      at.textContent = 'Arquetipo: '+this._sanitize(arq.name);
-      ab.innerHTML = '';
-      const atxt = document.createElement('p');
-      atxt.className = 'js-detail-txt';
-      atxt.textContent = this._sanitize(arq.txt||''); ab.appendChild(atxt);
-      // Resource formulas grid
-      const rg = document.createElement('div'); rg.className='g3'; rg.style.marginBottom='8px';
-      const pvFormula = `${Number(arq.pv)||0} + CON`;
-      const adrFormula = `FUE/DES + Niv + ${Number(arq.adr_bonus)||0}`;
-      const ingFormula = `INT/SAB/CAR + Niv + ${Number(arq.ing_bonus)||0}`;
-      const mkResBox = (bg,bc,lc,lbl,val) => {
-        const d=document.createElement('div');
-        d.className = 'js-res-formula';
-        d.style.cssText=`background:${bg};border:1px solid ${bc}`;
-        const l=document.createElement('div'); l.className='js-res-formula-lbl'; l.style.color=lc; l.textContent=lbl;
-        const v=document.createElement('div'); v.className='js-res-formula-val'; v.textContent=val;
-        d.appendChild(l); d.appendChild(v); return d;
-      };
-      rg.appendChild(mkResBox('rgba(176,48,64,.12)','rgba(176,48,64,.3)','var(--blood)','PV Base',pvFormula));
-      rg.appendChild(mkResBox('rgba(76,175,125,.1)','rgba(76,175,125,.3)','var(--sage)','Adrenalina',adrFormula));
-      rg.appendChild(mkResBox('rgba(74,158,202,.1)','rgba(74,158,202,.3)','var(--ice)','Ingenio',ingFormula));
-      ab.appendChild(rg);
-      // Pericias adquiridas CON SU GRADO, no la que estuviera en sel_filo:
-      // desde v49 el personaje puede tener varias, cada una a un grado
-      // distinto, y el coste de Esfuerzo depende de él.
-      const periciasConGrado = [];
-      (arq?.edges || []).forEach(e => {
-        const slug = e.normalize('NFD').replace(/[̀-ͯ]/g,'')
-                      .toLowerCase().replace(/[^a-z0-9]+/g,'_');
-        const g = parseInt(document.getElementById('filo_g_' + slug)?.value, 10) || 0;
-        if (g > 0) periciasConGrado.push(`${e} ${g}`);
-      });
-      if (periciasConGrado.length || filoVal) {
-        const fl=document.createElement('div'); fl.className='js-section-lbl';
-        fl.textContent = periciasConGrado.length > 1 ? 'Pericias' : 'Pericia'; ab.appendChild(fl);
-        const fw=document.createElement('div'); fw.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px';
-        (periciasConGrado.length ? periciasConGrado : [filoVal]).forEach(t => {
-          const fb=document.createElement('span'); fb.className='tbadge';
-          fb.textContent=this._sanitize(t); fw.appendChild(fb);
-        });
-        ab.appendChild(fw);
-      }
-      // Chasis del Arquetipo (Manual v1.8): Perfil · Sustrato · Permiso ·
-      // Límite. Los cuatro son exclusivos y ningún Talento los otorga.
-      // Cada rasgo se pinta como una tarjeta propia con su nombre y su
-      // tipo: antes iban concatenados con « · » en un solo párrafo y se
-      // leían de corrido.
-      // Cada aptitud es un desplegable cerrado: en la ficha se ve la lista
-      // de nombres, y el texto solo cuando se pide. El chasis son unos
-      // 2.000 caracteres por Arquetipo y desplegado sepultaba la tarjeta.
-      const rasgosDe = b => (arq.rasgos || []).filter(r => r.b === b);
-      const resumen = t => {
-        const s = String(t || '').trim();
-        const corte = s.search(/[.:]\s/);
-        const primera = corte > 0 ? s.slice(0, corte + 1) : s;
-        return primera.length > 96 ? primera.slice(0, 95).trimEnd() + '…' : primera;
-      };
-      const desplegable = (nombre, tipo, cuerpo) => {
-        const det = document.createElement('details');
-        det.className = 'arq-rasgo';
-        const sum = document.createElement('summary');
-        sum.className = 'arq-rasgo-h';
-        const nm = document.createElement('span');
-        nm.className = 'arq-rasgo-n';
-        nm.textContent = this._sanitize(nombre);
-        sum.appendChild(nm);
-        if (tipo) {
-          const tp = document.createElement('span');
-          tp.className = 'arq-rasgo-t';
-          tp.dataset.tipo = this._tipoTalento(tipo);
-          tp.textContent = this._sanitize(tipo);
-          sum.appendChild(tp);
-        }
-        const pk = document.createElement('span');
-        pk.className = 'arq-rasgo-peek';
-        pk.textContent = this._sanitize(resumen(cuerpo));
-        sum.appendChild(pk);
-        det.appendChild(sum);
-        // El texto viene con saltos de línea y viñetas «• »: pintarlo de
-        // un tirón las dejaba de corrido en mitad del párrafo.
-        const cuerpoDiv = document.createElement('div');
-        cuerpoDiv.className = 'arq-rasgo-d';
-        let ul = null;
-        String(cuerpo || '').split('\n').forEach(linea => {
-          const t = linea.trim();
-          if (!t) return;
-          if (t.startsWith('•')) {
-            if (!ul) { ul = document.createElement('ul'); ul.className = 'arq-rasgo-ul'; cuerpoDiv.appendChild(ul); }
-            const li = document.createElement('li');
-            li.textContent = this._sanitize(t.replace(/^•\s*/, ''));
-            ul.appendChild(li);
-          } else {
-            ul = null;
-            const p = document.createElement('p');
-            p.textContent = this._sanitize(t);
-            cuerpoDiv.appendChild(p);
-          }
-        });
-        det.appendChild(cuerpoDiv);
-        ab.appendChild(det);
-      };
-      /* `etiqueta` es la clasificación del bloque (Sustrato, Permiso). No se
-         imprime como cabecera propia: diría «Sustrato — Presión» justo
-         encima de una tarjeta llamada «Presión». Va como tipo de la
-         tarjeta, donde clasifica sin repetir. El Perfil sí conserva su
-         cabecera porque agrupa rasgos con nombres distintos. */
-      const bloque = (titulo, cuerpo, b, nombreCorto, etiqueta) => {
-        const rs = rasgosDe(b);
-        if (!cuerpo && !rs.length) return;
-        if (!etiqueta) {
-          const l = document.createElement('div');
-          l.className = 'js-section-lbl';
-          l.textContent = titulo;
-          ab.appendChild(l);
-        }
-        if (cuerpo) desplegable(nombreCorto || titulo, etiqueta || '', cuerpo);
-        rs.forEach(r => desplegable(r.n, r.t, r.d));
-      };
-      bloque('Perfil', '', 'perfil');
-      bloque('Sustrato', arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Sustrato', 'Sustrato');
-      bloque('Permiso',  arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso',  'Permiso');
-      bloque('Límite',   arq.limite,   'limite',   'Límite',                          'Límite');
-
-      // Solo las del Arquetipo: las del Trasfondo van en su propia sección (v63).
-      const selSkills = Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value);
-      if (selSkills.length) {
-        const nArq = selSkills.length;
-        const cupo = arq?.skills_count;
-        const sl=document.createElement('div'); sl.className='js-section-lbl';
-        // Con el cupo a la vista se ve de un vistazo si faltan por elegir.
-        sl.textContent = cupo ? `Habilidades del Arquetipo — ${nArq} de ${cupo}` : 'Habilidades del Arquetipo';
-        ab.appendChild(sl);
-        const sw=document.createElement('div'); sw.style.cssText='display:flex;flex-wrap:wrap;gap:4px';
-        selSkills.forEach(s => { const sp=document.createElement('span'); sp.className='js-tag-neutral'; sp.textContent=this._sanitize(String(s)); sw.appendChild(sp); });
-        ab.appendChild(sw);
-      }
-    } else { at.textContent='Arquetipo: —'; ab.innerHTML='<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Arquetipo.</p>'; }
-
-    this._detalleTrasfondo();
-
-    // Talents
-    const tl = document.getElementById('detail_talents_list');
-    const talents = Array.from(document.querySelectorAll('input[name="chk_talents_hidden"]'));
-    if (!talents.length && !this._channelOpen()) { tl.innerHTML='<p class="txt-it-c">Sin talentos.</p>'; return; }
-    tl.innerHTML = '';
-    if (this._channelOpen()) tl.appendChild(this._fuenteReadonlyEl());
-    talents.forEach(h => tl.appendChild(this._talentRichCard(h, { editable: false })));
-  },
-
-  /** Pestaña Detalle · Trasfondo (v63): de dónde viene el personaje —su
-      Vínculo con el Dado de Uso, el kit de su oficio, el Defecto que el
-      Director puede usar— y las dos habilidades que le dio. */
-  _detalleTrasfondo() {
-    const bt = document.getElementById('detail_bg_title');
-    const bb = document.getElementById('detail_bg_body');
-    if (!bt || !bb) return;
-    const bg = this.DB.backgrounds?.[document.getElementById('sel_bg')?.value];
-    if (!bg) {
-      bt.textContent = 'Trasfondo: —';
-      bb.innerHTML = '<p style="color:var(--muted);font-size:var(--fs-xl);font-style:italic">Selecciona un Trasfondo.</p>';
-      return;
-    }
-    bt.textContent = 'Trasfondo: ' + this._sanitize(bg.name);
-    bb.innerHTML = '';
-    const nodo = (tag, cls, txt) => {
-      const e = document.createElement(tag);
-      if (cls) e.className = cls;
-      if (txt != null) e.textContent = this._sanitize(String(txt));
-      return e;
-    };
-    const seccion = (titulo, ...hijos) => {
-      bb.appendChild(nodo('div', 'js-section-lbl', titulo));
-      hijos.forEach(h => bb.appendChild(h));
-    };
-    if (bg.txt) bb.appendChild(nodo('p', 'js-detail-txt', bg.txt));
-    const voc = bg.vocacion;
-    if (voc) {
-      bt.textContent = 'Vocación: ' + this._sanitize(bg.name);
-      if (voc.lema) bb.appendChild(nodo('p', 'bg-nota', voc.lema));
-      const datos = nodo('div', 'bg-fila');
-      datos.appendChild(nodo('span', 'tbadge', 'Requisitos: ' + voc.req));
-      if (voc.fuente) datos.appendChild(nodo('span', 'tbadge', 'Fuente: ' + voc.fuente));
-      seccion('Vocación', datos);
-      const tl = nodo('div', 'bg-fila');
-      (voc.talentos || []).forEach(t => tl.appendChild(nodo('span', 'js-tag-neutral', t)));
-      seccion('Talentos de Nivel 1', tl);
-      const sl = nodo('div', 'bg-fila');
-      (voc.sendas || []).forEach((t, i) => sl.appendChild(nodo('span', 'tbadge', `Nivel ${3 + i * 2}: ${t}`)));
-      seccion('Senda de cada Talento posterior', sl);
-    }
-    // La primera línea de `grant` es el Vínculo («Red Militar (Ud8)»); el
-    // resto, el equipo del oficio.
-    const [vinculo, ...resto] = bg.grant || [];
-    if (vinculo) seccion('Vínculo', nodo('span', 'tbadge', vinculo),
-      nodo('p', 'bg-nota', 'Se tira al usar tu red de contactos: con 1–2, el dado baja un escalón.'));
-    if (resto.length) {
-      const w = nodo('div', 'bg-fila');
-      resto.forEach(g => w.appendChild(nodo('span', 'tbadge', g)));
-      seccion('Kit de oficio', w);
-    }
-    if (bg.defecto) seccion('Defecto', nodo('p', 'js-detail-txt bg-defecto', bg.defecto));
-    // Sin efecto mecánico: da contenido al Vínculo y al Defecto.
-    if (bg.pregunta) seccion('Pregunta de origen', nodo('p', 'bg-nota', bg.pregunta));
-    const hab = Array.from(document.querySelectorAll('input[name="chk_bg"]:checked')).map(e => e.value);
-    const w = nodo('div', 'bg-fila');
-    if (hab.length) hab.forEach(s => w.appendChild(nodo('span', 'js-tag-neutral', s)));
-    else w.appendChild(nodo('span', 'bg-nota', 'Sin elegir'));
-    seccion(`Habilidades del Trasfondo — ${hab.length} de 2`, w);
-  },
-
-  /** Fija el Grado activo de un talento elegido y refresca las vistas. */
-  setTalentGrade(name, g) {
-    const hidden = [...document.querySelectorAll('input[name="chk_talents_hidden"]')].find(el => el.value === name);
-    if (!hidden) return;
-    hidden.setAttribute('data-grade', String(g));
-    this._markUnsaved();
-    this.buildDetailPage();
-    this.showTalentSummary();
-    if (document.getElementById('talent_panel')?.classList.contains('fs-open')) this._renderTalentList();
-  },
-
-  // selectedApt stores { tricks: Set of keys, spells: Set of keys }
-  _aptSel: { tricks: new Set(), spells: new Set() },
-  _aptMode: 'tricks',
-
-  /** Returns true if the spell entry is classified as a trick (not a full spell). */
-  /** Un Truco se reconoce por su `type`, y solo por eso. Antes valía
-      también un coste que empezara por «adr»: hoy esa rama no clasifica
-      nada —los 24 Trucos ya traen `type:'trick'` y ningún Axioma tiene un
-      coste así— pero el día que uno lo tuviera se colaría en la sección de
-      Trucos sin avisar. */
-  _isTrickEntry(s) {
-    return !!s && s.type === 'trick';
-  },
-
-  /** Returns all DB spell keys that belong to the given section ('tricks' | 'spells'). */
-  _aptKeysForSection(sec) {
-    return Object.keys(this.DB.spells || {}).filter(k => {
-      const isTrick = this._isTrickEntry(this.DB.spells[k]);
-      return sec === 'tricks' ? isTrick : !isTrick;
-    });
-  },
-
-  buildAptitudesPage() {
-    this._renderAptSummary('tricks');
-    this._renderAptSummary('spells');
-  },
-
-  _renderAptSummary(sec) {
-    const sumList = document.getElementById(`${sec}_summary_list`);
-    const countEl = document.getElementById(`${sec}_count`);
-    const sel = this._aptSel[sec];
-    if (!sumList) return;
-
-    const items = this._aptKeysForSection(sec).filter(k => sel.has(k));
-    if (countEl) countEl.textContent = items.length;
-
-    if (!items.length) {
-      const label = sec === 'tricks' ? 'trucos' : 'conjuros';
-      sumList.innerHTML = `<div class="empty-state"><span class="es-rune">✦</span><span class="es-line">Aún sin ${label}</span><div class="es-hint">El Gestor te espera</div></div>`;
-      return;
-    }
-    sumList.innerHTML = '';
-    items.forEach(k => {
-      const s = this.DB.spells[k];
-      const card = document.createElement('div'); card.className='pc';
-      const pch=document.createElement('div'); pch.className='pch';
-      const pcn=document.createElement('span'); pcn.className='pcn'; pcn.textContent=this._sanitize(String(s.name||k));
-      const pcarr=document.createElement('span'); pcarr.style.cssText='font-size:var(--fs-sm);font-family:var(--fm);color:var(--muted)'; pcarr.textContent='▾';
-      pch.appendChild(pcn); pch.appendChild(pcarr);
-      const pcb=document.createElement('div'); pcb.className='pcb'; pcb.textContent=this._sanitize(String(s.txt||'Sin descripción.'));
-      card.appendChild(pch); card.appendChild(pcb);
-      card.addEventListener('click', () => card.classList.toggle('open'));
-      sumList.appendChild(card);
-    });
-  },
-
-  openAptManager(sec) {
-    this._tapShield();  // anti-traspaso de toques
-    this._aptMode = sec;
-    // Cada apertura empieza en limpio: un filtro de Nivel heredado de la
-    // visita anterior parece una lista vacía sin motivo.
-    this._aptLevel = 0;
-    this._aptFilterQuery = '';
-    const bq = document.getElementById('apt_search'); if (bq) bq.value = '';
-    // «Mi Fuente» viene activado si hay Fuente: es lo que se quiere el 99%
-    // de las veces, y el chip queda a la vista para apagarlo.
-    const hayFuente = !!this._normSource(this._powerSource || '');
-    this._aptFilters = { source: hayFuente, reach: false };
-    ['apt_filter_source', 'apt_filter_reach'].forEach(id => {
-      const b = document.getElementById(id);
-      if (!b) return;
-      const on = this._aptFilters[id === 'apt_filter_source' ? 'source' : 'reach'];
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-    // Los Trucos no tienen Fuente ni Nivel: sus filtros no pintan nada.
-    const filtros = document.getElementById('apt_filters');
-    if (filtros) filtros.style.display = sec === 'tricks' ? 'none' : '';
-    this._modalOpener = document.activeElement;
-    const panel   = document.getElementById('apt_panel');
-    const title   = document.getElementById('apt_manager_title');
-    const sub     = document.getElementById('apt_manager_sub');
-    const icon    = document.getElementById('apt_modal_icon');
-    const typeLbl = document.getElementById('apt_type_label');
-    if (sec === 'tricks') {
-      title.textContent = 'Gestor de Trucos';
-      if (sub)    sub.textContent    = 'Selecciona los trucos del personaje';
-      if (icon)   { icon.textContent = '✦'; icon.style.color = 'var(--gold)'; }
-      if (typeLbl) typeLbl.textContent = 'Trucos activos del personaje';
-    } else {
-      title.textContent = 'Gestor de Conjuros';
-      if (sub)    sub.textContent    = 'Selecciona los conjuros del personaje';
-      if (icon)   { icon.textContent = '✧'; icon.style.color = 'var(--ice)'; }
-      if (typeLbl) typeLbl.textContent = 'Conjuros activos del personaje';
-    }
-    const srch = document.getElementById('apt_search');
-    if (srch) srch.value = '';
-    this._aptFilterQuery = '';
-    this._renderAptManager();
-    panel.classList.add('fs-open');
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => document.getElementById('apt_search')?.focus());
-    this._attachPanelSwipeBack(panel, () => this.closeAptManager());
-  },
-
-  /* ── Filtros del Gestor de Aptitudes ──────────────────────────────
-     El catálogo tiene 327 Axiomas de cinco Fuentes y nueve Niveles. Sin
-     filtros, alguien iniciado en Erudición a Nivel 1 recorre las 327 para
-     encontrar las 36 que puede aprender: el 89% es ruido. Estos filtros
-     usan lo que la ficha YA sabe —la Fuente y el techo de Axioma— en vez
-     de pedírselo otra vez.                                              */
-
-  /** Techo de Nivel de Axioma: lo fija la inversión, no el Nivel de
-      personaje (Manual: Iniciación 3 · Adepto 6 · Maestría 9). Sin
-      Iniciación no hay techo que valga: devuelve 0. */
-  _techoAxioma() {
-    const nombres = [...document.querySelectorAll('input[name="chk_talents_hidden"]')]
-      .map(h => (h.value || '').toLowerCase());
-    if (nombres.some(n => n.startsWith('maestría de fuente') || n.startsWith('maestria de fuente'))) return 9;
-    if (nombres.some(n => n.startsWith('adepto de fuente'))) return 6;
-    if (this._channelOpen()) return 3;
-    return 0;
-  },
-
-  _toggleAptFilter(which, btn) {
-    this._aptFilters = this._aptFilters || { source: false, reach: false };
-    this._aptFilters[which] = !this._aptFilters[which];
-    if (btn) {
-      btn.classList.toggle('active', this._aptFilters[which]);
-      btn.setAttribute('aria-pressed', String(this._aptFilters[which]));
-    }
-    this._aptFilter();
-  },
-
-  /** Chips de Nivel: uno por Nivel presente en el catálogo de la sección. */
-  _buildAptLevels() {
-    const host = document.getElementById('apt_levels');
-    if (!host) return;
-    host.textContent = '';
-    if (this._aptMode === 'tricks') return;      // los Trucos no tienen Nivel
-    const niveles = [...new Set(this._aptKeysForSection('spells')
-      .map(k => this.DB.spells[k].level).filter(n => n > 0))].sort((a, b) => a - b);
-    this._aptLevel = this._aptLevel || 0;        // 0 = todos
-    const chip = (n, txt) => {
-      const b = document.createElement('button');
+    delete this._fotos[sec];
+    this._verSeccion(sec, false);
+    this.pintarFicha();
+    const sv = this._vista(sec, 'summary');
+    if (sv) { sv.classList.remove('sum-reveal'); void sv.offsetWidth; sv.classList.add('sum-reveal'); }
+    if (this._modoEdicion && !Object.keys(this.SECS).some(s => this._enEdicion(s))) this._salirModoEdicion();
+  },
+
+  cancelarEdicion(sec) {
+    const foto = this._fotos[sec];
+    if (foto) Object.keys(foto).forEach(c => { this.cr[c] = foto[c]; });
+    delete this._fotos[sec];
+    this._verSeccion(sec, false);
+    this.pintarFicha(true);
+    this.toast('Cambios descartados', 'info');
+    if (this._modoEdicion && !Object.keys(this.SECS).some(s => this._enEdicion(s))) this._salirModoEdicion();
+  },
+
+  /** Lápiz en la cabecera de cada tarjeta editable y «Cancelar» junto a
+      «Confirmar». Las vistas de edición se pintan al abrirse, así que los
+      botones de pie los pone _pieEdicion() cada vez. */
+  _montarSecciones() {
+    Object.keys(this.SECS).forEach(sec => {
+      const card = document.getElementById(this.SECS[sec].card);
+      if (!card || card.querySelector(`.edit-pen[data-sec="${sec}"]`)) return;
+      const b = this.h('button', 'edit-pen');
       b.type = 'button';
-      b.className = 'apt-lvl' + (this._aptLevel === n ? ' active' : '');
-      b.textContent = txt;
-      b.setAttribute('aria-label', n ? 'Solo Axiomas de Nivel ' + n : 'Todos los Niveles');
-      b.addEventListener('click', () => { this._aptLevel = n; this._buildAptLevels(); this._aptFilter(); });
-      host.appendChild(b);
-    };
-    chip(0, 'Todos');
-    niveles.forEach(n => chip(n, String(n)));
-  },
-
-  _aptFilter(query) {
-    if (query !== undefined) this._aptFilterQuery = (query || '').toLowerCase().trim();
-    const q = this._aptFilterQuery || '';
-    const f = this._aptFilters = this._aptFilters || { source: false, reach: false };
-    const avail = document.getElementById('apt_available_list');
-    if (!avail) return;
-    const miFuente = this._normSource(this._powerSource || '');
-    const techo = this._techoAxioma();
-    let visibles = 0, total = 0;
-    avail.querySelectorAll('.apt-card').forEach(card => {
-      const s = this.DB.spells[card.dataset.key] || {};
-      total++;
-      const name = (card.querySelector('.apt-card__name')?.textContent || '').toLowerCase();
-      const desc = (card.querySelector('.apt-card__desc')?.textContent  || '').toLowerCase();
-      let ok = !q || name.includes(q) || desc.includes(q);
-      // Los Trucos son transversales a todas las Fuentes: nunca se ocultan
-      // por Fuente ni por Nivel, o «Mi Fuente» dejaría al personaje sin los
-      // 24 Trucos que sí puede usar.
-      const esTruco = s.type === 'trick';
-      // Los rituales comunes no son de ninguna Fuente: los usa cualquiera.
-      if (ok && f.source && miFuente && !esTruco && s.source !== 'Rituales') {
-        ok = this._normSource(s.source || '') === miFuente;
-      }
-      // Cada Fuente tiene su lista de Trucos (Catálogo, «Trucos por Fuente»).
-      // Herencia no tiene lista: escribe los suyos, así que los ve todos.
-      if (ok && f.source && miFuente && esTruco && Array.isArray(s.fuentes) && miFuente !== this._normSource('Herencia')) {
-        ok = s.fuentes.some(x => this._normSource(x) === miFuente);
-      }
-      if (ok && f.reach && !esTruco) {
-        ok = techo > 0 && (s.level || 0) <= techo;
-      }
-      if (ok && this._aptLevel && !esTruco) ok = (s.level || 0) === this._aptLevel;
-      card.style.display = ok ? '' : 'none';
-      if (ok) visibles++;
-    });
-    const cuenta = document.getElementById('apt_avail_count');
-    if (cuenta) {
-      cuenta.textContent = visibles === total
-        ? `${total} disponibles`
-        : `${visibles} de ${total}`;
-    }
-    // Avisos honestos cuando un filtro no puede hacer su trabajo.
-    const chipF = document.getElementById('apt_filter_source');
-    if (chipF) chipF.disabled = !miFuente;
-    const chipR = document.getElementById('apt_filter_reach');
-    if (chipR) chipR.disabled = techo === 0;
-  },
-
-  _aptClearAll() {
-    const sec = this._aptMode;
-    if (!this._aptSel[sec]) return;
-    this._aptSel[sec].clear();
-    this._renderAptManager();
-    // Clear search
-    const srch = document.getElementById('apt_search');
-    if (srch) srch.value = '';
-    this._aptFilterQuery = '';
-  },
-
-  _renderAptManager() {
-    const sec = this._aptMode;
-    const sel = this._aptSel[sec];
-    const allItems = this._aptKeysForSection(sec);
-
-    const availList = document.getElementById('apt_available_list');
-    const selList   = document.getElementById('apt_selected_list');
-    const selEmpty  = document.getElementById('apt_selected_empty');
-    const selCount  = document.getElementById('apt_sel_count');
-    availList.innerHTML = ''; selList.innerHTML = '';
-
-    /** Build a card. Click handler toggles classes in-place and moves the card
-     *  between lists — no full re-render needed on every interaction. */
-    const makeCard = (k, isSelected) => {
-      const s    = this.DB.spells[k];
-      const card = document.createElement('div');
-      card.className = 'apt-card' + (isSelected ? ' apt-card--sel' : '');
-      // La clave viaja en la tarjeta para que los filtros lean Fuente y
-      // Nivel del dato, no del texto pintado.
-      card.dataset.key = k;
-
-      const topRow = document.createElement('div');
-      topRow.className = 'apt-card__row';
-
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'apt-card__name';
-      nameSpan.textContent = s.name || k;
-      // Doce Axiomas comparten nombre entre Fuentes distintas —Disipar Magia
-      // está en Erudición, Divinidad y Naturaleza, y a distinto Nivel en cada
-      // una—. Sin la Fuente a la vista son tres tarjetas idénticas.
-      if (s.source) {
-        const src = document.createElement('span');
-        src.className = 'apt-card__src';
-        src.textContent = s.source;
-        nameSpan.appendChild(src);
-      }
-
-      const badge = document.createElement('span');
-      badge.className = 'apt-card__badge' + (isSelected ? '' : ' badge-add');
-      badge.textContent = isSelected ? '✓ Quitar' : '+ Añadir';
-
-      topRow.appendChild(nameSpan);
-      topRow.appendChild(badge);
-      card.appendChild(topRow);
-
-      if (s.txt) {
-        const desc = document.createElement('div');
-        desc.className = 'apt-card__desc';
-        desc.textContent = s.txt.length > 90 ? s.txt.slice(0, 90) + '…' : s.txt;
-        card.appendChild(desc);
-      }
-
-      card.addEventListener('click', () => {
-        const nowSelected = sel.has(k);
-        if (nowSelected) {
-          sel.delete(k);
-          card.classList.remove('apt-card--sel');
-          badge.className = 'apt-card__badge badge-add';
-          badge.textContent = '+ Añadir';
-          availList.insertBefore(card, availList.firstChild);
-        } else {
-          sel.add(k);
-          card.classList.add('apt-card--sel');
-          badge.className = 'apt-card__badge';
-          badge.textContent = '✓ Quitar';
-          selList.appendChild(card);
-        }
-        const count = selList.querySelectorAll('.apt-card').length;
-        if (selCount) {
-          selCount.textContent = count;
-          // Pulse animation on change
-          selCount.classList.remove('pulse');
-          void selCount.offsetWidth; // reflow
-          selCount.classList.add('pulse');
-        }
-        if (selEmpty) selEmpty.style.display = count ? 'none' : 'block';
-        this._markUnsaved();
-        // La tarjeta cambia de columna sin repintar la lista, así que el
-        // recuento «N de M» hay que recalcularlo o se queda una unidad
-        // desfasado. Y una tarjeta que vuelve a Disponibles debe pasar por
-        // los filtros vigentes en vez de aparecer siempre visible.
-        this._aptFilter();
-        this._renderAptSummary(sec);
+      b.dataset.sec = sec;
+      b.title = 'Editar';
+      b.setAttribute('aria-label', 'Editar esta tarjeta');
+      b.innerHTML = '<svg class="ico ico-solo" aria-hidden="true"><use href="#i-quill"/></svg>';
+      b.addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        this.editSection(sec);
       });
-
-      return card;
-    };
-
-    const notSel = allItems.filter(k => !sel.has(k));
-    const isSel  = allItems.filter(k =>  sel.has(k));
-
-    if (!allItems.length) {
-      const label = sec === 'tricks' ? 'trucos' : 'conjuros';
-      availList.innerHTML = `<div class="apt-empty"><p>No hay ${label} en la base de datos.<br>Añádelos en el Editor de Reglas.</p><button class="btn btn-g" style="font-size:var(--fs-md)" onclick="app.closeAptManager();setTimeout(()=>app.openDatabaseEditor(),260)">Editor de Reglas</button></div>`;
-    } else {
-      notSel.forEach(k => availList.appendChild(makeCard(k, false)));
-      if (!notSel.length) {
-        const d = document.createElement('p');
-        d.className = 'txt-it-c';
-        d.textContent = 'Todos añadidos.';
-        availList.appendChild(d);
-      }
-    }
-
-    isSel.forEach(k => selList.appendChild(makeCard(k, true)));
-    if (selEmpty) selEmpty.style.display = isSel.length ? 'none' : 'block';
-    if (selCount) selCount.textContent = isSel.length;
-    // Repintar la lista descarta el display:none de las tarjetas, así que
-    // los filtros vigentes hay que volver a aplicarlos aquí.
-    this._buildAptLevels();
-    this._aptFilter();
-  },
-
-  closeAptManager() {
-    this._tapShield();  // anti-traspaso de toques
-    const panel = document.getElementById('apt_panel');
-    panel.style.transform = '';
-    panel.style.opacity   = '';
-    panel.classList.remove('fs-open');
-    document.body.style.overflow = '';
-    this._renderAptSummary(this._aptMode);
-    if (this._modalOpener?.focus) {
-      setTimeout(() => { try { this._modalOpener?.focus(); } catch(e){} this._modalOpener = null; }, 0);
-    }
-  },
-
-  openDatabaseEditor() {
-    this._tapShield();  // anti-traspaso de toques
-    const sm = document.getElementById('settings_modal');
-    if (sm.open) sm.close();
-    const panel = document.getElementById('db_panel');
-    panel.classList.add('fs-open');
-    document.body.style.overflow = 'hidden';
-    this.dbEditCategory('descriptors');
-    this._attachPanelSwipeBack(panel, () => this.closeDatabaseEditor());
-  },
-
-  closeDatabaseEditor() {
-    this._tapShield();  // anti-traspaso de toques
-    const panel = document.getElementById('db_panel');
-    panel.style.transform = '';
-    panel.style.opacity   = '';
-    panel.classList.remove('fs-open');
-    document.body.style.overflow = '';
-  },
-
-  /** Attaches swipe-back gesture to a fullscreen panel.
-   *  Primary close = ← button in header (always works).
-   *  Swipe-back = wider zone (40%), velocity-aware, cleans up all listeners. */
-  _attachPanelSwipeBack(panel, closeFn) {
-    // Tear down all previous listeners
-    if (panel._swipeHandlers) {
-      panel.removeEventListener('touchstart', panel._swipeHandlers.start, {passive:true});
-      panel.removeEventListener('touchmove',  panel._swipeHandlers.move,  {passive:true});
-      panel.removeEventListener('touchend',   panel._swipeHandlers.end);
-      panel.removeEventListener('touchcancel',panel._swipeHandlers.cancel);
-    }
-
-    let startX = 0, startY = 0, lastX = 0, lastT = 0;
-    let tracking = false, dragging = false;
-    const W          = () => panel.offsetWidth || window.innerWidth;
-    const EDGE_FRAC  = 0.40;   // 40% of screen — easy to reach
-    const VEL_THRESH = 0.4;    // px/ms — flick velocity to trigger close
-    const DIST_THRESH = 0.35;  // 35% of screen width to trigger close by distance
-
-    const reset = () => {
-      if (!dragging) return;
-      dragging = false;
-      tracking = false;
-      panel.style.transition = 'transform .24s cubic-bezier(.25,.46,.45,.94)';
-      panel.style.transform  = 'translateX(0)';
-      // Clean transition after snap
-      setTimeout(() => { panel.style.transition = ''; panel.style.transform = ''; }, 260);
-    };
-
-    const doClose = () => {
-      dragging = false; tracking = false;
-      panel.classList.add('swipe-used'); // hide hint strip after first use
-      panel.style.transition = 'transform .24s cubic-bezier(.25,.46,.45,.94)';
-      panel.style.transform  = `translateX(${W()}px)`;
-      setTimeout(() => {
-        panel.style.transition = '';
-        panel.style.transform  = '';
-        closeFn();
-      }, 240);
-    };
-
-    const onStart = e => {
-      if (e.touches.length > 1) return;
-      const t = e.touches[0];
-      if (t.clientX > W() * EDGE_FRAC) return;
-      // Don't interfere with inputs or scrollable areas
-      if (e.target.closest('input,textarea,select,.apt-col-body,.dbct,.tms,.dbs,.tmct')) return;
-      startX = lastX = t.clientX;
-      startY = t.clientY;
-      lastT  = Date.now();
-      tracking = true; dragging = false;
-      panel.style.transition = 'none';
-    };
-
-    const onMove = e => {
-      if (!tracking || e.touches.length > 1) return;
-      const t  = e.touches[0];
-      const dx = t.clientX - startX;
-      const dy = Math.abs(t.clientY - startY);
-      // Cancel if predominantly vertical
-      if (!dragging && dy > Math.abs(dx) * 1.5 && dy > 8) { reset(); return; }
-      if (dx <= 0) return; // Only right-swipe
-      dragging = true;
-      // Track velocity
-      const now = Date.now();
-      lastX = t.clientX; lastT = now;
-      const clamped = Math.min(dx, W());
-      panel.style.transform = `translateX(${clamped}px)`;
-      // Visual resistance — panel darkens as it moves
-      panel.style.opacity = String(Math.max(0.85, 1 - (clamped / W()) * 0.15));
-    };
-
-    const onEnd = e => {
-      if (!tracking) return;
-      if (!dragging) { tracking = false; panel.style.transition = ''; return; }
-      const t  = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dt = Date.now() - lastT;
-      const vel = dt > 0 ? (t.clientX - lastX) / dt : 0; // px/ms
-      panel.style.opacity = '';
-      // Close if flick OR dragged past threshold
-      if (vel >= VEL_THRESH || dx >= W() * DIST_THRESH) {
-        doClose();
-      } else {
-        reset();
-      }
-    };
-
-    const onCancel = () => { panel.style.opacity = ''; reset(); };
-
-    panel.addEventListener('touchstart',  onStart, {passive:true});
-    panel.addEventListener('touchmove',   onMove,  {passive:true});
-    panel.addEventListener('touchend',    onEnd,   {passive:false});
-    panel.addEventListener('touchcancel', onCancel,{passive:true});
-
-    // Store all 4 handlers for future cleanup
-    panel._swipeHandlers = { start:onStart, move:onMove, end:onEnd, cancel:onCancel };
-  },
-
-  dbEditCategory(cat) {
-    this.currentEditorCat = cat;
-    const lc = document.getElementById('db_list_container');
-    const fc = document.getElementById('db_form_container');
-    fc.style.display = 'none';
-    fc.classList.remove('animate');
-    const src = this.DB[cat] || {};
-    const labels = {descriptors:'Linajes',archetypes:'Arquetipos',backgrounds:'Trasfondos',talents:'Talentos',weapons:'Armas',armors:'Armaduras',shields:'Escudos',spells:'Trucos / Conjuros'};
-    const catLabel = labels[cat] || cat;
-    // Count items
-    let count = 0;
-    if (cat === 'talents') {
-      Object.values(src).forEach(arr => { count += (arr||[]).length; });
-    } else {
-      count = Object.keys(src).length;
-    }
-    // Update sidebar active state (support both .catbtn.db-cat and legacy .catbtn)
-    document.querySelectorAll('#db_sidebar .catbtn').forEach(b => {
-      const isActive = b.getAttribute('aria-label') === ('Editar ' + catLabel) ||
-        b.textContent.trim().includes(catLabel);
-      b.classList.toggle('active', isActive);
+      const sum = card.tagName === 'DETAILS' ? card.querySelector(':scope > summary') : null;
+      if (sum) sum.appendChild(b);
+      else { b.classList.add('edit-pen--esquina'); card.appendChild(b); card.classList.add('con-lapiz'); }
     });
-    lc.innerHTML = '';
-    // Header row — revamped
-    const hdr = document.createElement('div');
-    hdr.className = 'db-list-header';
-    const htitle = document.createElement('div');
-    htitle.style.cssText = 'display:flex;align-items:center;gap:8px';
-    const hlbl = document.createElement('span');
-    hlbl.className = 'db-list-title';
-    hlbl.textContent = catLabel;
-    const hcount = document.createElement('span');
-    hcount.className = 'db-list-count';
-    hcount.textContent = count + ' entrada' + (count !== 1 ? 's' : '');
-    htitle.appendChild(hlbl); htitle.appendChild(hcount);
-    const hnew = document.createElement('button');
-    hnew.className = 'btn btn-p'; hnew.style.cssText = 'font-size:var(--fs-sm);padding:6px 11px;min-height:34px';
-    hnew.textContent = '+ Nuevo'; hnew.onclick = () => app.dbEditEntry('new');
-    hdr.appendChild(htitle); hdr.appendChild(hnew);
-    lc.appendChild(hdr);
-    // Buscador: filtra las entradas de la categoría en vivo
-    if (count) {
-      const searchWrap = document.createElement('div');
-      searchWrap.className = 'db-search-wrap';
-      const search = document.createElement('input');
-      search.type = 'search';
-      search.className = 'db-search';
-      search.id = 'db_search';
-      search.placeholder = `Buscar en ${catLabel}…`;
-      search.setAttribute('aria-label', `Buscar en ${catLabel}`);
-      search.addEventListener('input', () => this._dbFilterList(search.value));
-      searchWrap.appendChild(search);
-      lc.appendChild(searchWrap);
+    // La tarjeta del retrato tiene su vista de edición en el HTML: su
+    // «Confirmar» recibe aquí a su compañero «Cancelar».
+    const cnf = document.querySelector('#personal_edit_view .bcnf');
+    if (cnf && !cnf.closest('.edit-acc')) {
+      const fila = this.h('div', 'edit-acc');
+      cnf.parentNode.insertBefore(fila, cnf);
+      fila.append(this._botonCancelar('personal'), cnf);
     }
-    if (!count) {
-      const empty = document.createElement('div');
-      empty.className = 'db-empty';
-      empty.innerHTML = `<p>Sin entradas en <strong>${catLabel}</strong>.<br>Crea la primera con "+ Nuevo".</p>`;
-      lc.appendChild(empty);
-      return;
-    }
-    if (cat === 'talents') {
-      Object.keys(src).forEach(sub => {
-        const h = document.createElement('div');
-        h.className = 'db-group-hdr';
-        h.style.cssText = 'font-family:var(--fm);font-size:var(--fs-xs);color:rgba(var(--gold-rgb),.7);letter-spacing:.15em;text-transform:uppercase;padding:6px 4px 4px;border-bottom:1px solid rgba(74,63,94,.3);margin:10px 0 5px;display:flex;justify-content:space-between;align-items:center';
-        const hl = document.createElement('span'); hl.textContent = sub;
-        const hc = document.createElement('span'); hc.style.cssText = 'color:var(--muted);font-size:var(--fs-2xs)'; hc.textContent = (src[sub]||[]).length + ' talentos';
-        h.appendChild(hl); h.appendChild(hc);
-        lc.appendChild(h);
-        (src[sub]||[]).forEach((item,i) => this._dbListItem(lc, item.name, `${sub}|${i}`));
-      });
-    } else {
-      Object.entries(src).forEach(([k,v]) => this._dbListItem(lc, v.name||k, k));
-    }
-    // Mensaje de "sin resultados" para el buscador
-    const noRes = document.createElement('div');
-    noRes.className = 'db-search-empty';
-    noRes.id = 'db_search_empty';
-    noRes.textContent = 'Sin resultados para esa búsqueda.';
-    lc.appendChild(noRes);
+    const t = this.h('button', 'edit-terminar');
+    t.type = 'button'; t.id = 'edit_terminar'; t.hidden = true;
+    t.innerHTML = this._ico('i-check') + 'Terminar edición';
+    t.addEventListener('click', () => this.terminarEdicion());
+    document.getElementById('app-screen').appendChild(t);
+  },
+  _botonCancelar(sec) {
+    const can = this.h('button', 'edit-cancel');
+    can.type = 'button';
+    can.innerHTML = this._ico('i-x') + 'Cancelar';
+    can.addEventListener('click', () => this.cancelarEdicion(sec));
+    return can;
+  },
+  /** Fila «Cancelar | Confirmar» al pie de una vista de edición. */
+  _pieEdicion(sec) {
+    const fila = this.h('div', 'edit-acc');
+    const cnf = this.h('button', 'bcnf');
+    cnf.type = 'button';
+    cnf.innerHTML = this._ico('i-check') + 'Confirmar';
+    cnf.addEventListener('click', () => this.confirmSection(sec));
+    fila.append(this._botonCancelar(sec), cnf);
+    return fila;
   },
 
-  /** Filtra las entradas del Editor de Reglas por nombre (sin acentos). */
-  _dbFilterList(q) {
-    const lc = document.getElementById('db_list_container');
-    if (!lc) return;
-    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const query = norm(q.trim());
-    let visible = 0;
-    lc.querySelectorAll('.dbitem').forEach(row => {
-      const name = row.querySelector('.dbitem-name')?.textContent || '';
-      const hit = !query || norm(name).includes(query);
-      row.style.display = hit ? '' : 'none';
-      if (hit) visible++;
+  /* Modo edición: todas las tarjetas a la vez y un único «Terminar». */
+  _modoEdicion: false,
+  modoEdicion() {
+    if (this._modoEdicion) { this.terminarEdicion(); return; }
+    this._modoEdicion = true;
+    document.body.classList.add('modo-edicion');
+    Object.keys(this.SECS).forEach(s => {
+      const card = document.getElementById(this.SECS[s].card);
+      if (card && !card.hidden) this.editSection(s);
     });
-    // Grupos de talentos: ocultar encabezados sin resultados visibles
-    lc.querySelectorAll('.db-group-hdr').forEach(h => {
-      let el = h.nextElementSibling, any = false;
-      while (el && !el.classList.contains('db-group-hdr')) {
-        if (el.classList.contains('dbitem') && el.style.display !== 'none') { any = true; break; }
-        el = el.nextElementSibling;
-      }
-      h.style.display = any ? '' : 'none';
-    });
-    const empty = document.getElementById('db_search_empty');
-    if (empty) empty.style.display = visible ? 'none' : 'block';
+    document.getElementById('edit_terminar').hidden = false;
+    document.getElementById('sdial_modo_edicion')?.classList.add('is-on');
+    this.toast('Modo edición: todas las tarjetas abiertas', 'info');
+  },
+  terminarEdicion() {
+    Object.keys(this.SECS).forEach(s => { if (this._enEdicion(s)) this.confirmSection(s); });
+    this._salirModoEdicion();
+  },
+  _salirModoEdicion() {
+    this._modoEdicion = false;
+    document.body.classList.remove('modo-edicion');
+    const b = document.getElementById('edit_terminar'); if (b) b.hidden = true;
+    document.getElementById('sdial_modo_edicion')?.classList.remove('is-on');
   },
 
-  _dbListItem(container, name, key) {
-    const row = document.createElement('div');
-    row.className = 'dbitem';
-    row.setAttribute('data-key', key);
-    row.title = 'Editar "' + String(name||'') + '"';
-    // Clicking anywhere on the row opens edit
-    row.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return; // let buttons handle themselves
-      container.querySelectorAll('.dbitem').forEach(r => r.classList.remove('active'));
-      row.classList.add('active');
-      this.dbEditEntry(key);
-    });
-    const nm = document.createElement('span');
-    nm.className = 'dbitem-name';
-    nm.textContent = String(name||'—');
-    const acts = document.createElement('div'); acts.className = 'dbitem-actions';
-    const editBtn = document.createElement('button'); editBtn.className='bmini bl'; editBtn.innerHTML='<svg class="ico ico-solo" aria-hidden="true"><use href="#i-quill"/></svg>';
-    editBtn.title = 'Editar ' + String(name||'');
-    editBtn.setAttribute('aria-label', 'Editar '+String(name||''));
-    editBtn.addEventListener('click', () => {
-      container.querySelectorAll('.dbitem').forEach(r => r.classList.remove('active'));
-      row.classList.add('active');
-      this.dbEditEntry(key);
-    });
-    const delBtn = document.createElement('button'); delBtn.className='bmini br'; delBtn.innerHTML='<svg class="ico ico-solo" aria-hidden="true"><use href="#i-x"/></svg>';
-    delBtn.title = 'Eliminar';
-    delBtn.setAttribute('aria-label', 'Eliminar '+String(name||''));
-    delBtn.addEventListener('click', () => this.dbDeleteEntry(key));
-    acts.appendChild(editBtn); acts.appendChild(delBtn);
-    row.appendChild(nm); row.appendChild(acts);
-    container.appendChild(row);
-  },
-
-  dbEditEntry(key) {
-    const cat = this.currentEditorCat;
-    const fc = document.getElementById('db_form_container');
-    fc.style.display = 'block';
-    let existing = null;
-    let isTalent = false; let talentSub='',talentIdx=-1;
-    if (cat === 'talents' && key !== 'new') {
-      const parts = key.split('|'); talentSub=parts[0]; talentIdx=parseInt(parts[1]);
-      existing = this.DB.talents[talentSub]?.[talentIdx];
-      isTalent = true;
-    } else if (key !== 'new') {
-      existing = this.DB[cat]?.[key];
-    }
-
-    // Shorthand: escapes DB values interpolated into HTML attribute strings
-    const _e = v => this._esc(String(v ?? ''));
-
-    let formHtml = `<h3 style="font-family:var(--fd);font-size:var(--fs-lg);color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">${key==='new'?'Nuevo':'Editar'} Entrada</h3>`;
-
-    if (cat === 'descriptors') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: elfo_oscuro" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Solo letras, números y guión bajo. Ej: <em>elfo_oscuro</em>, <em>humano_variante</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Bono</span><input type="text" id="db_bonus" value="${_e(existing?.bonus)}" placeholder="ej: +1 DES"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px" placeholder="Visión en la Oscuridad: 60 pies">${_e(this._grantFijos(existing).join('\n'))}</textarea>
-        <div class="is-field-note" style="margin-top:3px">Antes se separaban por coma, pero los rasgos llevan comas dentro y se partían solos. Ahora, una línea por rasgo.</div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Elecciones <span class="is-field-note">— una por línea</span></span><textarea id="db_elecciones" style="min-height:66px" placeholder="Elección: Ingenio Práctico (…) o Aguante (…)&#10;Elige DOS Mutaciones: Garras (…) / Piel Blindada (…)">${_e(this._grantElecciones(existing).join('\n'))}</textarea>
-        <div class="is-field-note" style="margin-top:3px">Se convierten en desplegables en la ficha. Formatos: <em>Elección: A o B</em>, <em>Elección: A / B / C</em> o <em>Elige DOS Cosas: A / B / C</em>. Los paréntesis se respetan, así que una opción puede contener « o » dentro.</div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Modificadores de Atributo <span class="is-field-note">— los fijos</span></span>
-        <div class="g6" style="gap:4px">
-          ${['FUE','DES','CON','INT','SAB','CAR'].map(s=>`<div><span class="dfl">${s}</span><input type="number" id="db_mod_${s}" value="${existing?.mods?.[s]||0}" min="-5" max="5" style="font-family:var(--fm);font-size:var(--fs-xl);text-align:center;padding:3px"></div>`).join('')}
-        </div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Bono de Atributo a elegir <span class="is-field-note">— déjalo en 0 si no lo hay</span></span>
-        <div class="g3" style="gap:4px">
-          <div><span class="dfl">Cuántos</span><input type="number" id="db_pick_n" value="${existing?.pick?.n||0}" min="0" max="6" style="font-family:var(--fm);text-align:center;padding:3px"></div>
-          <div><span class="dfl">Valor</span><input type="text" id="db_pick_val" value="${Array.isArray(existing?.pick?.vals) ? existing.pick.vals.join(', ') : (existing?.pick?.val||1)}" title="Un número, o uno por ranura separados por comas (2, 1)" style="font-family:var(--fm);text-align:center;padding:3px"></div>
-          <div><span class="dfl">Distintos</span><select id="db_pick_distinct"><option value="1"${existing?.pick?.distinct?' selected':''}>Sí</option><option value="0"${existing?.pick?.distinct?'':' selected'}>No</option></select></div>
-        </div>
-        <input type="text" id="db_pick_from" value="${_e((existing?.pick?.from||[]).join(', '))}" placeholder="Limitar a (coma): INT, DES — vacío = cualquiera" style="margin-top:4px">
-      </div>`;
-    } else if (cat === 'archetypes') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: paladin" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>paladin</em>, <em>brujo_pacto</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
-      <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">PV Base</span><input type="number" id="db_pv" value="${existing?.pv||8}"></div>
-        <div><span class="dfl">Adrenalina</span><input type="number" id="db_adr" value="${existing?.adr_bonus??existing?.adr??2}"></div>
-        <div><span class="dfl">Ingenio</span><input type="number" id="db_ing" value="${existing?.ing_bonus??existing?.ing??0}"></div>
-      </div>
-      <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Velocidad</span><input type="number" id="db_speed" value="${existing?.speed??30}" step="5"></div>
-        <div><span class="dfl">Habilidades a elegir</span><input type="number" id="db_skills_count" value="${existing?.skills_count??2}" min="0" max="8"></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Pericias (separadas por coma)</span><input type="text" id="db_edges" value="${_e((existing?.edges||[]).join(', '))}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Habilidades (separadas por coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Competencia de armadura <span class="is-field-note">— light, medium, heavy</span></span><input type="text" id="db_armorprof" value="${_e((existing?.armorProf||[]).join(', '))}" placeholder="ej: light, medium"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Ignora requisitos de FUE del equipo</span><select id="db_ignoresgear"><option value="1"${existing?.ignoresGearReq?' selected':''}>Sí</option><option value="0"${existing?.ignoresGearReq?'':' selected'}>No</option></select></div>
-      <div style="margin-bottom:6px"><span class="dfl">Sustrato <span class="is-field-note">— nombre y texto</span></span>
-        <input type="text" id="db_sustrato_n" value="${_e(existing?.sustrato_nombre)}" placeholder="ej: Presión" style="margin-bottom:4px">
-        <textarea id="db_sustrato" style="min-height:56px">${_e(existing?.sustrato)}</textarea>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Permiso <span class="is-field-note">— nombre y texto</span></span>
-        <input type="text" id="db_permiso_n" value="${_e(existing?.permiso_nombre)}" placeholder="ej: Intervención" style="margin-bottom:4px">
-        <textarea id="db_permiso" style="min-height:56px">${_e(existing?.permiso)}</textarea>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Límite</span><textarea id="db_limite" style="min-height:48px">${_e(existing?.limite)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea: Nombre (tipo) | texto</span></span>
-        <textarea id="db_rasgos" style="min-height:76px" placeholder="Veterano de Guerra (◆ pasivo) | Mientras vistes armadura…">${_e((existing?.rasgos||[]).map(r=>`${r.n}${r.t?' ('+r.t+')':''} | ${r.d}${r.b&&r.b!=='perfil'?' @'+r.b:''}`).join('\n'))}</textarea>
-        <div class="is-field-note" style="margin-top:3px">Van al bloque Perfil salvo que acabes la línea con <em>@sustrato</em>, <em>@permiso</em> o <em>@limite</em>.</div>
-      </div>`;
-    } else if (cat === 'backgrounds') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: marinero" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>marinero</em>, <em>ex_soldado</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:56px">${_e(existing?.txt)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Rasgos <span class="is-field-note">— uno por línea</span></span><textarea id="db_grant" style="min-height:76px">${_e((existing?.grant||[]).join('\n'))}</textarea><div class="is-field-note" style="margin-top:3px">Los rasgos llevan comas dentro, así que se separan por línea, no por coma.</div></div>
-      <div style="margin-bottom:6px"><span class="dfl">Defecto <span class="is-field-note">— el inconveniente del Trasfondo</span></span><input type="text" id="db_defecto" value="${_e(existing?.defecto)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Habilidades (coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>`;
-    } else if (cat === 'weapons') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: espada_larga" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>espada_larga</em>, <em>ballesta_mano</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div class="g2" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Daño (ej: 1d8)</span><input type="text" id="db_dmg" value="${_e(existing?.dmg||'1d6')}"></div>
-        <div><span class="dfl">Tipo</span><select id="db_wtype"><option value="light"${existing?.type==='light'?' selected':''}>Ligera</option><option value="medium"${existing?.type==='medium'?' selected':''}>Media</option><option value="heavy"${existing?.type==='heavy'?' selected':''}>Pesada</option><option value="ranged"${existing?.type==='ranged'?' selected':''}>Distancia</option><option value="reach"${existing?.type==='reach'?' selected':''}>Alcance</option></select></div>
-      </div>
-      <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
-        <div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue" value="${existing?.req_FUE||0}"></div>
-        <div><span class="dfl">Req. DES</span><input type="number" id="db_req_des" value="${existing?.req_DES||0}"></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>`;
-    } else if (cat === 'armors') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: cota_malla" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>cota_malla</em>, <em>cuero_tachonado</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Armadura (RD)</span><input type="number" id="db_rd" value="${existing?.rd ?? this._armorRdOf(existing)}" min="0" max="5"></div>
-        <div><span class="dfl">Tipo</span><select id="db_atype"><option value="none"${existing?.type==='none'?' selected':''}>Sin armadura</option><option value="light"${existing?.type==='light'?' selected':''}>Ligera</option><option value="medium"${existing?.type==='medium'?' selected':''}>Media</option><option value="heavy"${existing?.type==='heavy'?' selected':''}>Pesada</option></select></div>
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>
-      <div class="g2" style="gap:6px;margin-bottom:6px"><div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue2" value="${existing?.req_FUE||0}" min="0" max="20"></div><div><span class="dfl">Req. DES</span><input type="number" id="db_req_des2" value="${existing?.req_DES||0}" min="0" max="20"></div></div>`;
-    } else if (cat === 'shields') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: escudo_torre" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>escudo_madera</em>, <em>escudo_torre</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div class="g3" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Bono Guardia</span><input type="number" id="db_shield_guardia" value="${existing?.guardia ?? existing?.bonus ?? 1}" min="0" max="3"></div>
-        <div><span class="dfl">Bono Bloqueo</span><input type="number" id="db_shield_block" value="${existing?.block ?? 2}" min="0" max="5"></div>
-        <div><span class="dfl">Slots</span><input type="number" id="db_slots" value="${existing?.slots ?? 1}" min="0"></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Notas <span class="is-field-note">— propiedades, se muestran en la ficha</span></span><input type="text" id="db_notes" value="${_e(existing?.notes)}" placeholder="ej: Marcial · Ligera · Sutil"></div>
-      <div class="g2" style="gap:6px;margin-bottom:6px"><div><span class="dfl">Req. FUE</span><input type="number" id="db_req_fue2" value="${existing?.req_FUE||0}" min="0" max="20"></div><div><span class="dfl">Req. DES</span><input type="number" id="db_req_des2" value="${existing?.req_DES||0}" min="0" max="20"></div></div>`;
-    } else if (cat === 'spells') {
-      formHtml += `<div style="margin-bottom:10px">
-        <span class="dfl">Clave <span class="is-field-note">— ID interno único</span></span>
-        <input type="text" id="db_key" value="${key==='new'?'':_e(key)}" placeholder="ej: bola_fuego" autocomplete="off" spellcheck="false">
-        <div style="font-family:var(--fb);font-size:var(--fs-sm);color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;padding-left:2px">Sin espacios ni acentos. Ej: <em>bola_fuego</em>, <em>truco_luz</em>, <em>rayo_helado</em></div>
-      </div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Descripción</span><textarea id="db_txt" style="min-height:60px">${_e(existing?.txt)}</textarea></div>
-      <div class="g2" style="gap:6px;margin-bottom:6px">
-        <div><span class="dfl">Tipo</span><select id="db_stype"><option value="spell"${existing?.type==='spell'?' selected':''}>Conjuro</option><option value="trick"${(existing?.type==='trick'||existing?.type==='power')?'selected':''}>Truco</option></select></div>
-        <div><span class="dfl">Coste</span><input type="text" id="db_cost" value="${_e(existing?.cost)}" placeholder="ej: 2 Ing"></div>
-        <div><span class="dfl">Nivel</span><input type="number" id="db_level" value="${existing?.level??0}" min="0" max="10"></div>
-        <div><span class="dfl">Fuente</span><input type="text" id="db_source" value="${_e(existing?.source)}" placeholder="ej: pacto"></div>
-      </div>`;
-    } else if (isTalent) {
-      const grds = existing?.grades || [];
-      const gd = n => _e((grds.find(g=>Number(g.g)===n) || grds[n-1] || {}).d || '');
-      formHtml += `<div style="margin-bottom:6px"><span class="dfl">Categoría (existente)</span><input type="text" id="db_tcat" value="${_e(talentSub)}" placeholder="ej: combate"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Nombre</span><input type="text" id="db_name" value="${_e(existing?.name)}"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Tipo</span><input type="text" id="db_tipo" value="${_e(existing?.tipo)}" placeholder="ej: ◆ PASIVO · Grado Único"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Requisitos</span><input type="text" id="db_req" value="${_e(existing?.req)}" placeholder="ej: FUE 13+ · Nivel 1 · Iniciado en Pacto"></div>
-      <div style="margin-bottom:6px"><span class="dfl">Leyenda / Descripción</span><textarea id="db_txt" style="min-height:48px">${_e(existing?.desc)}</textarea></div>
-      <div style="margin-bottom:6px"><span class="dfl">Notas del talento <span class="is-field-note">— una por línea; Sinergia, Respuesta, listas de opciones</span></span><textarea id="db_notes" style="min-height:46px">${_e((existing?.notes||[]).join('\n'))}</textarea></div>
-      ${Array.from({length: Math.max(4, (existing?.grades||[]).length + 1)}, (_, i) => i + 1).map(n =>
-        `<div style="margin-bottom:6px"><span class="dfl">Grado ${n} <span class="is-field-note">${n===1?'— efecto base':'— opcional; vacío = no existe'}</span></span><textarea id="db_g${n}" style="min-height:46px">${gd(n)}</textarea></div>`
-      ).join('')}`;
-    }
-
-    formHtml += `<div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn btn-g" style="flex:1;min-height:44px" onclick="
-        const fc=document.getElementById('db_form_container');
-        fc.style.display='none';
-        document.querySelector('#db_panel .dbct')?.scrollTo({top:0,behavior:'smooth'})
-      "><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>Cancelar</button>
-      <button class="btn btn-p" style="flex:1;min-height:44px" id="db_save_btn"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Guardar</button>
-    </div>`;
-    fc.innerHTML = formHtml;
-    // Trigger slide-up animation only on open (not on every re-render)
-    fc.style.display = 'block';
-    fc.classList.remove('animate');
-    void fc.offsetWidth; // force reflow
-    fc.classList.add('animate');
-    // Scroll the form into view within the dbct scroll container
-    requestAnimationFrame(() => fc.scrollIntoView({behavior:'smooth', block:'nearest'}));
-    const saveBtn = fc.querySelector('#db_save_btn');
-    if (saveBtn) saveBtn.addEventListener('click', () => this.dbSaveEntry(key));
-    // Live key normalization preview
-    const keyInput = fc.querySelector('#db_key');
-    if (keyInput) {
-      keyInput.addEventListener('input', () => {
-        const normalized = keyInput.value.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_áéíóúüñ]/g,'');
-        if (keyInput.value !== normalized && keyInput.value.trim()) {
-          keyInput.style.color = 'var(--ember)';
-          keyInput.title = 'Se guardará como: ' + normalized;
-        } else {
-          keyInput.style.color = '';
-          keyInput.title = '';
-        }
-      });
-    }
-    // Smooth scroll to form
-    requestAnimationFrame(() => fc.scrollIntoView({behavior:'smooth',block:'nearest'}));
-    // Auto-focus first text input
-    requestAnimationFrame(() => {
-      const firstInput = fc.querySelector('input[type="text"]');
-      if (firstInput) firstInput.focus();
-    });
-  },
-
-  dbSaveEntry(oldKey) {
-    const cat = this.currentEditorCat;
-    const isTalent = cat === 'talents' && oldKey !== 'new' && oldKey.includes('|');
-    const isNewTalent = cat === 'talents' && oldKey === 'new';
-
-    if (isTalent || isNewTalent) {
-      const tcat = document.getElementById('db_tcat')?.value?.trim() || (isTalent?oldKey.split('|')[0]:'general');
-      const name = document.getElementById('db_name')?.value?.trim();
-      const desc = document.getElementById('db_txt')?.value?.trim();
-      const req  = document.getElementById('db_req')?.value?.trim() || '';
-      if (!name) { this.toast('Nombre requerido','err'); return; }
-      const grades = [];
-      // Se recorren todos los campos de Grado que el formulario haya
-      // pintado, no [1,2,3] fijo: un talento con cuatro Grados —los ha
-      // habido— perdía el cuarto en cada guardado.
-      for (let n = 1; document.getElementById('db_g'+n); n++) {
-        const d = document.getElementById('db_g'+n).value.trim();
-        if (d) grades.push({g:n, d});
-      }
-      if (!this.DB.talents[tcat]) this.DB.talents[tcat] = [];
-      const tipo  = document.getElementById('db_tipo')?.value?.trim() || '';
-      const notes = (document.getElementById('db_notes')?.value || '')
-        .split('\n').map(s => s.trim()).filter(Boolean);
-      if (isTalent) {
-        const idx = parseInt(oldKey.split('|')[1]);
-        const prev = this.DB.talents[tcat][idx] || {};
-        // `desc` solo si tiene contenido: el catálogo no lleva descripción
-        // desde v47 y escribirla vacía ensuciaba cada talento al guardarlo.
-        const ent = {...prev, id: prev.id || this._slugify(name), name, req, grades};
-        if (desc)  ent.desc  = desc;  else delete ent.desc;
-        if (tipo)  ent.tipo  = tipo;  else delete ent.tipo;
-        if (notes.length) ent.notes = notes; else delete ent.notes;
-        this.DB.talents[tcat][idx] = ent;
-      } else {
-        const nuevo = {id: this._slugify(name), name, req, grades};
-        if (desc)  nuevo.desc  = desc;
-        if (tipo)  nuevo.tipo  = tipo;
-        if (notes.length) nuevo.notes = notes;
-        this.DB.talents[tcat].push(nuevo);
-      }
-    } else {
-      const key = (document.getElementById('db_key')?.value||'').trim().toLowerCase().replace(/\s+/g,'_');
-      if (!key) { this.toast('Clave requerida','err'); return; }
-      const name = document.getElementById('db_name')?.value?.trim() || key;
-      // Se PARTE de la entrada existente. Antes se construía desde cero
-      // (`{name}`), así que abrir una entrada y guardarla sin tocar nada
-      // borraba todo campo que el formulario no mostrase: el Audaz pasaba
-      // de 18 campos a 10 —perdía su chasis entero (rasgos, sustrato,
-      // permiso, límite), skills_count e ignoresGearReq—, los Linajes
-      // perdían innate_optional y skillGrants, y las armas sus notas.
-      let entry = { ...(this.DB[cat]?.[oldKey] || {}), name };
-      if (cat==='descriptors') {
-        entry.txt = document.getElementById('db_txt')?.value;
-        entry.bonus = document.getElementById('db_bonus')?.value;
-        // Una línea por rasgo: partir por coma rompía los que llevan comas
-        // dentro, que son la mayoría. Rasgos y Elecciones se editan en dos
-        // campos y se vuelven a unir en `grant`, que es el formato del dato.
-        const lineas = id => (document.getElementById(id)?.value||'')
-          .split('\n').map(s=>s.trim()).filter(Boolean);
-        entry.grant = lineas('db_grant').concat(lineas('db_elecciones'));
-        entry.mods = {};
-        ['FUE','DES','CON','INT','SAB','CAR'].forEach(s=>{const v=parseInt(document.getElementById(`db_mod_${s}`)?.value)||0;if(v!==0)entry.mods[s]=v});
-        const pickN = parseInt(document.getElementById('db_pick_n')?.value)||0;
-        if (pickN > 0) {
-          const from = (document.getElementById('db_pick_from')?.value||'')
-            .split(',').map(s=>s.trim().toUpperCase()).filter(s=>STATS.includes(s));
-          // «2, 1»: un valor por ranura (Humano: +2 a uno y +1 a otro).
-          const vals = (document.getElementById('db_pick_val')?.value || '')
-            .split(',').map(v => parseInt(v, 10)).filter(v => v > 0);
-          entry.pick = vals.length > 1
-            ? { n: vals.length, val: vals[vals.length - 1], vals }
-            : { n: pickN, val: vals[0] || 1 };
-          if (document.getElementById('db_pick_distinct')?.value === '1') entry.pick.distinct = true;
-          if (from.length) entry.pick.from = from;
-        } else {
-          delete entry.pick;
-        }
-      } else if (cat==='archetypes') {
-        const num = (id, def) => { const v = parseInt(document.getElementById(id)?.value); return Number.isNaN(v) ? def : v; };
-        const csv = id => (document.getElementById(id)?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-        entry.txt=document.getElementById('db_txt')?.value;
-        entry.pv=num('db_pv',8);
-        entry.adr_bonus=num('db_adr',2);
-        entry.ing_bonus=num('db_ing',0);
-        // speed/prof/armorProf iban fijos a 30/2/[]: una Velocidad propia o
-        // la competencia de armadura se perdían en cada guardado.
-        entry.speed=num('db_speed',30);
-        // `prof` no se ofrece: el PB sale del NIVEL (PROF_THRESHOLDS), no
-        // del Arquetipo, así que un control aquí no haría nada. Se conserva
-        // el valor que hubiera en el dato por la fusión.
-        entry.skills_count=num('db_skills_count',2);
-        entry.edges=csv('db_edges');
-        entry.skills=csv('db_skills');
-        entry.armorProf=csv('db_armorprof');
-        if (document.getElementById('db_ignoresgear')?.value === '1') entry.ignoresGearReq = true;
-        else delete entry.ignoresGearReq;
-        // Chasis (Manual v1.8)
-        const txtOf = id => (document.getElementById(id)?.value||'').trim();
-        [['sustrato_nombre','db_sustrato_n'],['sustrato','db_sustrato'],
-         ['permiso_nombre','db_permiso_n'],['permiso','db_permiso'],
-         ['limite','db_limite']].forEach(([campo,id])=>{
-          const v = txtOf(id); if (v) entry[campo] = v; else delete entry[campo];
-        });
-        // Rasgos: «Nombre (tipo) | texto @bloque», uno por línea
-        const rasgos = (document.getElementById('db_rasgos')?.value||'')
-          .split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
-            let b='perfil';
-            const mb=l.match(/\s@(perfil|sustrato|permiso|limite)\s*$/i);
-            if (mb) { b=mb[1].toLowerCase(); l=l.slice(0,mb.index).trim(); }
-            const i=l.indexOf('|');
-            const cab=(i<0?l:l.slice(0,i)).trim();
-            const d=(i<0?'':l.slice(i+1)).trim();
-            const mt=cab.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
-            return mt ? {n:mt[1].trim(), t:mt[2].trim(), d, b} : {n:cab, t:'', d, b};
-          }).filter(r=>r.n);
-        if (rasgos.length) entry.rasgos = rasgos; else delete entry.rasgos;
-      } else if (cat==='backgrounds') {
-        entry.txt=document.getElementById('db_txt')?.value;
-        entry.grant=(document.getElementById('db_grant')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
-        entry.skills=(document.getElementById('db_skills')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-        const df=document.getElementById('db_defecto')?.value?.trim(); if(df) entry.defecto=df; else delete entry.defecto;
-      } else if (cat==='weapons') {
-        entry.dmg=document.getElementById('db_dmg')?.value||'1d6';
-        entry.type=document.getElementById('db_wtype')?.value||'medium';
-        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
-        const rfw=parseInt(document.getElementById('db_req_fue')?.value)||0; if(rfw) entry.req_FUE=rfw; else delete entry.req_FUE;
-        const rdw=parseInt(document.getElementById('db_req_des')?.value)||0; if(rdw) entry.req_DES=rdw; else delete entry.req_DES;
-        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
-      } else if (cat==='armors') {
-        const rdIn = parseInt(document.getElementById('db_rd')?.value);
-        entry.rd = Number.isNaN(rdIn) ? 0 : Math.max(0, Math.min(5, rdIn));
-        delete entry.ca; // v8.3: la armadura ya no aporta CA/Guardia
-        entry.type=document.getElementById('db_atype')?.value||'light';
-        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
-        const rf=parseInt(document.getElementById('db_req_fue2')?.value)||0; if(rf) entry.req_FUE=rf; else delete entry.req_FUE;
-        const rd2=parseInt(document.getElementById('db_req_des2')?.value)||0; if(rd2) entry.req_DES=rd2; else delete entry.req_DES;
-        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
-      } else if (cat==='shields') {
-        const sg = parseInt(document.getElementById('db_shield_guardia')?.value);
-        const sbk = parseInt(document.getElementById('db_shield_block')?.value);
-        entry.guardia = Number.isNaN(sg) ? 1 : Math.max(0, Math.min(3, sg));
-        entry.block   = Number.isNaN(sbk) ? 2 : Math.max(0, Math.min(5, sbk));
-        delete entry.bonus; // v8.3: el bono del escudo va a Guardia, no a CA
-        const nt=document.getElementById('db_notes')?.value?.trim(); if(nt) entry.notes=nt; else delete entry.notes;
-        const rf=parseInt(document.getElementById('db_req_fue2')?.value)||0; if(rf) entry.req_FUE=rf; else delete entry.req_FUE;
-        const rd2=parseInt(document.getElementById('db_req_des2')?.value)||0; if(rd2) entry.req_DES=rd2; else delete entry.req_DES;
-        entry.slots=(v=>Number.isNaN(v)?1:Math.max(0,v))(parseInt(document.getElementById('db_slots')?.value));
-      } else if (cat==='spells') {
-        entry.txt=document.getElementById('db_txt')?.value;
-        entry.type=document.getElementById('db_stype')?.value||'spell';
-        const ct=document.getElementById('db_cost')?.value?.trim(); if(ct) entry.cost=ct; else delete entry.cost;
-        const lv=parseInt(document.getElementById('db_level')?.value); if(!Number.isNaN(lv)&&(lv>0||'level' in entry)) entry.level=lv;
-        const so=document.getElementById('db_source')?.value?.trim(); if(so) entry.source=so; else delete entry.source;
-      }
-      if (oldKey !== 'new' && oldKey !== key && this.DB[cat]?.[oldKey]) delete this.DB[cat][oldKey];
-      if (!this.DB[cat]) this.DB[cat] = {};
-      this.DB[cat][key] = entry;
-    }
-
-    this.saveRulesToLocal();
-    document.getElementById('db_form_container').style.display = 'none';
-    this.dbEditCategory(cat);
-    this.unlockApp();
-    // Scroll list container to top after save
-    requestAnimationFrame(() => {
-      const lc = document.getElementById('db_list_container');
-      if (lc) lc.scrollTop = 0;
-    });
-    this.toast('Entrada guardada','ok');
-  },
-
-  dbDeleteEntry(key) {
-    const cat = this.currentEditorCat;
-    const label = key.includes('|') ? key.split('|')[0]+' (talento)' : key;
-    const panel = document.getElementById('db_panel');
-    const container = panel?.classList.contains('fs-open') ? panel : document.body;
-    this._confirmInContainer(container, `¿Eliminar "${label}"?`, 'Esta entrada se eliminará de la base de datos.', 'Eliminar', () => {
-      if (cat === 'talents' && key.includes('|')) {
-        const [sub,idx] = key.split('|');
-        this.DB.talents[sub]?.splice(parseInt(idx),1);
-      } else if (this.DB[cat]?.[key]) {
-        delete this.DB[cat][key];
-      }
-      this.saveRulesToLocal();
-      this.dbEditCategory(cat);
-      this.unlockApp();
-      this.toast('Eliminado','ok');
-    });
-  },
-
-  saveRulesToLocal() {
-    const ok = STORAGE.saveRules(this.DB);
-    if (!ok) this.toast('No se pudieron guardar las reglas: almacenamiento lleno.','err');
-    return ok;
-  },
-
-  exportRulesDB() {
-    this.guardarArchivo('sands_rules.json', JSON.stringify(this.DB, null, 2));
-  },
-
-  /** Guarda un archivo en el dispositivo (v58). Antes cada exportación
-      creaba un enlace data: y lo pulsaba: con retratos el enlace pasaba del
-      tamaño que admiten los navegadores móviles, y en la app instalada
-      (sin barra del navegador) la descarga no llegaba a ocurrir. Ahora, en
-      pantallas táctiles, se abre el menú Compartir del sistema («Guardar
-      en Archivos», Drive, WhatsApp…); en el ordenador, o si Compartir no
-      admite el archivo, se descarga con un Blob. Devuelve cómo acabó. */
-  guardarArchivo(nombre, texto, tipo = 'application/json') {
-    const blob = new Blob([texto], { type: tipo });
-    const tactil = matchMedia('(pointer: coarse)').matches;
-    if (tactil && navigator.share && navigator.canShare) {
-      // Algunos Android no aceptan application/json al compartir; como
-      // texto sí, y el nombre conserva la extensión .json.
-      const candidatos = [new File([blob], nombre, { type: tipo }), new File([blob], nombre, { type: 'text/plain' })];
-      const file = candidatos.find(f => { try { return navigator.canShare({ files: [f] }); } catch (e) { return false; } });
-      if (file) {
-        return navigator.share({ files: [file], title: nombre })
-          .then(() => 'compartido')
-          .catch(err => (err && err.name === 'AbortError') ? 'cancelado' : this._descargarBlob(nombre, blob));
-      }
-    }
-    return Promise.resolve(this._descargarBlob(nombre, blob));
-  },
-  _descargarBlob(nombre, blob) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = nombre; a.rel = 'noopener'; a.style.display = 'none';
-    document.body.appendChild(a);   // Firefox y algunos móviles ignoran el clic en un enlace suelto
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 15000);
-    return 'descargado';
-  },
-
-  /* ══ CROPPER ══
-     Coordinate model:
-       cs.x / cs.y = pixels the image center is offset from the workspace center.
-       x=0, y=0 → image perfectly centered.
-       Clamp limit: |x| ≤ max(0, scaledW/2 − FW/2)
-                    |y| ≤ max(0, scaledH/2 − FH/2)
-     UX behaviour:
-       • Drag: rubber-band resistance beyond limits (not hard stop)
-       • Release: spring-animated snap back into bounds
-       • Zoom: always keeps minZoom = fill-frame (no empty corners)
-       • Pinch: zooms towards the midpoint between two fingers
-  */
-
-  _cropFrameSize() {
-    const ws = document.getElementById('crop_ws');
-    if (!ws) return {w:171, h:228};
-    const maxW = ws.clientWidth * 0.88, maxH = ws.clientHeight * 0.88;
-    const CROP_W = 308, CROP_H = 441;
-    let fw = maxW, fh = fw * (CROP_H / CROP_W);
-    if (fh > maxH) { fh = maxH; fw = fh * (CROP_W / CROP_H); }
-    return {w: Math.round(fw), h: Math.round(fh)};
-  },
-
-  _cropPositionFrame() {
-    const {w, h} = this._cropFrameSize();
-    const frame = document.getElementById('crop_frame');
-    if (frame) {
-      frame.style.width  = w + 'px';
-      frame.style.height = h + 'px';
-      frame.style.left   = '50%';
-      frame.style.top    = '50%';
-      frame.style.transform = 'translate(-50%,-50%)';
-    }
-    // Apply current portrait shape to frame so editor previews correctly
-    const shapeData = {
-      rect:    {r:'2px',  clip:'none', cls:''},
-      rounded: {r:'14px', clip:'none', cls:''},
-      arch:    {r:'0',    clip:'none', cls:'arch'},
-      circle:  {r:'50%',  clip:'none', cls:''},
-
-    };
-    const s = shapeData[this._portShape || 'rounded'] || shapeData['rounded'];
-    if (frame) {
-      frame.style.setProperty('--crfr-r',    s.r);
-      frame.style.setProperty('--crfr-clip', s.clip);
-      frame.className = 'crfr' + (s.cls ? ' ' + s.cls : '');
-    }
-    const grid = document.getElementById('cr_grid');
-    const svg  = document.getElementById('cr_grid_svg');
-    if (grid && svg) {
-      grid.style.cssText = `position:absolute;left:50%;top:50%;width:${w}px;height:${h}px;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .18s;z-index:11`;
-      const t = n => `<line x1="${n}" y1="0" x2="${n}" y2="${h}" stroke="rgba(255,255,255,.22)" stroke-width="1"/>`;
-      const l = n => `<line x1="0" y1="${n}" x2="${w}" y2="${n}" stroke="rgba(255,255,255,.22)" stroke-width="1"/>`;
-      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.innerHTML = t(w/3)+t(w*2/3)+l(h/3)+l(h*2/3);
-    }
-  },
-
-  /** Returns the max allowed |offset| for one axis so the image always covers the frame */
-  _cropMaxOffset(axis) {
-    const cs = this.cropState;
-    const {w: FW, h: FH} = this._cropFrameSize();
-    const isRot = cs.rot % 180 !== 0;
-    const natW  = isRot ? cs.img.naturalHeight : cs.img.naturalWidth;
-    const natH  = isRot ? cs.img.naturalWidth  : cs.img.naturalHeight;
-    if (axis === 'x') return Math.max(0, (natW * cs.zoom - FW) / 2);
-    else              return Math.max(0, (natH * cs.zoom - FH) / 2);
-  },
-
-  /** Hard clamp — used only at applyCrop() to guarantee canvas coverage */
-  _cropClamp(axis) {
-    const max = this._cropMaxOffset(axis);
-    const v   = axis === 'x' ? this.cropState.x : this.cropState.y;
-    return Math.min(max, Math.max(-max, v));
-  },
-
-  /** Rubber-band: beyond the limit, movement is dampened not stopped */
-  _cropRubber(v, max) {
-    if (Math.abs(v) <= max) return v;
-    const over = Math.abs(v) - max;
-    const sign = v > 0 ? 1 : -1;
-    // Logarithmic resistance: each extra pixel costs more than the last
-    return sign * (max + over * 0.28 / (1 + over * 0.012));
-  },
-
-  /** Apply transform to DOM — no clamping, reflects cs.x/y exactly */
-  _cropApply(animated = false) {
-    const cs  = this.cropState;
-    if (!cs.img) return;
-    const img = document.getElementById('crop_preview');
-    if (animated) {
-      img.style.transition = `transform .${TIMING.CROP_SPRING}ms cubic-bezier(.25,.46,.45,.94)`;
-      setTimeout(() => { if (img) img.style.transition = ''; }, TIMING.CROP_SPRING + 8);
-    } else {
-      img.style.transition = '';
-    }
-    img.style.transform = `translate(${cs.x}px,${cs.y}px) rotate(${cs.rot}deg) scale(${cs.zoom})`;
-  },
-
-  /** Spring-snap cs.x/y into bounds with a CSS transition */
-  _cropSpringSnap() {
-    const cs = this.cropState;
-    cs.x = this._cropClamp('x');
-    cs.y = this._cropClamp('y');
-    this._cropApply(true); // animated
-  },
-
-  _cropUpdateSlider() {
-    const cs  = this.cropState;
-    const sl  = document.getElementById('crop_zoom');
-    if (sl)  { sl.min = cs.minZoom; sl.value = cs.zoom; }
-    const lbl = document.getElementById('cr_zoom_lbl');
-    if (lbl) lbl.textContent = Math.round(cs.zoom * 100) + '%';
-  },
-
-  /** Reset zoom to exactly fill the frame, centered */
-  _cropResetZoom() {
-    const cs = this.cropState;
-    const {w: FW, h: FH} = this._cropFrameSize();
-    const isRot = cs.rot % 180 !== 0;
-    const natW  = isRot ? cs.img.naturalHeight : cs.img.naturalWidth;
-    const natH  = isRot ? cs.img.naturalWidth  : cs.img.naturalHeight;
-    // minZoom = fit inside frame (image fully visible, may leave empty space)
-    cs.minZoom = Math.min(FW / natW, FH / natH);
-    // Default zoom = fill frame (cover), user can zoom out further
-    cs.zoom = Math.max(FW / natW, FH / natH);
-    cs.x = 0; cs.y = 0;
-  },
-
-  startCrop(input) {
-    if (!input.files?.[0]) return;
-    const r = new FileReader();
-    r.onload = e => {
-      const img = new Image();
-      img.onerror = () => this.toast('Imagen inválida','err');
-      img.onload = () => {
-        this.cropState.img = img;
-        this.cropState.rot = 0;
-        document.getElementById('crop_preview').src = img.src;
-        document.getElementById('crop_modal').showModal();
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          this._cropPositionFrame();
-          this._cropResetZoom();
-          this._cropApply();
-          this._cropUpdateSlider();
-        }));
-      };
-      img.src = e.target.result;
-    };
-    r.readAsDataURL(input.files[0]);
-    input.value = '';
-  },
-
-  cropFit() {
-    const cs = this.cropState;
-    if (!cs.img) return;
-    this._cropPositionFrame();
-    this._cropResetZoom();
-    this._cropApply(true);
-    this._cropUpdateSlider();
-  },
-
-  cropZoomStep(delta) {
-    const cs   = this.cropState;
-    const prev = cs.zoom;
-    cs.zoom    = Math.max(cs.minZoom, Math.min(8, cs.zoom + delta));
-    // Scale offsets proportionally so the visual center stays put
-    const ratio = cs.zoom / prev;
-    cs.x *= ratio; cs.y *= ratio;
-    this._cropSpringSnap();
-    this._cropUpdateSlider();
-  },
-
-  cropZoomSlider(val) {
-    const cs   = this.cropState;
-    const prev = cs.zoom;
-    cs.zoom    = Math.max(cs.minZoom, Math.min(8, parseFloat(val)));
-    const ratio = cs.zoom / prev;
-    cs.x *= ratio; cs.y *= ratio;
-    this._cropSpringSnap();
-    this._cropUpdateSlider();
-  },
-
-  cropRotate(deg) {
-    const cs = this.cropState;
-    cs.rot = (cs.rot + deg + 360) % 360;
-    this._cropPositionFrame();
-    // Re-calculate minZoom for new orientation and fit
-    this._cropResetZoom();
-    this._cropApply(true);
-    this._cropUpdateSlider();
-  },
-
-  cancelCrop() {
-    document.getElementById('crop_modal').close();
-    this.cropState = {img:null, x:0, y:0, zoom:1, rot:0, minZoom:.05,
-      isDragging:false, lastX:0, lastY:0, pinch:null, velX:0, velY:0};
-  },
-
-  // ── Drag / Pinch ──
-  cropDragStart(e) {
-    const cs = this.cropState;
-    if (!cs.img) return;
-    e.preventDefault();
-    const ws = document.getElementById('crop_ws');
-    ws.classList.add('dragging');
-
-    const getTouches = ev => ev.touches ? Array.from(ev.touches) : null;
-    const dist  = t => Math.hypot(t[1].clientX-t[0].clientX, t[1].clientY-t[0].clientY);
-    const mid   = t => ({x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2});
-
-    let mode = 'drag', lastX = 0, lastY = 0, pinchRef = null;
-    cs.velX = 0; cs.velY = 0; cs._lastT = Date.now();
-
-    const touches = getTouches(e);
-    if (touches?.length >= 2) {
-      mode = 'pinch';
-      pinchRef = {dist:dist(touches), zoom:cs.zoom, mx:mid(touches).x, my:mid(touches).y, ix:cs.x, iy:cs.y};
-    } else {
-      const p = touches?.[0] || e;
-      lastX = p.clientX; lastY = p.clientY;
-    }
-
-    let raf = false;
-    const draw = () => {
-      if (raf) return; raf = true;
-      requestAnimationFrame(() => { raf = false; this._cropApply(); });
-    };
-
-    const onMove = ev => {
-      ev.preventDefault();
-      const ts = getTouches(ev);
-
-      if (ts?.length >= 2 && mode === 'drag') {
-        mode = 'pinch';
-        pinchRef = {dist:dist(ts), zoom:cs.zoom, mx:mid(ts).x, my:mid(ts).y, ix:cs.x, iy:cs.y};
-        cs.velX = cs.velY = 0;
-        return;
-      }
-      if (ts?.length === 1 && mode === 'pinch') {
-        mode = 'drag'; pinchRef = null;
-        lastX = ts[0].clientX; lastY = ts[0].clientY;
-        cs.velX = cs.velY = 0;
-        return;
-      }
-
-      if (mode === 'pinch' && ts?.length >= 2) {
-        const r   = dist(ts) / pinchRef.dist;
-        const nz  = Math.max(cs.minZoom, Math.min(8, pinchRef.zoom * r));
-        const m   = mid(ts);
-        cs.zoom   = nz;
-        // Keep the pinch midpoint anchored: offset = original_offset * ratio + finger_pan
-        cs.x = pinchRef.ix * r + (m.x - pinchRef.mx);
-        cs.y = pinchRef.iy * r + (m.y - pinchRef.my);
-        // Apply rubber-band so fingers feel natural even when pushing limits
-        cs.x = this._cropRubber(cs.x, this._cropMaxOffset('x'));
-        cs.y = this._cropRubber(cs.y, this._cropMaxOffset('y'));
-        draw();
-        this._cropUpdateSlider();
-
-      } else if (mode === 'drag') {
-        const pt = ts?.[0] || ev;
-        const now = Date.now(), dt = Math.max(now - cs._lastT, 1);
-        const dx = pt.clientX - lastX, dy = pt.clientY - lastY;
-        cs.velX = cs.velX * 0.5 + (dx / dt) * 0.5;
-        cs.velY = cs.velY * 0.5 + (dy / dt) * 0.5;
-        lastX = pt.clientX; lastY = pt.clientY; cs._lastT = now;
-        cs.x += dx; cs.y += dy;
-        // Rubber-band: drag is free inside bounds, resists outside
-        cs.x = this._cropRubber(cs.x, this._cropMaxOffset('x'));
-        cs.y = this._cropRubber(cs.y, this._cropMaxOffset('y'));
-        draw();
-      }
-    };
-
-    const onEnd = ev => {
-      const ts = getTouches(ev);
-      if (ts?.length === 1 && mode === 'pinch') {
-        mode = 'drag'; pinchRef = null;
-        lastX = ts[0].clientX; lastY = ts[0].clientY;
-        cs.velX = cs.velY = 0;
-        return;
-      }
-      if (!ts?.length) {
-        mode = 'idle';
-        ws.classList.remove('dragging');
-        this._cropInertia();
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('touchmove', onMove);
-        window.removeEventListener('mouseup',   onEnd);
-        window.removeEventListener('touchend',  onEnd);
-      }
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, {passive:false});
-    window.addEventListener('mouseup',   onEnd);
-    window.addEventListener('touchend',  onEnd);
-  },
-
-  _cropInertia() {
-    const cs = this.cropState;
-    // Scale velocity to pixels — lower multiplier = less slide-past
-    let vx = cs.velX * 55, vy = cs.velY * 55;
-    const step = () => {
-      if (!cs.img) return;
-      if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) {
-        // Inertia done — spring-snap back if outside bounds
-        this._cropSpringSnap();
-        return;
-      }
-      cs.x += vx; cs.y += vy;
-      // Rubber-band during inertia too
-      cs.x = this._cropRubber(cs.x, this._cropMaxOffset('x'));
-      cs.y = this._cropRubber(cs.y, this._cropMaxOffset('y'));
-      vx *= 0.86; vy *= 0.86;
-      this._cropApply();
-      requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  },
-
-  _cropWheel(e) {
-    e.preventDefault();
-    this.cropZoomStep(e.deltaY > 0 ? -0.04 : 0.04);
-  },
-
-  applyCrop() {
-    const cs = this.cropState;
-    if (!cs.img) return;
-    const {w: FW, h: FH} = this._cropFrameSize();
-    // Cap portrait size — see MAX_PORTRAIT_W constant
-    const MAX_W = MAX_PORTRAIT_W;
-    const SC = Math.min(2, MAX_W / FW);
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(FW * SC); canvas.height = Math.round(FH * SC);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(canvas.width/2, canvas.height/2);
-    ctx.rotate(cs.rot * Math.PI / 180);
-    ctx.scale(cs.zoom * SC, cs.zoom * SC);
-    ctx.translate(cs.x / cs.zoom, cs.y / cs.zoom);
-    ctx.drawImage(cs.img, -cs.img.naturalWidth/2, -cs.img.naturalHeight/2);
-    const src = canvas.toDataURL('image/jpeg', .92);
-    this._syncPortrait(src);
-    document.getElementById('crop_modal').close();
-    // Reset crop state so next image starts clean
-    this.cropState = {img:null, x:0, y:0, zoom:1, rot:0, minZoom:.05,
-      isDragging:false, lastX:0, lastY:0, pinch:null, velX:0, velY:0};
-    this.toast('Retrato actualizado','ok');
-  },
-
-  /** Convierte el export unificado v5.2.2 ({meta, reglas, talentos, axiomas, poderesApex})
-   *  al esquema interno de la app, conservando linajes/arquetipos/trasfondos/equipo actuales. */
-  _convertUnifiedRules(rules) {
-    const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-    const catmap = { 'FUENTE INDEPENDIENTE':'v\u00eda de axiomas', 'DIVINIDAD / JURAMENTO':'divinidad', 'DIVINIDAD o JURAMENTO':'divinidad' };
-    const via = new Set(['iniciado_mistico','despertar_sobrenatural','poderio_arcano','despertar_apex']);
-    const talents = {};
-    (rules.talentos || []).forEach(t => {
-      const id = slug(t.nombre);
-      let cat = catmap[t.categoria] || String(t.categoria||'general').toLowerCase();
-      if (via.has(id)) cat = 'v\u00eda de axiomas';
-      (talents[cat] = talents[cat] || []).push({
-        id, name: t.nombre,
-        desc: ((t.subcategoria ? t.subcategoria + ' \u00b7 ' : '') + (t.leyenda || '')).trim(),
-        req: t.req || '',
-        grades: (t.grados || []).map(g => ({ g: g.grado, d: (g.nivelReq ? 'Nivel ' + g.nivelReq + '+: ' : '') + g.efecto }))
-      });
-    });
-    const spells = {};
-    (rules.axiomas || []).forEach(a => {
-      let k = slug(a.nombre); if (spells[k]) k = slug(a.fuente + '_' + a.nombre);
-      const parts = ['Nv ' + (a.nivel === 0 ? 'T' : a.nivel) + ' \u00b7 ' + (a.fuente === 'Trucos' ? 'Truco' : a.fuente)];
-      if (a.dominio) parts.push('Dominio: ' + a.dominio);
-      parts.push(a.ingenio + ' Ingenio \u00b7 ' + a.pa + ' PA');
-      if (a.concentracion) parts.push('Concentraci\u00f3n');
-      let txt = parts.join(' \u00b7 ') + ' \u2014 ' + a.efecto;
-      if (a.salvacion && a.salvacion !== 'Ninguna') txt += ' \u00b7 Salv: ' + a.salvacion;
-      spells[k] = { name: a.nombre, type: a.nivel === 0 ? 'trick' : 'spell', level: a.nivel, source: a.fuente, txt };
-    });
-    const base = this.DB || DEFAULT_DB;
-    return { descriptors: base.descriptors, archetypes: base.archetypes, backgrounds: base.backgrounds,
-             weapons: base.weapons, armors: base.armors, shields: base.shields,
-             talents: Object.keys(talents).length ? talents : base.talents,
-             spells: Object.keys(spells).length ? spells : base.spells,
-             misc: base.misc || {} };
-  },
-
-  loadRulesFile(input) {
-    if (!input.files?.[0]) return;
-    this.toast('Cargando reglas…', 'info');
-    const file = input.files[0];
-    // Reject files larger than 2 MB
-    if (file.size > MAX_JSON_BYTES) { this.toast('Archivo demasiado grande (máx 2 MB)','err'); input.value=''; return; }
-    const r = new FileReader();
-    r.onload = e => {
-      try {
-        const rules = JSON.parse(e.target.result);
-        if (typeof rules !== 'object' || rules === null || Array.isArray(rules)) throw new Error('Formato inválido: se esperaba un objeto JSON');
-        // ── Formato unificado v5.2.2 (stars_sorcery_data_v5_2_2.json) ──
-        if (Array.isArray(rules.talentos)) {
-          app.DB = app._convertUnifiedRules(rules);
-          app.saveRulesToLocal();
-          app._aptSel = { tricks: new Set(), spells: new Set() };
-          app.unlockApp();
-          app.toast(`Reglas v${rules.meta?.version || '5.2.2'} cargadas (${rules.talentos.length} talentos, ${(rules.axiomas||[]).length} axiomas)`, 'ok');
-          input.value = '';
-          return;
-        }
-        if (!rules.descriptors && !rules.archetypes) throw new Error('JSON no reconocido: usa el esquema de la app (descriptors/archetypes…) o el export unificado v5.2.2 (talentos/axiomas)');
-        // Deep sanitize string values (strip HTML tags)
-        const sanitizeObj = (obj) => {
-          if (typeof obj === 'string') return obj.replace(/<[^>]*>/g,'').replace(/javascript:/gi,'');
-          if (Array.isArray(obj)) return obj.map(sanitizeObj);
-          if (obj && typeof obj === 'object') { const r={}; for(const k in obj) r[k]=sanitizeObj(obj[k]); return r; }
-          return obj;
-        };
-        app.DB = sanitizeObj(rules);
-        app.saveRulesToLocal();
-        // Reset aptitude selection so stale keys from a previous character
-        // don't carry over into the newly loaded rule set.
-        app._aptSel = { tricks: new Set(), spells: new Set() };
-        app.unlockApp();
-        app.toast('Reglas cargadas','ok');
-      } catch(err) { app.toast(err.message || 'Formato JSON inválido','err'); }
-    };
-    r.readAsText(file); input.value='';
-  },
-
-  /* ─────────────────────────────────────────
-   ── CHARACTER PERSISTENCE (Save / Load)
-   ───────────────────────────────────────── */
-  /** Serializes the current character form state into a JSON-safe object. */
-  gatherCharData() {
-    const data = {
-      _schemaVersion: STORAGE.SCHEMA_VERSION,
-      // Edición de los manuales con la que se guardó (8 = 8-10-2026).
-      _manual: 8,
-      inputs:{}, selects:{}, checks:[], hidden_talents:[],
-      portrait: (() => {
-        const src = document.getElementById('char_img')?.src || '';
-        // Don't persist the default SVG placeholder — waste of space
-        return src.startsWith('data:image/svg') ? '' : src;
-      })(),
-      concept: document.getElementById('char_concept').value,
-      notes: document.getElementById('char_notes').value,
-      alignment: this.alignment,
-      inventory: this.inventory,
-      gold: this.gold,
-      lethality: this.lethality||LETHALITY_DEFAULT,
-      apt_tricks: [...(this._aptSel?.tricks||[])],
-      apt_spells: [...(this._aptSel?.spells||[])],
-      skillBonus: { ...(this._skillBonus || {}) },
-      skillAttr:  { ...(this._skillAttrPick || {}) },
-      powerSource: this._powerSource || '',
-      /* Prefs de retrato PROPIAS del personaje. `propias` distingue «las
-         eligió el jugador con Aplicar a este personaje» de «se copiaron
-         solas del global al guardar». Antes no existía esa marca: cada
-         guardado hacía una foto del global y al reabrir el personaje esa
-         foto lo pisaba, así que apagar el Borde Premium en Ajustes no
-         servía de nada —volvía en cuanto abrías la ficha—.
-         El TAMAÑO DE FUENTE ya no viaja aquí: es tamaño de la interfaz,
-         no un dato del personaje, y tenerlo por ficha obligaba a
-         reajustarlo uno por uno. Vive solo en el global. */
-      _prefs: this._charPrefsPropias ? {
-        propias:    true,
-        portSize:   this._charPrefs?.portSize   || this._portSize       || 'm',
-        portShape:  this._charPrefs?.portShape  || this._portShape      || 'rounded',
-        portBorder: this._charPrefs?.portBorder || this._portBorderMode || 'premium',
-      } : { propias: false }
-    };
-    document.querySelectorAll('input[type=text]:not(.inm),input[type=number]:not(.isl):not(#gold_coins_edit)').forEach(el=>{if(el.id)data.inputs[el.id]=el.value});
-    document.querySelectorAll('select:not(#inv_db_category):not(#inv_db_item):not(.ityp)').forEach(el=>{if(el.id)data.selects[el.id]=el.value});
-    document.querySelectorAll('input[type=checkbox]:not([type=hidden]):checked,input[type=radio]:checked').forEach(el=>data.checks.push({name:el.name,value:el.value,id:el.id}));
-    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>data.hidden_talents.push({value:el.value,id:el.getAttribute('data-id'),desc:el.getAttribute('data-desc'),grade:el.getAttribute('data-grade')||'1'}));
-    return data;
-  },
-
-  /** Hydrates the form from a deserialized character data object. */
-  /** Manual Básico v1: Historia y Religión son una sola habilidad y la
-      Pericia «Físico» se llama «Física». Las fichas guardadas antes conservan
-      sus elecciones con los nombres nuevos. No toca el objeto original. */
-  _migrarManualV1(data) {
-    const ren = v => SKILL_RENAMES[v] || v;
-    const esSkill = c => c.name === 'chk_arq' || c.name === 'chk_bg';
-    const vistos = new Set();
-    const checks = (data.checks || [])
-      .map(c => esSkill(c) ? { ...c, value: ren(c.value) } : c)
-      .filter(c => {
-        if (!esSkill(c)) return true;
-        const k = c.name + '|' + c.value;
-        if (vistos.has(k)) return false;       // Historia + Religión: una sola
-        vistos.add(k); return true;
-      });
-    const out = { ...data, checks };
-    if (data.skillBonus && typeof data.skillBonus === 'object') {
-      out.skillBonus = {};
-      Object.keys(data.skillBonus).forEach(k => {
-        out.skillBonus[ren(k)] = Math.max(out.skillBonus[ren(k)] || 0, data.skillBonus[k] || 0);
-      });
-    }
-    if (data.skillAttr && typeof data.skillAttr === 'object') {
-      out.skillAttr = {};
-      Object.keys(data.skillAttr).forEach(k => { if (!(ren(k) in out.skillAttr)) out.skillAttr[ren(k)] = data.skillAttr[k]; });
-    }
-    const sel = { ...(data.selects || {}) };
-    if ('filo_g_fisico' in sel) {
-      if (!('filo_g_fisica' in sel)) sel.filo_g_fisica = sel.filo_g_fisico;
-      delete sel.filo_g_fisico;
-    }
-    if (sel.sel_filo === 'Físico') sel.sel_filo = 'Física';
-    // v59.1 renombró la Experiencia del Humano sin migrar la elección.
-    Object.keys(sel).forEach(k => {
-      if (/^desc_eleccion/.test(k) && sel[k] === 'Ingenio Práctico') sel[k] = 'Astucia Práctica';
-    });
-    /* Mutante (v62): las dos Expresiones de desplegable pasan a Mutaciones
-       con Potencial. Las que existen con el mismo efecto se conservan; las
-       que el Manual retiró (Empatía, Proyección, Sentidos Agudos) liberan
-       su Potencial para elegir otra. */
-    if (sel.sel_desc === 'mutante' && !out.checks.some(c => c.name === 'desc_mut')) {
-      const EQUIV = {
-        'Regeneración Lenta': 'Regeneración', 'Piel Blindada': 'Piel Blindada',
-        'Garras Naturales': 'Garras Naturales', 'Apéndices Extra': 'Apéndices Prensiles',
-        'Resistencia Elemental': 'Resistencia Elemental', 'Telepatía Mutante': 'Telepatía Mutante',
-        'Psicoquinesis Mutante': 'Psicoquinesis Mutante', 'Percepción Extrasensorial': 'Percepción Extrasensorial',
-        'Adaptación Ambiental': 'Adaptación Ambiental',
-      };
-      Object.keys(sel).filter(k => /^desc_eleccion(__\d+)?$/.test(k)).forEach(k => {
-        const nuevo = EQUIV[sel[k]];
-        if (nuevo) out.checks.push({ name: 'desc_mut', value: nuevo, id: 'desc_mut_' + slugId(nuevo) });
-        delete sel[k];
-      });
-    }
-    /* Alterado (8-10-2026): la Afinidad Psiónica fija pasa a ser la mutación
-       «Afinidad Mutante» con Fuente a elegir. Las fichas anteriores la
-       conservan como Psiónica; si con ella se pasan de Potencial, el
-       contador lo marca y el jugador ajusta. */
-    if (!(data._manual >= 8) && sel.sel_desc === 'mutante' &&
-        !out.checks.some(c => c.name === 'desc_mut' && c.value === 'Afinidad Mutante')) {
-      out.checks.push({ name: 'desc_mut', value: 'Afinidad Mutante', id: 'desc_mut_afinidad_mutante' });
-      sel.desc_afin_fuente = 'Psiónica';
-    }
-    out.selects = sel;
-    return out;
-  },
-
-  applyCharData(data) {
-    data = this._migrarManualV1(data);
-    // Normalize inventory: ensure uid is always a string, name always a string
-    this.inventory = (data.inventory || []).map(item => ({
-      ...item,
-      uid:   String(item.uid   ?? this._nextUid()),
-      name:  String(item.name  ?? ''),
-      slots: Number(item.slots ?? 1),
-      type:  String(item.type  ?? 'misc'),
-    }));
-    // Migración: personajes guardados por versiones con uid = Date.now()
-    // pueden traer uids DUPLICADOS (items creados en el mismo ms). El
-    // primero conserva el uid (igual que resolvía _getInventoryItem, así
-    // que las selecciones guardadas no cambian); los demás se reasignan.
-    const seenUids = new Set();
-    this.inventory.forEach(it => {
-      while (seenUids.has(it.uid)) it.uid = this._nextUid();
-      seenUids.add(it.uid);
-    });
-    this.gold = data.gold||0;
-    this.alignment = data.alignment||'';
-    // Migración de ids de Axioma renombrados (mapa en constants.js)
-    const migrateIds = arr => (arr||[]).map(k => AXIOM_ID_RENAMES[k] || k);
-    this._aptSel = { tricks: new Set(migrateIds(data.apt_tricks)), spells: new Set(migrateIds(data.apt_spells)) };
-    if(data.lethality) this.setLethality(data.lethality);
-    this.syncCombatOptions();
-    for (const id in data.inputs) { const el=document.getElementById(id); if(el)el.value=data.inputs[id]; }
-    // Portrait
-    if (data.portrait) this._syncPortrait(data.portrait);
-    // Per-character visual preferences.
-    // _charPrefs es el estado CONFIRMADO del personaje: ausencias caen al
-    // predeterminado global, sin que cargar este personaje lo modifique.
-    const prefs = (data._prefs && typeof data._prefs === 'object') ? data._prefs : {};
-    /* Fichas anteriores a la marca `propias` traen prefs que en realidad son
-       una copia del global. Se dan por NO propias: heredan lo global, que es
-       lo que el jugador espera al cambiarlo en Ajustes. Quien quiera un
-       retrato distinto para un personaje lo vuelve a aplicar una vez. */
-    this._charPrefsPropias = prefs.propias === true;
-    this._charPrefs = {
-      portSize:   prefs.portSize   || localStorage.getItem(STORAGE.KEYS.portSize)  || 'm',
-      portShape:  prefs.portShape  || localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded',
-      portBorder: prefs.portBorder || localStorage.getItem('ss_port_border')        || 'premium',
-    };
-    if (this._perCharPrefs && this._charPrefsPropias) {
-      this.setPortraitSize(this._charPrefs.portSize);     // _charOpen() ⇒ no persiste global
-      this.setPortraitShape(this._charPrefs.portShape);
-      this._portBorderMode = this._charPrefs.portBorder;
-      this._applyPortraitBorder();
-    } else {
-      // Sin prefs propias, manda el global: se reaplica por si el personaje
-      // anterior había dejado puesta su vista previa.
-      this._restorePortraitSettings();
-    }
-    if (data.concept) document.getElementById('char_concept').value = data.concept;
-    if (data.notes) document.getElementById('char_notes').value = data.notes;
-    // Alignment
-    if (data.alignment) this._syncAlignmentUI();
-    // Restaurar selección de skills antes de llamar updateOptions,
-    // para que buildSkills pueda marcar los checkboxes correctamente.
-    const skillChecks = (data.checks||[]).filter(c => c.name==='chk_arq'||c.name==='chk_bg');
-    this._skillsSel = {
-      arq: new Set(skillChecks.filter(c=>c.name==='chk_arq').map(c=>c.value)),
-      bg:  new Set(skillChecks.filter(c=>c.name==='chk_bg').map(c=>c.value))
-    };
-    // Grados extra y atributo elegido por habilidad (el mínimo se recalcula solo).
-    this._skillBonus    = (data.skillBonus && typeof data.skillBonus === 'object') ? { ...data.skillBonus } : {};
-    this._skillAttrPick = (data.skillAttr  && typeof data.skillAttr  === 'object') ? { ...data.skillAttr  } : {};
-    this._powerSource   = typeof data.powerSource === 'string' ? data.powerSource : '';
-    // Apply identity selects FIRST so updateOptions can read them and build sel_filo options
-    ['sel_desc','sel_arq','sel_bg'].forEach(id=>{const el=document.getElementById(id);if(el&&data.selects[id])el.value=data.selects[id];});
-    this.updateOptions(false);
-    // Now apply ALL selects (including sel_filo which now has its options populated)
-    for (const id in data.selects) { const el=document.getElementById(id); if(el)el.value=data.selects[id]; }
-    // Segunda pasada: hay desplegables que solo existen si OTRA elección los
-    // convoca —el bloque de Afinidad del Mutante aparece al escoger la
-    // Expresión Psiónica—, y en la primera pasada esa elección todavía no
-    // estaba puesta. Se repinta con los valores ya aplicados y se vuelven a
-    // volcar, que es lo que rellena los recién creados.
-    if (this._repintarOrigen) {
-      this._repintarOrigen();
-      for (const id in data.selects) { const el=document.getElementById(id); if(el)el.value=data.selects[id]; }
-    }
-    document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
-    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
-    data.checks?.forEach(item=>{let el=document.getElementById(item.id)||document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);if(el)el.checked=true});
-    // Tercera pasada: la Afinidad Mutante del Alterado es una casilla, y su
-    // Fuente y su Truco solo aparecen con ella ya marcada.
-    if (this._repintarOrigen && data.selects?.desc_afin_fuente) {
-      for (let i = 0; i < 2; i++) {
-        this._repintarOrigen();
-        ['desc_afin_fuente', 'desc_eleccion_afinidad'].forEach(id => {
-          const el = document.getElementById(id); if (el && data.selects[id]) el.value = data.selects[id];
-        });
-      }
-    }
-    // Migración de talentos renombrados 1:1 (mapa en constants.js): si el id
-    // guardado cambió de nombre sin cambiar de mecánica, se remapea al id/nombre
-    // vigente para que _findTalent lo reconozca y muestre su contenido completo.
-    data.hidden_talents?.forEach(t=>{
-      let tid = t.id, tname = t.value;
-      const newId = tid && TALENT_ID_RENAMES[tid];
-      if (newId) {
-        const migrated = this._findTalent(null, newId);
-        if (migrated) { tid = migrated.id; tname = migrated.name; }
-      }
-      const h=document.createElement('input');h.type='hidden';h.name='chk_talents_hidden';h.value=tname;h.setAttribute('data-desc',t.desc||'');h.setAttribute('data-grade',t.grade||'1');if(tid)h.setAttribute('data-id',tid);document.body.appendChild(h);
-    });
-    this.showTalentSummary(); this.updateTalentCount();
-    // Close all sections to summary mode
-    this.confirmPersonal();
-    ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.confirmSection(s));
-    this.renderInventory();
-    this.calc();
-  },
-
-  saveChar() {
-    if (this._saving) return;
-    this._saving = true;
-    const releaseSaving = () => { this._saving = false; };
-    const name = document.getElementById('char_name').value.trim();
-    if (!name) { releaseSaving(); this.toast('¡Se requiere nombre!', 'err'); return; }
-    const roster = STORAGE.loadRoster();
-    if (roster[name]) {
-      // Pass releaseSaving as the cancel callback so the lock releases immediately
-      this._confirm(
-        '¿Sobreescribir personaje?',
-        `El personaje "${this._esc(name)}" ya existe y será reemplazado.`,
-        'Sobreescribir',
-        () => { this._doSaveChar(name, roster); releaseSaving(); },
-        document.body,
-        releaseSaving  // onCancel — releases lock right away
-      );
-    } else {
-      this._doSaveChar(name, roster);
-      releaseSaving();
-    }
-  },
-
-  /** Marks the header as having unsaved changes. Suppressed during load/clear. */
+  /* ── Guardado ─────────────────────────────────────────────────── */
   _markUnsaved() {
-    if (this._charLoading) return;
+    if (this._charLoading || this.modo !== 'ficha') return;
     const lbl = document.getElementById('last_saved_lbl');
-    if (!lbl) return;
-    if (lbl.classList.contains('unsaved')) return;   // ya avisado
-    /* `fresh` es la marca de «guardado hace un momento» y dura 3,5 s. Antes
-       también bloqueaba este aviso, así que cualquier cambio hecho justo
-       después de guardar no marcaba nada y la ficha parecía al día. */
+    if (!lbl || lbl.classList.contains('unsaved')) return;
     lbl.classList.remove('fresh');
     lbl.classList.add('unsaved');
     lbl.textContent = 'sin guardar';
   },
 
-  /** Un solo sitio del que cuelgan TODOS los controles de la ficha: antes
-      cada acción tenía que acordarse de llamar a _markUnsaved() y varias no
-      lo hacían —los talentos, el inventario, los desplegables de Guardia y
-      de combate, los atributos—. Los cambios que no pasan por un evento del
-      DOM (talentos por input oculto, inventario, aptitudes) siguen avisando
-      a mano. */
-  _initUnsavedWatch() {
-    const raiz = document.getElementById('app-screen') || document;
-    const marcar = (e) => {
-      const t = e.target;
-      if (!t || !t.tagName) return;
-      if (!/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)) return;
-      // Los desplegables del catálogo de objetos solo eligen qué añadir:
-      // no son datos del personaje hasta que se pulsa «+ Añadir».
-      if (t.id === 'inv_db_category' || t.id === 'inv_db_item') return;
-      if (t.closest('#settings_modal')) return;      // preferencias, no ficha
-      this._markUnsaved();
-    };
-    raiz.addEventListener('change', marcar, true);
-    raiz.addEventListener('input',  marcar, true);
+  saveChar() {
+    if (this._saving || this.modo !== 'ficha') return;
+    const name = (this.cr.nombre || '').trim();
+    if (!name) { this.toast('Ponle un nombre antes de guardar', 'err'); this.editSection('personal'); return; }
+    this._saving = true;
+    const soltar = () => { this._saving = false; };
+    const roster = STORAGE.loadRoster();
+    // Pisar OTRA amenaza con el mismo nombre pide confirmación; guardar la
+    // misma (o renombrarla) no.
+    if (roster[name] && name !== this._nombreOriginal) {
+      this._confirm('¿Sobrescribir amenaza?', `Ya existe «${name}» y será reemplazada.`, 'Sobrescribir',
+        () => { this._doSaveChar(name, roster); soltar(); }, document.body, soltar);
+    } else { this._doSaveChar(name, roster); soltar(); }
   },
 
-  /** @param {string} name  @param {Object} [roster]  Pre-loaded roster to avoid a second localStorage read */
   _doSaveChar(name, roster) {
     roster = roster || STORAGE.loadRoster();
-    roster[String(name)] = this.gatherCharData();
-    const ok = STORAGE.saveRoster(roster);
-    if (ok) {
-      const ts  = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
-      const lbl = document.getElementById('last_saved_lbl');
-      if (lbl) {
-        lbl.classList.remove('unsaved');
-        lbl.textContent = `guardado ${ts}`;
-        lbl.classList.add('fresh');
-        setTimeout(()=>lbl.classList.remove('fresh'), TIMING.SAVED_FRESH);
-      }
-      // Flash the save button
-      const saveBtn = document.querySelector('.app-hdr-save');
-      if (saveBtn) {
-        saveBtn.classList.remove('saved');
-        void saveBtn.offsetWidth; // force reflow to restart animation
-        saveBtn.classList.add('saved');
-        setTimeout(() => saveBtn.classList.remove('saved'), 750);
-      }
-      this.toast('Personaje guardado','ok');
-    } else {
-      this.toast('¡Almacenamiento lleno! Exporta tu personaje.','err');
-      setTimeout(()=>this.exportJSON(), 800);
+    const datos = structuredClone(this.cr);
+    datos.nombre = name;
+    const viejo = this._nombreOriginal;
+    let nuevo = roster;
+    if (viejo && viejo !== name && roster[viejo]) {
+      // Renombrada: conserva su sitio en la lista.
+      nuevo = {};
+      Object.keys(roster).forEach(k => { if (k === viejo) nuevo[name] = datos; else if (k !== name) nuevo[k] = roster[k]; });
+    } else nuevo[name] = datos;
+    const ok = STORAGE.saveRoster(nuevo);
+    if (!ok) { this.toast('¡Almacenamiento lleno! Exporta la amenaza.', 'err'); return; }
+    this._nombreOriginal = name;
+    const ts = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const lbl = document.getElementById('last_saved_lbl');
+    if (lbl) {
+      lbl.classList.remove('unsaved');
+      lbl.textContent = `guardado ${ts}`;
+      lbl.classList.add('fresh');
+      setTimeout(() => lbl.classList.remove('fresh'), TIMING.SAVED_FRESH);
     }
+    const saveBtn = document.querySelector('.app-hdr-save');
+    if (saveBtn) {
+      saveBtn.classList.remove('saved'); void saveBtn.offsetWidth; saveBtn.classList.add('saved');
+      setTimeout(() => saveBtn.classList.remove('saved'), 750);
+    }
+    this.toast('Amenaza guardada', 'ok');
+  },
+
+  /** ¿Hay una amenaza abierta (ficha visible)? */
+  _charOpen() {
+    const s = document.getElementById('app-screen');
+    return !!s && !s.classList.contains('hidden') && this.modo === 'ficha';
   },
 
   exportJSON() {
-    // Sin personaje abierto no hay nada que exportar: se dice, en vez de
-    // dejar el botón apagado sin explicación (parecía roto).
     if (!this._charOpen()) {
-      this.toast('Abre un personaje para exportarlo, o usa «Crear copia» para todos', 'info');
+      this.toast('Abre una amenaza para exportarla, o usa «Crear copia» para todo', 'info');
       const est = document.getElementById('respaldo_estado');
-      if (est) { est.textContent = 'Abre un personaje para exportarlo, o usa «Crear copia» para todos.'; est.classList.remove('is-ok'); est.classList.add('is-err'); }
+      if (est) { est.textContent = 'Abre una amenaza para exportarla, o usa «Crear copia» para todo.'; est.classList.remove('is-ok'); est.classList.add('is-err'); }
       return;
     }
-    const name = (document.getElementById('char_name').value.trim() || 'aventurero').replace(/ /g, '_');
-    this.guardarArchivo(name + '.json', JSON.stringify(this.gatherCharData(), null, 2)).then(r => {
-      if (r === 'descargado') this.toast('Personaje exportado', 'ok');
-      if (r === 'compartido') this.toast('Personaje compartido', 'ok');
+    const name = ((this.cr.nombre || '').trim() || 'amenaza').replace(/ /g, '_');
+    const datos = { tipo: 'ss-director-amenaza', version: 1, amenaza: this.cr };
+    this.guardarArchivo(name + '.json', JSON.stringify(datos, null, 2)).then(r => {
+      if (r === 'descargado') this.toast('Amenaza exportada', 'ok');
+      if (r === 'compartido') this.toast('Amenaza compartida', 'ok');
     });
-  },
-
-  loadJSON(input) {
-    if (!input.files?.[0]) return;
-    this.toast('Cargando personaje…', 'info');
-    const r = new FileReader();
-    r.onload = e => {
-      try {
-        const raw = JSON.parse(e.target.result);
-        if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new Error('Formato inválido: se esperaba un objeto');
-        if (!raw.inputs) throw new Error('JSON de personaje inválido: falta campo inputs');
-        // Normalize and validate character data
-        const data = {
-          inputs:       (typeof raw.inputs  === 'object' && !Array.isArray(raw.inputs))  ? raw.inputs  : {},
-          selects:      (typeof raw.selects === 'object' && !Array.isArray(raw.selects)) ? raw.selects : {},
-          checks:       Array.isArray(raw.checks)         ? raw.checks         : [],
-          hidden_talents: Array.isArray(raw.hidden_talents) ? raw.hidden_talents : [],
-          // Solo data-URLs de imagen: el retrato se renderiza en atributos src
-          portrait:     (typeof raw.portrait === 'string' && /^data:image\//.test(raw.portrait)) ? raw.portrait : '',
-          concept:      typeof raw.concept  === 'string'  ? raw.concept        : '',
-          notes:        typeof raw.notes    === 'string'  ? raw.notes          : '',
-          alignment:    typeof raw.alignment=== 'string'  ? raw.alignment      : '',
-          inventory:    Array.isArray(raw.inventory)      ? raw.inventory      : [],
-          gold:         isFinite(raw.gold)                ? Number(raw.gold)   : 0,
-          lethality:    [1,2,3].includes(Number(raw.lethality)) ? Number(raw.lethality) : LETHALITY_DEFAULT,
-          apt_tricks:   Array.isArray(raw.apt_tricks)     ? raw.apt_tricks     : [],
-          apt_spells:   Array.isArray(raw.apt_spells)     ? raw.apt_spells     : []
-        };
-        this._charLoading = true;
-        this.clearCharData();
-        this.showScreen('app');
-        this.unlockApp();
-        this.applyCharData(data);
-        this.goToPage(0);
-        const lbl = document.getElementById('last_saved_lbl');
-        if (lbl) { lbl.textContent = ''; lbl.className = 'last-saved'; }
-        this._charLoading = false;
-        this.toast('Personaje importado','ok');
-      } catch(err) { this.toast(err.message || 'JSON inválido','err'); }
-    };
-    r.readAsText(input.files[0]); input.value='';
   },
 
   triggerLoadJSON() { document.getElementById('json_char_input').click(); },
 
-  clearCharData() {
-    STATS.forEach(s=>{const el=document.getElementById('base_'+s);if(el)el.value=8});
-    ['char_name','char_concept','char_notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    const lvlEl=document.getElementById('char_lvl');if(lvlEl)lvlEl.value=1;
-    ['char_xp','cur_pv','cur_adr','cur_ing','cur_carne'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0});
-    this.inventory=[]; this.gold=0; this.alignment=''; this._aptSel={tricks:new Set(),spells:new Set()};
-    this._skillsSel = { arq: new Set(), bg: new Set() };
-    this._skillBonus = {}; this._skillAttrPick = {}; this._powerSource = '';
-    this._syncAlignmentUI();
-    // Identidad y Origen. Los desplegables seguían mostrando el Linaje, el
-    // Arquetipo, el Trasfondo y las elecciones del personaje ANTERIOR al
-    // crear uno nuevo: unlockApp() conserva a propósito la selección al
-    // reconstruir las listas —lo correcto a media sesión, no al empezar de
-    // cero—. Se vacían aquí, el único punto por el que pasan newChar y
-    // loadCharToApp, así que la ficha nueva arranca en «— Elegir —» y la
-    // carga no se ve afectada: aplica sus valores guardados justo después.
-    ['sel_desc','sel_arq','sel_bg','sel_filo'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.value='';
-    });
-    document.querySelectorAll('select[id^="filo_g_"]').forEach(s=>{ s.value='0'; });
-    const dch=document.getElementById('desc_choices'); if(dch) dch.textContent='';
-    const dmu=document.getElementById('desc_mutaciones'); if(dmu) dmu.textContent='';
-    this._afinidadPrevia='';
-    // Se abre la ventana de migración de Pericias: la ficha que venga puede
-    // ser anterior a los grados y traer solo `sel_filo`. La cierra pericias.js
-    // en cuanto migra o en cuanto el jugador toca un grado (ver allí).
-    this._periciasMigrar=true;
-    document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(c=>c.checked=false);
-    document.querySelectorAll('input[name="chk_talents_hidden"]').forEach(el=>el.remove());
-    this._syncPortrait(DEFAULT_PORTRAIT);
-    const ax = document.getElementById('sel_armor_extra'); if(ax)ax.value='0';
-    const ga = document.getElementById('sel_guard_attr'); if(ga)ga.value='DES';
-    const gm = document.getElementById('sel_guard_magic'); if(gm)gm.value='0';
-    const go = document.getElementById('sel_guard_other'); if(go)go.value='0';
-    const ga2 = document.getElementById('sel_guard_attr2'); if(ga2)ga2.value='';
-    const wd1 = document.getElementById('w1_dmg_attr'); if(wd1)wd1.value='FUE';
-    const wd2 = document.getElementById('w2_dmg_attr'); if(wd2)wd2.value='FUE';
-    this.showTalentSummary(); this.updateTalentCount();
-    this.renderInventory();
-    // Reset derived calc data
-    this._weaponAtkData = [0, 0];
-    this._weaponDmgData = [{formula:'1',name:'Desarmado'},{formula:'1',name:'Desarmado'}];
-    // Reset lethality to default
-    this.setLethality(LETHALITY_DEFAULT);
-    // Reset active talent category so next open starts fresh
-    this.activeTalentCat = null;
-    // El nuevo personaje arranca con los predeterminados globales de retrato
-    this._resetCharPrefsToDefaults();
-  },
-
-  /* ─────────────────────────────────────────
-   ── UI SETTINGS
-   ───────────────────────────────────────── */
-  /* ── FONT SIZE ──
-     Todos los tamaños del CSS usan rem, que escalan desde el font-size de <html>.
-     Cambiando document.documentElement.style.fontSize toda la interfaz responde. */
-  /* El tamaño es de la INTERFAZ, no del personaje: uno solo para toda la
-     app. Antes cada ficha guardaba el suyo y al abrirla lo imponía, así que
-     había que reajustarlo personaje por personaje. */
-  setFontSize(size, persist = true) {
-    // Normal = 16px (1rem base estándar del navegador). Pasos de ~9 % entre
-    // opciones, pensados para móvil (v57.9): con Pequeña a 13 px los
-    // rótulos bajaban a 9,75 px; ahora hay suelo de 12 px en los tokens y
-    // Muy grande se queda en 19 para que nada desborde a 360-390 px.
-    const map = {small:'14.5px', normal:'16px', large:'17.5px', xlarge:'19px'};
-    const NOMBRES = {small:'Pequeña', normal:'Normal', large:'Grande', xlarge:'Muy grande'};
-    const px = map[size] || '16px';
-    // Cambiar el font-size del <html> escala todos los rem de la UI de golpe
-    document.documentElement.style.fontSize = px;
-    if (persist) localStorage.setItem(STORAGE.KEYS.font, size);
-    ['small','normal','large','xlarge'].forEach(s=>{
-      const el = document.getElementById('fs_'+s);
-      if (el) {
-        el.classList.toggle('active', s===size);
-        el.setAttribute('aria-pressed', String(s===size));
-      }
-    });
-    const eco = document.getElementById('fs_eco');
-    if (eco) eco.textContent = `${NOMBRES[size] || 'Normal'} · ${px} · toda la app`;
-    // Sin aviso al restaurar al arrancar: solo cuando lo toca una persona.
-    if (persist && this._fontSizeListo) this.toast(`Tamaño de fuente: ${NOMBRES[size] || size}`, 'ok');
-  },
-
-  _restoreFontSize() {
-    const saved = localStorage.getItem(STORAGE.KEYS.font)||'normal';
-    this.setFontSize(saved);
-    this._fontSizeListo = true;   // a partir de ahora los cambios son del usuario
-  },
-
-  _restoreScrollPreserve() {
-    this.scrollPreserve = localStorage.getItem(STORAGE.KEYS.scrollPreserve) === '1';
-    this._syncScrollPreserveBtn();
-  },
-
-  /* ── PORTRAIT SIZE ── */
-  setPortraitSize(size) {
-    // size: 'xs'|'s'|'m'|'l'|'xl'
-    // Escala con pasos suaves y parejos (~+26 px) para que M/L/XL no se
-    // disparen respecto a XS/S; mantiene el aspecto ~0.70 (w/h) y XL cabe en
-    // el ancho de móvil. (XS/S sin cambios como referencia.)
-    const map = {
-      xs: {w:'218px', h:'310px'},
-      s:  {w:'248px', h:'353px'},
-      m:  {w:'276px', h:'393px'},
-      l:  {w:'302px', h:'430px'},
-      xl: {w:'328px', h:'467px'}
-    };
-    const d = map[size] || map['m'];
-    const root = document.documentElement;
-    root.style.setProperty('--port-w', d.w);
-    root.style.setProperty('--port-h', d.h);
-    this._portSize = size;
-    // Sync UI buttons
-    document.querySelectorAll('.ps-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.size === size)
-    );
-    // Con un personaje abierto esto es solo VISTA PREVIA: el valor se
-    // confirma con "✓ Aplicar al Personaje" y viaja en _prefs del
-    // personaje. Solo sin personaje abierto (ajustes desde Inicio) se
-    // persiste como predeterminado global de la app.
-    if (!this._charOpen()) localStorage.setItem(STORAGE.KEYS.portSize, size);
-  },
-
-  /* ── PORTRAIT SHAPE ── */
-  setPortraitShape(shape) {
-    const shapes = {
-      rect:    {r:'var(--r)',    clip:'none',                                                         poly:false},
-      rounded: {r:'14px',        clip:'none',                                                         poly:false},
-      arch:    {r:'140px 140px 8px 8px / 160px 160px 8px 8px', clip:'none',                          poly:false},
-      circle:  {r:'50%',         clip:'none',                                                         poly:false},
-
-    };
-    const d = shapes[shape] || shapes['rounded'];
-    const root = document.documentElement;
-    root.style.setProperty('--port-r',    d.r);
-    root.style.setProperty('--port-clip', d.clip);
-    // For polygon shapes, port-card border is clipped away — hide it,
-    // the ::after pseudo (which shares the clip-path) renders the gold border instead
-    this._portShape  = shape;
-    this._portIsPoly = d.poly;
-    // Apply shape to crop frame so editor previews the shape
-    this._syncCropFrameShape(d);
-    // Force immediate repaint on port-card-edit (prevents lag after shape change)
-    const pce = document.querySelector('.port-card-edit');
-    if (pce) { void pce.getBoundingClientRect(); }
-    // Sync UI buttons
-    document.querySelectorAll('.psh-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.shape === shape)
-    );
-    // Vista previa con personaje abierto; global solo desde Inicio.
-    if (!this._charOpen()) localStorage.setItem(STORAGE.KEYS.portShape, shape);
-  },
-
-  /** Syncs crop frame appearance to the current portrait shape */
-  _syncCropFrameShape(d) {
-    const frame   = document.getElementById('crop_frame');
-    const overlay = document.getElementById('crop_overlay');
-    if (!frame) return;
-    const crClips = {
-      rect:    {r:'2px',   clip:'none', cls:''},
-      rounded: {r:'14px',  clip:'none', cls:''},
-      arch:    {r:'0',     clip:'none', cls:'arch'},
-      circle:  {r:'50%',   clip:'none', cls:''},
-
-    };
-    const shape = this._portShape || 'rounded';
-    const cr = crClips[shape] || crClips['rounded'];
-    frame.style.setProperty('--crfr-r',    cr.r);
-    frame.style.setProperty('--crfr-clip', cr.clip);
-    frame.className = 'crfr' + (cr.cls ? ' ' + cr.cls : '');
-    // Punch a matching hole in the overlay for non-rect shapes
-    if (overlay) {
-      if (cr.clip !== 'none') {
-        // SVG clip on overlay to cut matching shape hole
-        overlay.style.clipPath = 'none'; // handled via CSS on frame
-      }
-    }
-  },
-
-  _restorePortraitSettings() {
-    const size  = localStorage.getItem(STORAGE.KEYS.portSize)  || 'm';
-    const shape = localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded';
-    this._portBorderMode = localStorage.getItem('ss_port_border') || 'premium';
-    this._applyPortraitBorder();
-    // Los ajustes por personaje están siempre disponibles: solo los tiene
-    // quien pulsó «Aplicar a este personaje», y «Volver al predeterminado»
-    // se los quita. (Hasta v56.6 había un interruptor general que hacía lo
-    // mismo para todos a la vez; se retiró por redundante.)
-    this._perCharPrefs = true;
-    try { localStorage.removeItem('ss_per_char_prefs'); } catch (e) {}
-    this.setPortraitSize(size);
-    this.setPortraitShape(shape);
-    this._charPrefs = { portSize: size, portShape: shape, portBorder: this._portBorderMode };
-    this._syncPortraitScopeUI();
-    // Al cerrar Ajustes sin aplicar, descartar la vista previa y volver a los
-    // valores confirmados del personaje. Una sola vez: esta función se llama
-    // en cada carga de personaje y antes acumulaba un oyente por carga.
-    if (!this._portCloseListo) {
-      this._portCloseListo = true;
-      document.getElementById('settings_modal')
-        ?.addEventListener('close', () => this._revertPortraitPreview());
-    }
-  },
-
-  /** ¿Hay un personaje abierto (pantalla de hoja visible)? */
-  _charOpen() {
-    const s = document.getElementById('app-screen');
-    return !!s && !s.classList.contains('hidden');
-  },
-
-  /** Restaura los predeterminados globales (al crear/limpiar personaje). */
-  _resetCharPrefsToDefaults() {
-    const size   = localStorage.getItem(STORAGE.KEYS.portSize)  || 'm';
-    const shape  = localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded';
-    const border = localStorage.getItem('ss_port_border')        || 'premium';
-    this._charPrefs = { portSize: size, portShape: shape, portBorder: border };
-    this.setPortraitSize(size);
-    this.setPortraitShape(shape);
-    this._portBorderMode = border;
-    this._applyPortraitBorder();
-  },
-
-  /** Descarta una vista previa de retrato no confirmada. */
-  _revertPortraitPreview() {
-    if (!this._charOpen() || !this._charPrefs) return;
-    const c = this._charPrefs;
-    const dirty = this._portSize !== c.portSize ||
-                  this._portShape !== c.portShape ||
-                  this._portBorderMode !== c.portBorder;
-    if (!dirty) return;
-    this.setPortraitSize(c.portSize);
-    this.setPortraitShape(c.portShape);
-    this._portBorderMode = c.portBorder;
-    this._applyPortraitBorder();
-    this.toast('Vista previa descartada — el personaje conserva sus ajustes', 'info');
-  },
-
-  /** Temas vigentes. «Sangre» y «Pergamino» se retiraron: quien los tuviera
-      guardados vuelve al predeterminado en vez de quedarse sin tema, que
-      dejaba la app con los tokens del :root y los botones sin marcar. */
-  TEMAS: ['deco', 'void', 'arcane'],
-
-  setTheme(id) {
-    const tid = this.TEMAS.includes(id) ? id : 'deco';
-    document.documentElement.setAttribute('data-theme', tid);
-    this._theme = tid;
-    document.querySelectorAll('.theme-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.theme === tid)
-    );
-    localStorage.setItem('ss_theme', tid);
-    // La barra del sistema (Android, PWA instalada) toma el fondo del tema.
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const fondo = getComputedStyle(document.documentElement).getPropertyValue('--void').trim();
-    if (meta && fondo) meta.setAttribute('content', fondo);
-  },
-
-  /** Estilo de letra: un pack coherente de títulos, texto, cifras y
-      rótulos. «moderno» (Cinzel + Spectral + JetBrains Mono) es el del
-      :root y no pone atributo; «clasico» (IM Fell English + EB Garamond)
-      redefine las cuatro familias con [data-estilo] en <html>.
-      Sustituye a la «Familia de letra» y a la «Letra de los títulos» de
-      v56.6, que se podían mezclar y dejaban Fell sobre un cuerpo moderno. */
-  setEstiloLetra(id) {
-    const eid = id === 'clasico' ? 'clasico' : 'moderno';
-    const root = document.documentElement;
-    if (eid === 'moderno') root.removeAttribute('data-estilo');
-    else root.setAttribute('data-estilo', eid);
-    document.querySelectorAll('.estilo-btn').forEach(b => {
-      const on = b.dataset.estilo === eid;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-    try { localStorage.setItem('ss_estilo_letra', eid); } catch (e) {}
-  },
-
-  _restoreEstiloLetra() {
-    let v = null;
-    try {
-      v = localStorage.getItem('ss_estilo_letra');
-      // Migración desde v56.6: quien tenía IM Fell en los títulos pasa al
-      // Clásico. Las familias Sobria y Legible desaparecen: van al Moderno.
-      if (!v) v = localStorage.getItem('ss_titulos') === 'fell' ? 'clasico' : 'moderno';
-      localStorage.removeItem('ss_titulos');
-      localStorage.removeItem('ss_font_family');
-    } catch (e) {}
-    document.documentElement.removeAttribute('data-font');
-    document.documentElement.removeAttribute('data-titulos');
-    this.setEstiloLetra(v || 'moderno');
-  },
-
-  _restoreTheme() {
-    this.setTheme(localStorage.getItem('ss_theme') || 'deco');
-  },
-
-  /** Fondo de Inicio o de la ficha. `src` = data URL, o '' para quitarlo.
-      Devuelve si quedó guardado.
-      localStorage tiene un cupo por origen (≈5 MB) que comparte con los
-      personajes, y `setItem` lanza al llenarse. Antes esa excepción cortaba
-      la función ANTES de mostrar el botón de quitar y el aviso: el fondo se
-      veía, pero se perdía al recargar y el panel no daba ninguna señal.
-      `guardar:false` es para la restauración al arrancar, que no reescribe. */
-  setBgImage(target, src, { guardar = true } = {}) {
-    const prop = target === 'home' ? '--bg-home' : '--bg-app';
-    const root = document.documentElement.style;
-    let guardado = true;
-    if (src) {
-      root.setProperty(prop, 'url("' + src + '")');
-      root.setProperty('--bg-overlay-op', '1');
-      if (guardar) {
-        // STORAGE.setBg suelta primero la imagen anterior (en localStorage,
-        // su hueco es el que necesita la nueva) y, desde v58, guarda en
-        // IndexedDB, donde un fondo ya no compite con los personajes.
-        guardado = STORAGE.setBg(target, src);
-      }
-    } else {
-      root.setProperty(prop, 'none');
-      // Only remove overlay if both are clear
-      if (!this._bgGuardado(target === 'home' ? 'app' : 'home')) {
-        root.setProperty('--bg-overlay-op', '0');
-      }
-      STORAGE.setBg(target, '');
-    }
-    this._pintarBgEstado(target, src, guardado ? 'ok' : 'sin-espacio');
-    return guardado;
-  },
-
-  _bgGuardado(target) { return STORAGE.getBg(target); },
-
-  /** Estado del fondo DENTRO del panel de Ajustes: miniatura, botón de
-      quitar y una línea de texto. El panel es un <dialog> modal y los
-      avisos flotantes quedan por debajo de él, así que confirmar solo con
-      un toast era no confirmar nada mientras el panel está abierto. */
-  _pintarBgEstado(target, src, estado = 'ok') {
-    const btn = document.getElementById('bg_' + target + '_clear');
-    if (btn) btn.style.display = src ? 'inline-flex' : 'none';
-    const prev = document.getElementById('bg_' + target + '_prev');
-    if (prev) {
-      prev.hidden = !src;
-      prev.style.backgroundImage = src ? 'url("' + src + '")' : '';
-    }
-    const est = document.getElementById('bg_' + target + '_estado');
-    if (!est) return;
-    const TXT = { procesando: 'Procesando imagen…', error: 'No se pudo leer esa imagen',
-                  'sin-espacio': 'Sin espacio: se verá hasta cerrar la app' };
-    est.textContent = TXT[estado] || (src ? 'Guardada en este dispositivo' : 'Sin imagen');
-    est.classList.toggle('is-ok',  estado === 'ok' && !!src);
-    est.classList.toggle('is-err', estado === 'error' || estado === 'sin-espacio');
-  },
-
-  loadBgImage(target, input) {
+  loadJSON(input) {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    this._pintarBgEstado(target, this._bgGuardado(target), 'procesando');
+    if (file.size > MAX_JSON_BYTES * 4) { this.toast('El archivo es demasiado grande', 'err'); return; }
     const r = new FileReader();
     r.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        // De mayor a menor calidad hasta que quepa en el cupo. El primer
-        // paso es el de siempre (1400 px, JPEG 72 %); los siguientes solo
-        // se usan si el almacenamiento va lleno.
-        const PASOS = [[1400, .72], [1100, .66], [860, .6], [640, .55]];
-        let ok = false;
-        for (const [MAX, q] of PASOS) {
-          let w = img.naturalWidth, h = img.naturalHeight;
-          if (w > MAX || h > MAX) {
-            if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
-            else        { w = Math.round(w * MAX / h); h = MAX; }
-          }
-          const cv = document.createElement('canvas');
-          cv.width = w; cv.height = h;
-          cv.getContext('2d').drawImage(img, 0, 0, w, h);
-          if (this.setBgImage(target, cv.toDataURL('image/jpeg', q))) { ok = true; break; }
-        }
-        this.toast(ok ? 'Fondo guardado' : 'Sin espacio para guardar el fondo', ok ? 'ok' : 'err');
-      };
-      img.onerror = () => {
-        this._pintarBgEstado(target, this._bgGuardado(target), 'error');
-        this.toast('No se pudo cargar la imagen', 'err');
-      };
-      img.src = e.target.result;
+      try {
+        const raw = JSON.parse(e.target.result);
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Formato inválido');
+        if (raw.tipo === 'ss-director-respaldo') throw new Error('Es una copia completa: restáurala desde Ajustes → Copias y datos');
+        const cr = raw.tipo === 'ss-director-amenaza' ? raw.amenaza : raw;
+        if (!cr || typeof cr !== 'object' || !('na' in cr)) throw new Error('No es una amenaza de S&S Director');
+        if (document.getElementById('settings_modal')?.open) this._closeSettingsDlg();
+        this._abrirFicha(cr, '');
+        this._markUnsaved();
+        this.toast('Amenaza importada: guárdala para conservarla', 'ok');
+      } catch (err) { this.toast(err.message || 'JSON inválido', 'err'); }
     };
-    r.readAsDataURL(file);
+    r.readAsText(file);
   },
 
-  _restoreBgImages() {
-    ['home', 'app'].forEach(t => {
-      const src = this._bgGuardado(t);
-      if (src) this.setBgImage(t, src, { guardar: false });
-    });
+  /* ── Reglas ───────────────────────────────────────────────────── */
+  saveRulesToLocal() {
+    const ok = STORAGE.saveRules(this.DB);
+    if (!ok) this.toast('No se pudieron guardar las reglas: almacenamiento lleno.', 'err');
+    return ok;
+  },
+  exportRulesDB() {
+    this.guardarArchivo('ss_director_reglas.json', JSON.stringify(this.DB, null, 2));
+  },
+  loadRulesFile(input) {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = e => {
+      try {
+        const raw = JSON.parse(e.target.result);
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !raw.na || !raw.rasgos) {
+          throw new Error('No son reglas de S&S Director (faltan la tabla por NA o la Biblioteca)');
+        }
+        // Texto de terceros: fuera etiquetas HTML antes de usarlo.
+        const limpiar = v => typeof v === 'string' ? this._sanitize(v)
+          : Array.isArray(v) ? v.map(limpiar)
+          : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, limpiar(x)])) : v;
+        this.DB = limpiar(raw);
+        this._asegurarDB();
+        this.saveRulesToLocal();
+        if (this._charOpen()) this.pintarFicha(true);
+        this.toast('Reglas importadas', 'ok');
+        const est = document.getElementById('respaldo_estado');
+        if (est) { est.textContent = 'Reglas importadas.'; est.classList.add('is-ok'); est.classList.remove('is-err'); }
+      } catch (err) { this.toast(err.message || 'JSON de reglas inválido', 'err'); }
+    };
+    r.readAsText(file);
   },
 
-  /* ══════════════════════════════════════════
-     AJUSTES & DATOS — apertura/cierre seguros
-  ══════════════════════════════════════════ */
-
-  /** Abre el modal de Ajustes sincronizando antes el estado de la UI. */
-  /** Ajustes → "Buscar actualización": fuerza reg.update() y, si hay un SW
-      nuevo (instalándose o ya en espera), ofrece activarlo con el mismo
-      aviso persistente del arranque. */
-  /** Escribe en Ajustes la versión de la app realmente en uso: el nombre del
-      caché que sirve el service worker. Es el único dato que distingue "la
-      app está al día" de "el despliegue no llegó a este dispositivo". */
-  async _stampAppVersion() {
-    const el = document.getElementById('set_app_ver');
-    if (!el) return;
-    if (!('serviceWorker' in navigator) || !('caches' in window)) {
-      el.textContent = 'sin service worker';
-      return;
+  /* ── Retrato ──────────────────────────────────────────────────── */
+  /** Punto único: el recorte (base.js) y la carga de la ficha pasan por aquí. */
+  _syncPortrait(src) {
+    const ok = this._retratoOk(src);
+    const s = ok ? src : DEFAULT_PORTRAIT;
+    const a = document.getElementById('char_img');
+    const b = document.getElementById('char_img_summary');
+    if (a) a.src = s;
+    if (b) b.setAttribute('src', s);
+    if (this.cr && !this._pintando) {
+      const nuevo = ok ? src : '';
+      if ((this.cr.retrato || '') !== nuevo) { this.cr.retrato = nuevo; this._markUnsaved(); }
     }
-    try {
-      const keys = await caches.keys();
-      const mine = keys.filter(k => k.startsWith('ss-companion-'));
-      if (!mine.length) { el.textContent = 'sin caché (¿primera visita?)'; return; }
-      // Si hay más de uno, hay una actualización a medio aplicar.
-      el.textContent = mine.length === 1 ? mine[0] : mine.join(' → ') + ' (pendiente de aplicar)';
-    } catch (e) {
-      el.textContent = 'no disponible';
-    }
-    // La versión que el SERVIDOR publica ahora mismo, al lado de la que
-    // usa este dispositivo. Es el par de datos que separa los dos fallos
-    // que se sienten idénticos: "no subí los archivos" y "los subí pero
-    // este móvil sigue con la copia vieja".
-    const sv = document.getElementById('set_srv_ver');
-    if (!sv) return;
-    sv.textContent = 'comprobando…';
-    const remota = await this._versionServida();
-    sv.textContent = remota || 'no se pudo leer (¿sin conexión?)';
+    // El asistente recorta su retrato con el mismo cuadro.
+    if (typeof this._retratoRecortado === 'function' && ok) this._retratoRecortado(src);
   },
 
-  /** Lee del servidor la CACHE_VERSION que sw.js publica en este momento,
-      saltándose toda caché HTTP. No instala nada: solo mira. */
-  async _versionServida() {
-    try {
-      const r = await fetch('sw.js?_=' + Date.now(), { cache: 'no-store' });
-      if (!r.ok) return null;
-      const m = (await r.text()).match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
-      return m ? m[1] : null;
-    } catch (e) { return null; }
+  _restorePortraitSettings() {
+    this._portBorderMode = localStorage.getItem('ssd_port_border') || 'premium';
+    this._applyPortraitBorder();
+    this.setPortraitSize(localStorage.getItem(STORAGE.KEYS.portSize) || 'm');
+    this.setPortraitShape(localStorage.getItem(STORAGE.KEYS.portShape) || 'rounded');
   },
 
-  /** Nombre del caché en uso, sin adornos, para comparar con el servidor. */
-  async _versionLocal() {
-    try {
-      const mine = (await caches.keys()).filter(k => k.startsWith('ss-companion-'));
-      return mine.length ? mine[mine.length - 1] : null;
-    } catch (e) { return null; }
-  },
-
-  /** Último recurso cuando "Buscar actualización" dice que todo está al día
-      pero la app sigue vieja: borra la copia local, da de baja el service
-      worker y recarga desde red con la URL marcada, para que ni el
-      navegador ni un CDN intermedio puedan devolver la versión rancia.
-      NO toca localStorage: personajes y reglas se conservan. */
-  async forceUpdate() {
-    this.closeSettings();
-    this._confirm(
-      'Forzar actualización',
-      'Se borra la copia local de la app y se descarga de nuevo desde el servidor. '
-      + 'Tus personajes y tus reglas NO se tocan. Hace falta conexión a internet.',
-      'Forzar',
-      () => this._forzarDescarga()
-    );
-  },
-
-  /** Activa el worker en espera y recarga. El respaldo por temporizador existe
-      porque en algunos navegadores controllerchange no llega a disparar. */
-  _aplicarWorker(worker) {
-    this._buscandoActualizacion = false;
-    this.toast('Actualizando…', 'ok');
-    try { sessionStorage.setItem('ss_update_aplicada', '1'); } catch (e) {}
-    worker.postMessage({ type: 'SKIP_WAITING' });
-    setTimeout(() => location.reload(), 1400);
-  },
-
-  /** Borra la copia local y recarga desde red con la URL marcada, para que ni
-      el navegador ni un CDN intermedio puedan devolver la versión rancia.
-      NO toca localStorage: personajes y reglas se conservan. */
-  async _forzarDescarga() {
-    try { sessionStorage.setItem('ss_update_forzada', '1'); } catch (e) {}
-    try {
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister().catch(() => {})));
-      }
-      if ('caches' in window) {
-        const ks = await caches.keys();
-        await Promise.all(
-          ks.filter(k => k.startsWith('ss-companion-')).map(k => caches.delete(k))
-        );
-      }
-    } catch (e) { /* se recarga igual: sin SW, la red manda */ }
-    location.replace(location.pathname + '?_fresh=' + Date.now());
-  },
-
-  /** Tras recargar por una actualización, decir en qué versión se ha quedado.
-      Sin esto la app se reinicia y parece que no ha pasado nada — que es
-      justo lo que se sentía al pulsar los botones de Ajustes. */
-  async _avisoTrasActualizar() {
-    let clave = null;
-    try {
-      if (sessionStorage.getItem('ss_update_forzada')) clave = 'forzada';
-      else if (sessionStorage.getItem('ss_update_aplicada')) clave = 'aplicada';
-      sessionStorage.removeItem('ss_update_forzada');
-      sessionStorage.removeItem('ss_update_aplicada');
-    } catch (e) { return; }
-    if (!clave) return;
-    const v = await this._versionLocal() || await this._versionServida();
-    const etiqueta = v ? ' — ' + v : '';
-    const msg = (clave === 'forzada' ? 'App descargada de nuevo' : 'Actualizada') + etiqueta;
-    // Esperar a que la pantalla de carga se haya ido: si no, el aviso nace
-    // debajo del velo y se consume su tiempo sin que nadie lo vea.
-    setTimeout(() => this.toast(msg, 'ok', null, { hold: TIMING.TOAST_VISIBLE * 3 }),
-               TIMING.LOADER_DISMISS * 3);
-  },
-
-  async checkForUpdate() {
-    // Los toasts se renderizan DEBAJO del top-layer del <dialog> de Ajustes:
-    // con el modal abierto serían invisibles e intocables. Cerrarlo primero.
-    this.closeSettings();
-    if (!('serviceWorker' in navigator)) {
-      this.toast('Este navegador no soporta actualizaciones automáticas', 'err');
-      return;
-    }
-    const reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) {
-      this.toast('Sin service worker (¿abriste la app por file:// o en modo incógnito?)', 'err');
-      return;
-    }
-    this.toast('Buscando actualización…');
-    // Silencia el aviso automático de boot.js mientras dura esta comprobación:
-    // reg.update() dispara su 'updatefound' y salían dos avisos superpuestos.
-    this._buscandoActualizacion = true;
-    try { await reg.update(); } catch (e) {
-      this._buscandoActualizacion = false;
-      this.toast('No se pudo comprobar (¿sin conexión?)', 'err');
-      return;
-    }
-    // update() resuelve antes de que reg.installing se pueble: dar un margen
-    // a que el worker nuevo aparezca, o el «estás al día» sería un falso
-    // negativo justo cuando SÍ hay actualización.
-    for (let i = 0; i < 12 && !reg.installing && !reg.waiting; i++) {
-      await new Promise(r => setTimeout(r, 250));
-    }
-    // Esperar a que una instalación en curso termine (máx ~10 s)
-    for (let i = 0; i < 40 && reg.installing; i++) {
-      await new Promise(r => setTimeout(r, 250));
-    }
-    if (reg.waiting) {
-      // Se APLICA, no se ofrece. Pedir un segundo toque sobre un toast era el
-      // fallo: quien pulsa un botón llamado "Buscar actualización" ya ha dicho
-      // que sí, y si tocaba fuera —o no veía el aviso— la actualización se
-      // quedaba en espera y el botón parecía no hacer nada. El aviso del
-      // arranque sí sigue siendo tocable: ese no lo pidió nadie.
-      this._aplicarWorker(reg.waiting);
-      return;
-    }
-    // Sin worker en espera hay DOS situaciones que se sentían iguales y
-    // que el aviso "ya estás al día" confundía: que de verdad no haya nada
-    // nuevo, o que el servidor publique una versión que este navegador se
-    // niega a ver (CDN cacheando sw.js, proxy, copia sin subir). Se
-    // resuelve preguntando al servidor qué versión sirve.
-    const [remota, local] = await Promise.all([this._versionServida(), this._versionLocal()]);
-    this._buscandoActualizacion = false;
-    if (remota && local && remota !== local) {
-      // El servidor publica otra versión pero el navegador no la ve: forzar es
-      // la única salida, así que se fuerza en vez de proponerlo.
-      this.toast(`El servidor sirve ${remota} y tú tienes ${local} — forzando…`, 'info');
-      this._forzarDescarga();
-      return;
-    }
-    if (remota && local) {
-      this.toast(`Ya tienes la última versión (${remota})`, 'ok');
-      return;
-    }
-    this.toast('Ya tienes la última versión', 'ok');
-  },
-
+  /* ── Ajustes ──────────────────────────────────────────────────── */
   openSettings() {
-    this._tapShield();  // anti-traspaso de toques
-    // Ámbito por defecto contextual en cada apertura: con personaje abierto
-    // (y prefs individuales activas) → "Este personaje"; si no → "Global".
-    this._portScope = (this._charOpen() && this._perCharPrefs) ? 'char' : 'global';
-    this._syncPortraitScopeUI();
-    // Exportar un personaje solo tiene sentido con uno abierto; sin él, el
-    // botón sigue activo y explica qué hacer (apagado parecía roto).
+    this._tapShield();
     const exp = document.getElementById('set_export_char');
     if (exp) { exp.disabled = false; exp.classList.toggle('is-apagado', !this._charOpen()); }
     this._pintarEspacio();
     this._syncSeccionesAjustes();
-    // Sellos de versión (verificables tras actualizar). Son dos cosas
-    // distintas y conviene poder mirarlas por separado: los DATOS de reglas
-    // viven en el bundle JS, mientras que la VERSIÓN DE LA APP es la del
-    // caché que el service worker está sirviendo — si esta última no sube
-    // tras un despliegue, el problema es de distribución, no de la app.
     const rv = document.getElementById('set_rules_ver');
     if (rv) rv.textContent = STORAGE.RULES_DATA_VERSION;
     this._stampAppVersion();
@@ -6439,367 +740,130 @@ const app = {
     if (!dlg.open) {
       if (typeof dlg.showModal === 'function') {
         try { dlg.showModal(); } catch (_) { dlg.setAttribute('open', ''); }
-      } else dlg.setAttribute('open', '');       // fallback (entornos sin <dialog>)
+      } else dlg.setAttribute('open', '');
     }
-  },
-
-  /** Cierra el <dialog> de Ajustes tolerando entornos sin close(). */
-  _closeSettingsDlg() {
-    const dlg = document.getElementById('settings_modal');
-    if (!dlg) return;
-    if (typeof dlg.close === 'function') { try { dlg.close(); return; } catch (_) {} }
-    dlg.removeAttribute('open');
-  },
-
-  /** Cierra Ajustes con escudo: el toque de cierre no traspasa a la hoja. */
-  /** Línea de espacio en «Copias y datos»: cuánto ocupa la app y si el
-      almacenamiento está protegido (persistente) en este dispositivo. */
-  _pintarEspacio() {
-    const el = document.getElementById('espacio_estado');
-    if (!el) return;
-    STORAGE.espacio().then(e => {
-      if (!e) { el.textContent = ''; return; }
-      const mb = b => (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',');
-      el.textContent = `Espacio: ${mb(e.usado)} MB usados`
-        + (e.cupo ? ` de ${mb(e.cupo)} MB` : '')
-        + (e.persistente ? ' · protegido' : '')
-        + (e.idb ? '' : ' · modo básico (≈5 MB)');
-    });
-  },
-
-  closeSettings() {
-    this._tapShield();  // anti-traspaso de toques
-    if (typeof UI !== 'undefined') this._settingsShieldRelease = UI.ghostShield();
-    this._closeSettingsDlg();
-    // Descarta la vista previa del retrato aquí mismo y no solo en el evento
-    // «close» del <dialog>: ese evento va ligado al pintado y hay entornos
-    // (pestaña en segundo plano, WebViews) en los que llega tarde o no llega.
-    // Si llega, la segunda llamada no encuentra nada que descartar.
-    this._revertPortraitPreview();
-  },
-
-  /** Secciones plegables de Ajustes: se abren como se dejaron. Por defecto
-      solo Apariencia, que es lo que más se toca. */
-  _syncSeccionesAjustes() {
-    let est = {};
-    try { est = JSON.parse(localStorage.getItem('ss_set_secs') || '{}') || {}; } catch (e) {}
-    document.querySelectorAll('#settings_modal .set-sec').forEach(d => {
-      const k = d.dataset.sec;
-      if (k in est) d.open = !!est[k];
-      if (!d._secListo) {
-        d._secListo = true;
-        d.addEventListener('toggle', () => {
-          let e2 = {};
-          try { e2 = JSON.parse(localStorage.getItem('ss_set_secs') || '{}') || {}; } catch (e) {}
-          e2[k] = d.open;
-          try { localStorage.setItem('ss_set_secs', JSON.stringify(e2)); } catch (e) {}
-        });
-      }
-    });
-  },
-
-  /* ══════════════════════════════════════════
-     RETRATO — ámbito de aplicación
-     'char'   → solo el personaje abierto (_prefs en su entrada del roster)
-     'global' → predeterminado de la app (localStorage)
-  ══════════════════════════════════════════ */
-
-  setPortraitScope(scope) {
-    this._portScope = (scope === 'global') ? 'global' : 'char';
-    this._syncPortraitScopeUI();
-  },
-
-  /** Mantiene coherente el segmento de ámbito, el botón Aplicar y la ayuda. */
-  _syncPortraitScopeUI() {
-    const charOpen = this._charOpen();
-    const canChar  = charOpen;
-    if (!canChar) this._portScope = 'global';
-    else if (!this._portScope) this._portScope = 'char';
-
-    const segC = document.getElementById('port_scope_char');
-    const segG = document.getElementById('port_scope_global');
-    const btn  = document.getElementById('confirm_portrait_btn');
-    const hint = document.getElementById('port_scope_hint');
-    const isChar = this._portScope === 'char';
-
-    if (segC) {
-      segC.disabled = !canChar;
-      segC.classList.toggle('active', isChar);
-      segC.setAttribute('aria-pressed', String(isChar));
-      segC.title = canChar ? 'Aplicar solo al personaje abierto'
-                           : 'Abre un personaje para usar esta opción';
-    }
-    if (segG) {
-      segG.classList.toggle('active', !isChar);
-      segG.setAttribute('aria-pressed', String(!isChar));
-    }
-    // innerHTML y no textContent: textContent borraba el icono del botón.
-    if (btn) btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>'
-      + (isChar ? 'Aplicar a este personaje' : 'Guardar para todos');
-    if (hint) hint.textContent = isChar
-      ? 'Vista previa: se queda solo si pulsas el botón. Si cierras sin aplicar, se descarta.'
-      : 'Para los personajes nuevos y los que no tienen ajustes propios.';
-    const reset = document.getElementById('port_reset_btn');
-    if (reset) reset.hidden = !(charOpen && this._charPrefsPropias);
-  },
-
-  /** Aplica la vista previa del retrato según el ámbito seleccionado. */
-  applyPortraitSettings() {
-    if (this._portScope !== 'global' && this._charOpen()) {
-      this.confirmPortraitSettings();              // flujo por-personaje existente
-      return;
-    }
-    // GLOBAL: persistir la vista previa actual como predeterminado de la app.
-    const size   = this._portSize        || 'm';
-    const shape  = this._portShape       || 'rounded';
-    const border = this._portBorderMode  || 'premium';
-    localStorage.setItem(STORAGE.KEYS.portSize,  size);
-    localStorage.setItem(STORAGE.KEYS.portShape, shape);
-    localStorage.setItem('ss_port_border',       border);
-    if (!this._charOpen()) {
-      // Sin personaje abierto el global ES el estado visible: confirmarlo
-      // evita que el cierre del modal lo revierta como "vista previa".
-      this._charPrefs = { portSize: size, portShape: shape, portBorder: border };
-    }
-    const btn = document.getElementById('confirm_portrait_btn');
-    if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
-    this.toast('Guardado como predeterminado global', 'ok');
-    this._avisoRetrato('✓ Guardado para todos');
-  },
-
-  /** El toast queda bajo el <dialog> de Ajustes: la confirmación del
-      retrato se escribe también en su línea de ayuda. */
-  _avisoRetrato(msg) {
-    const hint = document.getElementById('port_scope_hint');
-    if (!hint) return;
-    hint.textContent = msg;
-    hint.classList.add('is-ok');
-    // El enlace de volver aparece o desaparece al momento, no al expirar el aviso.
-    const reset = document.getElementById('port_reset_btn');
-    if (reset) reset.hidden = !(this._charOpen() && this._charPrefsPropias);
-    clearTimeout(this._avisoRetratoT);
-    this._avisoRetratoT = setTimeout(() => { hint.classList.remove('is-ok'); this._syncPortraitScopeUI(); }, 2600);
-  },
-
-  /** Quita los ajustes de retrato propios del personaje abierto: vuelve a
-      seguir el predeterminado. Sustituye al interruptor general retirado. */
-  quitarRetratoPropio() {
-    if (!this._charOpen()) return;
-    const name = document.getElementById('char_name')?.value.trim();
-    if (name) {
-      const roster = STORAGE.loadRoster();
-      if (roster[name]?._prefs) { delete roster[name]._prefs; STORAGE.saveRoster(roster); }
-    }
-    this._charPrefsPropias = false;
-    this._resetCharPrefsToDefaults();
-    this._portScope = 'global';
-    this._syncPortraitScopeUI();
-    this._avisoRetrato('✓ Este personaje vuelve a usar el predeterminado');
-  },
-
-  /** Confirma la vista previa de retrato SOLO para el personaje abierto. */
-  confirmPortraitSettings() {
-    const flash = () => {
-      const btn = document.getElementById('confirm_portrait_btn');
-      if (btn) { btn.classList.add('success'); setTimeout(() => btn.classList.remove('success'), 560); }
-    };
-    if (!this._charOpen()) {
-      // Sin personaje abierto los botones ya fijaron el predeterminado global.
-      this.toast('Guardado como predeterminado para nuevos personajes', 'ok');
-      flash();
-      return;
-    }
-    // 1) Confirmar la vista previa como estado del personaje actual.
-    this._charPrefs = {
-      portSize:   this._portSize        || 'm',
-      portShape:  this._portShape       || 'rounded',
-      portBorder: this._portBorderMode  || 'premium',
-    };
-    // 2) Persistir _prefs directamente en SU entrada del roster (solo la
-    //    suya: ningún otro personaje ni el predeterminado global se tocan).
-    //    Así "Aplicar" sobrevive aunque luego no pulsen "Guardar".
-    const name = document.getElementById('char_name')?.value.trim();
-    let persisted = false;
-    this._charPrefsPropias = true;   // a partir de aquí son SUYAS, no una copia
-    if (name) {
-      const roster = STORAGE.loadRoster();
-      if (roster[name]) {
-        roster[name]._prefs = { ...(roster[name]._prefs || {}), ...this._charPrefs, propias: true };
-        persisted = STORAGE.saveRoster(roster);
-      }
-    }
-    if (!persisted) this._markUnsaved();  // personaje aún no guardado: viajará en _prefs al guardar
-    this.toast(`Retrato aplicado solo a ${name ? `"${name}"` : 'este personaje'}`, 'ok');
-    flash();
-    this._avisoRetrato(`✓ Aplicado solo a ${name ? `«${name}»` : 'este personaje'}`);
-  },
-
-  togglePortraitBorder() {
-    // Cycles: premium → subtle (old look) → back
-    // _portBorderMode: 'premium' | 'subtle'
-    this._portBorderMode = (this._portBorderMode === 'premium') ? 'subtle' : 'premium';
-    this._applyPortraitBorder();
-    // Vista previa con personaje abierto; global solo desde Inicio.
-    if (!this._charOpen()) localStorage.setItem('ss_port_border', this._portBorderMode);
-  },
-
-  _applyPortraitBorder() {
-    const mode = this._portBorderMode || 'premium';
-    document.body.classList.remove('port-border-subtle', 'port-border-none');
-    if (mode === 'subtle') document.body.classList.add('port-border-subtle');
-    // Fraseo positivo en la UI: pressed=true ⇒ "Borde Premium" ACTIVO.
-    const btn = document.getElementById('port_border_btn');
-    if (btn) btn.setAttribute('aria-pressed', mode === 'premium' ? 'true' : 'false');
-  },
-
-  toggleScrollPreserve() {
-    this.scrollPreserve = !this.scrollPreserve;
-    this._pageScrolls = {}; // reset saved positions when toggling
-    localStorage.setItem(STORAGE.KEYS.scrollPreserve, this.scrollPreserve ? '1' : '0');
-    this._syncScrollPreserveBtn();
-  },
-
-  _syncScrollPreserveBtn() {
-    const btn = document.getElementById('scroll_preserve_btn');
-    const lbl = document.getElementById('scroll_preserve_lbl');
-    if (btn) btn.setAttribute('aria-pressed', String(this.scrollPreserve));
-    if (lbl) lbl.textContent = 'Recordar posición';
-  },
-
-  lethality: LETHALITY_DEFAULT,
-
-  setLethality(n) {
-    this.lethality = n;
-    // Toggle active on cards
-    [1,2,3].forEach(i => {
-      const el = document.getElementById('leth_'+i);
-      if (el) el.classList.toggle('active', i === n);
-    });
-    /* El distintivo del resumen dice solo el nivel: «Letalidad 2». La
-       fórmula —el sumando fijo más el MOD de CON— es la explicación de la
-       opción y ya está en las tarjetas del modo edición; repetirla aquí
-       llenaba dos líneas con algo que no se consulta en mesa. */
-    const tier = String([1,2,3].includes(n) ? n : LETHALITY_DEFAULT);
-    const badge = document.getElementById('campana_leth_badge');
-    const lbl   = document.getElementById('campana_leth_label');
-    if (badge) badge.dataset.tier = tier;
-    if (lbl)   lbl.textContent    = 'Letalidad ' + tier;
-    this.calc();
-  },
-
-  editCampana() {
-    document.getElementById('campana_summary').style.display = 'none';
-    document.getElementById('campana_edit').style.display = 'block';
-    document.getElementById('campana_edit_btn').style.display = 'none';
-  },
-
-  confirmCampana() {
-    document.getElementById('campana_edit').style.display = 'none';
-    document.getElementById('campana_summary').style.display = 'block';
-    document.getElementById('campana_edit_btn').style.display = '';
   },
 
   _setupEscapeKey() {
     document.addEventListener('keydown', e => {
-      // ── Ctrl+S / Cmd+S → save current character ──
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        const appScreen = document.getElementById('app-screen');
-        if (appScreen && !appScreen.classList.contains('hidden')) this.saveChar();
+        if (this._charOpen()) this.saveChar();
         return;
       }
-
       if (e.key !== 'Escape') return;
-
-      // ── Escape → close the top-most open layer ──
-      // 1. Speed dial menu
       const menu = document.getElementById('sdial_menu');
-      const btn  = document.querySelector('.sdial-btn');
+      const btn = document.querySelector('.sdial-btn');
       if (menu?.classList.contains('open')) {
         menu.classList.remove('open');
         btn?.classList.remove('open');
         btn?.setAttribute('aria-expanded', 'false');
         return;
       }
-      // 2. Dice overlay
       const dice = document.getElementById('dice-overlay');
-      if (dice?.classList.contains('active')) {
-        this.closeDiceOverlay();
-        return;
-      }
+      if (dice?.classList.contains('active')) { this.closeDiceOverlay(); return; }
+      const panel = [...document.querySelectorAll('.fs-panel.fs-open')].pop();
+      if (panel) panel.querySelector('.fs-hdr-back')?.click();
     });
   },
 
-  toggleDial() {
-    const menu = document.getElementById('sdial_menu');
-    const btn  = document.querySelector('.sdial-btn');
-    const open = menu.classList.toggle('open');
-    btn.classList.toggle('open', open);
-    btn.setAttribute('aria-expanded', String(open));
-    if (open) {
-      const _closeDial = () => {
-        menu.classList.remove('open');
-        btn.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-      };
-      // Close on click OR touchstart outside the dial — covers both desktop and mobile
-      const _guard = (e) => {
-        const dialEl = document.getElementById('sdial');
-        if (!dialEl?.contains(e.target)) { _closeDial(); }
-      };
-      setTimeout(() => {
-        document.addEventListener('click',      _guard, {once:true});
-        document.addEventListener('touchstart', _guard, {once:true, passive:true});
-      }, 10);
-    }
+  /* ── Selector genérico a pantalla completa ────────────────────── */
+  /** opts: { titulo, sub, buscar, items:[{k,nombre,etiqueta,texto,sub,sel}],
+              alElegir(k, item) → se repinta la lista si devuelve true,
+              info() → texto del pie, alCerrar() } */
+  abrirSelector(opts) {
+    this._tapShield();
+    this._sel = opts;
+    const p = document.getElementById('sel_panel');
+    document.getElementById('sel_ttl').textContent = opts.titulo || 'Elegir';
+    document.getElementById('sel_sub').textContent = opts.sub || '';
+    const s = document.getElementById('sel_search');
+    s.value = '';
+    s.placeholder = opts.buscar || 'Buscar…';
+    p.classList.add('fs-open');
+    document.body.style.overflow = 'hidden';
+    this._selPintar();
+    this._attachPanelSwipeBack(p, () => this.cerrarSelector());
+  },
+  cerrarSelector() {
+    this._tapShield();
+    const p = document.getElementById('sel_panel');
+    if (!p.classList.contains('fs-open')) return;
+    p.style.transform = ''; p.style.opacity = '';
+    p.classList.remove('fs-open');
+    document.body.style.overflow = '';
+    const o = this._sel; this._sel = null;
+    if (o && typeof o.alCerrar === 'function') o.alCerrar();
+  },
+  _selFiltro() {
+    if (!this._selDeb) this._selDeb = this._debounce(() => this._selPintar(), 90);
+    this._selDeb();
+  },
+  _selPintar() {
+    const o = this._sel; if (!o) return;
+    const host = document.getElementById('sel_list');
+    const q = this._norm(document.getElementById('sel_search').value).split(/\s+/).filter(Boolean);
+    const items = (typeof o.items === 'function' ? o.items() : o.items)
+      .filter(it => !q.length || q.every(w => this._norm(it.nombre + ' ' + (it.etiqueta || '') + ' ' + (it.texto || '')).includes(w)));
+    const y = host.scrollTop;
+    host.textContent = '';
+    if (!items.length) host.appendChild(this.h('p', 'tm-empty', o.vacio || 'Nada que mostrar.'));
+    items.forEach(it => {
+      const b = this.tarjetaOpcion(it.nombre, it.etiqueta, it.texto, it.sub, it.sel, () => {
+        const repintar = o.alElegir && o.alElegir(it.k, it);
+        if (repintar && this._sel === o) this._selPintar();
+      });
+      host.appendChild(b);
+    });
+    host.scrollTop = y;
+    const info = document.getElementById('sel_info');
+    if (info) info.textContent = typeof o.info === 'function' ? o.info() : (o.info || '');
   },
 
-  confirmClear() {
-    this._confirm('¿Resetear hoja?', 'Se borrarán todos los datos del personaje actual.', 'Resetear', () => {
-      this.clearCharData();
-      if (this.DB.descriptors) this.unlockApp();
-      // Anclar la vista en página 0 ANTES de abrir secciones en masa.
-      // Sin esto el requestAnimationFrame de editSection('combat'/'equipment')
-      // gana la carrera a goToPage y desplaza el pages-track a página 3.
-      this.goToPage(0);
-      this._pageScrolls = {}; // limpiar posiciones guardadas obsoletas
-      this._bulkEditing = true;
-      this.editSection('personal');
-      ['identity','stats','saves','skills','guard','combat','equipment'].forEach(s=>this.editSection(s));
-      this._bulkEditing = false;
-      this.toast('Hoja reseteada','ok');
+  /** Tarjeta de opción (la del asistente de Companion): nombre, etiqueta,
+      texto y línea secundaria. */
+  tarjetaOpcion(nombre, etiqueta, texto, sub, sel, onClick) {
+    const btn = this.h('button', 'wiz-opt' + (sel ? ' sel' : ''));
+    btn.type = 'button';
+    const cab = this.h('div', 'wiz-opt-h');
+    cab.appendChild(this.h('span', 'wiz-opt-n', nombre));
+    if (etiqueta) cab.appendChild(this.h('span', 'wiz-opt-tag', etiqueta));
+    btn.appendChild(cab);
+    if (texto) btn.appendChild(this.h('span', 'wiz-opt-t', texto));
+    if (sub) btn.appendChild(this.h('span', 'wiz-opt-sub', sub));
+    btn.onclick = onClick;
+    return btn;
+  },
+
+  /* ── Bestiario ────────────────────────────────────────────────── */
+  abrirBestiario() {
+    const claves = () => Object.keys(this.DB.bestiario)
+      .sort((a, b) => (this.DB.bestiario[a].na - this.DB.bestiario[b].na) || this.DB.bestiario[a].nombre.localeCompare(this.DB.bestiario[b].nombre));
+    this.abrirSelector({
+      titulo: 'Bestiario',
+      sub: 'Toca una criatura para traerla a tus amenazas',
+      buscar: 'Buscar criatura…',
+      items: () => {
+        const roster = STORAGE.loadRoster();
+        return claves().map(k => {
+          const c = this.normalizarCr(this.DB.bestiario[k]);
+          const ya = !!roster[c.nombre];
+          return { k, nombre: c.nombre, etiqueta: ya ? '✓ en tus amenazas' : this._etiquetaNA(c),
+            texto: (c.contexto || '').split('\n')[0], sub: this._lineaCr(c) + ' · ' + (c.fuente || ''), sel: ya };
+        });
+      },
+      alElegir: k => {
+        const c = this.normalizarCr(this.DB.bestiario[k]);
+        const roster = STORAGE.loadRoster();
+        if (roster[c.nombre]) { this.toast(`«${c.nombre}» ya está en tus amenazas`, 'info'); return false; }
+        delete c.impreso;
+        roster[c.nombre] = c;
+        if (!STORAGE.saveRoster(roster)) { this.toast('Sin espacio para guardarla', 'err'); return false; }
+        this.toast(`«${c.nombre}» añadida a tus amenazas`, 'ok');
+        return true;
+      },
+      info: () => `${Object.keys(STORAGE.loadRoster()).length} en tus amenazas`,
+      alCerrar: () => { if (this.modo === 'mesa' && !document.getElementById('app-screen').classList.contains('hidden')) this.pintarMesa(); else this.renderHome(); },
     });
   },
-
-  /** Delete the currently loaded character from the roster, then go home. */
-  deleteCurrentChar() {
-    const name = document.getElementById('char_name')?.value?.trim();
-    if (!name) { this.toast('Guarda el personaje primero', 'err'); return; }
-    const roster = STORAGE.loadRoster();
-    if (!roster[name]) { this.toast('Este personaje no está guardado aún', 'err'); return; }
-    this._confirm(
-      '¿Eliminar personaje?',
-      `"${this._esc(name)}" será eliminado permanentemente.`,
-      'Eliminar',
-      () => {
-        STORAGE.deleteChar(name);
-        this.renderHome();
-        this.showScreen('home');
-        this.toast(`"${this._esc(name)}" eliminado`, 'ok');
-      }
-    );
-  },
-
-  /* ── DEBOUNCE HELPER ──
-   * Returns a debounced version of fn that delays invocation by ms.
-   * Uses an arrow function so it inherits the enclosing `this` from
-   * the app object — no .bind() needed at the call site.            */
-  _debounce(fn, ms) {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), ms);
-    };
-  }
-
-};
+});

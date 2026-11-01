@@ -1,0 +1,561 @@
+# Bestiario con los Rasgos separados, uno por línea, tal como venía en los
+# manuales hasta la entrega del 24-10-2026 (00:08). Desde la de las 01:35 el
+# Manual los escribe agrupados en párrafos; gen_reglas.py saca de aquí las
+# piezas (con su Potencial y sus marcas de especie) y del Manual actual las
+# cifras impresas, que comprueba, y los datos nuevos (rareza, número...).
+# Si el Manual cambia las cifras o los Rasgos de una criatura, corrige aquí
+# su ficha.
+#Heading1 Bestiario
+«Cada una de estas criaturas es una pregunta. El grupo decide si la responde con la espada.»
+Criaturas listas para usar, de NA 1 a NA 13, ordenadas por NA. Complementan el bestiario de la Guía del Director (Apéndice A).
+Los Rasgos de tipo y las habilidades de Rol aparecen primero y entre paréntesis. Después van los Rasgos de especie y, en los jefes, el racial mayor y su equipo. La línea «Encuentro» avisa cuando la criatura cuenta más NA del que tiene, y la línea «Protección», qué rebaja su Aptitud definitoria. La señal es lo que el grupo puede percibir antes del encuentro.
+#Heading3 Guardia de la Ciudad (NA 1)
+Humanoide · Mediano · Esbirro · PV 2 · Guardia 12 · Armadura 0 · Velocidad 30 pies · Iniciativa +0 · Ataque +4 · Daño 2d6+3 Perforante (lanza) · PA 3 · CD 12 · Moral —
+FUE +2 · DES +0 · CON +2 · INT +0 · SAB +0 · CAR +0 · Salvaciones fuertes: FUE +4, CON +4
+Esbirro: cae con cualquier golpe que le quite 2 PV. Actúa en bloque con los suyos.
+Formación (especie). +1 a la Guardia por cada guardia adyacente, hasta +3.
+Señal. Silbatos, antorchas que se acercan en fila.
+Contexto táctico. No son enemigos: son tiempo. Cuatro guardias no matan a nadie, pero cada ronda que el grupo pasa con ellos es una ronda más para que llegue quien sí puede hacerlo.
+#Heading3 Kobold Trampero (NA 1)
+Humanoide · Pequeño · Acechador · PV 42 · Guardia 14 · Armadura 0 · Velocidad 30 pies · Iniciativa +2 · Ataque +4 · Daño 2d6+3 Perforante (lanza corta) · PA 3 · CD 12 · Moral 11
+FUE +1 · DES +2 · CON +0 · INT +0 · SAB +0 · CAR +0 · Salvaciones fuertes: DES +4, FUE +3
+Retirada Ágil (especie). No provoca Ataques de Oportunidad al alejarse.
+Trampas de la Guarida. Su madriguera tiene 1d4 trampas de NA 1 (Cap. 7) que él sabe esquivar.
+Táctica de Manada. Ventaja si otro kobold está adyacente al mismo objetivo.
+Esconderse. Se oculta con solo cobertura parcial o penumbra, aunque lo miren, con Ventaja en Sigilo.
+Fotosensible. En luz brillante, Desventaja en ataques y Percepción.
+Señal. Cascabeles colgados de hilos, piedras apiladas en los cruces.
+Contexto táctico. El kobold no pelea: te hace pelear contra su casa. Si el grupo avanza con prisa, las trampas hacen el trabajo; si avanza con cuidado, los kobolds tienen tiempo de rodearlo.
+#Heading3 Dron Centinela (NA 1)
+Máquina · Pequeño · Artillero · PV 39 · Guardia 14 · Armadura 0 · Velocidad 30 pies · Iniciativa +2 · Ataque +4 · Daño 2d6+3 Energía (láser) · PA 3 · CD 12 · Moral —
+FUE −1 · DES +2 · CON −2 · INT +0 · SAB +2 · CAR −2 · Salvaciones fuertes: DES +4, SAB +4
+(Vigor Inagotable, Sistemas Redundantes.)
+Protocolo de Amenaza (especie). Tras ser atacado por una criatura, tiene +2 al ataque contra ella.
+Vuelo. Vuela a 30 pies.
+Arma Montada. 2 PA: ataque a distancia hasta 120 pies.
+Vulnerabilidad. Recibe ×1,5 de daño de Rayo.
+Señal. Un zumbido intermitente, luces rojas que barren el pasillo.
+Contexto táctico. Uno solo es una molestia. Tres, cubriendo el mismo pasillo desde el techo, obligan al grupo a buscar otra ruta o a asumir que alguien va a caer antes de llegar a la puerta.
+#Heading3 Cieno Gris (NA 2)
+Cieno · Mediano · Sin Rol · PV 60 · Guardia 12 · Armadura 1 · Velocidad 30 pies · Iniciativa +0 · Ataque +4 · Daño 2d6+5 Ácido (pseudópodo) · PA 3 · CD 13 · Moral —
+FUE +2 · DES +0 · CON +2 · INT −2 · SAB +0 · CAR −2 · Salvaciones fuertes: CON +4, FUE +4
+(Forma Amorfa, Sentido Sísmico. Ciego más allá de 60 pies.)
+Sangre Ácida (especie). Quien le inflija daño Cortante o Perforante cuerpo a cuerpo recibe 1d6 de Ácido.
+Ácido Corrosivo. Su ataque añade 1d6 de Ácido y aplica Desgarro (Ud6).
+Falsa Apariencia. Inmóvil, parece un charco de agua sucia.
+Vulnerabilidad. Recibe ×1,5 de daño de Frío.
+Señal. Armas y armaduras corroídas en el suelo, sin dueño.
+Contexto táctico. No mata rápido: desarma. Cada golpe que recibe el Audaz le quita Armadura que tardará en recuperar, y el grupo descubre demasiado tarde que las espadas también se corroen.
+#Heading3 Mercenario Veterano (NA 2)
+Humanoide · Mediano · Guardián · PV 60 · Guardia 13 · Armadura 3 · Velocidad 20 pies · Iniciativa +0 · Ataque +4 · Daño 2d6+5 Cortante (espada larga) · PA 3 · CD 13 · Moral 12
+FUE +2 · DES +0 · CON +2 · INT +0 · SAB +0 · CAR +0 · Salvaciones fuertes: CON +4, FUE +4
+Custodia (Reacción): un ataque dirigido a un aliado adyacente pasa a dirigirse contra él.
+Equipo: cota de malla y escudo (Armadura 3 con el Rol; el escudo da +1 a la Guardia y +2 al Bloqueo).
+Venganza del Grupo (especie). Cuando cae un compañero de su compañía, gana +2 al daño hasta el final del combate.
+Bloqueador. Una vez por ronda, bloquea con 1d20 + 6 contra el total del ataque.
+Formación. +1 a la Guardia por cada aliado adyacente, hasta +3.
+Señal. Hogueras de campamento ordenadas, un estandarte de compañía.
+Contexto táctico. El mercenario no busca ganar: busca que su pagador salga vivo. Pelea en línea, protege al que paga y se rinde en cuanto el contrato deja de compensar (Moral 12).
+#Heading3 Tejedora del Techo (NA 3)
+Bestia · Grande · Acechador · PV 66 · Guardia 16 · Armadura 1 · Velocidad 30 pies · Iniciativa +3 · Ataque +7 · Daño 3d6+2 Perforante (quelíceros) · PA 3 · CD 16 · Moral —
+FUE +4 · DES +3 · CON +0 · INT −2 · SAB +0 · CAR −2 · Salvaciones fuertes: DES +6, FUE +7
+(Visión en la Oscuridad.) Primer Golpe: su primer impacto contra una criatura Desprevenida suma el daño base otra vez.
+Telaraña (especie). 2 PA · Ud6: área de 10 pies a 30 pies, terreno difícil; Salvación DES CD 16 o Apresado.
+Trepadora. Trepa a su velocidad por muros y techos.
+Aguijón Venenoso (especie). Su mordisco: al impactar, Salvación CON CD 16 o queda Envenenado (Ud8).
+Arrastrar. Arrastra a la criatura que tiene Apresada a su velocidad completa, sin provocar Ataques de Oportunidad.
+Veneno Paralizante (especie, definitoria). Al impactar a una criatura Envenenada, Salvación CON CD 16 o queda Paralizada (Ud4).
+Fotosensible. En luz brillante, Desventaja en ataques y Percepción.
+Protección. Un antídoto bebido antes, o un Axioma que cure venenos, da Ventaja contra la parálisis. Una antorcha encendida en la mano da Ventaja contra la Telaraña y quema los hilos que toca; con luz brillante, la Tejedora pelea con Desventaja.
+Encuentro. Pasa en 3 su presupuesto de Potencial: cuenta como NA 4 al calcular el encuentro.
+Señal. Hilos pegajosos a la altura de la cabeza; ratas envueltas; ningún eco en la galería.
+Contexto táctico. No pelea: atrapa con la tela al último de la fila, lo muerde hasta paralizarlo y se lo lleva. El grupo decide entre perseguirla hacia su terreno o dejar atrás a un compañero.
+#Heading3 Sabueso Infernal (NA 3)
+Extraplanar · Mediano · Hostigador · PV 57 · Guardia 16 · Armadura 1 · Velocidad 40 pies · Iniciativa +3 · Ataque +6 · Daño 3d6+1 Perforante y Fuego (mordisco) · PA 3 · CD 15 · Moral —
+FUE +3 · DES +3 · CON −2 · INT −2 · SAB +0 · CAR +0 · Salvaciones fuertes: DES +6, FUE +6
+(Telepatía con los suyos; Resistencia a Fuego y Necrótico.) Flanqueo: Ventaja si un aliado está adyacente al mismo objetivo.
+Olor de la Sangre (especie). Percibe a las criaturas heridas a 120 pies, aunque estén ocultas o sean invisibles.
+Aliento (especie, definitoria). 3 PA · Ud6: cono de 30 pies, Salvación DES CD 15, 4d6 de Fuego; la mitad si la supera.
+Táctica de Manada. Ventaja si un aliado está adyacente al mismo objetivo.
+Aversión. No cruza una línea de sal consagrada; las armas bendecidas hacen Crítico contra él con 19–20.
+Protección. Resistencia al Fuego, o separarse: el Aliento no alcanza a quien está lejos de los demás. La sal consagrada le cierra el paso.
+Encuentro. Su Aliento le suma 3: cuenta como NA 6 al calcular el encuentro.
+Señal. Hierba quemada en forma de huellas; un olor a azufre que no se va.
+Contexto táctico. Cazan en tríos y abren con el aliento antes de cerrar el cerco. El grupo que se agrupa para defenderse es el que mejor queda para el siguiente aliento.
+#Heading3 Ghoul (NA 3)
+No-muerto · Mediano · Arrollador · PV 79 · Guardia 11 · Armadura 1 · Velocidad 30 pies · Iniciativa −2 · Ataque +6 · Daño 4d6+1 Cortante (garras) · PA 3 · CD 15 · Moral 13
+FUE +3 · DES −2 · CON +3 · INT +0 · SAB +0 · CAR −2 · Salvaciones fuertes: FUE +6, CON +6
+(Vigor Inagotable; Inmune a Envenenado y Aterrado.) Ataque Masivo: derriba al impactar, una vez por ronda.
+Garras Paralizantes (definitoria). Al impactar, Salvación CON CD 15 o queda Paralizado (Ud4). Los elfos son inmunes.
+Toque Necrótico. Su daño es Necrótico, y el objetivo no recupera PV hasta el final de su siguiente turno.
+Carroñera. 2 PA: devora un cadáver adyacente y recupera 9 PV.
+Remate. Ventaja contra criaturas Derribadas o por debajo de la mitad de sus PV.
+Garras Desgarradoras. Dos impactos al mismo objetivo en un turno aplican Sangrado (Ud6).
+Vulnerabilidad. Recibe ×1,5 de daño Radiante.
+Protección. Agua bendita bebida antes del combate o un amuleto consagrado: Ventaja en la Salvación. Los elfos son inmunes a la parálisis.
+Encuentro. Sus garras pasan en 2 su presupuesto de Potencial: cuenta como NA 4 al calcular el encuentro.
+Señal. Tumbas abiertas desde dentro; huesos partidos a lo largo.
+Contexto táctico. Derriba y se ceba. Un personaje en el suelo junto a un ghoul pierde un turno levantándose y sufre dos ataques con Ventaja; el grupo tiene que decidir quién se queda a su lado.
+#Heading3 Fuego Fatuo (NA 3)
+Espíritu · Diminuto · Represor · PV 61 · Guardia 14 · Armadura 1 · Velocidad 30 pies · Iniciativa +1 · Ataque +4 · Daño 3d6−1 Rayo (toque) · PA 3 · CD 15 · Moral 13
+FUE −2 · DES +1 · CON −1 · INT +3 · SAB +3 · CAR +0 · Salvaciones fuertes: INT +6, SAB +6
+(Telepatía.) Represión (3 PA): Cegado (Salvación CON, Ud4).
+Señuelo (especie). 2 PA · Ud6: crea una luz gemela; el primer ataque que lo impactaría golpea al señuelo y lo disipa.
+Vuelo. Flota a 30 pies.
+Voz Seductora (especie, definitoria). 2 PA · Ud6: una criatura a 30 pies, Salvación SAB CD 15 o Encantada (Ud6); la sigue hacia el pantano.
+Ligada al Lugar. No se aleja más de 300 pies de la ciénaga donde murió.
+Protección. Atarse con una cuerda o taparse los oídos: Ventaja contra su Voz Seductora, y quien la falla así se queda quieto en lugar de caminar hacia el agua.
+Señal. Luces azules entre los juncos; viajeros que juran haber visto un farol.
+Contexto táctico. No mata: conduce. La víctima Encantada camina hacia la ciénaga más profunda (Cap. 7), y el grupo tiene que elegir entre perseguir la luz o sacar a su compañero del agua.
+#Heading3 Arpía (NA 3)
+Monstruosidad · Mediano · Represor · PV 66 · Guardia 13 · Armadura 1 · Velocidad 30 pies · Iniciativa +0 · Ataque +3 · Daño 3d6−2 Cortante (garras) · PA 3 · CD 15 · Moral 9
+FUE +0 · DES +0 · CON +0 · INT +3 · SAB +3 · CAR +0 · Salvaciones fuertes: INT +6, SAB +6
+(Espinas: sus plumas cortan a quien la apresa, 1d6 Perforante.) Represión (3 PA): chillido; Aterrado (Salvación SAB, Ud4).
+Garras Desgarradoras (especie). Si impacta superando la Guardia por 5 o más, o con un Crítico, aplica Sangrado (Ud6).
+Vuelo. Vuela a 40 pies.
+Voz Seductora (especie, definitoria). 2 PA · Ud6: una criatura a 30 pies, Salvación SAB CD 15 o Encantada (Ud6).
+Cobarde. Moral 9; la tira en cuanto pierde un cuarto de sus PV.
+Protección. Cera en los oídos: Ventaja contra su canto, a cambio de quedar Ensordecido mientras la lleve.
+Señal. Un canto hermoso en los acantilados; restos de marineros al pie.
+Contexto táctico. Encanta a uno y ataca desde el aire a quien intenta despertarlo. Es frágil y huye pronto, así que la pelea no se gana matándola, sino sacando al encantado del borde.
+#Heading3 Mímico (NA 4)
+Monstruosidad · Mediano · Acechador · PV 84 · Guardia 16 · Armadura 2 · Velocidad 30 pies · Iniciativa +3 · Ataque +6 · Daño 3d6+3 Contundente y Ácido (pseudópodo) · PA 3 · CD 16 · Moral 14
+FUE +3 · DES +3 · CON +1 · INT +1 · SAB +1 · CAR −2 · Salvaciones fuertes: DES +6, FUE +6
+(Sangre Ácida: quien le hace daño Cortante o Perforante cuerpo a cuerpo recibe 1d6 de Ácido.) Primer Golpe: su primer impacto contra una criatura Desprevenida suma el daño base otra vez.
+Arrastrar (especie). Arrastra a la criatura que tiene Apresada a su velocidad completa, sin provocar Ataques de Oportunidad.
+Falsa Apariencia. Inmóvil, es un cofre, una puerta o un taburete.
+Mordisco Tenaz. Al impactar, Apresa sin gastar PA: Salvación FUE o DES CD 16 o queda Apresado.
+Emboscadora Nata (especie, definitoria). En la primera ronda, sus ataques contra Desprevenidos suman el daño base otra vez.
+Protección. Tantear muebles y cofres con un palo, o Percepción CD 16: descubierto, pierde su Primer Golpe. El alcohol o el fuego aflojan su adhesivo: Ventaja para escapar.
+Señal. Un cofre sin polvo en una sala abandonada; marcas de arrastre bajo él.
+Contexto táctico. El primer golpe es el peor. Después, el personaje pegado al mímico tiene que elegir entre forcejear y seguir recibiendo ácido o que sus compañeros lo golpeen de cerca y se quemen.
+#Heading3 Ogro (NA 4)
+Gigante · Grande · Arrollador · PV 96 · Guardia 11 · Armadura 2 · Velocidad 30 pies · Iniciativa −2 · Ataque +7 · Daño 4d6+4 Contundente (garrote) · PA 3 · CD 17 · Moral —
+FUE +4 · DES −2 · CON +3 · INT −2 · SAB +1 · CAR +1 · Salvaciones fuertes: FUE +7, CON +6
+(Gigantismo.) Ataque Masivo: derriba al impactar, una vez por ronda.
+Dura de Matar (especie). La primera vez en cada combate que llega a 0 PV, queda en 1 PV.
+Golpe Aplastante (especie, definitoria). Al impactar, Salvación FUE CD 17 o Derribado.
+Lanzar. 2 PA: en lugar de Empujar, arroja a una criatura que tenga Apresada hasta 20 pies; 3d6 para ella y para quien reciba el golpe.
+Frenesí. 1 PA · 1/combate: hasta su siguiente turno, Ventaja en sus ataques y en los ataques contra él.
+Crédula. Cae en cualquier finta: Engaño contra CD 12.
+Protección. Un escudo plantado da Ventaja contra su Golpe Aplastante; una finta o un cebo lo sacan de la pelea un turno.
+Señal. Árboles tronchados a la altura del pecho; cabras desaparecidas.
+Contexto táctico. Pega muchísimo y piensa muy poco. El grupo que lo engaña —una finta, un señuelo, un puente que no aguanta su peso— lo vence sin recibir un solo golpe.
+#Heading3 Bruja del Pantano (NA 5)
+Feérico · Mediano · Represor · PV 97 · Guardia 14 · Armadura 2 · Velocidad 30 pies · Iniciativa +1 · Ataque +4 · Daño 4d6+1 Cortante (uñas) · PA 3 · CD 16 · Moral 15
+FUE −2 · DES +1 · CON +1 · INT +3 · SAB +3 · CAR +1 · Salvaciones fuertes: INT +6, SAB +6
+(Voluntad de Hierro.) Represión (3 PA): Ralentizado (Salvación FUE, Ud4).
+Ilusión (especie). 2 PA · Ud6: crea una imagen convincente de sí misma o de un peligro hasta 60 pies. Descubrir el engaño: Investigación o Perspicacia CD 16.
+Maldición (especie, definitoria). 2 PA · Ud6: Salvación SAB CD 16 o Maldito (Ud8), con Desventaja en el tipo de tirada que ella elija.
+Cambiaformas. 2 PA: adopta la forma de una anciana, una niña o un cuervo.
+Pesadillas. Quien duerma a menos de una milla no descansa bien.
+Aversión. No cruza hierro frío; las armas de hierro frío hacen Crítico con 19–20.
+Protección. Hierro frío encima: Ventaja contra su Maldición. Dormir en tierra consagrada aleja sus Pesadillas.
+Señal. Muñecos de paja en las puertas; los niños sueñan con una casa sobre patas.
+Contexto táctico. Ataca antes de que el grupo sepa que está en guerra: con pesadillas que les quitan el descanso y maldiciones que llegan con la cena. Enfrentarla es encontrarla, y encontrarla es saber quién es.
+#Heading3 Mantícora (NA 5)
+Monstruosidad · Grande · Artillero · PV 75 · Guardia 16 · Armadura 2 · Velocidad 30 pies · Iniciativa +3 · Ataque +6 · Daño 4d6+3 Perforante (púas) · PA 3 · CD 16 · Moral 15
+FUE +2 · DES +3 · CON −2 · INT +1 · SAB +3 · CAR +1 · Salvaciones fuertes: DES +6, SAB +6
+(Cola Barredora: Reacción, 1/ronda, ataque con la cola a quien la flanquee; Salvación FUE CD 16 o Derribado.) Posición: si no se ha movido, Ventaja en su primer ataque a distancia.
+Aguijón Venenoso (especie). Al impactar, Salvación CON CD 16 o queda Envenenado (Ud8).
+Vuelo. Vuela a 50 pies.
+Andanada (especie, definitoria). 3 PA · Ud6: radio de 15 pies a 60 pies, Salvación DES CD 16, 4d6; la mitad si la supera.
+Protección. Cobertura o separarse más de 15 pies: la Andanada no alcanza a todos, y un escudo da Ventaja en esa Salvación.
+Encuentro. Su Andanada le suma 2: cuenta como NA 7 al calcular el encuentro.
+Señal. Cadáveres erizados de púas negras; un rugido que parece una risa.
+Contexto táctico. Dispara desde donde nadie llega y baja solo cuando alguien se aísla. Obliga al grupo a buscar cobertura en campo abierto, o a encontrar la forma de traerla al suelo.
+#Heading3 Basilisco (NA 5)
+Monstruosidad · Mediano · Represor · PV 97 · Guardia 14 · Armadura 4 · Velocidad 30 pies · Iniciativa +1 · Ataque +4 · Daño 4d6+1 Perforante (mordisco) · PA 3 · CD 16 · Moral 15
+FUE +1 · DES +1 · CON +1 · INT +3 · SAB +3 · CAR −2 · Salvaciones fuertes: INT +6, SAB +6
+(Sangre Ácida.) Represión (3 PA): Aterrado (Salvación SAB, Ud4).
+Aguijón Venenoso (especie). Su mordisco: al impactar, Salvación CON CD 16 o queda Envenenado (Ud8).
+Mirada Petrificante (definitoria). 2 PA · Ud6: cada criatura a 30 pies que lo mire hace una Salvación CON CD 16 o queda Ralentizada (Ud4); si ya lo estaba, queda Petrificada, y eso no se degrada con el Ud: dura hasta que un Axioma o un remedio la cure.
+Piel Gruesa. +2 de Armadura.
+Protección. Apartar la mirada cuando la usa: Ventaja en la Salvación. Quien la aparta durante todo el combate ataca con Desventaja. Un espejo pulido le devuelve la mirada: el basilisco hace la misma Salvación.
+Señal. Estatuas demasiado realistas, con cara de sorpresa; pájaros de piedra en las ramas.
+Contexto táctico. La mirada no mata al primer intento: avisa. El grupo tiene un turno para decidir si pelea con los ojos cerrados (Desventaja) o se arriesga a una segunda mirada.
+#Heading3 Troll (NA 6)
+Gigante · Grande · Arrollador · PV 138 · Guardia 12 · Armadura 3 · Velocidad 30 pies · Iniciativa −2 · Ataque +9 · Daño 3d6+2 y 2d6+2 Cortante (garras) · PA 4 · CD 20 · Moral —
+FUE +5 · DES −2 · CON +4 · INT −2 · SAB +1 · CAR +1 · Salvaciones fuertes: FUE +9, CON +8
+(Gigantismo.) Ataque Masivo: Sangrado al impactar, una vez por ronda.
+Frenesí (especie). 1 PA · 1/combate: hasta el final de su siguiente turno, sus ataques tienen Ventaja y los ataques contra él también.
+Regeneración (especie, definitoria). Recupera 12 PV al inicio de su turno salvo si recibió Fuego o Ácido desde su turno anterior. A 0 PV cae, pero si ese turno no recibió Fuego ni Ácido, se levanta al inicio de su siguiente turno con 12 PV. Solo muere de verdad quemado o disuelto.
+Miembros que Siguen (especie). Cuando un solo golpe le quita 20 PV o más, le arranca un miembro que sigue luchando: una criatura de NA 0 (4 PV) que actúa en su turno y ataca con 2d6. Mientras no se queme, el troll puede volver a unírselo con 1 PA.
+Olor de la Sangre. Percibe a las criaturas heridas a 120 pies.
+Hambre. Con un cadáver a la vista, Salvación SAB CD 12 o se detiene a comer.
+Protección. Fuego o ácido: cortan la Regeneración y lo rematan. Sin ellos, cada vez que cae vuelve a levantarse.
+Señal. Huesos de caballo mordidos; un hedor que se huele a una milla.
+Contexto táctico. Se puede tumbar muchas veces y se levanta todas. La pelea contra un troll es una pelea por el fuego: quién lo lleva, cuánto queda y cómo aguantar hasta usarlo.
+#Heading3 Espectro (NA 6)
+Espíritu · Mediano · Hostigador · PV 84 · Guardia 18 · Armadura 3 · Velocidad 40 pies · Iniciativa +4 · Ataque +8 · Daño 4d6+1 Necrótico (toque) · PA 3 · CD 19 · Moral 16
+FUE +4 · DES +4 · CON −2 · INT +1 · SAB +1 · CAR +1 · Salvaciones fuertes: DES +8, FUE +8
+(Telepatía.) Flanqueo: Ventaja si un aliado está adyacente al mismo objetivo.
+Pavor (especie, definitoria). Aura de 30 pies: la primera vez que una criatura entra o empieza su turno dentro, Salvación SAB CD 19 o queda Aterrada mientras siga dentro. Quien la supera es inmune un día.
+Incorpóreo. Resistencia a todo daño no mágico; atraviesa paredes y criaturas.
+Toque Necrótico. El objetivo no recupera PV hasta el final de su siguiente turno.
+Drenar Reserva. Al impactar, el objetivo pierde 1d6 de su mayor Reserva.
+Fotosensible. En luz brillante, Desventaja en ataques y Percepción.
+Ligada al Lugar. No se aleja más de 300 pies de la casa donde murió.
+Protección. Luz brillante y armas mágicas. Un símbolo consagrado da Ventaja contra su Pavor.
+Señal. Frío en una sola habitación; los espejos se empañan desde dentro.
+Contexto táctico. Sale de la pared, toca y vuelve a entrar. No se le puede acorralar, así que el grupo tiene que traer la luz a su terreno o sacarlo del lugar al que está ligado.
+#Heading3 Gólem de Arcilla (NA 6)
+Constructo · Grande · Arrollador · PV 138 · Guardia 12 · Armadura 3 · Velocidad 30 pies · Iniciativa −2 · Ataque +9 · Daño 3d6+2 y 2d6+2 Contundente (puños) · PA 4 · CD 20 · Moral —
+FUE +5 · DES −2 · CON +4 · INT −2 · SAB +1 · CAR −2 · Salvaciones fuertes: FUE +9, CON +8
+(Vigor Inagotable; Inmune a Envenenado y Encantado; no tira Moral.) Ataque Masivo: derriba al impactar, una vez por ronda.
+Pisotón (especie, definitoria). 2 PA · Ud6: cada criatura a 10 pies, Salvación FUE CD 20 o Derribada; el suelo en ese radio pasa a ser terreno difícil.
+Resistencia Sobrenatural. Resistencia al daño no mágico.
+Piel Arcana. Los Axiomas de Nivel 1 y 2 no le afectan, salvo su daño.
+Golpe Aplastante. Al impactar, Salvación FUE CD 20 o Derribado.
+Mando Único. Sin su creador a la vista, pierde 1 PA y no puede usar Aptitudes.
+Protección. Apartar a su creador: sin él, pierde 1 PA y sus Aptitudes. Quien se mantiene a más de 10 pies no recibe su Pisotón.
+Señal. Huellas profundas y exactas, siempre a la misma distancia; runas en una puerta.
+Contexto táctico. Casi nada le hace daño y todo lo que toca cae. La verdadera pelea es contra quien lo controla: encontrarlo y apartarlo convierte al gólem en una estatua lenta.
+#Heading3 Cazador Sintético (NA 6)
+Máquina · Mediano · Hostigador · PV 84 · Guardia 18 · Armadura 3 · Velocidad 40 pies · Iniciativa +4 · Ataque +8 · Daño 4d6+1 Energía (rifle integrado) · PA 3 · CD 19 · Moral —
+FUE +4 · DES +4 · CON −2 · INT +1 · SAB +1 · CAR −2 · Salvaciones fuertes: DES +8, FUE +8
+(Vigor Inagotable, Sistemas Redundantes.) Flanqueo.
+Sobrecarga (especie, definitoria). 1 PA · 1/combate: hasta el final de su siguiente turno gana +1 PA y su dado de daño sube un paso. Después queda Conmocionado (Ud4).
+Arma Montada. 2 PA: ataque a distancia hasta 120 pies.
+Camuflaje. Camuflaje óptico: inmóvil, Percepción CD 19 para verlo.
+Autorreparación. Recupera 6 PV al inicio de su turno salvo si recibió Rayo.
+Salto Depredador. 1 PA: salta hasta su velocidad sin provocar Ataques de Oportunidad.
+Vulnerabilidad. Recibe ×1,5 de daño de Rayo.
+Protección. Rayo, y cortarle la línea de visión: su Arma Montada necesita verte. Un pulso electromagnético le quita la Sobrecarga.
+Señal. Cámaras destruidas en orden; un objetivo marcado con un punto rojo que nadie más ve.
+Contexto táctico. Tiene un nombre en la lista y no se detiene hasta tacharlo. El grupo puede pelear, esconder a su objetivo o descubrir quién lo programó y cambiarle la lista.
+#Heading3 Wyvern (NA 6)
+Dracónido · Grande · Arrollador · PV 138 · Guardia 12 · Armadura 3 · Velocidad 20 pies, vuelo 80 pies · Iniciativa −2 · Ataque +9 · Daño 3d6+2 y 2d6+2 Perforante (mordisco y aguijón) · PA 4 · CD 20 · Moral —
+FUE +5 · DES −2 · CON +4 · INT −2 · SAB +1 · CAR −2 · Salvaciones fuertes: FUE +9, CON +8
+(Visión en la Oscuridad; Inmune a Ácido.) Ataque Masivo: derriba al impactar, una vez por ronda.
+Aguijón Venenoso (definitoria). Al impactar, 4d6 de Veneno (Salvación CON CD 20, la mitad) y, si falla, queda Envenenado (Ud8).
+Aliento. 3 PA · Ud6: cono de 30 pies, Salvación DES CD 20, 6d6 de Ácido; la mitad si la supera. No lo repite en su turno siguiente.
+Vuelo. Vuela a 80 pies. Si queda Derribado, Aturdido o Paralizado en el aire, cae.
+Hambre. Con una presa caída a la vista, Salvación SAB CD 12 o baja a devorarla ese turno.
+Protección. Un antídoto bebido antes da Ventaja contra el aguijón, y quien la supera con Ventaja recibe solo la mitad del veneno sin quedar Envenenado. Cobertura o dispersarse contra el Aliento.
+Encuentro. Su Aliento le suma 3: cuenta como NA 9 al calcular el encuentro.
+Edad. Una cría es Mediana (plantilla Cría: NA 4); un wyvern viejo, Enorme (plantilla Anciana: NA 8).
+Señal. Ganado arrancado del suelo; huesos con marcas de ácido en lo alto de un risco.
+Contexto táctico. No habla, no negocia y no guarda tesoros: caza. Abre con el aliento desde el aire, baja sobre el que quedó en pie y se lo lleva. Es un dragón sin la mente de un dragón, y por eso se le puede engañar con un cebo.
+#Heading3 Guardián de Raíz (NA 7)
+Planta u hongo · Grande · Guardián · PV 156 · Guardia 12 · Armadura 6 · Velocidad 10 pies · Iniciativa −2 · Ataque +9 · Daño 3d6+4 y 2d6+4 Contundente (ramas) · PA 4 · CD 20 · Moral 17
+FUE +5 · DES −2 · CON +4 · INT +1 · SAB +1 · CAR −2 · Salvaciones fuertes: CON +8, FUE +9
+(Inmune a Cegado y Ensordecido; Camuflaje en el bosque.) Custodia (Reacción).
+Absorber Vida (especie). Sus raíces beben: recupera PV iguales a la mitad del daño que inflige con sus ramas.
+Piel Gruesa. +2 de Armadura.
+Zona de Control (especie, definitoria). Quien empiece su turno adyacente a él no puede alejarse sin superar Salvación FUE o DES CD 20.
+Tentáculos. Mantiene Apresadas hasta tres criaturas con sus raíces sin dejar de atacar.
+Curación Rápida. Recupera 7 PV al inicio de su turno.
+Pisotón. 2 PA · Ud6: cada criatura a 10 pies, Salvación FUE CD 20 o Derribada.
+Vulnerabilidad. Recibe ×1,5 de daño de Fuego.
+Lenta. −10 pies de velocidad; actúa siempre el último.
+Protección. Fuego. Quien empieza su turno a más de 10 pies no queda atrapado en su Zona de Control.
+Señal. Un claro donde los árboles miran hacia dentro; caminos que se cierran.
+Contexto táctico. No persigue: retiene. Mientras el guardián sujeta a dos personajes, lo que protege tiene tiempo de hacer lo que el grupo vino a impedir.
+#Heading3 Elemental de Tormenta (NA 7)
+Elemental · Grande · Represor · PV 124 · Guardia 15 · Armadura 3 · Velocidad 30 pies · Iniciativa +1 · Ataque +6 · Daño 3d6+1 y 2d6+1 Rayo (descarga) · PA 4 · CD 19 · Moral 17
+FUE +2 · DES +1 · CON +1 · INT +4 · SAB +4 · CAR −2 · Salvaciones fuertes: INT +8, SAB +8
+(Inmune a Rayo; Fundirse con el Elemento en nubes de tormenta.) Represión (3 PA): Conmocionado (Salvación CON, Ud4).
+Desplazamiento (especie). 1 PA · Ud6: se vuelve relámpago y reaparece hasta 30 pies, en un punto que pueda ver.
+Vuelo. Vuela a 60 pies.
+Tormenta Personal (especie, definitoria). 3 PA · Ud6: hasta tres objetivos en 30 pies reciben 5d6 de Rayo (Salvación DES CD 19, la mitad); el viento convierte el radio en terreno difícil.
+Protección. Resistencia al Rayo: Ventaja contra su Tormenta y la mitad de su daño. Una barra de hierro clavada en tierra le impide fundirse con las nubes.
+Encuentro. Su Tormenta Personal le suma 3: cuenta como NA 10 al calcular el encuentro.
+Señal. Nubes que se mueven contra el viento; el pelo se eriza.
+Contexto táctico. Convierte el campo en un lugar donde nadie avanza. Cada ronda que el grupo pasa bajo ella es una ronda de rayos; la decisión es cubrirse o correr hacia algo que la ancle.
+#Heading3 Tejedor del Vacío (NA 7)
+Aberración · Mediano · Represor · PV 124 · Guardia 15 · Armadura 3 · Velocidad 30 pies · Iniciativa +1 · Ataque +5 · Daño 3d6 y 2d6 Psíquico (toque) · PA 4 · CD 19 · Moral 17
+FUE −2 · DES +1 · CON +1 · INT +4 · SAB +4 · CAR +1 · Salvaciones fuertes: INT +8, SAB +8
+(Mente Ajena, Visión en la Oscuridad.) Represión (3 PA): Conmocionado (Salvación SAB, Ud4).
+Confundir (especie). 2 PA · Ud6: radio de 10 pies a 60 pies, Salvación SAB CD 19 o Conmocionado (Ud6); mientras dure, con 1–2 en 1d6 ataca a la criatura más cercana, amiga o enemiga.
+Voz Seductora. 2 PA · Ud6: una criatura a 30 pies, Salvación SAB CD 19 o Encantada (Ud6).
+Dominar (especie, definitoria). 3 PA · Ud4: una criatura Encantada, Salvación SAB CD 19 o actúa como él decida.
+Leer Mentes. Una vez por ronda, pregunta a un jugador qué hará su personaje.
+Fotosensible. En luz brillante, Desventaja en ataques y Percepción.
+Protección. Luz brillante, y Voluntad de Hierro o un Axioma de protección mental: Ventaja contra su Voz y su Dominar; quien falla con Ventaja queda solo Encantado.
+Señal. Gente que repite frases que no son suyas; dibujos idénticos hechos por desconocidos.
+Contexto táctico. Pelea con el grupo contra el grupo. Sabe lo que van a hacer y usa a uno de ellos para impedirlo. La luz y la distancia son las únicas armas que no puede volver en su contra.
+#Heading3 Deva (NA 7)
+Extraplanar · Mediano · Soporte · PV 93 · Guardia 15 · Armadura 3 · Velocidad 30 pies, vuelo 90 pies · Iniciativa +1 · Ataque +5 · Daño 3d6 y 2d6 Radiante (maza de luz) · PA 4 · CD 19 · Moral 17
+FUE +1 · DES +1 · CON −2 · INT +1 · SAB +4 · CAR +4 · Salvaciones fuertes: SAB +8, CAR +8
+(Telepatía; Resistencia a Radiante y Necrótico.) Restaurar (2 PA): un aliado a 30 pies recupera 1d8 PV o se libra de un estado.
+Visión Verdadera (especie, definitoria). Ve a través de ilusiones, invisibilidad y cambios de forma hasta 60 pies.
+Vuelo. Vuela a 90 pies.
+Cambiaformas. Adopta a voluntad una forma mortal corriente (0 PA), en la que conserva sus estadísticas.
+Toque Sanador. 3 PA · Ud6: toca a una criatura y le devuelve 1 punto de Flesh; contra un no-muerto, el toque hace 4d6 Radiante (Salvación CON CD 19 mitad).
+Uso de Axiomas. Conoce tres Axiomas de Divinidad de hasta Nivel 4: Curar Heridas Graves, Protección del Mal 30 pies y Lenguas; CD 19, Reserva 35, Esfuerzo hasta 2.
+El Mensaje. Mientras no haya entregado su mensaje, no ataca primero ni abandona la escena: se defiende, cura y espera. Quien lo escucha entero, sin interrumpirlo, tiene Ventaja en su siguiente tirada relacionada con él.
+Nombre Verdadero. Quien pronuncia el nombre con que fue creado le hace una pregunta que debe responder con la verdad.
+Aversión. No puede herir a quien le ofrece hospitalidad sincera bajo su techo.
+Encuentro. Cuenta como NA 8 al calcular el encuentro: 7, más 1 por sus Axiomas.
+Contexto táctico. No viene a pelear: viene a avisar. Si el grupo lo ataca antes de escucharlo, se defiende y cura a quien proteja, pero el mensaje sigue sin entregarse.
+#Heading3 Vampiro Señorial (NA 8)
+No-muerto · Mediano · Comandante · PV 150 · Guardia 17 · Armadura 4 · Velocidad 30 pies · Iniciativa +2 · Ataque +8 · Daño 3d6+4 y 2d6+4 Perforante y Necrótico (mordisco) · PA 4 · CD 20 · Moral 18
+FUE +4 · DES +2 · CON +2 · INT +2 · SAB +2 · CAR +4 · Salvaciones fuertes: CAR +8, FUE +8
+(Vigor Inagotable; Inmune a Envenenado y Aterrado.) Aura de Mando: +2 al ataque de sus aliados a 30 pies; un aliado ataca como Reacción.
+Cambiaformas (especie). 2 PA: adopta la forma de una persona que haya visto, de un lobo o de un murciélago gigante. Descubrirlo exige Perspicacia CD 20.
+Hijos de la Noche (especie). 1 PA · 1/combate: al final de la ronda siguiente acude un enjambre de murciélagos (horda de NA 4) o 1d4 lobos (NA 2) que obedecen su voz.
+Forma de Niebla (especie). La primera vez que llega a 0 PV no cae: se vuelve niebla (Incorpórea, vuela 20 pies, no ataca) y huye a su ataúd, donde recupera 1 PV por hora. Solo muere a 0 PV dentro de su ataúd, con una estaca en el corazón o bajo la luz del sol.
+Absorber Vida. Recupera PV iguales a la mitad del daño que inflige con su mordisco.
+Voz Seductora. 2 PA · Ud6: una criatura a 30 pies, Salvación SAB CD 20 o Encantada (Ud6).
+Mirada Dominante (definitoria). 3 PA · Ud4: una criatura Encantada por él hace una Salvación SAB CD 20 o, en su siguiente turno, actúa como él decida (nunca contra sí misma); repite la Salvación al final de cada uno de sus turnos.
+Curación Rápida. Recupera 8 PV al inicio de su turno mientras le quede al menos 1 PV.
+Trepadora. Trepa a su velocidad por muros y techos.
+Aversión (especie). No cruza un umbral sin ser invitado ni el agua corriente; los símbolos sagrados presentados con fe lo frenan. Bajo la luz del sol directa recibe 3d6 de Radiante al inicio de su turno y no se cura.
+Vulnerabilidad. Recibe ×1,5 de daño Radiante.
+Equipo. Anillo de Sangre Antigua (Raro): +1 a la Guardia (ya incluido: Guardia 17) y +1d6 Necrótico a su mordisco. Si cae, es botín.
+Protección. Un símbolo sagrado presentado con fe, o un Axioma de protección mental: Ventaja contra su Voz y su Mirada, y quien falla con Ventaja queda solo Encantado. De día, en su ataúd, está indefenso.
+Encuentro. Pasa en 3 su presupuesto de Potencial: cuenta como NA 9 al calcular el encuentro.
+Señal. Una familia noble que solo recibe de noche; sirvientes pálidos que no comen.
+Contexto táctico. Nunca pelea solo y nunca pelea donde no quiere. Encanta a quien más daño hace, se cura con quien más cerca está y se retira por el techo cuando pierde la ventaja.
+#Heading3 Hidra (NA 8)
+Monstruosidad · Enorme · Arrollador · PV 186 · Guardia 11 · Armadura 4 · Velocidad 30 pies · Iniciativa −3 · Ataque +10 · Daño 3d6+6 y 3d6+6 Perforante (mordiscos) · PA 5 · CD 22 · Moral —
+FUE +6 · DES −3 · CON +5 · INT −2 · SAB +2 · CAR −2 · Salvaciones fuertes: FUE +10, CON +9
+(Gigantismo.) Ataque Masivo: Sangrado al impactar, una vez por ronda.
+Aguijón Venenoso (especie). Sus mordiscos: al impactar, Salvación CON CD 22 o queda Envenenado (Ud8).
+Varias Cabezas (especie, definitoria). +1 PA por turno (ya incluido): un mordisco más, de 3d6+6. Cada Crítico o golpe de 40 o más le arranca una cabeza y le quita ese PA hasta que crezca otra; si no recibe Fuego esa ronda, al final de su turno le crecen dos.
+Anfibia. Nada a su velocidad y respira bajo el agua.
+Ataque Barrido. 3 PA: una tirada contra cada criatura a su alcance; daño base a cada impactada.
+Protección. Fuego tras cada cabeza cortada. Pelear de dos en dos: uno corta, otro quema.
+Encuentro. Su Ataque Barrido le suma 2 y su tamaño, 1: cuenta como NA 11 al calcular el encuentro.
+Señal. Un lago donde ya no beben los animales; dientes del tamaño de un puñal en la orilla.
+Contexto táctico. Cortarle la cabeza sin fuego la hace más peligrosa. El grupo necesita a alguien que corte y a alguien que queme, y que los dos estén en el mismo sitio a la vez.
+#Heading3 Serafín Ceniciento (NA 9)
+Extraplanar · Grande · Comandante · PV 165 · Guardia 17 · Armadura 4 · Velocidad 30 pies · Iniciativa +2 · Ataque +13 · Daño 3d6+4 y 3d6+4 Radiante y Fuego (espada) · PA 4 · CD 23 · Moral 19
+FUE +6 · DES +2 · CON +2 · INT +2 · SAB +2 · CAR +5 · Salvaciones fuertes: CAR +10, FUE +11
+(Telepatía; Resistencia a Fuego y Necrótico.) Aura de Mando.
+Visión Verdadera (especie). Ve a través de ilusiones, invisibilidad y cambios de forma hasta 60 pies.
+Vuelo. Vuela a 60 pies.
+Cuerpo Ígneo (especie, definitoria). Quien lo toque o golpee cuerpo a cuerpo recibe 3d6 de Fuego.
+Presencia Consagrada. Radio de 30 pies: sus aliados +1 a las Salvaciones; los no-muertos y los infernales atacan con Desventaja.
+Resistencia Legendaria. Ud6: cuando falla una Salvación, puede superarla.
+Palabra Atada. No puede mentir ni romper un juramento; si se le hace jurar, lo cumple.
+Equipo. Espada de la Sentencia (Muy Raro): +2 al ataque (ya incluido: Ataque +13) y +1d8 Radiante. Quien la empuñe no puede mentir.
+Protección. Saber qué juró y hacérselo cumplir. Resistencia al Fuego contra su Cuerpo Ígneo.
+Señal. Ceniza que cae de un cielo despejado; cánticos en una lengua que todos entienden.
+Contexto táctico. Viene a cumplir una sentencia, no a pelear. Se le puede vencer, pero también se le puede hacer jurar: el grupo que entiende qué juró antes de llegar tiene una salida que no pasa por la espada.
+#Heading3 Liche (NA 10)
+No-muerto · Mediano · Represor · Jefe · PV 360 · Guardia 17 · Armadura 5 · Velocidad 30 pies · Iniciativa +2 · Ataque +7 · Daño 3d6+2 y 3d6+2 Necrótico (toque) · PA 4 · CD 25 · Moral 20
+FUE −2 · DES +2 · CON +2 · INT +5 · SAB +5 · CAR +2 · Salvaciones fuertes: INT +10, SAB +10
+(Vigor Inagotable; Inmune a Envenenado y Aterrado.) Jefe: PV ×2. Represión (3 PA): Aterrado (Salvación SAB, Ud4).
+Pavor (especie). Aura de 30 pies: la primera vez que una criatura entra o empieza su turno dentro, Salvación SAB CD 25 o queda Aterrada mientras siga dentro. Quien la supera es inmune un día.
+Invocar Aliados (racial mayor). 3 PA · 1/combate: al final de su turno se levantan 1d4 no-muertos de NA 5, que actúan justo después de él. Se anuncia una ronda antes.
+Toque Paralizante (especie, definitoria). Su toque obliga además a una Salvación CON CD 25 o queda Paralizado (Ud4).
+Resistencia Legendaria. Ud6: cuando falla una Salvación, puede superarla igualmente.
+Uso de Axiomas (especie). Conoce seis Axiomas de hasta Nivel 5 (Erudición): Relámpago, Cono de Frío, Muro de Fuerza, Detener Monstruo, Animar Muerto y Puerta Dimensional; CD 25, Reserva 60, Esfuerzo hasta 3 (jefe).
+Contraaxioma. Reacción · Ud6: anula un Axioma de Nivel 5 o menos usado a 60 pies.
+Filacteria (especie). Mientras no se destruya su filacteria, vuelve a formarse junto a ella en 1d4 días. Encontrarla y destruirla es la verdadera aventura.
+Acción de Jefe. Al final del turno de cada personaje, gasta 1 PA de su siguiente turno (máx. 2 por ronda).
+Nombre Verdadero. Pronunciar su nombre de vivo (2 PA) lo deja Aturdido (Ud4), una vez por combate.
+Vulnerabilidad. Recibe ×1,5 de daño Radiante.
+Equipo de jefe. Báculo de la Filacteria (Muy Raro): +2 a la CD de Axioma (ya incluido: CD 25) y +1d8 Necrótico a su toque. Si cae, el báculo es botín.
+Protección. Destruir la filacteria antes. Voluntad de Hierro o un Axioma contra la muerte: Ventaja contra su Toque Paralizante y su Pavor.
+Encuentro. Pasa en 2 su presupuesto de Potencial: cuenta como NA 11; como jefe, 15, y por sus Axiomas, 16.
+Señal. Una biblioteca prohibida saqueada; un pueblo que dejó de envejecer.
+Contexto táctico. Matarlo no es vencerlo. La pelea contra el liche es un paso del camino: el grupo que no sabe dónde está la filacteria solo consigue unos días.
+#Heading3 Dragón Rojo Adulto (NA 10)
+Dragón · Colosal · Arrollador · Jefe · PV 510 · Guardia 14 · Armadura 7 · Velocidad 30 pies · Iniciativa −2 · Ataque +13 · Daño 4d6+8 y 3d6+8 Perforante (mordisco y garras) · PA 4 · CD 26 · Moral 20
+FUE +8 · DES −2 · CON +7 · INT +5 · SAB +2 · CAR +2 · Salvaciones fuertes: FUE +13, CON +12, INT +10
+(Visión en la Oscuridad, Telepatía; Inmune a Fuego; INT Fuerte.) Jefe: PV ×2. Ataque Masivo: derriba al impactar, una vez por ronda.
+Pavor (especie). Aura de 30 pies: la primera vez que una criatura entra o empieza su turno dentro, Salvación SAB CD 26 o queda Aterrada mientras siga dentro. Quien la supera es inmune un día.
+Uso de Axiomas (especie). Conoce tres Axiomas de hasta Nivel 5 (Erudición): Muro de Fuego, Sugestión y Puerta Dimensional; CD 26, Reserva 50, Esfuerzo hasta 3 (jefe).
+Cuerpo Ígneo (racial mayor). Quien lo toque o lo golpee cuerpo a cuerpo recibe 3d6 de Fuego. Los objetos inflamables a su alcance prenden.
+Aliento (especie, definitoria). 3 PA · Ud6: cono de 60 pies, Salvación DES CD 26, 9d6 de Fuego; la mitad si la supera. No lo repite en su turno siguiente.
+Vuelo. Vuela a 80 pies.
+Acción de Jefe. Al final del turno de cada personaje, gasta 1 PA de su siguiente turno (máx. 2 por ronda).
+Represalia. Reacción, 1/ronda: cuando falla un ataque cuerpo a cuerpo contra él, ataca a quien lo hizo.
+Aversión. No puede rechazar un trato sobre su tesoro; las armas forjadas con escamas de su madre ignoran su Resistencia.
+Equipo de jefe. Coraza del Tesoro (Muy Raro): gemas y monedas fundidas en las escamas del pecho; +2 de Armadura (ya incluido: Armadura 7) y +1 a la Guardia (ya incluido: Guardia 14). Arrancarlas del cadáver lleva una hora.
+Protección. Resistencia al Fuego: Ventaja contra su Aliento y la mitad de su daño. Voluntad de Hierro contra su Pavor. Nunca pelear en su guarida.
+Encuentro. Pasa en 2 su presupuesto de Potencial: cuenta como NA 11; como jefe, 15; con su Aliento, 17; por su tamaño, 18, y por sus Axiomas, 19.
+Señal. Una montaña que humea sin ser volcán; pueblos que pagan un tributo que nadie nombra.
+Contexto táctico. Aliento, vuelo y acciones entre turnos: el dragón no deja al grupo quedarse quieto ni juntarse. Nadie debería pelear contra él sin haber pensado antes cómo bajarlo del cielo. Es más listo que el grupo: negocia, miente y usa sus Axiomas para que nadie llegue entero a su guarida.
+#Heading3 Arconte (NA 11)
+Extraplanar · Grande · Comandante · PV 195 · Guardia 17 · Armadura 5 · Velocidad 30 pies, vuelo 60 pies · Iniciativa +2 · Ataque +11 · Daño 4d6+4 y 3d6+4 Radiante (lanza de la ley) · PA 5 · CD 23 · Moral 21
+FUE +6 · DES +2 · CON +2 · INT +2 · SAB +2 · CAR +5 · Salvaciones fuertes: CAR +10, FUE +11
+(Telepatía; Resistencia a Radiante y Fuego.) Aura de Mando.
+Nunca Desprevenida. Dentro de su tierra siente quién cruza sus fronteras y no puede ser sorprendido. Fuera de ella pierde esto y su Prohibición.
+Vuelo. Vuela a 60 pies.
+Prohibición (especie, definitoria). 2 PA · Ud6: declara una acción prohibida —atacar, mentir, huir o usar Axiomas de una escuela— en 60 pies, hasta el final de su próximo turno. Quien la haga recibe 4d6 Radiante (Salvación CAR CD 23 mitad). La anuncia en voz alta: siempre se sabe qué está prohibido.
+Uso de Axiomas. Conoce tres Axiomas de Divinidad de hasta Nivel 6: Misión Divina, Disipar el Mal y Barrera de Cuchillas; CD 23, Reserva 55, Esfuerzo hasta 2.
+Nombre Verdadero. Pronunciar su nombre verdadero (2 PA) lo deja Aturdido (Ud4), una vez por combate.
+Aversión. No puede dañar a quien esté bajo su protección legítima —un ciudadano de su tierra, un huésped con salvoconducto—, aunque luche contra él.
+Encuentro. Cuenta como NA 14 al calcular el encuentro: 11, 13 por su Prohibición y 14 por sus Axiomas.
+Contexto táctico. Pelear en su tierra es pelear con sus leyes: cada Prohibición cambia lo que el grupo puede hacer esa ronda. Sacarlo de su jurisdicción, o ponerse bajo su protección, desarma la mitad de su poder.
+#Heading3 Titán Mecánico (NA 13)
+Máquina · Colosal · Guardián · Jefe · PV 684 · Guardia 14 · Armadura 10 · Velocidad 20 pies · Iniciativa −2 · Ataque +15 · Daño 4d6+12 y 4d6+12 Contundente (puños) · PA 5 · CD 29 · Moral —
+FUE +9 · DES −2 · CON +8 · INT +3 · SAB +3 · CAR −2 · Salvaciones fuertes: CON +14, FUE +15
+(Vigor Inagotable, Sistemas Redundantes.) Jefe: PV ×2. Custodia (Reacción).
+Sobrecarga (especie). 1 PA · 1/combate: hasta el final de su siguiente turno gana +1 PA y su dado de daño sube un paso. Después queda Conmocionado (Ud4).
+Tormenta Personal (racial mayor, definitoria). 3 PA · Ud6: bobinas de alta tensión. Radio de 30 pies: hasta tres objetivos reciben 8d6 de Rayo (Salvación DES CD 29, la mitad); el viento convierte el radio en terreno difícil hasta su siguiente turno. Se anuncia una ronda antes.
+Turno Doble. Tira dos veces la Iniciativa y reparte sus PA entre ambos turnos.
+Pisotón. 2 PA · Ud6: cada criatura a 10 pies, Salvación FUE CD 29 o Derribada.
+Escudo de Energía. Absorbe los primeros 39 puntos de daño de cada combate.
+Arma Montada. 2 PA: ataque a distancia hasta 120 pies con el daño base.
+Fases. Por debajo de la mitad de sus PV, el blindaje cae (+1 PA, −2 de Armadura) y se abre su núcleo (Cap. 5).
+Autodestrucción. Al llegar a 0 PV, explota al final de la ronda siguiente en 20 pies; desactivarlo: Tecnología CD 29.
+Vulnerabilidad. Recibe ×1,5 de daño de Rayo.
+Equipo de jefe. Núcleo del Primer Titán (Legendario): +3 de Armadura (ya incluido: Armadura 10). Único: la primera vez que baja de la mitad de sus PV, su Escudo de Energía se recarga entero. Si cae, el núcleo sigue latiendo.
+Protección. Subir hasta el núcleo; Rayo; dispersarse contra su Tormenta.
+Encuentro. Como jefe cuenta como NA 17; con su Tormenta, 19, y por su tamaño, 20.
+Señal. El suelo tiembla a intervalos regulares; una ciudad entera evacuada sin explicación.
+Contexto táctico. No se puede vencer desde fuera. El grupo tiene que subir, encontrar el núcleo que la fase deja al descubierto y salir antes de que la autodestrucción los alcance.
+#Heading3 Seraph (NA 15)
+Extraplanar · Enorme · Represor · Jefe · PV 600 · Guardia 19 · Armadura 7 · Velocidad 30 pies, vuelo 120 pies · Iniciativa +2 · Ataque +12 · Daño 5d6+5 y 4d6+5 Radiante y Fuego (llama) · PA 6 · CD 29 · Moral 25
+FUE +5 · DES +2 · CON +4 · INT +3 · SAB +7 · CAR +7 · Salvaciones fuertes: SAB +14, CAR +14
+(Telepatía; Inmune a Fuego y Radiante.) Jefe: PV ×2. Represión (3 PA): Aterrado (Salvación SAB, Ud4).
+Seis Alas (racial mayor). Quien intente mirarle la cara hace Salvación CON CD 29 o queda Cegado (Ud6). 3 PA · 1/combate: descubre el rostro, y todas las criaturas a 60 pies que lo vean hacen esa Salvación con Desventaja.
+Vuelo. Vuela a 120 pies.
+Fuego que Purifica (especie, definitoria). Radio de 30 pies: al inicio de su turno, cada enemigo dentro recibe 3d6 Radiante y Fuego; los no-muertos y los infernales, el doble.
+La Brasa. 3 PA · 1/combate: toca los labios de una criatura. Si es mortal, Salvación CAR CD 29; si falla, terminan sus maldiciones, posesiones y estados de Encantado, y durante un día no puede mentir. Si es un no-muerto o un infernal, recibe 10d6 Radiante, sin Salvación.
+Uso de Axiomas. Conoce tres Axiomas de Divinidad de hasta Nivel 8: Palabra Sagrada, Aura Sagrada y Juicio Flamígero; CD 29, Reserva 75, Esfuerzo hasta 4 (jefe).
+Acción de Jefe. Al final del turno de cada personaje, gasta 1 PA de su siguiente turno (máx. 2 por ronda).
+Resistencia Legendaria. Ud6: cuando falla una Salvación, puede superarla igualmente.
+Victoria Alternativa. Vino a quemar algo —un pacto, un nombre, una mentira, un objeto—. Si el grupo se lo entrega o lo destruye ante él, el combate termina y se retira.
+Encuentro. Cuenta como NA 23 al calcular el encuentro: 15, 19 como jefe, 21 por su aura, 22 por su tamaño y 23 por sus Axiomas.
+Contexto táctico. Ningún grupo de Nivel 10 puede vencerlo en combate: es una amenaza del Horizonte de Leyenda, o una escena que se resuelve descubriendo qué vino a quemar.
+#Heading2 Hordas y enjambres
+#Heading3 Colmena Xenomorfa (NA 7)
+Banda de 8 xenos (NA 3) · NA efectivo 7
+Monstruosidad · Mediano · Hostigador · PV 93 · Guardia 18 · Armadura 3 · Velocidad 40 pies · Iniciativa +4 · Ataque +8 · Daño 3d6+3 y 2d6+3 Perforante (garras y colas) · PA 4 · CD 19 · Moral —
+FUE +4 · DES +4 · CON −2 · INT +1 · SAB +1 · CAR +1 · Salvaciones fuertes: DES +8, FUE +8
+Colmena. Mientras viva la reina, no tiran Moral y comparten lo que perciben.
+Olor de la Sangre (especie). Perciben a las criaturas heridas a 120 pies, aunque estén ocultas o sean invisibles.
+Trepadora. Trepan a su velocidad por muros y techos.
+Sangre Ácida (especie, definitoria). Quien les hace daño Cortante o Perforante cuerpo a cuerpo recibe 1d6 de Ácido.
+Horda: un solo turno; el doble de daño de los efectos de área; a mitad de vida se divide en dos hordas de NA 5, con la mitad de los PV y de los dados que le queden; su daño baja un dado por cada cuarto de PV perdido.
+Protección. Armas a distancia o armas que no importe perder, por su Sangre Ácida. Matar a la reina.
+Señal. Conductos de ventilación con marcas de ácido; los sensores de movimiento marcan una sola señal muy grande.
+Contexto táctico. Parece un enemigo y son ocho. Llegan por el techo, rodean y se separan en dos cuando se les hiere. Matar a la reina es la única forma de que dejen de coordinarse.
+#Heading3 Enjambre de Nanitos (NA 3)
+Grupo de 6 nubes diminutas (NA 1) · NA efectivo 3
+Máquina · Diminuto · Sin Rol · PV 75 · Guardia 14 · Armadura 1 · Velocidad 30 pies · Iniciativa +1 · Ataque +4 · Daño 3d6−1 Energía · PA 3 · CD 15 · Moral —
+FUE −2 · DES +1 · CON +2 · INT +3 · SAB +0 · CAR +0 · Salvaciones fuertes: CON +5, INT +6
+(Vigor Inagotable, Sistemas Redundantes; Enjambre: ocupa el espacio de otras criaturas, Resistencia a ataques contra un solo objetivo, doble daño de área.)
+Autorreparación (especie). Recupera 3 PV al inicio de su turno, salvo si recibió daño de Rayo desde su turno anterior.
+Ácido Corrosivo (especie, definitoria). Su ataque añade 1d6 de Ácido y aplica Desgarro (Ud6): se comen la armadura.
+Protección. Rayo o cualquier área. Una puerta estanca lo frena.
+Señal. Un brillo metálico en el aire; puertas de acero con agujeros como encaje.
+Contexto táctico. No se le puede cortar ni golpear con eficacia. El grupo necesita un área —fuego, un pulso, una descarga— o una puerta que el enjambre no pueda atravesar a tiempo.
+ROW: | Ilustración
+Apéndice B
+#Heading1 Referencia rápida
+#Heading1 Bestiario básico
+«Nada de lo que hay aquí está esperando a que lo maten. Todo estaba haciendo algo cuando llegó el grupo.»
+El Manual de Monstruos (Apéndice A) amplía este bestiario con criaturas de NA 1 a 13. Cada entrada incluye las estadísticas necesarias para el combate y, más importante, el contexto táctico: cómo usar la criatura en mesa para crear tensión real, no solo un intercambio de daño. Las criaturas más interesantes no son las más difíciles de matar — son las que obligan al grupo a tomar decisiones. Todas las entradas se calculan con las fórmulas del Cap. 2 a partir de su NA, su Rol y su tamaño (tabla de tamaños: Manual de Monstruos, Cap. 1); las desviaciones vienen de su equipo o de sus Rasgos, y se indican en la ficha. Los Rasgos de especie van marcados «especie», y la línea «Protección» dice qué rebaja su Aptitud definitoria. Todas pueden moverse, ocultarse, Empujar, Derribar, Desarmar y Apresar como un personaje; sus Rasgos solo les dan bonos a esas acciones.
+#Heading2 Lobo (NA 1)
+Rol: Hostigador · Mediano · PV 39 · Guardia 14 · Armadura 0 · Velocidad 40 pies · Iniciativa +2 · Ataque +4 · Daño 2d6+3 Cortante · CD 12 · Moral —
+Atributos: FUE +2 · DES +2 · CON −2 · INT −2 · SAB +0 · CAR +0 · Salvaciones fuertes: DES +4, FUE +4
+Aullido de Llamada (✦, 1 PA, 1/combate; especie): al final de la ronda siguiente llegan 1d4 lobos más.
+Caza en Manada ([t_pasivo]): Ventaja en todos los ataques si otro lobo está adyacente al mismo objetivo.
+Derribador ([t_disparador]): cuando un lobo impacta, el objetivo hace Salvación DES CD 12 o queda Derribado.
+Contexto táctico. Los lobos raramente están solos. El peligro no es el daño individual — es la combinación de Caza en Manada (Ventaja constante) y Derribador (los derribados son atacados con Ventaja por los demás). Un grupo de cinco lobos que tira con Ventaja sobre un personaje Derribado es amenaza seria incluso para un Audaz bien acorazado: son muchos golpes pequeños, y la Armadura los frena bien, pero el Derribo multiplica los impactos hasta que la aritmética se invierte. El Alfa del grupo (NA 2, +2 daño) actúa siempre último y apunta al objetivo ya Derribado. La táctica correcta: evitar el Derribo y eliminar al Alfa primero para desmoralizar a la manada (como toda bestia de INT Débil, la manada no tira Moral: se dispersa en cuanto cae el Alfa).
+#Heading2 Esqueleto (NA 1)
+Rol: Sin Rol · Mediano · PV 45 · Guardia 14 · Armadura 0 · Velocidad 30 pies · Iniciativa +2 · Ataque +4 · Daño 2d6+3 Cortante · Inmune a Veneno, Enfermedad, Encantamiento y Miedo · Vulnerable al daño Contundente (×1,5) · CD 12 · Moral —
+Atributos: FUE +0 · DES +2 · CON +2 · INT −2 · SAB +0 · CAR −2 · Salvaciones fuertes: DES +4, CON +4
+Formación ([t_pasivo], especie): +1 a la Guardia por cada esqueleto adyacente, hasta +3.
+Muerto-Vivo ([t_pasivo]): no necesita respirar, comer, dormir ni mantener Concentración para funcionar.
+Contexto táctico. Los esqueletos son obstáculos de desgaste, no amenazas individuales. Su valor táctico real es dos cosas: la inmunidad al Miedo (no tiran Moral) y la vulnerabilidad al Contundente (que los jugadores tienen que descubrir o deducir). Un DJ que coloca esqueletos armados con mazas y armados con espadas en el mismo pasillo está invitando a una pregunta táctica: ¿cómo atacarlos de forma eficiente? Los jugadores que descubren la vulnerabilidad al Contundente se sienten recompensados. Los que no la descubren aprenden que la información del entorno tiene valor.
+#Heading2 Zombie (NA 1)
+Rol: Arrollador · Mediano · PV 45 · Guardia 10 · Armadura 0 · Velocidad 20 pies · Iniciativa −2 · Ataque +4 · Daño 3d6+3 Contundente · Inmune a Veneno, Enfermedad y Miedo · CD 12 · Moral —
+Atributos: FUE +2 · DES −2 · CON +2 · INT −2 · SAB +0 · CAR −2 · Salvaciones fuertes: FUE +4, CON +4
+Mordisco Tenaz ([t_pasivo], especie): al impactar, Apresa sin gastar PA: Salvación FUE o DES CD 12 o queda Apresado. Mientras lo retiene, no puede morder a otro.
+Obstinación No-muerta ([t_disparador]): cuando llega a 0 PV, tira 1d20. Con resultado 8 o más, se mantiene en 1 PV en lugar de caer. Este efecto no puede activarse dos veces seguidas en el mismo zombie.
+Contexto táctico. Los zombies son lentos, fáciles de golpear y difíciles de matar definitivamente en el primer intento. Su amenaza es el desgaste numérico y la imprevisibilidad de Obstinación No-muerta: el grupo que cree haber eliminado una amenaza puede encontrarla de pie al inicio del siguiente turno.
+En grupos de 6–10 en un espacio cerrado —como esbirros o como una Horda, no como zombies sueltos—, los zombies convierten el combate en gestión de recursos más que en táctica individual. Útiles para enseñar al grupo la lección contraria a la que enseña un enemigo acorazado: con Guardia 10 y Armadura 0, el zombie es el objetivo ideal para los ataques ligeros y repetidos, que aquí rinden más que un único golpe pesado. Un grupo que aprende a leer Guardia y Armadura antes de elegir cómo pegar acierta el doble de veces.
+#Heading2 Orco (NA 2)
+Rol: Arrollador · Mediano · PV 60 · Guardia 10 · Armadura 1 · Velocidad 30 pies · Iniciativa −2 · Ataque +4 · Daño 3d6+5 Cortante · CD 13 · Moral 12
+Atributos: FUE +2 · DES −2 · CON +2 · INT +0 · SAB +0 · CAR +0 · Salvaciones fuertes: FUE +4, CON +4
+Venganza del Grupo ([t_pasivo], especie): cuando cae un orco a la vista, gana +2 al daño hasta el final del combate.
+Agresivo ([t_pasivo]): una vez por turno, se mueve hasta su velocidad hacia un enemigo sin gastar PA, si termina adyacente a él.
+Tenacidad Orca ([t_disparador]): la primera vez en el combate que llega a 0 PV, se mantiene en 1 PV y realiza un Ataque de Oportunidad gratuito contra quien lo redujo.
+Contexto táctico. Un orco solo es un encuentro menor. Un grupo de orcos con un Jefe de Tribu (NA 4, Rol Comandante) es una amenaza de diseño: los orcos comunes son Agresivos y Tenaces, el Jefe tiene Aura de Mando que hace que sus Ataques de Oportunidad sean especialmente dolorosos, y eliminar al Jefe cambia la Moral del grupo completo (Puntuación de Moral 12). Funcionan bien con Rol Arrollador (+1d6 al daño y Ataque Masivo) o Hostigador (+10 pies y Flanqueo).
+#Heading2 Oso Pardo (NA 3)
+Rol: Arrollador · Grande · PV 79 · Guardia 11 · Armadura 1 · Velocidad 30 pies / Trepar 30 pies · Iniciativa −2 · Ataque +7 · Daño 4d6+2 Cortante y Perforante · CD 16 · Moral —
+Atributos: FUE +4 · DES −2 · CON +3 · INT −2 · SAB +0 · CAR +0 · Salvaciones fuertes: FUE +7, CON +6
+Dura de Matar ([t_pasivo], especie): la primera vez en cada combate que llega a 0 PV, queda en 1 PV.
+Garras y Mordida (✦, 3 PA): el oso ataca con las garras y, si impacta, muerde sin tirada adicional: su daño por turno (4d6+2) se reparte entre los dos golpes: 2d6+2 las garras y 2d6 la mordida.
+Abrazar ([t_disparador], definitoria): si las garras impactan, el objetivo hace una Salvación FUE o DES CD 16 o queda Apresado; escapa con las reglas normales del estado (Manual Básico, Cap. 10).
+Protección ([t_pasivo]): no acercarse a las crías; un escudo plantado o una Fuerza alta dan Ventaja contra su Abrazar.
+Contexto táctico. El oso es una amenaza de territorio, no de mazmorra. Aparece porque el grupo entró en su zona, porque hay crías cerca (lo que transforma el encuentro en un dilema moral: matar a un animal que defiende su progenie), o como custodio accidental de algo que el grupo necesita. Mecánicamente, la combinación de Abrazar y Garras-Mordida puede eliminar a un Sagaz en un turno si el oso lo elige como objetivo. La táctica del grupo debe ser romper la presa rápidamente antes de que el ciclo de daño se establezca.
+#Heading2 Azotamente / Mente Devoradora (NA 7)
+Rol: Represor · Mediano · PV 124 · Guardia 15 · Armadura 3 · Velocidad 30 pies / Volar 30 pies · Iniciativa +1 · Ataque +5 · Daño 3d6 y 2d6 Psíquico (dos ataques) · Inmune a Encantamiento · Resistente a daño Psíquico · CD 19 · Moral 17
+Atributos: FUE −2 · DES +1 · CON +1 · INT +4 · SAB +4 · CAR +1 · Salvaciones fuertes: INT +8, SAB +8
+Leer Mentes ([t_pasivo], especie): oye los pensamientos superficiales a 30 pies. Una vez por ronda, pregunta a un jugador qué hará su personaje en su próximo turno.
+Explosión Mental (✦, 3 PA, Ud6): cono de 60 pies. Todos en el cono hacen Salvación INT CD 19. Fallo: 5d6 de daño Psíquico y Aturdido (Ud4): la mente se apaga. Éxito: la mitad del daño, sin estado. Es su Aptitud definitoria: la usa en cuanto puede. Tras usarla, tira su Ud6 (Manual de Monstruos, Cap. 3).
+Tentáculos ([t_pasivo], especie): al impactar a una criatura Paralizada o Aturdida, la apresa sin gastar PA.
+Extracción Cerebral (✦, 1 PA): contra una criatura Paralizada o Aturdida que tenga apresada con sus tentáculos: Salvación CON CD 19 o su Flesh cae a 0 —muere— y el Azotamente recupera 20 PV; si la supera, recibe 5d6 de daño Psíquico. El cuerpo queda como esclavo (zombie) al servicio del Azotamente.
+Uso de Axiomas ([t_pasivo], especie): conoce seis Axiomas de Psiónica de hasta Nivel 4, el doble que otras criaturas: Sondear, Desvío Mental, Paralización, Miedo Profundo, Confusión y Asesino Fantasmal. CD 19, Reserva 35.
+Protección ([t_pasivo]): Voluntad de Hierro, un Axioma que proteja la mente o un yelmo de plomo dan Ventaja contra la Explosión Mental y contra sus Axiomas. Separarse: el cono no alcanza a todos.
+Encuentro ([t_pasivo]): su Explosión Mental le suma 3 y sus Axiomas, 1: cuenta como NA 11 al calcular el encuentro.
+Contexto táctico. El Azotamente es una amenaza de conocimiento, no de estadísticas brutas. Abre con la Explosión Mental desde la sombra, apresa con los tentáculos a quien quedó Aturdido y, en su siguiente turno, le extrae el cerebro. Un grupo que no lo esperaba puede perder a un personaje en dos rondas; uno que trae protección mental, se separa y lo derriba antes de su segundo turno tiene una pelea dura, pero ganable. Vuela, lo que complica que el Audaz lo ancle.
+#Heading2 Gigante de la Tormenta (NA 8)
+Rol: Arrollador · Jefe · Enorme · PV 372 · Guardia 11 · Armadura 4 · Velocidad 30 pies · Iniciativa −3 · Ataque +12 · Daño 3d6+6 y 3d6+6 Contundente (dos ataques) · Inmune a Rayo · CD 22 · Moral 18
+Atributos: FUE +6 · DES −3 · CON +5 · INT +2 · SAB +2 · CAR +2 · Salvaciones fuertes: FUE +10, CON +9
+Clima Hostil ([t_pasivo], especie): en 60 pies a su alrededor ruge la tormenta: terreno difícil y visibilidad de 30 pies para todos salvo él.
+Tormenta Personal (✦, 3 PA, Ud6; racial mayor, definitoria): radio de 30 pies; hasta tres objetivos reciben 5d6 de daño de Rayo (Salvación DES CD 22, la mitad), y el viento convierte el radio en terreno difícil hasta su siguiente turno. Se anuncia una ronda antes.
+Equipo de jefe ([t_pasivo], Raro): Brazaletes del Trueno. +2 al ataque (ya incluido: Ataque +12) y su mazo suma 1d6 de Rayo. Si cae, son botín.
+Lanzamiento de Rayo (✦, 3 PA, Ud6): línea de 90 pies. Todos en la línea hacen Salvación DES CD 22. Fallo: 5d6 de daño de Rayo. Éxito: la mitad.
+Aplastamiento ([t_disparador]): cuando el ataque de mazo impacta, el objetivo hace Salvación CON CD 22 o queda Aturdido hasta el inicio del turno del Gigante.
+Protección ([t_pasivo]): Resistencia al Rayo, y no ponerse en fila contra su Lanzamiento. Hablar con él.
+Encuentro ([t_pasivo]): como jefe cuenta como NA 12; con su Tormenta Personal, 14, y por su tamaño, 15 (Cap. 2).
+Contexto táctico. Con 372 PV, Guardia 11, Armadura 4 y Ataque +12, el Gigante de la Tormenta es un jefe de arco, no un encuentro de pasillo. Su Armadura 4 castiga especialmente a los personajes que atacan muchas veces con dados pequeños.
+Lo que lo hace interesante no son sus estadísticas — es que puede hablar y tiene motivaciones. Un Gigante que el grupo intenta matar directamente es un combate difícil. Un Gigante al que el grupo descubre que protege un valle de su tribu, y con el que pueden negociar, es un arco de campaña. El Lanzamiento de Rayo obliga al grupo a dispersarse (línea de 90 pies puede atravesar toda la formación). El Aplastamiento sobre el Audaz puede bloquearlo con Bloqueo Enfrentado, pero a un coste de Adrenalina significativo.
+#Heading2 Licántropo / Hombre Lobo (NA 4 en forma lobo / NA 2 en forma humana)
+Rol: Hostigador · Mediano · PV 66 · Guardia 16 · Armadura 2 · Velocidad 40 pies · Iniciativa +3 · Ataque +6 · Daño 3d6+3 Cortante, más posible Maldición · Inmune a daño no mágico sin plata · Regeneración: 8 PV al inicio de cada turno (salvo daño de plata o Radiante) · CD 16 · Moral 14
+Atributos: FUE +3 · DES +3 · CON −2 · INT +1 · SAB +1 · CAR +1 · Salvaciones fuertes: DES +6, FUE +6
+Olor de la Sangre ([t_pasivo], especie): en las dos formas, percibe a las criaturas heridas a 120 pies, aunque estén ocultas o sean invisibles.
+Maldición de la Luna ([t_disparador], definitoria): cuando la mordida inflige 8 o más puntos de daño, el objetivo hace Salvación CON CD 16. Fallo: contrae Licantropía incipiente (síntomas en la próxima luna llena).
+Forma humana (NA 2). PV 48 · Guardia 14 · Armadura 1 · Velocidad 40 pies · Iniciativa +2 · Ataque +4 · Daño 2d6+5 (arma) · CD 13 · Moral 12. Sin Regeneración, sin inmunidad y sin Maldición de la Luna. Cambiar de forma cuesta 2 PA; los PV perdidos se conservan.
+Protección ([t_pasivo]): plata o daño mágico para atravesar su inmunidad; acónito bebido antes da Ventaja contra la Maldición de la Luna.
+Contexto táctico. El hombre lobo es el encuentro que funciona mejor cuando el grupo lo conoce como persona antes de saber que es lo que es. Mecánicamente, la combinación de Regeneración (8 PV por turno) e Inmunidad a daño no mágico sin plata obliga al grupo a tener la herramienta correcta o gestionar el combate de forma inusual: el daño de Axiomas y el daño mágico sí aplican, lo que convierte al Sagaz en el combatiente más efectivo por primera y probablemente única vez en el arco. La Maldición de la Luna es la presión de campaña real: la cuestión no es si el grupo puede matar al hombre lobo, sino si quiere hacerlo, si puede curarlo, y qué pasa si un miembro del grupo contrajo la Maldición.
+#Heading2 Caballero de la Muerte (NA 9)
+Rol: Comandante · Mediano · PV 165 · Guardia 17 · Armadura 6 (placas negras: +2) · Velocidad 30 pies · Iniciativa +2 · Ataque +10 · Daño 3d6+3 y 3d6+3 Cortante y Necrótico (dos ataques) · Inmune a Veneno y Frío · Resistente a Necrótico y a daño físico no mágico · CD 22 · Moral 19
+Atributos: FUE +5 · DES +2 · CON +2 · INT +2 · SAB +2 · CAR +5 · Salvaciones fuertes: CAR +10, FUE +10
+Pavor ([t_pasivo], especie, 30 pies): la primera vez que una criatura entra o empieza su turno dentro, Salvación SAB CD 22 o queda Aterrada mientras siga dentro. Quien la supera es inmune un día.
+Aura de Conquista ([t_pasivo], 30 pies): las criaturas dentro del aura que reciben daño del Caballero tienen Desventaja en todas las Salvaciones contra Miedo y en sus tiradas de Moral.
+Llamada Infernal (✦, 3 PA, 1/combate; especie): se alzan 1d4 guerreros esqueleto de NA 4, con armadura y espada, en espacios vacíos a su lado; actúan justo después de él.
+Marca Espectral ([t_disparador]): cuando el Caballero impacta a un objetivo, ese objetivo queda Marcado. El Caballero tiene Ventaja en todos los ataques contra objetivos Marcados y puede teletransportarse (2 PA) a un espacio adyacente a cualquier objetivo Marcado en su línea de visión.
+Equipo ([t_pasivo], Muy Raro): Placas Negras, el +2 de Armadura de su ficha. Si cae, son botín: una armadura de placas que susurra el juramento que él rompió.
+Orbe Infernal (✦, 3 PA, Ud6; definitoria): esfera de 15 pies de radio a 60 pies; Salvación DES CD 22, 6d6 de Fuego y Necrótico, la mitad si la supera. No la repite en su turno siguiente.
+Señor de la Tumba ([t_pasivo], especie, 30 pies): los no-muertos aliados tienen +2 al ataque y no tiran Moral.
+Juramento Roto ([t_pasivo], especie): si cae sin haber sido redimido, se alza de nuevo en su tumba al cabo de 1d4 días.
+Protección ([t_pasivo]): un símbolo consagrado o Voluntad de Hierro dan Ventaja contra su Pavor y su Aura de Conquista; separarse contra el Orbe.
+Encuentro ([t_pasivo]): su Orbe le suma 2: cuenta como NA 11 al calcular el encuentro (Cap. 2). Sus guerreros quedan a más de cuatro NA de él y no cuentan.
+Contexto táctico. El Caballero de la Muerte (Guardia 17, Armadura 6, 165 PV, Ataque +10) es un desafío de diseño de encuentro. Con Guardia 17, un Audaz de Nivel 9 con PB +4 y FUE +3 impacta con 10 o más en 1d20 —alrededor del 55 %— pero su Armadura 6 se come buena parte de cada golpe. Contra él, el Esfuerzo volcado en daño y las armas Penetrantes rinden mucho más que acumular ataques pequeños. La Llamada Infernal genera presión de área que obliga al grupo a dividir la atención. La Marca Espectral convierte la movilidad del Caballero en una amenaza adicional: puede teletransportarse al Sagaz al fondo de la sala si lo Marcó en el primer turno.
+Pero lo más poderoso del Caballero de la Muerte como elemento de diseño es su historia: fue un héroe. Tiene un nombre, una tumba, una razón por la que no está en paz. El grupo que descubre esa historia puede tener una vía alternativa: no destruirlo, sino redimirlo o liberarlo. Si lo intenta y falla, el combate es más tenso porque las apuestas eran mayores.
+#Heading2 Jefe de Tribu (NA 4)
+Rol: Comandante · Mediano · PV 84 · Guardia 14 · Armadura 2 · Velocidad 30 pies · Iniciativa +1 · Ataque +7 · Daño 3d6+3 Cortante · CD 16 · Moral 14
+Atributos: FUE +3 · DES +1 · CON +1 · INT +1 · SAB +1 · CAR +3 · Salvaciones fuertes: CAR +6, FUE +6
+Voz de Mando (✦, 1 PA; especie): hasta tres aliados que lo oigan se mueven de inmediato la mitad de su velocidad sin provocar Ataques de Oportunidad.
+Aura de Mando ([t_pasivo], 30 pies; definitoria): los aliados dentro del aura ganan +2 al ataque. Una vez por ronda, como Reacción, ordena a un aliado del aura que ataque.
+Voz de Guerra ([t_disparador]): la primera vez que un aliado cae dentro del aura, los demás no tiran Moral hasta el final del siguiente turno del Jefe.
+Equipo ([t_pasivo], Infrecuente): Hacha del Clan, +1 al ataque (ya incluido: Ataque +7). Quien la lleve después habla por el clan, le guste o no.
+Protección ([t_pasivo]): llegar hasta él en el primer turno: abatirlo apaga el Aura y rompe la Moral de la banda.
+Contexto táctico. El Jefe no está para ganar el duelo: está para que su banda pelee mejor. Se queda un paso por detrás de la primera línea y dirige el ataque hacia quien quede expuesto. Abatirlo apaga el Aura y obliga a toda la banda a tirar Moral; por eso un grupo listo gasta su primer turno en llegar hasta él, y un Jefe listo lo sabe.
+#Heading2 Acólito de la Ceniza (NA 3)
+Rol: Soporte · Mediano · PV 57 · Guardia 13 · Armadura 1 · Velocidad 30 pies · Iniciativa +0 · Ataque +3 · Daño 3d6−2 Contundente · CD 15 · Moral 13
+Atributos: FUE +0 · DES +0 · CON −2 · INT +0 · SAB +3 · CAR +3 · Salvaciones fuertes: SAB +6, CAR +6
+Presencia Consagrada ([t_pasivo], especie, 30 pies): sus aliados tienen +1 a las Salvaciones, y las criaturas sagradas atacan con Desventaja.
+Bálsamo de Ceniza (✦, 2 PA): un aliado a 30 pies recupera 1d8 PV o se libra de un estado.
+Tras la Línea ([t_pasivo], definitoria): mientras un aliado esté entre él y el atacante, los ataques a distancia contra el Acólito se hacen con Desventaja.
+Protección ([t_pasivo]): rodear la primera línea o atacar desde arriba: sin aliados delante pierde Tras la Línea.
+Contexto táctico. El Acólito no pega: sostiene a los suyos. Su trabajo es que nadie llegue hasta él. Colócalo detrás de dos Arrolladores y deja que cure cada ronda: el grupo aprende enseguida que el enemigo que no ataca es el que más importa.
+#Heading2 Batidor (NA 2)
+Rol: Explorador · Mediano · PV 54 · Guardia 14 · Armadura 1 · Velocidad 45 pies · Iniciativa +6 · Ataque +4 · Daño 2d6+5 Perforante (arco) · CD 13 · Moral 12
+Atributos: FUE +0 · DES +2 · CON +0 · INT +0 · SAB +2 · CAR +0 · Salvaciones fuertes: DES +4, SAB +4
+Retirada Ágil ([t_pasivo], especie): no provoca Ataques de Oportunidad al alejarse.
+Primero en Llegar ([t_pasivo]): Ventaja en todas sus tiradas durante su primer turno de combate.
+Dar la Alarma (✦, 1 PA): si ve al grupo antes de ser visto, puede renunciar a atacar y marcharse. Si llega a los suyos, el Reloj de Amenaza de la zona avanza un paso.
+Contexto táctico. El Batidor casi nunca es el combate: es lo que decide si hay combate. Ponlo antes del encuentro principal y deja que los jugadores decidan si lo persiguen (p. 42), lo dejan ir o lo esperan en una emboscada.
+#Heading2 Enjambre de Ratas (Horda de NA 3)
+Rol: Hostigador · Diminutas (horda) · PV 52 · Guardia 17 · Armadura 1 · Velocidad 40 pies / Trepar 20 pies · Iniciativa +4 · Ataque +7 · Daño 3d6+2 Perforante · Horda de seis ratas (NA 1) · Inmune a Derribado y Apresado · Resistencia al daño de ataques contra un solo objetivo · CD 16 · Moral —
+Atributos: FUE −2 · DES +4 · CON −3 · INT −2 · SAB +0 · CAR −2 · Salvaciones fuertes: DES +7, FUE +1
+Olor de la Sangre ([t_pasivo], especie): percibe a las criaturas heridas a 120 pies, aunque estén ocultas o sean invisibles.
+Horda ([t_pasivo]): actúa como una sola criatura con un solo turno. Recibe el doble de daño de área. Cada cuarta parte de PV que pierde, su daño baja un dado, hasta un mínimo de uno. A la mitad de sus PV se divide en dos enjambres de NA 1 que actúan por separado, cada uno con la mitad de los PV que le queden y la mitad de sus dados, redondeando hacia arriba.
+Mordisco Sucio ([t_disparador]): quien reciba daño del enjambre hace Salvación CON CD 16 o sufre +1 escalón de Fatiga al terminar la escena.
+Protección ([t_pasivo]): fuego o cualquier área; ropa gruesa y un antídoto dan Ventaja contra el Mordisco Sucio.
+Contexto táctico. El enjambre enseña el valor del área: una antorcha o un Axioma bien colocado vale más que tres espadas. En un pasillo estrecho es un obstáculo; en una bodega con víveres, son 1d6 Raciones perdidas si nadie lo espanta a tiempo.
+ROW: | Ilustración
+Apéndice B
+#Heading1 Referencia del Director
