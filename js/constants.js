@@ -1,0 +1,265 @@
+/* ══════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════ */
+/** Stat keys in canonical order */
+const STATS = ['FUE','DES','CON','INT','SAB','CAR'];
+
+/** Proficiency bonus thresholds by level */
+const PROF_THRESHOLDS = [[9,4],[5,3],[1,2]]; // S&S: Nv1-4→+2, Nv5-8→+3, Nv9-10→+4 (PB solo en Salvaciones elegidas y ataques; NO en tiradas de habilidad)
+
+/* ── Habilidades — Manual Cap.VI §2 ──────────────────────────
+   Tirada: 2d10 + MOD del Atributo asociado + Grado de Maestría vs CD.
+   El PB NO se suma. Cuando hay dos atributos posibles se usa el de
+   mayor modificador. Las Especializadas sin Grado 0 se tiran con
+   Desventaja (3d10, suma los 2 más bajos) — no aplica a habilidades ya
+   adquiridas (Grado ≥ 0), que es lo único que se muestra como botón.
+   Manual v1 (8-10-2026): Historia y Religión vuelven a ser dos habilidades.
+   Las fichas con «Historia / Religión» pasan a Historia (SKILL_RENAMES). */
+const SKILL_ATTR = {
+  // Generales
+  'Sigilo':['DES'], 'Proeza Física':['FUE','DES'], 'Percepción':['SAB'],
+  'Perspicacia':['SAB'], 'Influencia':['CAR'], 'Engaño':['CAR'],
+  'Supervivencia':['SAB'], 'Intimidación':['CAR','FUE'],
+  // Especializadas
+  'Arcano':['INT'], 'Medicina':['SAB'], 'Tecnología':['INT'],
+  'Historia':['INT'], 'Religión':['INT'], 'Naturaleza':['INT'], 'Investigación':['INT'],
+  'Mecanismos':['DES'], 'Conocimiento de la Calle':['CAR','INT'],
+  'Artesanía':['INT','DES'],
+};
+const SKILL_SPECIALIZED = new Set([
+  'Arcano','Medicina','Tecnología','Historia','Religión','Naturaleza',
+  'Investigación','Mecanismos','Conocimiento de la Calle',
+  'Artesanía',
+]);
+/** Bonos de atributo a elección del Linaje: número de ranuras y valor de
+    cada una. `vals` (Humano y Medio Elfo: [2,1]) manda sobre n/val. */
+function pickN(pick) { return Array.isArray(pick?.vals) ? pick.vals.length : (pick?.n || 1); }
+function pickVal(pick, i) { return Array.isArray(pick?.vals) ? (pick.vals[i] ?? 1) : (pick?.val || 1); }
+/** Id estable sin acentos: «Visión en la Oscuridad» → «vision_en_la_oscuridad». */
+function slugId(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+/** Habilidades con otro nombre en fichas anteriores. «Historia / Religión»
+    (Manual v1 hasta el 3-10-2026) conserva su Grado como Historia: el
+    jugador puede cambiarla por Religión si era lo que usaba. */
+const SKILL_RENAMES = {
+  'Herramientas de Ladrón': 'Mecanismos',   // Manual, 26-10-2026
+  'Historia / Religión': 'Historia',
+  'Conocimiento': 'Historia',
+};
+
+/** ¿Puede aprender este Truco quien tiene esa Fuente? Cada Fuente tiene su
+    lista (Catálogo, «Trucos por Fuente»); Herencia escribe los suyos, así
+    que vale cualquiera. Sin lista en los datos, también. */
+function trucoDeFuente(t, fuente) {
+  if (!Array.isArray(t?.fuentes) || !fuente || fuente === 'Herencia') return true;
+  return t.fuentes.includes(fuente);
+}
+
+/** Talentos que vienen incluidos en una Iniciación y no ocupan espacio de
+    Talento (Compendio, 8-10-2026): el Dominio de Divinidad y la Gracia de
+    Juramento. */
+function talentoIncluido(nombre) {
+  return /^Dominio de |^Gracia (de|del) /.test(String(nombre || ''));
+}
+/** Talentos elegidos en la ficha que sí ocupan espacio. */
+function talentosQueCuentan() {
+  return [...document.querySelectorAll('input[name="chk_talents_hidden"]')]
+    .filter(h => !talentoIncluido(h.value)).length;
+}
+/** Nombre del Grado de Maestría (Manual Cap.VI §1) */
+const SKILL_GRADE_NAMES = ['Novato','Entrenado','Hábil','Especialista','Maestro','Maestría Absoluta'];
+
+/** XP acumulada para alcanzar el nivel siguiente (índice = nivel actual).
+    Manual v1: cada Nivel cuesta lo mismo, 1.500 XP (antes la tabla crecía). */
+const XP_TABLE = [0, 1500, 3000, 4500, 6000, 7500, 9000, 10500, 12000, 13500];
+
+/* Índice de Letalidad: el sumando FIJO de los PV que se ganan por nivel,
+   sobre el que se añade el MOD de CON. El Manual v1.8 da «2 + MOD CON»
+   como estándar de los tres Arquetipos, así que la 2 es el valor por
+   defecto; la 1 hace la campaña más mortal y la 3, más heroica. */
+const LETHALITY_DEFAULT = 2;
+
+/* ── Progresión por nivel (Manual Básico 1.0, «Tabla de progresión completa»)
+   Índice = nivel, así que la posición 0 no se usa. Total al Nivel 10:
+   7 Talentos · 1 Epítome · 20 PD · PB +4.                              */
+
+/** PD ganados AL ALCANZAR cada nivel: 2 por nivel, más 1 en los niveles
+    de Hito de Estilo (5 y 9). El Nivel 1 no otorga ninguno. */
+const PD_POR_NIVEL = [0, 0, 2, 2, 2, 3, 2, 2, 2, 3, 2];
+
+/** Espacios de Talento disponibles en cada nivel (3 iniciales + 1 en los
+    niveles impares a partir del 3). El Epítome del Nivel 10 va aparte. */
+const TALENT_SLOTS = [0, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7];
+
+/** Hito narrativo de cada nivel, para avisar al subir. */
+const HITOS_NIVEL = {
+  3:  '+1 Talento nuevo',
+  5:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
+  7:  '+1 Talento nuevo',
+  9:  '+1 Talento nuevo · Hito de Estilo (y +1 a un Atributo, opcional)',
+  10: 'Trascendencia',
+};
+
+/* ── Descanso y recuperación (Reglas Esenciales §7) ─────────────
+   La Carne/Flesh NO figura aquí a propósito: ningún descanso la
+   recupera. Solo sube 1 punto por semana completa de reposo real,
+   con curación avanzada (100 cr) o con botiquín avanzado (CD 16). */
+const DESCANSOS = [
+  { id:'respiro',     nombre:'Respiro',                  dur:'10 min',
+    coste:'1 Ración',
+    txt:'1d8 + MOD CON en PV y un cuarto de cada Reserva, redondeando arriba.',
+    pv:'1d8+con', reservas:.25 },
+  { id:'largo_inseg', nombre:'Descanso Largo — Inseguro', dur:'6 h',
+    coste:'1 Ración',
+    txt:'Mitad de PV máximos y mitad de Reservas. No reduce la Fatiga.',
+    pv:'mitad',   reservas:.5 },
+  { id:'largo_seg',   nombre:'Descanso Largo — Seguro',   dur:'8 h',
+    coste:'1 Ración + entorno adecuado',
+    txt:'Todos los PV y Reservas. Baja 1 escalón de Fatiga.',
+    pv:'todo',    reservas:1 },
+  { id:'largo_conf',  nombre:'Descanso Largo — Confortable', dur:'8 h',
+    coste:'Posada de calidad o camarote',
+    txt:'Todos los PV y Reservas. Baja 2 escalones de Fatiga.',
+    pv:'todo',    reservas:1 },
+];
+
+/* ── Migración de ids de Axioma (reglas v5.3.7/v5.3.8) ──────────
+   Cuatro Axiomas cambiaron de id (unidades en el nombre y el estado
+   canónico Ensordecido). Los personajes guardados bajo v5.3.5
+   conservan sus selecciones con el id nuevo al cargarse.            */
+const AXIOM_ID_RENAMES = {
+  silencio_9_m:           'silencio_30_pies',
+  invisibilidad_9_m:      'invisibilidad_30_pies',
+  proteccion_del_mal_9_m: 'proteccion_del_mal_30_pies',
+  sordera:                'ensordecido',
+  // Catálogo 1.0 «Ultimate»: solo cambia la grafía, el efecto es idéntico.
+  telekinesis_menor:      'telequinesis_menor',
+  // Catálogo v1: renombres, mismo efecto.
+  armadura_de_mago:       'egida_geometrica',
+  patrono_hipnotico:      'patron_hipnotico',
+  massmorfosis:           'metamorfosis_colectiva',
+};
+
+/* ── Migración de ids de Talento (reglas v5.5.2) ─────────────────
+   El Compendio v5.5.2 reestructuró 90 talentos en catálogos nuevos y
+   talentos-contenedor con opciones (Voto, Origen de Sangre, Pacto,
+   Dominio Divino…). La inmensa mayoría no tiene un id 1:1 equivalente
+   (pasan a ser una opción dentro de otro talento) y no se pueden
+   migrar automáticamente sin perder la elección original del jugador.
+   Solo se listan aquí los renombres puros verificados (mismo id salvo
+   el cambio de terminología "Ki"→"Qi", contenido idéntico letra por
+   letra en sus tres Grados). Los personajes con talentos v5.3.8 que no
+   están en este mapa conservan su nombre/leyenda guardados pero la
+   ficha lo marca como no encontrado en la base actual — ver
+   `_findTalent` / `_talentRichCard` en app.js. */
+const TALENT_ID_RENAMES = {
+  golpe_de_ki:      'golpe_de_qi',
+  contrahechizo:    'contraaxioma',     // Compendio del 11-10-2026
+  reflexion_de_ki:  'reflexion_de_qi',
+
+  /* ── Compendio de Sendas v2.0 ───────────────────────────────────
+     Solo renombrados 1:1 comprobados: o el texto del Grado 1 coincide
+     letra por letra, o es el MISMO concepto con el artículo caído del
+     nombre. Los talentos-contenedor que el v2.0 desglosó en varios
+     (Origen de Sangre → los ocho Orígenes) NO se mapean: elegir por el
+     jugador cuál le tocó sería inventarse su ficha. Esos muestran
+     "⚠ No encontrado" y conservan su texto en la ficha guardada. */
+  dominio_de_la_vida:         'dominio_de_vida',
+  dominio_de_la_luz:          'dominio_de_luz',
+  dominio_de_la_guerra:       'dominio_de_guerra',
+  dominio_de_la_tormenta:     'dominio_de_tormenta',
+  dominio_de_la_naturaleza:   'dominio_de_naturaleza',
+  dominio_de_la_forja:        'dominio_de_forja',
+  dominio_del_conocimiento:   'dominio_de_conocimiento',
+  dominio_del_engano:         'dominio_de_engano',
+  dominio_de_la_muerte_requiere_aprobacion_del_dj: 'dominio_de_muerte',
+
+  companero_de_exploracion:   'vinculo_animal',
+  pericia_que_vuelve:         'filo_que_vuelve',
+  qi_en_la_pericia:           'qi_en_el_filo',
+  metamagia_arcana:           'torsion_arcana',
+
+  /* ── Compendio de Sendas v5.6 ───────────────────────────────────
+     La Senda de Juramento renombró sus siete talentos hermanos de
+     «Voto de X» a «Gracia de X», con el texto de los tres Grados
+     idéntico letra por letra. El resto son renombres verificados uno
+     a uno comparando el Grado 1: mismo efecto, terminología nueva
+     («Canal»→«Fuente», «canalizar»→«usar», «Patrón»→«Patrono»).
+
+     NO se mapean —y muestran "⚠ No encontrado" conservando su texto
+     guardado— los que dejaron de ser talentos o se repartieron entre
+     varios: «Iniciado Místico» (ahora son los siete «Iniciado en X» y
+     elegir cuál le tocó al jugador sería inventarse su ficha),
+     «Afinidad Mística», «Pacto», «Regalo Oscuro», «La Letra Pequeña»,
+     «Hechizo de Toda una Vida», los nueve Dominios de Divinidad y los
+     ocho Orígenes de Herencia, que pasaron a ser elecciones dentro de
+     un subsistema en vez de talentos comprables. */
+  voto_del_centinela:          'gracia_del_centinela',
+  voto_de_la_deuda_jurada:     'gracia_de_la_deuda_jurada',
+  voto_inquebrantable:         'gracia_del_inquebrantable',
+  voto_del_guardian_ancestral: 'gracia_del_guardian_ancestral',
+  voto_de_enemistad:           'gracia_de_enemistad',
+  voto_de_conquista:           'gracia_de_conquista',
+  rompejuramentos:             'gracia_del_rompejuramentos',
+  voto_de_servicio:            'el_servicio',
+
+  represalia_del_patron:       'represalia_del_patrono',
+  banneret_del_patron:         'voz_delegada',
+  voz_del_contrato:            'nombre_invocado',
+  herencia_maldita:            'la_estirpe',
+  canal_compartido:            'fuente_compartida',
+  resonancia_del_canal:        'oido_abierto',
+  trascendencia_mistica:       'maestria_de_fuente',
+
+  /* ── Compendio de Sendas 1.0 «Ultimate» ─────────────────────────
+     Gadgeteer pasa a Maestro de Artilugios («gadget» → «artilugio»,
+     mismas mecánicas); Legado del Bestias pasa a Legado de la Manada
+     con el texto idéntico. */
+  gadgeteer:                   'maestro_de_artilugios',
+  legado_del_bestias:          'legado_de_la_manada',
+};
+
+/** Inventory slots per card cap */
+const MAX_PORTRAIT_W = 600;
+
+/** Max JSON import size (bytes) */
+const MAX_JSON_BYTES = 2 * 1024 * 1024;
+
+/* ── UI Timing constants (ms) ────────────────────────
+   Centralising these avoids scattered magic numbers and
+   makes animation tuning a single-location change.      */
+const TIMING = {
+  /** Pausa tras init antes de retirar la pantalla de carga (primer pintado) */
+  LOADER_DISMISS:    120,
+  /** Tiempo mínimo en pantalla: lo que tarda en terminar de entrar (v81) */
+  LOADER_MIN:        800,
+  /** Fundido de salida; igual que la transición de #ss-loader en main.css */
+  LOADER_FADE:       500,
+  /** Red de seguridad: por encima de la espera del almacén (6 s) */
+  LOADER_TIMEOUT:   7000,
+  /** Toast visible duration */
+  TOAST_VISIBLE:    3200,
+  /** Toast fade-out duration */
+  TOAST_FADE:        240,
+  /** Section confirm-button success flash */
+  CONFIRM_FLASH:     480,
+  /** Skill-limit flash red duration */
+  SKILL_FLASH:       340,
+  /** Dice overlay close animation */
+  DICE_CLOSE:        180,
+  /** Resource colour-flash after adjust */
+  RES_FLASH:         240,
+  /** Saved-label "fresh" highlight */
+  SAVED_FRESH:      3500,
+  /** Swipe ghost-click suppression window — shorter = less dead zone after swipe */
+  SWIPE_SUPPRESS:    220,
+  /** Crop spring transition */
+  CROP_SPRING:       280,
+  /** Long-press initial threshold — shorter feels more responsive */
+  LONGPRESS_HOLD:    320,
+  /** Long-press minimum repeat interval */
+  LONGPRESS_MIN:      50,
+};
