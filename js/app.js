@@ -3875,27 +3875,27 @@ const app = {
         det.appendChild(cuerpoDiv);
         ab.appendChild(det);
       };
-      /* `etiqueta` es la clasificación del bloque (Sustrato, Permiso). No se
-         imprime como cabecera propia: diría «Sustrato — Presión» justo
-         encima de una tarjeta llamada «Presión». Va como tipo de la
-         tarjeta, donde clasifica sin repetir. El Perfil sí conserva su
+      /* Los rasgos sueltos (Presión, Intervención…) van sin cabecera y con
+         su tipo del Manual (Habilitador, Pasivo, Reacción), como los
+         Talentos. Hasta v82 llevaban «Sustrato» o «Permiso», que son nombres
+         internos del chasis y no tipos de reglas. El Perfil sí conserva su
          cabecera porque agrupa rasgos con nombres distintos. */
-      const bloque = (titulo, cuerpo, b, nombreCorto, etiqueta) => {
+      const bloque = (titulo, cuerpo, b, nombreCorto, tipo, suelto) => {
         const rs = rasgosDe(b);
         if (!cuerpo && !rs.length) return;
-        if (!etiqueta) {
+        if (!suelto) {
           const l = document.createElement('div');
           l.className = 'js-section-lbl';
           l.textContent = titulo;
           ab.appendChild(l);
         }
-        if (cuerpo) desplegable(nombreCorto || titulo, etiqueta || '', cuerpo);
+        if (cuerpo) desplegable(nombreCorto || titulo, tipo || '', cuerpo);
         rs.forEach(r => desplegable(r.n, r.t, r.d));
       };
       bloque('Perfil', '', 'perfil');
-      bloque('Sustrato', arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Sustrato', 'Sustrato');
-      bloque('Permiso',  arq.permiso,  'permiso',  arq.permiso_nombre  || 'Permiso',  'Permiso');
-      bloque('Límite',   arq.limite,   'limite',   'Límite',                          'Límite');
+      bloque('Sustrato', arq.sustrato, 'sustrato', arq.sustrato_nombre || 'Rasgo', arq.sustrato_tipo, true);
+      bloque('Permiso',  arq.permiso,  'permiso',  arq.permiso_nombre  || 'Rasgo', arq.permiso_tipo,  true);
+      bloque('Límite',   arq.limite,   'limite',   'Límite',                        arq.limite_tipo,   true);
 
       // Solo las del Arquetipo: las del Trasfondo van en su propia sección (v63).
       const selSkills = Array.from(document.querySelectorAll('input[name="chk_arq"]:checked')).map(e=>e.value);
@@ -4665,11 +4665,11 @@ const app = {
       <div style="margin-bottom:6px"><span class="dfl">Habilidades (separadas por coma)</span><input type="text" id="db_skills" value="${_e((existing?.skills||[]).join(', '))}"></div>
       <div style="margin-bottom:6px"><span class="dfl">Competencia de armadura <span class="is-field-note">— light, medium, heavy</span></span><input type="text" id="db_armorprof" value="${_e((existing?.armorProf||[]).join(', '))}" placeholder="ej: light, medium"></div>
       <div style="margin-bottom:6px"><span class="dfl">Ignora requisitos de FUE del equipo</span><select id="db_ignoresgear"><option value="1"${existing?.ignoresGearReq?' selected':''}>Sí</option><option value="0"${existing?.ignoresGearReq?'':' selected'}>No</option></select></div>
-      <div style="margin-bottom:6px"><span class="dfl">Sustrato <span class="is-field-note">— nombre y texto</span></span>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgo exclusivo 1 <span class="is-field-note">— nombre y texto</span></span>
         <input type="text" id="db_sustrato_n" value="${_e(existing?.sustrato_nombre)}" placeholder="ej: Presión" style="margin-bottom:4px">
         <textarea id="db_sustrato" style="min-height:56px">${_e(existing?.sustrato)}</textarea>
       </div>
-      <div style="margin-bottom:6px"><span class="dfl">Permiso <span class="is-field-note">— nombre y texto</span></span>
+      <div style="margin-bottom:6px"><span class="dfl">Rasgo exclusivo 2 <span class="is-field-note">— nombre y texto</span></span>
         <input type="text" id="db_permiso_n" value="${_e(existing?.permiso_nombre)}" placeholder="ej: Intervención" style="margin-bottom:4px">
         <textarea id="db_permiso" style="min-height:56px">${_e(existing?.permiso)}</textarea>
       </div>

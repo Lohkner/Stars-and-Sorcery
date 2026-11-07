@@ -1,4 +1,16 @@
-# S&S Companion — v82.0
+# S&S Companion — v83.0
+
+## Novedades v83.0 — Tipos de los rasgos de Arquetipo
+
+`CACHE_VERSION` sube a `ss-companion-v153` y `RULES_DATA_VERSION` a `v1-official-n04b`.
+
+- Los rasgos exclusivos del Arquetipo ya no se etiquetan «Sustrato» ni «Permiso»
+  (nombres internos del chasis). Llevan el tipo del Manual Básico:
+  - Audaz: Presión (✦ Habilitador), Intervención (⚡ Reacción).
+  - Versátil: Enfoque (✦ Habilitador), Improvisar (◆ Pasivo).
+  - Sagaz: Deducción (✦ Habilitador), Preparación (✦ Habilitador).
+- Datos: campos `sustrato_tipo` y `permiso_tipo` en cada Arquetipo.
+- En el editor de Arquetipos, los campos pasan a llamarse «Rasgo exclusivo 1 y 2».
 
 ## Novedades v82.0 — Manuales del 04-11-2026
 
