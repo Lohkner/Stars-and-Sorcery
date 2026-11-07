@@ -1,4 +1,19 @@
-# S&S Companion — v81.0
+# S&S Companion — v82.0
+
+## Novedades v82.0 — Manuales del 04-11-2026
+
+`CACHE_VERSION` sube a `ss-companion-v152` y `RULES_DATA_VERSION` a `v1-official-n04`.
+
+- 9 Axiomas suman ahora el «MOD de Fuente» en vez de SAB o INT: Fuerza Fantasmal,
+  Arma Espiritual, Curación Mayor y las Curar Heridas de Divinidad, Naturaleza
+  y Juramento.
+- Talentos: Bendición Vital (Dominio de Vida) usa el MOD del atributo de tu
+  Fuente; el Elixir de Maestría Alquímica, tu MOD de Talento; Enemigo Predilecto
+  lista los tipos de criatura y aclara que su +2 es un bono fijo; El Armero
+  remite al Manual Básico, Apéndice A.
+- Los 8 Módulos de Mejora del Manual Básico (Apéndice A) están en el equipo
+  como «Módulo: …», con coste, CD de instalación y efecto. Ocupan 0 espacios,
+  porque van instalados en otro objeto.
 
 ## Novedades v81.0 — Pantalla de carga y entrada al inicio
 
