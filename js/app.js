@@ -238,7 +238,7 @@ const app = {
     const reordered = {};
     keys.forEach(k => { reordered[k] = roster[k]; });
     STORAGE.saveRoster(reordered);
-    if (navigator.vibrate) navigator.vibrate(6);
+    vibrar(6);
     /* Antes se repintaba el roster entero: todas las tarjetas volvían a
        entrar con su animación y el panel de ordenar se cerraba, así que
        cada paso obligaba a deslizar otra vez. Ahora solo cambian de sitio
@@ -799,7 +799,7 @@ const app = {
     window.addEventListener('orientationchange', _reSnap, {passive:true});
   },
   goToPage(n, snapMs) {
-    if (n !== this.currentPage && navigator.vibrate) navigator.vibrate(4);
+    if (n !== this.currentPage) vibrar(4);
 
     // Save current page's scroll position if preserve mode is on
     if (this.scrollPreserve) {
@@ -884,7 +884,7 @@ const app = {
     const btn = ev?.querySelector('.bcnf');
     if (!btn) return;
     btn.classList.add('success');
-    if (navigator.vibrate) navigator.vibrate([6, 40, 10]);
+    vibrar([6, 40, 10]);
     setTimeout(() => btn.classList.remove('success'), TIMING.CONFIRM_FLASH);
   },
 
@@ -2242,6 +2242,29 @@ const app = {
     return 'eq-bolsa';
   },
 
+  /** Pinta un texto de tipo («⚡ DISPARADOR», «⚡ reacción»…) en `el`. El ⚡
+      de los datos es un emoji: en móvil salía en color, con otro tamaño y
+      ajeno al tema. Se sustituye por el icono propio #i-rayo, que hereda el
+      color del tipo como ◆ ✦ ◈. Todo lo demás va como texto. */
+  _pintaTipo(el, texto) {
+    el.textContent = '';
+    String(this._sanitize(texto) || '').split('⚡').forEach((trozo, i) => {
+      if (i) el.appendChild(this._icoRayo());
+      if (trozo) el.appendChild(document.createTextNode(i ? trozo.replace(/^\s+/, ' ') : trozo));
+    });
+  },
+
+  _icoRayo() {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'ico ico-rayo');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS(NS, 'use');
+    use.setAttribute('href', '#i-rayo');
+    svg.appendChild(use);
+    return svg;
+  },
+
   /** Clase visual del tipo de talento a partir de su glifo o su palabra. */
   _tipoTalento(tipo) {
     const t = String(tipo || '');
@@ -2637,7 +2660,7 @@ const app = {
 
     labelEl.textContent = label;
     overlay.classList.add('active');
-    if (navigator.vibrate) navigator.vibrate(12);
+    vibrar(12);
 
     // ── Animate each die, staggered ──
     const TICKS = 7;
@@ -2758,7 +2781,7 @@ const app = {
     cur.classList.add('bump');
     setTimeout(() => { cur.style.color = ''; cur.classList.remove('bump'); }, TIMING.RES_FLASH);
     // Haptic feedback on supported devices
-    if (navigator.vibrate) navigator.vibrate(8);
+    vibrar(8);
     // Mark unsaved
     this._markUnsaved();
     // Barras de fracción de Estado
@@ -3419,7 +3442,7 @@ const app = {
         const tp = document.createElement('span');
         tp.className = 'tc-tipo';
         tp.dataset.tipo = this._tipoTalento(t.tipo);
-        tp.textContent = t.tipo;
+        this._pintaTipo(tp, t.tipo);
         infoDiv.appendChild(tp);
       }
       const p = document.createElement('p'); p.textContent = t.desc||''; infoDiv.appendChild(p);
@@ -3586,7 +3609,8 @@ const app = {
     if (tipo) {
       const gl = document.createElement('span'); gl.className = 'dc-glifo';
       gl.setAttribute('aria-hidden', 'true');
-      gl.textContent = { pasivo: '◆', habilitador: '✦', disparador: '⚡', modificador: '◈' }[tipo];
+      if (tipo === 'disparador') gl.appendChild(this._icoRayo());
+      else gl.textContent = { pasivo: '◆', habilitador: '✦', modificador: '◈' }[tipo];
       dch.appendChild(gl);
     }
     const dct = document.createElement('span'); dct.className = 'dct'; dct.textContent = this._sanitize(name);
@@ -3609,7 +3633,7 @@ const app = {
     if (tal?.tipo) {
       const tp = document.createElement('div'); tp.className = 'tc-tipo';
       tp.dataset.tipo = this._tipoTalento(tal.tipo);
-      tp.textContent = this._sanitize(String(tal.tipo));
+      this._pintaTipo(tp, String(tal.tipo));
       dcb.appendChild(tp);
     }
     const desc = document.createElement('div'); desc.style.marginBottom = '6px';
@@ -3844,7 +3868,7 @@ const app = {
           const tp = document.createElement('span');
           tp.className = 'arq-rasgo-t';
           tp.dataset.tipo = this._tipoTalento(tipo);
-          tp.textContent = this._sanitize(tipo);
+          this._pintaTipo(tp, tipo);
           sum.appendChild(tp);
         }
         const pk = document.createElement('span');

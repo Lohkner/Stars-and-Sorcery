@@ -50,6 +50,16 @@ const SKILL_RENAMES = {
   'Conocimiento': 'Historia',
 };
 
+/** Vibración háptica. El navegador la bloquea hasta el primer toque (y lo
+    apunta como error en la consola: más de 200 por sesión al abrir una
+    ficha); aquí se omite en silencio hasta entonces. */
+function vibrar(patron) {
+  try {
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+    navigator.vibrate?.(patron);
+  } catch (e) { /* sin vibración */ }
+}
+
 /** ¿Puede aprender este Truco quien tiene esa Fuente? Cada Fuente tiene su
     lista (Catálogo, «Trucos por Fuente»); Herencia escribe los suyos, así
     que vale cualquiera. Sin lista en los datos, también. */

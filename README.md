@@ -1,4 +1,16 @@
-# S&S Companion — v83.0
+# S&S Companion — v84.0
+
+## Novedades v84.0 — Icono del rayo y revisión
+
+`CACHE_VERSION` sube a `ss-companion-v154`.
+
+- El ⚡ (emoji, que en móvil salía en color y con otro tamaño) pasa a ser un icono
+  SVG propio, `#i-rayo`, que toma el color del tipo como ◆ ✦ ◈. Los datos conservan
+  el ⚡ como marca; `_pintaTipo()` lo sustituye al pintar.
+- La vibración espera al primer toque: antes el navegador la bloqueaba y dejaba
+  más de 200 errores en la consola por sesión (`vibrar()` en constants.js).
+- El buscador de Aptitudes tiene nombre para lectores de pantalla.
+- «Notas Rápidas» tiene una zona táctil de 44 px (antes 26).
 
 ## Novedades v83.0 — Tipos de los rasgos de Arquetipo
 

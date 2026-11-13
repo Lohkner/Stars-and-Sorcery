@@ -4639,3 +4639,12 @@ html.entrando .screen{transition-duration:.26s,.55s}
   #ss-loader{transition-duration:.2s}
   #ss-loader.fade-out .carga-icono,#ss-loader.fade-out .loader-text{transform:none}
 }
+
+/* ── Icono del rayo (v84) ──────────────────────────────────────────
+   Sustituye al emoji ⚡ en los tipos Disparador y Reacción. Mismo
+   tamaño óptico que ◆ ✦ ◈ y el color del texto que lo rodea. */
+.ico-rayo{width:.95em;height:.95em;margin-right:0;vertical-align:-.12em}
+.dc-glifo .ico-rayo{width:1.05em;height:1.05em;display:block}
+
+/* Revisión v84: «Notas Rápidas» medía 26 px de alto; zona táctil de 44. */
+#notes-summary{min-height:44px;display:flex;align-items:center;cursor:pointer}

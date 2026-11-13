@@ -85,7 +85,7 @@
 
     const hito = HITOS_NIVEL[nuevo];
     this.toast(`Nivel ${nuevo} · +${pd} PD` + (hito ? ` · ${hito}` : ''), 'ok');
-    if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+    vibrar([10, 40, 10]);
   };
 
   // ── Descanso ───────────────────────────────────────────────────
@@ -168,7 +168,7 @@
     const det = $('rest_panel');
     if (det) det.open = false;
     this.toast(`${o.nombre} — ${parte.join(' · ')}`, 'ok');
-    if (navigator.vibrate) navigator.vibrate(12);
+    vibrar(12);
   };
 
   // ── Enganches ──────────────────────────────────────────────────

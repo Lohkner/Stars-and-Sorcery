@@ -50,7 +50,7 @@ const UI = (() => {
   const DANGER_RE = /(eliminar|borrar|resetear|limpiar|sobreescribir|salir)/i;
 
   /** Pequeño tick háptico (no-op donde no exista la API). */
-  const haptic = (ms = 12) => { try { navigator.vibrate?.(ms); } catch (_) {} };
+  const haptic = (ms = 12) => vibrar(ms);
 
   /**
    * Muestra un diálogo de confirmación modal.

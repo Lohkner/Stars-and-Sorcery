@@ -200,7 +200,7 @@
     const antes = actual();
     const ahora = ponerActual(n);
     pintar();
-    if (ahora !== antes && navigator.vibrate) navigator.vibrate(8);
+    if (ahora !== antes) vibrar(8);
     return ahora;
   }
 
@@ -319,7 +319,7 @@
       const det = $('rest_panel');
       if (det) det.open = true;
       this.toast('Sin Raciones: no hay recuperación. Consigue comida, o descansa Confortable en una posada.', 'err');
-      if (navigator.vibrate) navigator.vibrate([8, 40, 8]);
+      vibrar([8, 40, 8]);
       return;
     }
     if (!coste) return _doRest.apply(this, arguments);
