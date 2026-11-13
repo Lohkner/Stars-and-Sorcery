@@ -1,4 +1,20 @@
-# S&S Companion — v84.0
+# S&S Companion — v85.0
+
+## Novedades v85.0 — Manuales del 12-11-2026
+
+`CACHE_VERSION` sube a `ss-companion-v155` y `RULES_DATA_VERSION` a `v1-official-n12`.
+
+- 9 Axiomas nuevos: Toque Macabro, Terror de Ultratumba, Ceguera o Sordera, Toque
+  Vampírico, Drenar Vigor y Sifón de Vida (Erudición); Ceguera o Sordera y Custodia
+  contra la Muerte (Divinidad); Pacto de Sangre (Pacto). 16 más cambian de Nivel o texto.
+- Talentos: Hoja Mística (una vez por turno), Gran Arma, Golpe Táctico, Vínculo Menor
+  (PV = 10 + 4×Nivel), la fórmula mayor de Maestría Alquímica (Explosivo, Decocción,
+  Aceite de caza) y el noveno Origen de Herencia, Don Singular.
+- Afinidades: cuentan como Iniciado «para cualquier requisito». El Marcado se liga a
+  un poder infernal «o a una maldición».
+- Raciones: 1 al día (la del Descanso Largo, que cubre la marcha) y 1 por Respiro.
+- Equipo inicial del Audaz: elige armadura entre Cota de malla, Cota de escamas y
+  Cuero tachonado, y además Escudo estándar o una segunda arma de su competencia.
 
 ## Novedades v84.0 — Icono del rayo y revisión
 

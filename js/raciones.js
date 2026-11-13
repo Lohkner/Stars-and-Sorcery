@@ -4,9 +4,9 @@
    progresion.js —envuelve app.doRest(), que se define allí—.
 
    Reglas (Manual Básico 1.0):
-     · Glosario: «Ración — Unidad de suministro que se consume en cada
-       Respiro y en cada Descanso Largo. Sin ella no hay recuperación, y
-       su ausencia durante 24 horas genera Fatiga.»
+     · Glosario (12-11-2026): «Ración — Unidad de suministro que se
+       consume una vez al día —la del Descanso Largo, que cubre también la
+       jornada de marcha— y en cada Respiro.» La marcha ya no gasta aparte.
      · Cap. 10, coste mínimo por tipo: Respiro 1 · Largo Inseguro 1 ·
        Largo Seguro 1 + entorno · Largo Confortable «posada de calidad o
        camarote». El Confortable NO gasta Ración: la comida caliente va
@@ -189,7 +189,7 @@
         ? 'No llevas Raciones. Añádelas en Equipo y Tesoro: ellas fijan el máximo de esta tarjeta.'
         : t === 0
           ? 'Sin Raciones no hay recuperación: el Respiro y el Descanso Largo no curan nada. El Confortable sí, porque no cuesta Ración.'
-          : 'Cada Respiro, Descanso Largo o día de marcha gasta 1 (usa «−» para la marcha). El Confortable no: la posada te da de comer.';
+          : 'Comes 1 al día, la del Descanso Largo, que cubre también la marcha; cada Respiro gasta otra. El Confortable no: la posada te da de comer.';
       nota.classList.toggle('rac-note--vacio', t === 0);
     }
     const panel = $('rac_panel');

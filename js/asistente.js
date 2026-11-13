@@ -34,10 +34,17 @@
   const PAQUETE = ['morral', 'raciones', 'antorchas', 'cantimplora', 'cuerda'];
   const MONEDAS = { audaz: 5, sutil: 4, sagaz: 3 };   // Nd6 × 10 cr
   const EQUIPO_ARQ = {
-    audaz: { etiqueta: 'Armadura inicial', fijo: { shields: 'escudo' }, opciones: [
+    // Manual (12-11-2026): «una armadura (Cota de malla, Cota de escamas o
+    // Cuero tachonado) y, a elegir, un Escudo estándar o una segunda arma de
+    // su competencia». Hasta entonces el escudo venía fijo.
+    audaz: { etiqueta: 'Armadura inicial', fijo: {}, opciones: [
       { v: 'cota_malla',   t: 'Cota de malla — Armadura 3', armor: 'cota_malla' },
       { v: 'cota_escamas', t: 'Cota de escamas — Armadura 2, los Críticos no la deterioran', armor: 'cota_escamas' },
-    ]},
+      { v: 'cuero_tachonado', t: 'Cuero tachonado', armor: 'cuero_tachonado' },
+    ], segunda: { etiqueta: 'Además, a elegir', opciones: [
+      { v: 'escudo', t: 'Escudo estándar', shield: 'escudo' },
+      { v: 'arma2',  t: 'Una segunda arma de tu competencia', armaComp: true },
+    ]}},
     sutil: { etiqueta: 'Además del Cuero tachonado', fijo: { armors: 'cuero_tachonado' }, opciones: [
       { v: 'ganzuas',   t: 'Herramientas de Ladrón con ganzúas', misc: 'ganzuas' },
       { v: 'arma_extra', t: 'Un arma ligera adicional', armaLigera: true },
@@ -65,7 +72,7 @@
     desc: '', arq: '', bg: '', descPick: [], descExps: [], descTruco: '', descMut: [], descDef: [], descAfinFuente: '',
     arqSkills: [], bgSkills: [], talentos: [], nombre: '', cat: '', q: '',
     savCom: '', savPoco: '', guardAttr: 'DES',
-    armas: [], opcArq: '', armaExtra: '', monedas: null,
+    armas: [], opcArq: '', armaExtra: '', opcArq2: '', arma2: '', monedas: null,
     armaQ: '', armaF: [],
     descUlt: '', arqUlt: '', bgUlt: '',
     alineamiento: '', retrato: '', pericia: '',
@@ -962,6 +969,28 @@
       b.appendChild(sub);
     }
 
+    // 3b · Segunda elección del Arquetipo (el Audaz: Escudo o segunda arma)
+    if (eq && eq.segunda) {
+      const sub = el('div', 'wiz-sub');
+      sub.appendChild(el('span', 'wiz-lbl', eq.segunda.etiqueta));
+      eq.segunda.opciones.forEach(o => {
+        let etq = '', txt = '';
+        if (o.shield) { const sh = app.DB.shields[o.shield]; etq = '+' + sh.guardia + ' Guardia'; txt = sh.notes || ''; }
+        sub.appendChild(tarjeta(o.shield ? app.DB.shields[o.shield].name : o.t, etq, txt, '',
+          S.opcArq2 === o.v, () => { S.opcArq2 = o.v; S.arma2 = ''; pintar(); }));
+      });
+      if (S.opcArq2 === 'arma2') {
+        sub.appendChild(el('span', 'wiz-lbl', 'Segunda arma'));
+        const s = el('select');
+        s.appendChild(new Option('— Elegir —', ''));
+        armasPermitidas().forEach(([id, w]) => s.appendChild(new Option(`${w.name} (${w.dmg})`, id)));
+        s.value = S.arma2;
+        s.onchange = () => { S.arma2 = s.value; pie(); };
+        sub.appendChild(s);
+      }
+      b.appendChild(sub);
+    }
+
     // 3 · Monedas iniciales
     const nd = MONEDAS[S.arq] || 3;
     const sub2 = el('div', 'wiz-sub');
@@ -1046,6 +1075,8 @@
           return soloArmadura ? 'Elige tu armadura' : 'Elige ' + EQUIPO_ARQ[S.arq].etiqueta.toLowerCase();
         }
         if (S.opcArq === 'arma_extra' && !S.armaExtra) return 'Elige el arma ligera adicional';
+        if (EQUIPO_ARQ[S.arq]?.segunda && !S.opcArq2) return 'Elige escudo o segunda arma';
+        if (S.opcArq2 === 'arma2' && !S.arma2) return 'Elige la segunda arma';
         return S.monedas == null ? 'Tira tus monedas iniciales' : '';
     }
     return '';
@@ -1194,6 +1225,9 @@
         });
         if (o.armaLigera && S.armaExtra) armasItems.push(meter('weapons', S.armaExtra));
       }
+      const o2 = eq.segunda?.opciones.find(x => x.v === S.opcArq2);
+      if (o2?.shield) shieldItem = meter('shields', o2.shield);
+      if (o2?.armaComp && S.arma2) armasItems.push(meter('weapons', S.arma2));
     }
     if (hayEquipo) {
       PAQUETE.forEach(k => meter('misc', k));
@@ -1397,6 +1431,15 @@
         const ligeras = Object.entries(app.DB.weapons)
           .filter(par => par[0] !== 'desarmado' && esLigera(par[1]) && puede(par[1]));
         if (ligeras.length) S.armaExtra = azar(ligeras)[0];
+      }
+    }
+    if (eq && eq.segunda) {
+      const o2 = azar(eq.segunda.opciones);
+      S.opcArq2 = o2.v;
+      if (o2.armaComp) {
+        const pool3 = armasPermitidas().filter(par => puede(par[1]));
+        if (pool3.length) S.arma2 = azar(pool3)[0];
+        else S.opcArq2 = 'escudo';
       }
     }
     let m = 0; const nd = MONEDAS[S.arq] || 3;
