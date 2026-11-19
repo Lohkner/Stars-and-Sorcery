@@ -1,4 +1,17 @@
-# S&S Companion — v85.0
+# S&S Companion — v86.0
+
+## Novedades v86.0 — Manuales del 14-11-2026: Dominios con seis Axiomas
+
+`CACHE_VERSION` sube a `ss-companion-v156` y `RULES_DATA_VERSION` a `v1-official-n14`.
+
+- Cada Dominio de Divinidad concede seis Axiomas, que se aprenden sin elegirlos y sin
+  ocupar hueco: dos al iniciarte, dos al llegar a Nivel 3 y dos con Adepto de Fuente.
+  El Mandato de los nueve Dominios lista los seis, con la Fuente de los que vienen de fuera.
+- «Iniciado en Divinidad» y la nota común de los Dominios recogen la regla nueva (el
+  Dominio no se cambia salvo que cambie tu autoridad y el Director lo acepte; Signo
+  Nivel 4+ y 2 PD; Prerrogativa Nivel 6+ y 3 PD).
+- Aptitudes: el filtro «Mi Fuente» muestra también los Axiomas de tu Dominio que
+  vienen de otra Fuente (`_axiomasDominio()` los lee del Mandato).
 
 ## Novedades v85.0 — Manuales del 12-11-2026
 

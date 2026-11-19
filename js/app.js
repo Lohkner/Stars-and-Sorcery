@@ -4175,6 +4175,36 @@ const app = {
     niveles.forEach(n => chip(n, String(n)));
   },
 
+  /** Axiomas de tu Dominio (Compendio, 14-11-2026): seis por Dominio, y
+      varios salen de otras Fuentes (Muro de Fuego, de Erudición, para Luz).
+      Se leen de la línea «Axiomas — Nivel 1–2: …» del Mandato del Talento
+      de Dominio que tenga el personaje. Devuelve claves de DB.spells. */
+  _axiomasDominio() {
+    const inp = [...document.querySelectorAll('input[name="chk_talents_hidden"]')]
+      .find(i => /^dominio_de_/.test(i.dataset.id || ''));
+    if (!inp) return new Set();
+    let tal = null;
+    for (const lista of Object.values(this.DB.talents || {})) {
+      tal = (Array.isArray(lista) ? lista : []).find(t => t.id === inp.dataset.id);
+      if (tal) break;
+    }
+    const m = String(tal?.grades?.[0]?.d || '').match(/Axiomas — (Nivel[^\n]*)/);
+    if (!m) return new Set();
+    const ABR = { Nat: 'Naturaleza', Eru: 'Erudición', Div: 'Divinidad', Psi: 'Psiónica', Pac: 'Pacto' };
+    const claves = new Set();
+    m[1].replace(/\.$/, '').split(' · ').forEach(tramo => {
+      tramo.replace(/^Nivel [^:]+:\s*/, '').split(', ').forEach(n => {
+        const p = n.trim().match(/^(.*?)\s*\((\w+)\)$/);
+        const nombre = p ? p[1] : n.trim();
+        const fuente = p ? (ABR[p[2]] || '') : 'Divinidad';   // sin paréntesis: propio del Dominio
+        const k = Object.keys(this.DB.spells || {}).find(c =>
+          this.DB.spells[c].name === nombre && this.DB.spells[c].source === fuente);
+        if (k) claves.add(k);
+      });
+    });
+    return claves;
+  },
+
   _aptFilter(query) {
     if (query !== undefined) this._aptFilterQuery = (query || '').toLowerCase().trim();
     const q = this._aptFilterQuery || '';
@@ -4183,6 +4213,7 @@ const app = {
     if (!avail) return;
     const miFuente = this._normSource(this._powerSource || '');
     const techo = this._techoAxioma();
+    const delDominio = f.source ? this._axiomasDominio() : new Set();
     let visibles = 0, total = 0;
     avail.querySelectorAll('.apt-card').forEach(card => {
       const s = this.DB.spells[card.dataset.key] || {};
@@ -4196,7 +4227,8 @@ const app = {
       const esTruco = s.type === 'trick';
       // Los rituales comunes no son de ninguna Fuente: los usa cualquiera.
       if (ok && f.source && miFuente && !esTruco && s.source !== 'Rituales') {
-        ok = this._normSource(s.source || '') === miFuente;
+        // Los Axiomas de tu Dominio cuentan como tuyos aunque vengan de otra Fuente.
+        ok = this._normSource(s.source || '') === miFuente || delDominio.has(card.dataset.key);
       }
       // Cada Fuente tiene su lista de Trucos (Catálogo, «Trucos por Fuente»).
       // Herencia no tiene lista: escribe los suyos, así que los ve todos.
